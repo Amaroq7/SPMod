@@ -37,7 +37,7 @@ const char *PyGlobal::getHome() const
     return m_pyModDir.c_str();
 }
 
-PyMod::IPluginMngr *PyGlobal::getPluginManager() const
+IPluginMngr *PyGlobal::getPluginManager() const
 {
     return m_pluginManager.get();
 }

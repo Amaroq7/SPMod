@@ -43,6 +43,8 @@ extern globalvars_t *gpGlobals;
 // PyMod interface
 #include <IPyGlobal.hpp>
 
+using namespace PyMod;
+
 // PyMod specific
 #include <pluginMngr.hpp>
 #include <pyGlobal.hpp>

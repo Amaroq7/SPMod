@@ -21,7 +21,7 @@
 
 class PluginMngr;
 
-class PyGlobal : public PyMod::IPyGlobal
+class PyGlobal : public IPyGlobal
 {
 public:
     PyGlobal() = delete;
@@ -31,7 +31,7 @@ public:
     //IPyGlobal
     const char *getHome() const override;
     const char *getModName() const override;
-    PyMod::IPluginMngr *getPluginManager() const override;
+    IPluginMngr *getPluginManager() const override;
 
     void initializePluginManager();
     void setModName(const std::string &name);

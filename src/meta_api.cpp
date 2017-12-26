@@ -43,7 +43,7 @@ static void printInfo()
     msg << "   This is free software, and you are welcome to redistribute it" << '\n';
     msg << "   under certain conditions; type `pymod gpl' for details." << '\n';
     msg << '\n';
-    msg << "PyMod " << gPyModVersion << ", API " << PyMod::PYMOD_API_VERSION << '\n';
+    msg << "PyMod " << gPyModVersion << ", API " << PYMOD_API_VERSION << '\n';
     msg << "PyMod build: " << __TIME__ << " " << __DATE__ << '\n';
     SERVER_PRINT(msg.str().c_str());
 }

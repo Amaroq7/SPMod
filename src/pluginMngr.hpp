@@ -45,7 +45,7 @@ private:
     size_t m_id;
 };
 
-class PluginMngr final : public PyMod::IPluginMngr
+class PluginMngr final : public IPluginMngr
 {
 public:
     PluginMngr(const fs::path &pathToScripts);
