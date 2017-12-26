@@ -142,10 +142,10 @@ META_FUNCTIONS gMetaFunctionTable =
 {
     nullptr,
     nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
-    nullptr,
+    GetEntityAPI2,
+    GetEntityAPI2_Post,
+    GetNewDLLFunctions,
+    GetNewDLLFunctions_Post,
     GetEngineFunctions,
     GetEngineFunctions_Post
 };

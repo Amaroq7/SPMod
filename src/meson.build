@@ -2,6 +2,7 @@ sourceFiles = files('pluginMngr.cpp',
                     'coreNatives.cpp',
                     'h_export.cpp',
                     'engine_api.cpp',
+                    'dllapi.cpp',
                     'meta_api.cpp',
                     'pyGlobal.cpp')
 
