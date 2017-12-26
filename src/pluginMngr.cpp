@@ -107,39 +107,41 @@ size_t PluginMngr::loadPlugins()
     std::error_code errCode;
     auto directoryIter = fs::directory_iterator(m_scriptsPath, errCode);
 
-    if (!errCode)
-    {
-        for (const auto &entry : directoryIter)
-        {
-            auto &&filePath = entry.path();
-            if (filePath.extension().string() != ".py")
-            {
-                std::stringstream msg;
-                msg << "[PyMod] Unrecognized file format: " << filePath << std::endl;
-                SERVER_PRINT(msg.str().c_str());
-                continue;
-            }
-            std::shared_ptr<Plugin> plugin;
-            try
-            {
-                plugin = std::make_shared<Plugin>(index, filePath);
-            }
-            catch (const std::exception &e)
-            {
-                std::stringstream msg;
-                msg << "[PyMod] " << e.what() << std::endl;
-                SERVER_PRINT(msg.str().c_str());
-                continue;
-            }
-            m_plugins.insert_or_assign(index, std::move(plugin));
-            index++;
-        }
-    }
-    else
+    if (errCode)
     {
         std::stringstream msg;
-        msg << "Error while loading plugins " << errCode.message() << std::endl;
+        msg << "Error while loading plugins " << errCode.message() << '\n';
         SERVER_PRINT(msg.str().c_str());
+
+        return index;
+    }
+
+    for (const auto &entry : directoryIter)
+    {
+        auto &&filePath = entry.path();
+        if (filePath.extension().string() != ".py")
+        {
+            std::stringstream msg;
+            msg << "[PyMod] Unrecognized file format: " << filePath << '\n';
+            SERVER_PRINT(msg.str().c_str());
+
+            continue;
+        }
+        std::shared_ptr<Plugin> plugin;
+        try
+        {
+            plugin = std::make_shared<Plugin>(index, filePath);
+        }
+        catch (const std::exception &e)
+        {
+            std::stringstream msg;
+            msg << "[PyMod] " << e.what() << '\n';
+            SERVER_PRINT(msg.str().c_str());
+            
+            continue;
+        }
+        m_plugins.insert_or_assign(index, std::move(plugin));
+        index++;
     }
     return index;
 }
