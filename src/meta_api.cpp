@@ -146,8 +146,8 @@ META_FUNCTIONS gMetaFunctionTable =
     nullptr,
     nullptr,
     nullptr,
-    nullptr,
-    nullptr
+    GetEngineFunctions,
+    GetEngineFunctions_Post
 };
 
 C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now,
