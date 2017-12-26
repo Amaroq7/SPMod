@@ -166,6 +166,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now,
     printInfo();
 
     gPyGlobal->initializePluginManager();
+    gPyGlobal->setModName(GET_GAME_INFO(PLID, GINFO_NAME));
 
     REG_SVR_COMMAND("pymod", pyModInfoCommand);
 

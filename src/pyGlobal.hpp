@@ -30,12 +30,15 @@ public:
 
     //IPyGlobal
     const char *getHome() const override;
+    const char *getModName() const override;
     PyMod::IPluginMngr *getPluginManager() const override;
 
     void initializePluginManager();
+    void setModName(const std::string &name);
 private:
     fs::path m_pyModDir;
     std::unique_ptr<PluginMngr> m_pluginManager;
+    std::string m_modName;
 };
 
 extern std::unique_ptr<PyGlobal> gPyGlobal;

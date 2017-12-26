@@ -41,3 +41,13 @@ PyMod::IPluginMngr *PyGlobal::getPluginManager() const
 {
     return m_pluginManager.get();
 }
+
+const char *PyGlobal::getModName() const
+{
+    return m_modName.c_str();
+}
+
+void PyGlobal::setModName(const std::string &name)
+{
+    m_modName = name;
+}

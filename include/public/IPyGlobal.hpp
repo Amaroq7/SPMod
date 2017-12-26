@@ -28,6 +28,7 @@ namespace PyMod
     public:
         virtual ~IPyGlobal() {};
         virtual const char *getHome() const = 0;
+        virtual const char *getModName() const = 0;
         virtual IPluginMngr *getPluginManager() const = 0;
     };
 
