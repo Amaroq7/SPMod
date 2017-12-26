@@ -33,3 +33,7 @@
 
 # Build folder
 build/
+
+# LLVM & Python header files
+include/llvm/
+include/python/
