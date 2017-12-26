@@ -19,19 +19,15 @@
 
 static PyObject *core_printToConsole(PyObject *self, PyObject *args)
 {
-    const char *fmt;
-
-    if (!PyArg_ParseTuple(args, "s", &fmt))
-        return nullptr;
-
     std::stringstream msg;
-    msg << fmt << std::endl;
+    msg << PyUnicode_AsUTF8(args) << '\n';
     SERVER_PRINT(msg.str().c_str());
-    return PyLong_FromLong(1);
+
+    Py_RETURN_NONE;
 }
 
 static PyMethodDef coreNatives[] = {
-    { "printToConsole", core_printToConsole, METH_VARARGS, "Print to console." },
+    { "printToConsole", core_printToConsole, METH_O, "Prints to console." },
     { nullptr, nullptr, 0, nullptr }
 };
 
