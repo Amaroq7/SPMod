@@ -19,7 +19,7 @@
 
 std::unique_ptr<PyGlobal> gPyGlobal;
 
-PyGlobal::PyGlobal(fs::path &&dllDir)
+PyGlobal::PyGlobal(const fs::path &dllDir)
 {
     m_pyModDir = dllDir.parent_path().parent_path();
 }

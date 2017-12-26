@@ -25,7 +25,7 @@ class PyGlobal : public PyMod::IPyGlobal
 {
 public:
     PyGlobal() = delete;
-    PyGlobal(fs::path &&dlldir);
+    PyGlobal(const fs::path &dllDir);
     ~PyGlobal() = default;
 
     //IPyGlobal
