@@ -34,10 +34,17 @@ void dllapi_ServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
     }
 }
 
+int dllapi_Spawn(edict_t *pent)
+{
+    gPyGlobal->initializePluginManager();
+
+    RETURN_META_VALUE(MRES_IGNORED, 1);
+}
+
 DLL_FUNCTIONS gDllFunctionTable =
 {
 	nullptr,					// pfnGameInit
-	nullptr,					// pfnSpawn
+	dllapi_Spawn,               // pfnSpawn
 	nullptr,					// pfnThink
 	nullptr,					// pfnUse
 	nullptr,					// pfnTouch
@@ -57,7 +64,7 @@ DLL_FUNCTIONS gDllFunctionTable =
 	nullptr,					// pfnClientPutInServer
 	nullptr,					// pfnClientCommand
 	nullptr,					// pfnClientUserInfoChanged
-	dllapi_ServerActivate,		// pfnServerActivate
+	dllapi_ServerActivate,      // pfnServerActivate
 	nullptr,					// pfnServerDeactivate
 	nullptr,					// pfnPlayerPreThink
 	nullptr,					// pfnPlayerPostThink

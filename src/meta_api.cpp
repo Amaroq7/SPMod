@@ -165,7 +165,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now,
     InitializePython();
     printInfo();
 
-    gPyGlobal->initializePluginManager();
     gPyGlobal->setModName(GET_GAME_INFO(PLID, GINFO_NAME));
     gPyGlobal->setScriptsDir("scripts");
 
