@@ -19,18 +19,37 @@
 
 #include <IPluginMngr.hpp>
 
+#ifndef DLLEXPORT
+    #ifdef _WIN32
+        #define DLLEXPORT	__declspec(dllexport)
+    #else
+        #define DLLEXPORT	__attribute__((visibility("default")))
+    #endif
+#endif
+
+#ifndef C_DLLEXPORT
+    #define C_DLLEXPORT extern "C" DLLEXPORT
+#endif
+
 namespace PyMod
 {
-    constexpr auto PYMOD_API_VERSION = 1UL;
+    using api_t = unsigned long;
+    constexpr api_t PYMOD_API_VERSION = 1;
+
+    using intFunction = PyObject *(*)(void);
 
     class IPyGlobal
     {
     public:
-        virtual ~IPyGlobal() {};
         virtual const char *getHome() const = 0;
         virtual const char *getModName() const = 0;
         virtual IPluginMngr *getPluginManager() const = 0;
+        virtual bool addInterface(intFunction func, const char *name, api_t api = PYMOD_API_VERSION) = 0;
+
+    protected:
+        virtual ~IPyGlobal() {};
     };
 
-    using getPyGlobalObject = IPyGlobal *(*)(unsigned long apiversion);
+    using fnPyModQuery = int (*)(IPyGlobal *pymodInstance, api_t apiversion);
+    C_DLLEXPORT int PyMod_Query(IPyGlobal *pymodInstance, api_t apiversion);
 }

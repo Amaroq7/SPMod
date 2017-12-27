@@ -42,6 +42,20 @@ IPluginMngr *PyGlobal::getPluginManager() const
     return m_pluginManager.get();
 }
 
+bool PyGlobal::addInterface(intFunction func, const char *name, api_t api)
+{
+    //TODO: Error reporting?
+    if (api != PYMOD_API_VERSION)
+        return false;
+
+    if (m_interfacesNames.find(name) != m_interfacesNames.end())
+        return false;
+
+    m_interfacesNames.emplace(name);
+
+    return true;
+}
+
 const char *PyGlobal::getModName() const
 {
     return m_modName.c_str();
@@ -50,4 +64,11 @@ const char *PyGlobal::getModName() const
 void PyGlobal::setModName(const std::string &name)
 {
     m_modName = name;
+}
+
+void PyGlobal::setScriptsDir(const std::string &folder)
+{
+    fs::path pathToScripts(m_pyModDir);
+    pathToScripts /= folder;
+    m_pyScriptsDir = std::move(pathToScripts);
 }

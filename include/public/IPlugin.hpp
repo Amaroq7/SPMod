@@ -17,21 +17,22 @@
 
 #pragma once
 
-#include <IPlugin.hpp>
+#include <Python.h>
 
 namespace PyMod
 {
-    class IPluginMngr
+    class IPlugin
     {
     public:
-        virtual IPlugin *loadPlugin(const char *name, char *error, size_t size) = 0;
-        virtual void unloadPlugin(size_t index) = 0;
-        virtual IPlugin *getPlugin(size_t index) = 0;
-        virtual IPlugin *getPlugin(const char *name) = 0;
-
-        virtual size_t getPluginsNum() const = 0;
+        virtual const char *getName() const = 0;
+        virtual const char *getVersion() const = 0;
+        virtual const char *getAuthor() const = 0;
+        virtual const char *getUrl() const = 0;
+        virtual const char *getFileName() const = 0;
+        virtual size_t getId() const = 0;
+        virtual PyObject *getInternal() = 0;
 
     protected:
-        virtual ~IPluginMngr() {};
+        virtual ~IPlugin() {};
     };
 }

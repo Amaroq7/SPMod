@@ -19,19 +19,27 @@
 
 #include <pymod.hpp>
 
-class Plugin //final : public IPlugin
+class Plugin final : public IPlugin
 {
 public:
     Plugin(size_t id, const fs::path &path);
     ~Plugin();
 
+    // IPlugin
     const char *getName() const { return m_name.c_str(); }
     const char *getVersion() const { return m_version.c_str(); }
     const char *getAuthor() const { return m_author.c_str(); }
     const char *getUrl() const { return m_url.c_str(); }
-    const char *getFileName() { return m_filename.c_str(); }
+    const char *getFileName() const { return m_filename.c_str(); }
     size_t getId() const { return m_id; }
     PyObject *getInternal() { return m_internal; }
+
+    // STL
+    const std::string &getNameString() const { return m_name; }
+    const std::string &getVersionString() const { return m_version; }
+    const std::string &getAuthorString() const { return m_author; }
+    const std::string &getUrlString() const { return m_url; }
+    const std::string &getFileNameString() const { return m_filename; }
 
 private:
     void GetPluginInfo(const std::string &scriptname);
@@ -51,16 +59,19 @@ public:
     PluginMngr(const fs::path &pathToScripts);
     ~PluginMngr() = default;
 
-    Plugin *loadPlugin(const char *name, char *error, size_t size);
-    void unloadPlugin(size_t index);
+    // IPluginMngr
+    IPlugin *loadPlugin(const char *name, char *error, size_t size) override;
+    void unloadPlugin(size_t index) override;
+    IPlugin *getPlugin(size_t index) override;
+    IPlugin *getPlugin(const char *name) override;
+    size_t getPluginsNum() const override { return m_plugins.size(); }
 
-    //Plugin *findPlugin(size_t index);
-    //Plugin *findPlugin(const char *name);
-
-    size_t getPluginsNum() const { return m_plugins.size(); }
+    // PluginMngr
+    IPlugin *loadPluginFs(const fs::path &path, std::string &error);
     const auto& getPluginsList() const { return m_plugins; }
+
 private:
     size_t loadPlugins();
-    std::map<size_t, std::shared_ptr<Plugin>> m_plugins;
+    std::unordered_map<size_t, std::shared_ptr<Plugin>> m_plugins;
     fs::path m_scriptsPath;
 };

@@ -95,15 +95,78 @@ void Plugin::GetPluginInfo(const std::string &scriptname)
     Py_DECREF(infoObject);
 }
 
+IPlugin *PluginMngr::getPlugin(size_t index)
+{
+    for (auto entry : m_plugins)
+    {
+        if (entry.second->getId() == index)
+            return entry.second.get();
+    }
+    return nullptr;
+}
+
+IPlugin *PluginMngr::getPlugin(const char *name)
+{
+    for (auto entry : m_plugins)
+    {
+        if (entry.second->getNameString() == name)
+            return entry.second.get();
+    }
+    return nullptr;
+}
+
+void PluginMngr::unloadPlugin(size_t index)
+{
+    m_plugins.erase(index);
+}
+
 PluginMngr::PluginMngr(const fs::path &pathToScripts)
 {
     m_scriptsPath = std::move(pathToScripts);
     loadPlugins();
 }
 
+IPlugin *PluginMngr::loadPlugin(const char *name, char *error, size_t size)
+{
+    std::string errorMsg;
+    auto plugin = loadPluginFs(m_scriptsPath / name, errorMsg);
+
+    if (!errorMsg.empty())
+    {
+        std::strncpy(error, errorMsg.c_str(), size);
+    }
+    return plugin;
+}
+
+IPlugin *PluginMngr::loadPluginFs(const fs::path &path, std::string &error)
+{
+    if (path.extension().string() != ".py")
+    {
+        std::stringstream msg;
+        msg << "[PyMod] Unrecognized file format: " << path << '\n';
+        error = msg.str();
+
+        return nullptr;
+    }
+    std::shared_ptr<Plugin> plugin;
+    try
+    {
+        plugin = std::make_shared<Plugin>(m_plugins.size(), path);
+    }
+    catch (const std::exception &e)
+    {
+        std::stringstream msg;
+        msg << "[PyMod] " << e.what() << '\n';
+        error = msg.str();
+
+        return nullptr;
+    }
+    m_plugins.insert_or_assign(m_plugins.size(), plugin);
+    return plugin.get();
+}
+
 size_t PluginMngr::loadPlugins()
 {
-    size_t index = 0;
     std::error_code errCode;
     auto directoryIter = fs::directory_iterator(m_scriptsPath, errCode);
 
@@ -113,35 +176,19 @@ size_t PluginMngr::loadPlugins()
         msg << "Error while loading plugins " << errCode.message() << '\n';
         SERVER_PRINT(msg.str().c_str());
 
-        return index;
+        return 0;
     }
 
+    std::string errorMsg;
     for (const auto &entry : directoryIter)
     {
         auto &&filePath = entry.path();
-        if (filePath.extension().string() != ".py")
+        loadPluginFs(filePath, errorMsg);
+        if (!errorMsg.empty())
         {
-            std::stringstream msg;
-            msg << "[PyMod] Unrecognized file format: " << filePath << '\n';
-            SERVER_PRINT(msg.str().c_str());
-
-            continue;
+            SERVER_PRINT(errorMsg.c_str());
+            errorMsg.clear();
         }
-        std::shared_ptr<Plugin> plugin;
-        try
-        {
-            plugin = std::make_shared<Plugin>(index, filePath);
-        }
-        catch (const std::exception &e)
-        {
-            std::stringstream msg;
-            msg << "[PyMod] " << e.what() << '\n';
-            SERVER_PRINT(msg.str().c_str());
-
-            continue;
-        }
-        m_plugins.insert_or_assign(index, std::move(plugin));
-        index++;
     }
-    return index;
+    return m_plugins.size();
 }
