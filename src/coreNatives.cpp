@@ -26,8 +26,14 @@ static PyObject *core_printToConsole(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+static PyObject *core_getMaxPlayers(PyObject *self, PyObject *args)
+{
+    return PyLong_FromUnsignedLong(gpGlobals->maxClients);
+}
+
 static PyMethodDef coreNatives[] = {
     { "printToConsole", core_printToConsole, METH_O, "Prints to console." },
+    { "getMaxPlayers", core_getMaxPlayers, METH_NOARGS, "Gets maximum number of players." },
     { nullptr, nullptr, 0, nullptr }
 };
 
