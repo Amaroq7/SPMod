@@ -35,5 +35,7 @@
 build/
 
 # LLVM & Python header files
-include/llvm/
-include/python/
+include/llvm/*
+include/python/*
+!include/llvm/.gitkeep
+!include/python/.gitkeep
