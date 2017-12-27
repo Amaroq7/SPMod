@@ -1,4 +1,4 @@
-/*  PyMod - Python Half-Life scripting engine
+/*  PyMod - Python Scripting Engine for Half-Life
  *  Copyright (C) 2018  PyMod Development Team
  *
  *  This program is free software: you can redistribute it and/or modify

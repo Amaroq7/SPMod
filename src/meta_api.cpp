@@ -1,4 +1,4 @@
-/*  PyMod - Python scripting engine for Half-Life
+/*  PyMod - Python Scripting Engine for Half-Life
  *  Copyright (C) 2018  PyMod Development Team
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -105,7 +105,7 @@ void pyModInfoCommand()
             std::stringstream msg;
 
             msg << '\n';
-            msg << "   PyMod - Python Half-Life scripting engine\n";
+            msg << "   PyMod - Python Scripting Engine for Half-Life\n";
             msg << "   Copyright (C) 2018  PyMod Development Team\n";
             msg << '\n';
             msg << "   This program is free software: you can redistribute it and/or modify\n";

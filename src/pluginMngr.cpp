@@ -1,4 +1,4 @@
-/*  PyMod - Python Half-Life scripting engine
+/*  PyMod - Python Scripting Engine for Half-Life
  *  Copyright (C) 2018  PyMod Development Team
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -137,7 +137,7 @@ size_t PluginMngr::loadPlugins()
             std::stringstream msg;
             msg << "[PyMod] " << e.what() << '\n';
             SERVER_PRINT(msg.str().c_str());
-            
+
             continue;
         }
         m_plugins.insert_or_assign(index, std::move(plugin));

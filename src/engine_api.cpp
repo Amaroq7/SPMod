@@ -1,4 +1,4 @@
-/*  PyMod - Python scripting engine for Half-Life
+/*  PyMod - Python Scripting Engine for Half-Life
  *  Copyright (C) 2018  PyMod Development Team
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -379,7 +379,7 @@ C_DLLEXPORT int GetEngineFunctions_Post(enginefuncs_t *pengfuncsFromEngine, int 
 {
 	if (!pengfuncsFromEngine)
 		return 0;
-		
+
 	if (*interfaceVersion != ENGINE_INTERFACE_VERSION) {
 		*interfaceVersion = ENGINE_INTERFACE_VERSION;
 		return 0;
