@@ -51,3 +51,4 @@ includeDirs = include_directories(publicIncludesDir,
                                   llvmIncludesDir)
 
 subdir('src')
+subdir('modules')
