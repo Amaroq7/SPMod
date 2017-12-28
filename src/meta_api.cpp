@@ -55,7 +55,7 @@ static void InitializePython()
 
     pythonDir /= "pylibraries:";
     pythonDir += homeDir;
-    pythonDir /= "pymodules";
+    pythonDir /= "modules/python";
 
     #ifndef _WIN32
         setenv("PYTHONHOME", pythonDir.c_str(), 1);
