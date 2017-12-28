@@ -19,11 +19,6 @@
 
 std::unique_ptr<PyGlobal> gPyGlobal;
 
-PyGlobal::PyGlobal(const fs::path &dllDir)
-{
-    m_pyModDir = dllDir.parent_path().parent_path();
-}
-
 void PyGlobal::initializePluginManager()
 {
     if (m_pluginManager)
@@ -32,38 +27,23 @@ void PyGlobal::initializePluginManager()
     m_pluginManager = std::make_unique<PluginMngr>(m_pyModDir / "scripts");
 }
 
-const char *PyGlobal::getHome() const
-{
-    return m_pyModDir.c_str();
-}
-
 IPluginMngr *PyGlobal::getPluginManager() const
 {
     return m_pluginManager.get();
 }
 
-bool PyGlobal::addInterface(intFunction func, const char *name, api_t api)
+bool PyGlobal::addModule(intFunction func, const char *name, api_t api)
 {
     //TODO: Error reporting?
     if (api != PYMOD_API_VERSION)
         return false;
 
-    if (m_interfacesNames.find(name) != m_interfacesNames.end())
+    if (m_modulesNames.find(name) != m_modulesNames.end())
         return false;
 
-    m_interfacesNames.emplace(name);
+    m_modulesNames.insert({ name, func });
 
     return true;
-}
-
-const char *PyGlobal::getModName() const
-{
-    return m_modName.c_str();
-}
-
-void PyGlobal::setModName(const std::string &name)
-{
-    m_modName = name;
 }
 
 void PyGlobal::setScriptsDir(const std::string &folder)

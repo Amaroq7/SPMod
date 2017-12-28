@@ -22,7 +22,6 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
-#include <unordered_set>
 #include <unordered_map>
 #include <experimental/filesystem>
 #include <exception>

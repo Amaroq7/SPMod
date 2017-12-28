@@ -40,7 +40,7 @@ namespace PyMod
         virtual const char *getHome() const = 0;
         virtual const char *getModName() const = 0;
         virtual IPluginMngr *getPluginManager() const = 0;
-        virtual bool addInterface(intFunction func, const char *name, api_t api = PYMOD_API_VERSION) = 0;
+        virtual bool addModule(intFunction func, const char *name, api_t api = PYMOD_API_VERSION) = 0;
 
     protected:
         virtual ~IPyGlobal() {};

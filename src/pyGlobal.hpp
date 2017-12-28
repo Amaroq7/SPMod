@@ -25,26 +25,27 @@ class PyGlobal : public IPyGlobal
 {
 public:
     PyGlobal() = delete;
-    PyGlobal(const fs::path &dllDir);
+    PyGlobal(const fs::path &dllDir) : m_pyModDir(dllDir.parent_path().parent_path()) { }
     ~PyGlobal() = default;
 
     // IPyGlobal
-    const char *getHome() const override;
-    const char *getModName() const override;
+    const char *getHome() const override { return m_pyModDir.c_str(); }
+    const char *getModName() const override { return m_modName.c_str(); }
     IPluginMngr *getPluginManager() const override;
-    bool addInterface(intFunction func, const char *name, api_t api) override;
+    bool addModule(intFunction func, const char *name, api_t api) override;
 
     // PyGlobal
     void initializePluginManager();
-    void setModName(const std::string &name);
+    void setModName(const std::string &name) { m_modName = name; }
     void setScriptsDir(const std::string &folder);
-
+    const auto &getModulesList() const { return m_modulesNames; }
+    
 private:
     fs::path m_pyScriptsDir;
     fs::path m_pyModDir;
     std::unique_ptr<PluginMngr> m_pluginManager;
     std::string m_modName;
-    std::unordered_set<std::string> m_interfacesNames;
+    std::unordered_map<std::string, intFunction> m_modulesNames;
 };
 
 extern std::unique_ptr<PyGlobal> gPyGlobal;

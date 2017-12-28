@@ -50,19 +50,31 @@ static void printInfo()
 
 static void InitializePython()
 {
-    auto &&homeDir = gPyGlobal->getHome();
+    auto homeDir = gPyGlobal->getHome();
     fs::path pythonDir(homeDir);
+
     pythonDir /= "pylibraries:";
     pythonDir += homeDir;
     pythonDir /= "pymodules";
 
-    //TODO: make equivalent for windows
-    setenv("PYTHONHOME", pythonDir.c_str(), 1);
+    #ifndef _WIN32
+        setenv("PYTHONHOME", pythonDir.c_str(), 1);
+    #else
+        // TODO: make equivalent for windows
+    #endif
 
     Py_SetPath(pythonDir.wstring().c_str());
 
-    PyImport_AppendInittab("core", PyInit_core);
+    gPyGlobal->addModule(PyInit_core, "core", PYMOD_API_VERSION);
+    for (auto entry : gPyGlobal->getModulesList())
+    {
+        PyImport_AppendInittab(entry.first.c_str(), entry.second);
+    }
+
     Py_InitializeEx(0);
+
+    // Only import the core module, others will be imported if needed by python
+    // scripts using "import <module_name>"
     PyImport_ImportModule("core");
 }
 
