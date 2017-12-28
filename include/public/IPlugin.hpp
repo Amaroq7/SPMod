@@ -28,6 +28,7 @@ namespace PyMod
         virtual const char *getVersion() const = 0;
         virtual const char *getAuthor() const = 0;
         virtual const char *getUrl() const = 0;
+        virtual const char *getIndentity() const = 0;
         virtual const char *getFileName() const = 0;
         virtual size_t getId() const = 0;
         virtual PyObject *getInternal() = 0;

@@ -22,7 +22,7 @@
 class Plugin final : public IPlugin
 {
 public:
-    Plugin(size_t id, const fs::path &path);
+    Plugin(size_t id, const std::string &identity, const fs::path &path);
     ~Plugin();
 
     // IPlugin
@@ -30,6 +30,7 @@ public:
     const char *getVersion() const { return m_version.c_str(); }
     const char *getAuthor() const { return m_author.c_str(); }
     const char *getUrl() const { return m_url.c_str(); }
+    const char *getIndentity() const { return m_identity.c_str(); };
     const char *getFileName() const { return m_filename.c_str(); }
     size_t getId() const { return m_id; }
     PyObject *getInternal() { return m_internal; }
@@ -39,12 +40,14 @@ public:
     const std::string &getVersionString() const { return m_version; }
     const std::string &getAuthorString() const { return m_author; }
     const std::string &getUrlString() const { return m_url; }
+    const std::string &getIndentityString() const { return m_identity; };
     const std::string &getFileNameString() const { return m_filename; }
 
 private:
     void GetPluginInfo(const std::string &scriptname);
 
     PyObject *m_internal;
+    std::string m_identity;
     std::string m_filename;
     std::string m_name;
     std::string m_version;

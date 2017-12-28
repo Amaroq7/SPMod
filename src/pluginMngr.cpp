@@ -17,7 +17,7 @@
 
 #include <pluginMngr.hpp>
 
-Plugin::Plugin(size_t id, const fs::path &path)
+Plugin::Plugin(size_t id, const std::string &identity, const fs::path &path)
 {
     std::fstream scriptFile(path, std::ios_base::in | std::ios_base::binary);
     auto fileName = path.stem().c_str();
@@ -52,6 +52,7 @@ Plugin::Plugin(size_t id, const fs::path &path)
     GetPluginInfo(path.filename().string());
 
     m_id = id;
+    m_identity = identity;
 }
 
 Plugin::~Plugin()
@@ -108,12 +109,9 @@ IPlugin *PluginMngr::getPlugin(size_t index)
 
 IPlugin *PluginMngr::getPlugin(const char *name)
 {
-    for (auto entry : m_plugins)
-    {
-        if (entry.second->getNameString() == name)
-            return entry.second.get();
-    }
-    return nullptr;
+    auto result = m_plugins.find(name);
+
+    return (result != m_plugins.end()) ? result->second.get() : nullptr;
 }
 
 void PluginMngr::unloadPlugin(const char *name)
@@ -157,7 +155,7 @@ bool PluginMngr::loadPluginFs(const fs::path &path, std::string &error)
     auto fileName = path.stem().string();
     try
     {
-        auto result = m_plugins.try_emplace(fileName, std::make_shared<Plugin>(pluginId, path));
+        auto result = m_plugins.try_emplace(fileName, std::make_shared<Plugin>(pluginId, fileName, path));
         retResult = result.second;
     }
     catch (const std::exception &e)
