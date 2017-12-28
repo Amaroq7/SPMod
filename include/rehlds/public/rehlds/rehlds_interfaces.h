@@ -46,6 +46,8 @@ class IGameClient;
 
 class IGameClient {
 public:
+	virtual ~IGameClient() { }
+
 	virtual int GetId() = 0;
 
 	virtual bool IsActive() = 0;
@@ -81,6 +83,8 @@ public:
 
 class INetChan {
 public:
+	virtual ~INetChan() { }
+
 	virtual const netadr_t* GetRemoteAdr() = 0;
 	virtual sizebuf_t* GetMessageBuf() = 0;
 

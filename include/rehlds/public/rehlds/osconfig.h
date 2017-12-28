@@ -142,7 +142,9 @@
 	#define ARRAYSIZE(p) (sizeof(p)/sizeof(p[0]))
 
 	#define _MAX_FNAME NAME_MAX
-	#define MAX_PATH 260
+	#ifndef MAX_PATH
+		#define MAX_PATH 260
+	#endif
 
 	typedef void *HWND;
 
