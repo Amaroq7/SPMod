@@ -61,17 +61,17 @@ public:
 
     // IPluginMngr
     IPlugin *loadPlugin(const char *name, char *error, size_t size) override;
-    void unloadPlugin(size_t index) override;
+    void unloadPlugin(const char *name) override;
     IPlugin *getPlugin(size_t index) override;
     IPlugin *getPlugin(const char *name) override;
     size_t getPluginsNum() const override { return m_plugins.size(); }
 
     // PluginMngr
-    IPlugin *loadPluginFs(const fs::path &path, std::string &error);
+    bool loadPluginFs(const fs::path &path, std::string &error);
     const auto& getPluginsList() const { return m_plugins; }
 
 private:
     size_t loadPlugins();
-    std::unordered_map<size_t, std::shared_ptr<Plugin>> m_plugins;
+    std::unordered_map<std::string, std::shared_ptr<Plugin>> m_plugins;
     fs::path m_scriptsPath;
 };

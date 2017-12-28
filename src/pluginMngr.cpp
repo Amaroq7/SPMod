@@ -56,6 +56,7 @@ Plugin::Plugin(size_t id, const fs::path &path)
 
 Plugin::~Plugin()
 {
+    // INVESTIGATE: 1 Reference is "disappearing" somewhere, this check avoids crashing
     if (Py_REFCNT(m_internal) > 1)
         Py_DECREF(m_internal);
 }
@@ -115,9 +116,9 @@ IPlugin *PluginMngr::getPlugin(const char *name)
     return nullptr;
 }
 
-void PluginMngr::unloadPlugin(size_t index)
+void PluginMngr::unloadPlugin(const char *name)
 {
-    m_plugins.erase(index);
+    m_plugins.erase(name);
 }
 
 PluginMngr::PluginMngr(const fs::path &pathToScripts)
@@ -129,29 +130,35 @@ PluginMngr::PluginMngr(const fs::path &pathToScripts)
 IPlugin *PluginMngr::loadPlugin(const char *name, char *error, size_t size)
 {
     std::string errorMsg;
-    auto plugin = loadPluginFs(m_scriptsPath / name, errorMsg);
 
-    if (!errorMsg.empty())
+    if (!loadPluginFs(m_scriptsPath / name, errorMsg))
     {
         std::strncpy(error, errorMsg.c_str(), size);
+        return nullptr;
     }
-    return plugin;
+
+    return m_plugins.find(name)->second.get();
 }
 
-IPlugin *PluginMngr::loadPluginFs(const fs::path &path, std::string &error)
+bool PluginMngr::loadPluginFs(const fs::path &path, std::string &error)
 {
+    auto pluginId = m_plugins.size();
+    auto retResult = false;
+
     if (path.extension().string() != ".py")
     {
         std::stringstream msg;
         msg << "[PyMod] Unrecognized file format: " << path << '\n';
         error = msg.str();
 
-        return nullptr;
+        return retResult;
     }
-    std::shared_ptr<Plugin> plugin;
+
+    auto fileName = path.stem().string();
     try
     {
-        plugin = std::make_shared<Plugin>(m_plugins.size(), path);
+        auto result = m_plugins.try_emplace(fileName, std::make_shared<Plugin>(pluginId, path));
+        retResult = result.second;
     }
     catch (const std::exception &e)
     {
@@ -159,10 +166,10 @@ IPlugin *PluginMngr::loadPluginFs(const fs::path &path, std::string &error)
         msg << "[PyMod] " << e.what() << '\n';
         error = msg.str();
 
-        return nullptr;
+        return retResult;
     }
-    m_plugins.insert_or_assign(m_plugins.size(), plugin);
-    return plugin.get();
+
+    return retResult;
 }
 
 size_t PluginMngr::loadPlugins()
@@ -182,9 +189,8 @@ size_t PluginMngr::loadPlugins()
     std::string errorMsg;
     for (const auto &entry : directoryIter)
     {
-        auto &&filePath = entry.path();
-        loadPluginFs(filePath, errorMsg);
-        if (!errorMsg.empty())
+        auto filePath = entry.path();
+        if (!loadPluginFs(filePath, errorMsg))
         {
             SERVER_PRINT(errorMsg.c_str());
             errorMsg.clear();

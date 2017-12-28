@@ -106,7 +106,7 @@ void pyModInfoCommand()
             for (auto entry : pluginManager->getPluginsList())
             {
                 LOG_CONSOLE(PLID, "[%3d] %-15.15s %-11.10s %-11.15s %-11.20s\n",
-                                    entry.first,
+                                    entry.second->getId(),
                                     entry.second->getName(),
                                     entry.second->getVersion(),
                                     entry.second->getAuthor(),

@@ -25,7 +25,7 @@ namespace PyMod
     {
     public:
         virtual IPlugin *loadPlugin(const char *name, char *error, size_t size) = 0;
-        virtual void unloadPlugin(size_t index) = 0;
+        virtual void unloadPlugin(const char *name) = 0;
         virtual IPlugin *getPlugin(size_t index) = 0;
         virtual IPlugin *getPlugin(const char *name) = 0;
 
