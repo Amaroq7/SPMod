@@ -73,9 +73,10 @@ static void InitializePython()
 
     Py_InitializeEx(0);
 
-    // Only import the core module, others will be imported if needed by python
-    // scripts using "import <module_name>"
-    PyImport_ImportModule("core");
+    for (auto entry : gPyGlobal->getModulesList())
+    {
+        Py_XDECREF(PyImport_ImportModule(entry.first.c_str()));
+    }
 }
 
 void pyModInfoCommand()
