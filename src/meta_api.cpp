@@ -158,6 +158,9 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now,
     gpMetaGlobals = pMGlobals;
     gpGamedllFuncs = pGamedllFuncs;
 
+    if (!initRehldsApi())
+        return 0;
+
     memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
 
     gPyGlobal = std::make_unique<PyGlobal>(GET_PLUGIN_PATH(PLID));

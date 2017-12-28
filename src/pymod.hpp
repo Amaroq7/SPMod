@@ -39,6 +39,17 @@ namespace fs = std::experimental::filesystem;
 #include <extdll.h>
 #include <meta_api.h>
 
+// ReHLDS
+#include <osconfig.h>
+#include <rehlds_api.h>
+
+extern IRehldsApi *gRehldsApi;
+extern const RehldsFuncs_t *gRehldsFuncs;
+extern IRehldsHookchains *gRehldsHookchains;
+extern IRehldsServerStatic *gRehldsServerStatic;
+
+extern bool initRehldsApi();
+
 extern globalvars_t *gpGlobals;
 
 // PyMod interface

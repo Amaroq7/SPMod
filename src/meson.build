@@ -4,7 +4,8 @@ sourceFiles = files('pluginMngr.cpp',
                     'engine_api.cpp',
                     'dllapi.cpp',
                     'meta_api.cpp',
-                    'pyGlobal.cpp')
+                    'pyGlobal.cpp',
+                    'rehlds_init.cpp')
 
 cppArgs = [
   '-stdlib=libc++',
@@ -15,6 +16,7 @@ cppArgs = [
 ]
 
 linkArgs = [
+  '-ldl',
   '-lc++',
   '-lc++abi',
   '-L.',
