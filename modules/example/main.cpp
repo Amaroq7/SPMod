@@ -20,7 +20,7 @@
 
 PyMod::IPyGlobal *gPyModInst;
 
-C_DLLEXPORT int PyMod_Query(PyMod::IPyGlobal *pymodInstance, unsigned long apiversion)
+PYMOD_API int PyMod_Query(PyMod::IPyGlobal *pymodInstance, unsigned long apiversion)
 {
     gPyModInst = pymodInstance;
 

@@ -19,16 +19,12 @@
 
 #include <IPluginMngr.hpp>
 
-#ifndef DLLEXPORT
+#ifndef PYMOD_API
     #ifdef _WIN32
-        #define DLLEXPORT	__declspec(dllexport)
+        #define PYMOD_API	extern "C" __declspec(dllexport)
     #else
-        #define DLLEXPORT	__attribute__((visibility("default")))
+        #define PYMOD_API	extern "C" __attribute__((visibility("default")))
     #endif
-#endif
-
-#ifndef C_DLLEXPORT
-    #define C_DLLEXPORT extern "C" DLLEXPORT
 #endif
 
 namespace PyMod
@@ -51,5 +47,5 @@ namespace PyMod
     };
 
     using fnPyModQuery = int (*)(IPyGlobal *pymodInstance, api_t apiversion);
-    C_DLLEXPORT int PyMod_Query(IPyGlobal *pymodInstance, api_t apiversion);
+    PYMOD_API int PyMod_Query(IPyGlobal *pymodInstance, api_t apiversion);
 }
