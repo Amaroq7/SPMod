@@ -1,5 +1,5 @@
-/*  PyMod - Python Scripting Engine for Half-Life
- *  Copyright (C) 2018  PyMod Development Team
+/*  SPMod - SourcePawn Scripting Engine for Half-Life
+ *  Copyright (C) 2018  SPMod Development Team
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,33 +19,40 @@
 
 #include <IPluginMngr.hpp>
 
-#ifndef PYMOD_API
-    #ifdef _WIN32
-        #define PYMOD_API	extern "C" __declspec(dllexport)
+// Platform defines
+#ifdef _WIN32
+    #define SP_WINDOWS
+#elif __linux__
+    #define SP_LINUX
+    #define SP_POSIX
+#endif
+
+#ifndef SPMOD_API
+    #ifdef SP_POSIX
+        #define SPMOD_API	extern "C" __attribute__((visibility("default")))
     #else
-        #define PYMOD_API	extern "C" __attribute__((visibility("default")))
+        #define SPMOD_API	extern "C" __declspec(dllexport)
     #endif
 #endif
 
-namespace PyMod
+namespace SPMod
 {
-    using api_t = unsigned long;
-    constexpr api_t PYMOD_API_VERSION = 1;
+    using sp_api_t = unsigned long;
+    constexpr sp_api_t SPMOD_API_VERSION = 0;
 
-    using intFunction = PyObject *(*)(void);
-
-    class IPyGlobal
+    class ISPGlobal
     {
     public:
         virtual const char *getHome() const = 0;
         virtual const char *getModName() const = 0;
         virtual IPluginMngr *getPluginManager() const = 0;
-        virtual bool addModule(intFunction func, const char *name, api_t api = PYMOD_API_VERSION) = 0;
+        virtual bool addModule(sp_nativeinfo_t *natives, const char *name, sp_api_t api = SPMOD_API_VERSION) = 0;
+        virtual SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const = 0;
 
     protected:
-        virtual ~IPyGlobal() {};
+        virtual ~ISPGlobal() {};
     };
 
-    using fnPyModQuery = int (*)(IPyGlobal *pymodInstance, api_t apiversion);
-    PYMOD_API int PyMod_Query(IPyGlobal *pymodInstance, api_t apiversion);
+    using fnSPModQuery = int (*)(ISPGlobal *spmodInstance, sp_api_t apiversion);
+    SPMOD_API int SPMod_Query(ISPGlobal *spmodInstance, sp_api_t apiversion);
 }

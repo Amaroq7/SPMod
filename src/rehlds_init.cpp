@@ -1,5 +1,5 @@
-/*  PyMod - Python Scripting Engine for Half-Life
- *  Copyright (C) 2018  PyMod Development Team
+/*  SPMod - SourcePawn Scripting Engine for Half-Life
+ *  Copyright (C) 2018  SPMod Development Team
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <pymod.hpp>
+#include <spmod.hpp>
 #include <interface.cpp>
 
 IRehldsApi *gRehldsApi;
@@ -91,7 +91,7 @@ bool initRehldsApi()
 {
     std::string errorMsg;
 
-#ifndef WIN32
+#ifdef SP_POSIX
     CSysModule *engineModule = Sys_LoadModule("engine_i486.so");
     if (!_initRehldsApi(engineModule, &errorMsg))
     {

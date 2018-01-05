@@ -1,15 +1,19 @@
-sourceFiles = files('pluginMngr.cpp',
+sourceFiles = files('plugin.cpp',
+                    'pluginMngr.cpp',
                     'coreNatives.cpp',
                     'h_export.cpp',
                     'engine_api.cpp',
                     'dllapi.cpp',
                     'meta_api.cpp',
-                    'pyGlobal.cpp',
+                    'SPGlobal.cpp',
                     'rehlds_init.cpp')
 
 cppArgs = [
   '-stdlib=libc++',
+  '-Wall',
+  '-Wextra',
   '-Wno-unknown-pragmas',
+  '-Wno-non-virtual-dtor',
   '-g3',
   '-ggdb',
   '-fvisibility=hidden'
@@ -20,11 +24,10 @@ linkArgs = [
   '-lc++',
   '-lc++abi',
   '-L.',
-  '-lpython3.7dm',
   'libc++experimental.a'
 ]
 
-shared_library('pymod_mm', sourceFiles,
+shared_library('spmod_mm', sourceFiles,
                           cpp_args : cppArgs,
                           link_args : linkArgs,
                           include_directories : includeDirs)

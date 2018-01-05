@@ -22,8 +22,8 @@ llvmIncludesDir = [
   join_paths('include', 'llvm')
 ]
 
-pythonIncludesDir = [
-  join_paths('include', 'python')
+spIncludesDir = [
+  join_paths('include', 'sourcepawn')
 ]
 
 publicIncludesDir = [
@@ -45,10 +45,9 @@ rehldsIncludesDir = [
 ]
 
 includeDirs = include_directories(publicIncludesDir,
-                                  pythonIncludesDir,
+                                  spIncludesDir,
                                   metamodIncludesDir,
                                   rehldsIncludesDir,
                                   llvmIncludesDir)
 
 subdir('src')
-subdir('modules')

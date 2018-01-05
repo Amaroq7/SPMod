@@ -1,5 +1,5 @@
-/*  PyMod - Python Scripting Engine for Half-Life
- *  Copyright (C) 2018  PyMod Development Team
+/*  SPMod - SourcePawn Scripting Engine for Half-Life
+ *  Copyright (C) 2018  SPMod Development Team
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,9 +17,9 @@
 
 #pragma once
 
-#include <Python.h>
+#include <sp_vm_api.h>
 
-namespace PyMod
+namespace SPMod
 {
     class IPlugin
     {
@@ -31,7 +31,7 @@ namespace PyMod
         virtual const char *getIndentity() const = 0;
         virtual const char *getFileName() const = 0;
         virtual size_t getId() const = 0;
-        virtual PyObject *getInternal() = 0;
+        virtual SourcePawn::IPluginRuntime *getRuntime() const = 0;
 
     protected:
         virtual ~IPlugin() {};

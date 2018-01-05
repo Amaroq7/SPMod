@@ -1,5 +1,5 @@
-/*  PyMod - Python Scripting Engine for Half-Life
- *  Copyright (C) 2018  PyMod Development Team
+/*  SPMod - SourcePawn Scripting Engine for Half-Life
+ *  Copyright (C) 2018  SPMod Development Team
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,36 +15,26 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <pymod.hpp>
+#include <spmod.hpp>
 
-void dllapi_ServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
+void dllapi_ServerActivate(edict_t *pEdictList [[maybe_unused]],
+                            int edictCount [[maybe_unused]],
+                            int clientMax [[maybe_unused]])
 {
-    //TODO: Hide this python boilerplate to some class
-    auto pluginManager = static_cast<PluginMngr *>(gPyGlobal->getPluginManager());
-    for (auto entry : pluginManager->getPluginsList())
-    {
-        PyObject *internal = entry.second->getInternal();
-        auto initFunction = PyObject_GetAttrString(internal, "pluginInit");
-
-        if (!initFunction)
-            continue;
-
-        PyObject_CallFunction(initFunction, nullptr);
-        Py_DECREF(initFunction);
-    }
+    auto pluginManager = static_cast<PluginMngr *>(gSPGlobal->getPluginManager());
+    pluginManager->loadPlugins();
 }
 
-int dllapi_Spawn(edict_t *pent)
+void dllapi_ServerDeactivate()
 {
-    gPyGlobal->initializePluginManager();
-
-    RETURN_META_VALUE(MRES_IGNORED, 1);
+    auto pluginManager = static_cast<PluginMngr *>(gSPGlobal->getPluginManager());
+    pluginManager->detachPlugins();
 }
 
 DLL_FUNCTIONS gDllFunctionTable =
 {
 	nullptr,					// pfnGameInit
-	dllapi_Spawn,               // pfnSpawn
+	nullptr,               		// pfnSpawn
 	nullptr,					// pfnThink
 	nullptr,					// pfnUse
 	nullptr,					// pfnTouch
@@ -65,7 +55,7 @@ DLL_FUNCTIONS gDllFunctionTable =
 	nullptr,					// pfnClientCommand
 	nullptr,					// pfnClientUserInfoChanged
 	dllapi_ServerActivate,      // pfnServerActivate
-	nullptr,					// pfnServerDeactivate
+	dllapi_ServerDeactivate,	// pfnServerDeactivate
 	nullptr,					// pfnPlayerPreThink
 	nullptr,					// pfnPlayerPostThink
 	nullptr,					// pfnStartFrame

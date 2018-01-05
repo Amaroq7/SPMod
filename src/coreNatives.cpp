@@ -1,5 +1,5 @@
-/*  PyMod - Python Scripting Engine for Half-Life
- *  Copyright (C) 2018  PyMod Development Team
+/*  SPMod - SourcePawn Scripting Engine for Half-Life
+ *  Copyright (C) 2018  SPMod Development Team
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,37 +15,19 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <pymod.hpp>
+#include <spmod.hpp>
 
-static PyObject *core_printToConsole(PyObject *self, PyObject *args)
+static cell_t core_printToConsole(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    std::stringstream msg;
-    msg << PyUnicode_AsUTF8(args) << '\n';
-    SERVER_PRINT(msg.str().c_str());
+    char *stringToPrint;
+    ctx->LocalToString(params[1], &stringToPrint);
 
-    Py_RETURN_NONE;
+    SERVER_PRINT(stringToPrint);
+
+    return 1;
 }
 
-static PyObject *core_getMaxPlayers(PyObject *self, PyObject *args)
-{
-    return PyLong_FromUnsignedLong(gpGlobals->maxClients);
-}
-
-static PyMethodDef coreNatives[] = {
-    { "printToConsole", core_printToConsole, METH_O, "Prints to console." },
-    { "getMaxPlayers", core_getMaxPlayers, METH_NOARGS, "Gets maximum number of players." },
-    { nullptr, nullptr, 0, nullptr }
+sp_nativeinfo_t gCoreNatives[] = {
+    { "printToConsole", core_printToConsole },
+    { nullptr, nullptr }
 };
-
-static struct PyModuleDef coreModuleDef = {
-    PyModuleDef_HEAD_INIT,
-    "core",
-    nullptr,
-    -1,
-    coreNatives
-};
-
-PyMODINIT_FUNC PyInit_core()
-{
-    return PyModule_Create(&coreModuleDef);
-}

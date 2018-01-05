@@ -1,5 +1,5 @@
-/*  PyMod - Python Scripting Engine for Half-Life
- *  Copyright (C) 2018  PyMod Development Team
+/*  SPMod - SourcePawn Scripting Engine for Half-Life
+ *  Copyright (C) 2018  SPMod Development Team
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,8 +31,8 @@ namespace fs = std::experimental::filesystem;
 // C
 #include <cstring>
 
-// Python
-#include <Python.h>
+// Sourcepawn
+#include <sp_vm_api.h>
 
 // Metamod & HLSDK
 #include <extdll.h>
@@ -49,19 +49,18 @@ extern IRehldsServerStatic *gRehldsServerStatic;
 
 extern bool initRehldsApi();
 
-extern globalvars_t *gpGlobals;
+// SPMod interface
+#include <ISPGlobal.hpp>
 
-// PyMod interface
-#include <IPyGlobal.hpp>
+using namespace SPMod;
 
-using namespace PyMod;
-
-// PyMod specific
+// SPMod specific
+#include <plugin.hpp>
 #include <pluginMngr.hpp>
-#include <pyGlobal.hpp>
+#include <SPGlobal.hpp>
 
-constexpr auto gPyModAuthor = "PyMod Development Team";
-constexpr auto gPyModVersion = "1.0.0";
+constexpr auto gSPModAuthor = "SPMod Development Team";
+constexpr auto gSPModVersion = "1.0.0";
 
-// Core module (coreNatives.cpp)
-PyMODINIT_FUNC PyInit_core();
+// Core natives (coreNatives.cpp)
+extern sp_nativeinfo_t gCoreNatives[];

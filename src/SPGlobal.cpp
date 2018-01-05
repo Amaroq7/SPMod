@@ -1,5 +1,5 @@
-/*  PyMod - Python Scripting Engine for Half-Life
- *  Copyright (C) 2018  PyMod Development Team
+/*  SPMod - SourcePawn Scripting Engine for Half-Life
+ *  Copyright (C) 2018  SPMod Development Team
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,40 +15,63 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <pymod.hpp>
+#include <spmod.hpp>
 
-std::unique_ptr<PyGlobal> gPyGlobal;
+std::unique_ptr<SPGlobal> gSPGlobal;
 
-void PyGlobal::initializePluginManager()
+SPGlobal::~SPGlobal()
 {
-    if (m_pluginManager)
-        return;
-
-    m_pluginManager = std::make_unique<PluginMngr>(m_pyModDir / "scripts");
+#ifdef SP_POSIX
+    dlclose(m_SPLibraryHandle);
+#else
+    //TODO: windows
+#endif
 }
 
-IPluginMngr *PyGlobal::getPluginManager() const
+IPluginMngr *SPGlobal::getPluginManager() const
 {
     return m_pluginManager.get();
 }
 
-bool PyGlobal::addModule(intFunction func, const char *name, api_t api)
+bool SPGlobal::addModule(sp_nativeinfo_t *natives, const char *name, sp_api_t api)
 {
     //TODO: Error reporting?
-    if (api != PYMOD_API_VERSION)
+    if (api > SPMOD_API_VERSION)
         return false;
 
     if (m_modulesNames.find(name) != m_modulesNames.end())
         return false;
 
-    m_modulesNames.insert({ name, func });
+    m_modulesNames.insert({ name, natives });
 
     return true;
 }
 
-void PyGlobal::setScriptsDir(const std::string &folder)
+void SPGlobal::initPluginManager()
+{
+    if (m_pluginManager)
+        return;
+
+    m_pluginManager = std::make_unique<PluginMngr>(m_pyScriptsDir);
+}
+
+void SPGlobal::setScriptsDir(const std::string &folder)
 {
     fs::path pathToScripts(m_pyModDir);
     pathToScripts /= folder;
     m_pyScriptsDir = std::move(pathToScripts);
 }
+
+#ifdef SP_POSIX
+void SPGlobal::setSPFactory(void *library, SourcePawn::ISourcePawnFactory *factory)
+#else
+// TODO: windows
+#endif
+{
+    if (m_spFactory)
+        return;
+
+    m_spFactory = factory;
+    m_spFactory->NewEnvironment();
+    m_SPLibraryHandle = library;
+};

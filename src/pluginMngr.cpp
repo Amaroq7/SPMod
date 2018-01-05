@@ -1,5 +1,5 @@
-/*  PyMod - Python Scripting Engine for Half-Life
- *  Copyright (C) 2018  PyMod Development Team
+/*  SPMod - SourcePawn Scripting Engine for Half-Life
+ *  Copyright (C) 2018  SPMod Development Team
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,89 +17,9 @@
 
 #include <pluginMngr.hpp>
 
-Plugin::Plugin(size_t id, const std::string &identity, const fs::path &path)
-{
-    std::fstream scriptFile(path, std::ios_base::in | std::ios_base::binary);
-    auto fileName = path.stem().c_str();
-    std::stringstream errorMsg;
-
-    if (scriptFile.fail())
-    {
-        errorMsg << "[PyMod] Can't open " << path;
-        throw std::runtime_error(errorMsg.str());
-    }
-
-    scriptFile.seekg(0, std::ios_base::end);
-    auto size = scriptFile.tellg();
-    scriptFile.seekg(0, std::ios_base::beg);
-
-    auto dataBlock = std::make_unique<char[]>(size + 1LL);
-    scriptFile.read(dataBlock.get(), size);
-
-    PyObject *compiledScript = Py_CompileString(dataBlock.get(), fileName, Py_file_input);
-    if (!compiledScript) {
-        errorMsg << "[PyMod] Error compiling " << path;
-        throw std::runtime_error(errorMsg.str());
-    }
-
-    m_internal = PyImport_ExecCodeModule(fileName, compiledScript);
-    if (!m_internal) {
-        errorMsg << "[PyMod] Can't import " << path;
-        throw std::runtime_error(errorMsg.str());
-    }
-    Py_DECREF(compiledScript);
-
-    GetPluginInfo(path.filename().string());
-
-    m_id = id;
-    m_identity = identity;
-}
-
-Plugin::~Plugin()
-{
-    // INVESTIGATE: 1 Reference is "disappearing" somewhere, this check avoids crashing
-    if (Py_REFCNT(m_internal) > 1)
-        Py_DECREF(m_internal);
-}
-
-void Plugin::GetPluginInfo(const std::string &scriptname)
-{
-    std::stringstream errorMsg;
-
-    PyObject *pluginInfoClass = PyObject_GetAttrString(m_internal, "pluginInfo");
-    if (!pluginInfoClass)
-    {
-        errorMsg << "[PyMod] Can't find pluginInfo class! (" << scriptname << ")";
-        throw std::runtime_error(errorMsg.str());
-    }
-
-    auto infoObject = PyObject_CallObject(pluginInfoClass, nullptr);
-    Py_DECREF(pluginInfoClass);
-
-    auto gatherInfo = [&errorMsg, &scriptname, &infoObject](const char *property)
-    {
-        PyObject *propertyObject = PyObject_GetAttrString(infoObject, property);
-        if (!propertyObject) {
-            errorMsg << "[PyMod] Cannot access " << property << " property (" << scriptname << ")";
-            throw std::runtime_error(errorMsg.str());
-        }
-        auto &&propertyValue = PyUnicode_AsUTF8(propertyObject);
-        Py_DECREF(propertyObject);
-        return propertyValue;
-    };
-
-    m_name = gatherInfo("name");
-    m_version = gatherInfo("version");
-    m_author = gatherInfo("author");
-    m_url = gatherInfo("url");
-    m_filename = std::move(scriptname);
-
-    Py_DECREF(infoObject);
-}
-
 IPlugin *PluginMngr::getPlugin(size_t index)
 {
-    for (auto entry : m_plugins)
+    for (const auto &entry : m_plugins)
     {
         if (entry.second->getId() == index)
             return entry.second.get();
@@ -122,7 +42,6 @@ void PluginMngr::unloadPlugin(const char *name)
 PluginMngr::PluginMngr(const fs::path &pathToScripts)
 {
     m_scriptsPath = std::move(pathToScripts);
-    loadPlugins();
 }
 
 IPlugin *PluginMngr::loadPlugin(const char *name, char *error, size_t size)
@@ -143,10 +62,10 @@ bool PluginMngr::loadPluginFs(const fs::path &path, std::string &error)
     auto pluginId = m_plugins.size();
     auto retResult = false;
 
-    if (path.extension().string() != ".py")
+    if (path.extension().string() != ".smx")
     {
         std::stringstream msg;
-        msg << "[PyMod] Unrecognized file format: " << path << '\n';
+        msg << "[SPMod] Unrecognized file format: " << path << '\n';
         error = msg.str();
 
         return retResult;
@@ -161,10 +80,8 @@ bool PluginMngr::loadPluginFs(const fs::path &path, std::string &error)
     catch (const std::exception &e)
     {
         std::stringstream msg;
-        msg << "[PyMod] " << e.what() << '\n';
+        msg << "[SPMod] " << e.what() << '\n';
         error = msg.str();
-
-        return retResult;
     }
 
     return retResult;
@@ -178,7 +95,7 @@ size_t PluginMngr::loadPlugins()
     if (errCode)
     {
         std::stringstream msg;
-        msg << "Error while loading plugins " << errCode.message() << '\n';
+        msg << "[SPMod] Error while loading plugins: " << errCode.message() << '\n';
         SERVER_PRINT(msg.str().c_str());
 
         return 0;
@@ -195,4 +112,9 @@ size_t PluginMngr::loadPlugins()
         }
     }
     return m_plugins.size();
+}
+
+void PluginMngr::detachPlugins()
+{
+    m_plugins.clear();
 }
