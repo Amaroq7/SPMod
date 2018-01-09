@@ -42,7 +42,13 @@ bool SPGlobal::addModule(sp_nativeinfo_t *natives, const char *name, sp_api_t ap
     if (m_modulesNames.find(name) != m_modulesNames.end())
         return false;
 
-    m_modulesNames.insert({ name, natives });
+    NativeDef nativesDef;
+    nativesDef.natives = natives;
+    size_t numNatives = 0;
+    while ((natives + numNatives)->func) { ++numNatives; };
+    nativesDef.num = numNatives;
+
+    m_modulesNames.insert({ name, nativesDef });
 
     return true;
 }

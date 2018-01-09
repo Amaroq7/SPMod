@@ -57,27 +57,26 @@ Plugin::Plugin(size_t id, const std::string &identity, const fs::path &path)
     m_identity = identity;
     m_runtime = plugin;
 
-    auto iNativesNum = plugin->GetNativesNum();
-    for (const auto &entry : gSPGlobal->getModulesList())
+    auto nativesNum = plugin->GetNativesNum();
+    for (uint32_t index = 0; index < nativesNum; ++index)
     {
-        if (!entry.second->name || !entry.second->func)
+        const sp_native_t *native = m_runtime->GetNative(index);
+
+        if (native->status == SP_NATIVE_BOUND)
             continue;
 
-        if (!entry.second->name && !entry.second->func)
-            break;
-
-        for (uint32_t index = 0; index < iNativesNum; index++)
+        for (const auto &entry : gSPGlobal->getModulesList())
         {
-            const sp_native_t *native = m_runtime->GetNative(index);
+            for (auto nativePos = 0U; nativePos <= entry.second.num; ++nativePos)
+            {
+                auto nativeDef = entry.second.natives + nativePos;
 
-            if (native->status == SP_NATIVE_BOUND)
-                continue;
+                if (std::strcmp(native->name, nativeDef->name))
+                    continue;
 
-            if (std::strcmp(native->name, entry.second->name))
-                continue;
-
-            plugin->UpdateNativeBinding(index, entry.second->func, 0, nullptr);
-            break;
+                plugin->UpdateNativeBinding(index, nativeDef->func, 0, nullptr);
+                break;
+            }
         }
     }
 

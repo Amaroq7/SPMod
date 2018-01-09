@@ -66,11 +66,18 @@ public:
     #endif
 
 private:
+
+    struct NativeDef
+    {
+        sp_nativeinfo_t *natives;
+        size_t num;
+    };
+
     fs::path m_pyScriptsDir;
     fs::path m_pyModDir;
     std::unique_ptr<PluginMngr> m_pluginManager;
     std::string m_modName;
-    std::unordered_map<std::string, sp_nativeinfo_t *> m_modulesNames;
+    std::unordered_map<std::string, NativeDef> m_modulesNames;
     SourcePawn::ISourcePawnFactory *m_spFactory;
 
     //SourcePawn library handle
