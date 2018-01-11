@@ -282,7 +282,7 @@ IForward *ForwardMngr::createForward(const char *name,
     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
 
     // Get passed params types
-    std::va_list paramsList;
+    va_list paramsList;
     va_start(paramsList, params);
     for (auto i = 0U; i < params; ++i)
     {
@@ -301,7 +301,7 @@ IForward *ForwardMngr::createForward(const char *name,
 IForward *ForwardMngr::findForward(const char *name)
 {
     auto iter = m_forwards.find(name);
-    
+
     if (iter != m_forwards.end())
         return iter->second.get();
 
