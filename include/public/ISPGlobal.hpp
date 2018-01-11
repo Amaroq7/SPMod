@@ -49,6 +49,7 @@ namespace SPMod
         virtual const char *getModName() const = 0;
         virtual IPluginMngr *getPluginManager() const = 0;
         virtual bool addModule(sp_nativeinfo_t *natives, const char *name, sp_api_t api = SPMOD_API_VERSION) = 0;
+        virtual IForwardMngr *getForwardManager() const = 0;
         virtual SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const = 0;
 
     protected:

@@ -19,20 +19,6 @@
 
 std::unique_ptr<SPGlobal> gSPGlobal;
 
-SPGlobal::~SPGlobal()
-{
-#ifdef SP_POSIX
-    dlclose(m_SPLibraryHandle);
-#else
-    //TODO: windows
-#endif
-}
-
-IPluginMngr *SPGlobal::getPluginManager() const
-{
-    return m_pluginManager.get();
-}
-
 bool SPGlobal::addModule(sp_nativeinfo_t *natives, const char *name, sp_api_t api)
 {
     //TODO: Error reporting?

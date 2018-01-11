@@ -17,9 +17,10 @@
 
 #pragma once
 
-#include <spmod.hpp>
+#include "spmod.hpp"
 
 class PluginMngr;
+class ForwardMngr;
 
 class SPGlobal : public ISPGlobal
 {
@@ -27,9 +28,17 @@ public:
     SPGlobal() = delete;
     SPGlobal(const fs::path &dllDir) : m_pyModDir(dllDir.parent_path().parent_path()),
                                         m_pluginManager(nullptr),
+                                        m_forwardManager(std::make_unique<ForwardMngr>()),
                                         m_spFactory(nullptr)
                                         { }
-    ~SPGlobal();
+    ~SPGlobal()
+    {
+        #ifdef SP_POSIX
+            dlclose(m_SPLibraryHandle);
+        #else
+            // TODO: windows
+        #endif
+    }
 
     // ISPGlobal
     const char *getHome() const override
@@ -40,12 +49,20 @@ public:
     {
         return m_modName.c_str();
     }
-    IPluginMngr *getPluginManager() const override;
-    bool addModule(sp_nativeinfo_t *natives, const char *name, sp_api_t api) override;
+    IPluginMngr *getPluginManager() const override
+    {
+        return reinterpret_cast<IPluginMngr *>(m_pluginManager.get());
+    }
+    IForwardMngr *getForwardManager() const override
+    {
+        return reinterpret_cast<IForwardMngr *>(m_forwardManager.get());
+    }
     SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const override
     {
         return m_spFactory->CurrentEnvironment();
     }
+
+    bool addModule(sp_nativeinfo_t *natives, const char *name, sp_api_t api) override;
 
     // SPGlobal
     void initPluginManager();
@@ -76,11 +93,12 @@ private:
     fs::path m_pyScriptsDir;
     fs::path m_pyModDir;
     std::unique_ptr<PluginMngr> m_pluginManager;
+    std::unique_ptr<ForwardMngr> m_forwardManager;
     std::string m_modName;
     std::unordered_map<std::string, NativeDef> m_modulesNames;
     SourcePawn::ISourcePawnFactory *m_spFactory;
 
-    //SourcePawn library handle
+    // SourcePawn library handle
     #ifdef SP_POSIX
     void *m_SPLibraryHandle;
     #else

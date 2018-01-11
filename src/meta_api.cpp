@@ -75,7 +75,8 @@ static bool InitializeSourcePawn()
     }
 
 #ifdef SP_POSIX
-    auto getFactoryFunc = reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>(dlsym(libraryHandle, "GetSourcePawnFactory"));
+    auto getFactoryFunc = reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>
+                                (dlsym(libraryHandle, "GetSourcePawnFactory"));
 #else
     //TODO: windows
 #endif
