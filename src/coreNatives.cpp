@@ -17,6 +17,7 @@
 
 #include <spmod.hpp>
 
+// native void printToConsole(const char[] text)
 static cell_t core_printToConsole(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     char *stringToPrint;
@@ -27,7 +28,49 @@ static cell_t core_printToConsole(SourcePawn::IPluginContext *ctx, const cell_t 
     return 1;
 }
 
-sp_nativeinfo_t gCoreNatives[] = {
-    { "printToConsole", core_printToConsole },
-    { nullptr, nullptr }
+// native int precacheModel(const char[] model)
+static cell_t core_precacheModel(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    char *modelToPrecache;
+    ctx->LocalToString(params[1], &modelToPrecache);
+
+    return PRECACHE_MODEL(STRING(ALLOC_STRING(modelToPrecache)));
+}
+
+// native int precacheSound(const char[] sound)
+static cell_t core_precacheSound(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    char *soundToPrecache;
+    ctx->LocalToString(params[1], &soundToPrecache);
+
+    return PRECACHE_SOUND(STRING(ALLOC_STRING(soundToPrecache)));
+}
+
+// native int precacheGeneric(const char[] generic)
+static cell_t core_precacheGeneric(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    char *genericToPrecache;
+    ctx->LocalToString(params[1], &genericToPrecache);
+
+    return PRECACHE_GENERIC(STRING(ALLOC_STRING(genericToPrecache)));
+}
+
+// native int numToString(int num, char[] converted_num, int size)
+static cell_t core_NumToString(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    auto numToConvert = params[1];
+    auto numConverted = std::to_string(numToConvert);
+    ctx->StringToLocal(params[2], params[3], numConverted.c_str());
+
+    return numConverted.length();
+}
+
+sp_nativeinfo_t gCoreNatives[] =
+{
+    { "printToConsole",     core_printToConsole     },
+    { "precacheModel",      core_precacheModel      },
+    { "precacheSound",      core_precacheSound      },
+    { "precacheGeneric",    core_precacheGeneric    },
+    { "numToString",        core_NumToString        },
+    { nullptr,              nullptr                 }
 };
