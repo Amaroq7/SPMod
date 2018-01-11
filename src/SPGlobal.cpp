@@ -67,3 +67,11 @@ void SPGlobal::setSPFactory(void *library, SourcePawn::ISourcePawnFactory *facto
     m_spFactory->NewEnvironment();
     m_SPLibraryHandle = library;
 };
+
+void SPGlobal::initDefaultsForwards()
+{
+    using et = IForward::ExecType;
+    using param = IForward::ParamType;
+    auto paramsList = { param::CELL, param::STRING, param::STRING, param::STRINGEX };
+    m_forwardManager->createForward("OnClientConnect", et::STOP, paramsList);
+}

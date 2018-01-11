@@ -82,6 +82,8 @@ public:
     //void setSPFactory(void *library, SourcePawn::ISourcePawnFactory *factory);
     #endif
 
+    void initDefaultsForwards();
+
 private:
 
     struct NativeDef

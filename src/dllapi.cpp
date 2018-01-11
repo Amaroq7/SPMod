@@ -17,6 +17,28 @@
 
 #include <spmod.hpp>
 
+qboolean dllapi_ClientConnect(edict_t *pEntity,
+                                const char *pszName [[maybe_unused]],
+                                const char *pszAddress [[maybe_unused]],
+                                char szRejectReason[128])
+{
+    auto *fwdPlayerConnect = gSPGlobal->getForwardManager()->findForward("OnClientConnect");
+    using sflags = IForward::StringFlags;
+
+    cell_t result;
+
+    fwdPlayerConnect->pushCell(ENTINDEX(pEntity));
+    fwdPlayerConnect->pushString(pszName);
+    fwdPlayerConnect->pushString(pszAddress);
+    fwdPlayerConnect->pushStringEx(szRejectReason, 128, sflags::UTF8 | sflags::COPY, true);
+    fwdPlayerConnect->execFunc(&result);
+
+    if (result == IForward::ReturnValue::PLUGIN_STOP)
+        RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
+
+    RETURN_META_VALUE(MRES_IGNORED, TRUE);
+}
+
 void dllapi_ServerActivate(edict_t *pEdictList [[maybe_unused]],
                             int edictCount [[maybe_unused]],
                             int clientMax [[maybe_unused]])
@@ -48,7 +70,7 @@ DLL_FUNCTIONS gDllFunctionTable =
 	nullptr,					// pfnSaveGlobalState
 	nullptr,					// pfnRestoreGlobalState
 	nullptr,					// pfnResetGlobalState
-	nullptr,					// pfnClientConnect
+	dllapi_ClientConnect,		// pfnClientConnect
 	nullptr,					// pfnClientDisconnect
 	nullptr,					// pfnClientKill
 	nullptr,					// pfnClientPutInServer

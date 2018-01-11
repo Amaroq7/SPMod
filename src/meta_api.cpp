@@ -213,6 +213,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
 
     gSPGlobal->addModule(gCoreNatives, "core", SPMOD_API_VERSION);
     gSPGlobal->initPluginManager();
+    gSPGlobal->initDefaultsForwards();
 
     printInfo();
 
