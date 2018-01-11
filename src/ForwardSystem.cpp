@@ -131,8 +131,9 @@ bool Forward::pushStringEx(char *buffer, size_t size, StringFlags sflags, bool c
 
 bool Forward::execFunc(cell_t *result)
 {
-    // If passed number of passed arguments doesn't match required one fail now
-    if (m_paramsNum != m_currentPos)
+    // If passed number of passed arguments is lower then required one fail now
+    // May be pushed more, but they won't be passed either way
+    if (m_paramsNum > m_currentPos)
         return false;
 
     // Forward for one plugin
