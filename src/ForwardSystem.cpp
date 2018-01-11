@@ -174,7 +174,7 @@ bool Forward::execFunc(cell_t *result)
 
             funcToExecute->Execute(&tempResult);
 
-            if (m_execType != ExecType::IGNORE)
+            if (m_execType & ExecType::IGNORE)
                 continue;
 
             if (returnValue < tempResult)
