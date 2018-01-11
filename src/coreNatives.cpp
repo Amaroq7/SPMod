@@ -65,6 +65,17 @@ static cell_t core_NumToString(SourcePawn::IPluginContext *ctx, const cell_t *pa
     return numConverted.length();
 }
 
+static cell_t core_CopyString(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    char *destArray, *stringToCopy;
+    ctx->LocalToString(params[1], &destArray);
+    ctx->LocalToString(params[3], &stringToCopy);
+
+    std::strncpy(destArray, stringToCopy, params[2]);
+
+    return 1;
+}
+
 sp_nativeinfo_t gCoreNatives[] =
 {
     { "printToConsole",     core_printToConsole     },
@@ -72,5 +83,6 @@ sp_nativeinfo_t gCoreNatives[] =
     { "precacheSound",      core_precacheSound      },
     { "precacheGeneric",    core_precacheGeneric    },
     { "numToString",        core_NumToString        },
+    { "copyString",         core_CopyString         },
     { nullptr,              nullptr                 }
 };
