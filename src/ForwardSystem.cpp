@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "forward.hpp"
+#include "ForwardSystem.hpp"
 
 bool Forward::pushCell(cell_t cell)
 {
@@ -193,7 +193,15 @@ bool Forward::execFunc(cell_t *result)
             *result = returnValue;
     }
 
+    m_currentPos = 0;
     return true;
+}
+
+void Forward::resetParams()
+{
+    m_currentPos = 0;
+    // Clear array of pushed params
+    m_params.fill(ForwardParam());
 }
 
 void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
@@ -257,4 +265,45 @@ void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
             }
         }
     }
+}
+
+IForward *ForwardMngr::createForward(const char *name,
+                                        IForward::ExecType exec,
+                                        size_t params,
+                                        ...)
+{
+    if (params > SP_MAX_EXEC_PARAMS)
+        return nullptr;
+
+    // Forward exists
+    if (m_forwards.find(name) != m_forwards.end())
+        return nullptr;
+
+    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
+
+    // Get passed params types
+    std::va_list paramsList;
+    va_start(paramsList, params);
+    for (auto i = 0U; i < params; ++i)
+    {
+        forwardParams.at(i) = static_cast<IForward::ParamType>(va_arg(paramsList, int));
+    }
+    va_end(paramsList);
+
+    auto result = m_forwards.insert_or_assign(name, std::make_shared<Forward>(name,
+                                                std::move(forwardParams),
+                                                exec,
+                                                nullptr));
+
+    return result.first->second.get();
+}
+
+IForward *ForwardMngr::findForward(const char *name)
+{
+    auto iter = m_forwards.find(name);
+    
+    if (iter != m_forwards.end())
+        return iter->second.get();
+
+    return nullptr;
 }

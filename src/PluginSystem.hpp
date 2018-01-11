@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <spmod.hpp>
+#include "spmod.hpp"
 
 class Plugin final : public IPlugin
 {
@@ -100,4 +100,39 @@ private:
     std::string m_author;
     std::string m_url;
     size_t m_id;
+};
+
+class PluginMngr final : public IPluginMngr
+{
+public:
+    PluginMngr(const fs::path &pathToScripts)
+    {
+        m_scriptsPath = std::move(pathToScripts);
+    }
+    ~PluginMngr() = default;
+
+    // IPluginMngr
+    IPlugin *loadPlugin(const char *name, char *error, size_t size) override;
+    IPlugin *getPlugin(size_t index) override;
+    IPlugin *getPlugin(const char *name) override;
+    size_t getPluginsNum() const override
+    {
+        return m_plugins.size();
+    }
+
+    // PluginMngr
+    bool loadPluginFs(const fs::path &path, std::string &error);
+    const auto &getPluginsList() const
+    {
+        return m_plugins;
+    }
+    void detachPlugins()
+    {
+        m_plugins.clear();
+    }
+    size_t loadPlugins();
+
+private:
+    std::unordered_map<std::string, std::shared_ptr<Plugin>> m_plugins;
+    fs::path m_scriptsPath;
 };

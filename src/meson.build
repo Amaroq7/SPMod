@@ -1,13 +1,12 @@
-sourceFiles = files('plugin.cpp',
-                    'pluginMngr.cpp',
-                    'coreNatives.cpp',
+sourceFiles = files('coreNatives.cpp',
                     'h_export.cpp',
                     'engine_api.cpp',
                     'dllapi.cpp',
                     'meta_api.cpp',
                     'SPGlobal.cpp',
                     'rehlds_init.cpp',
-                    'forward.cpp')
+                    'ForwardSystem.cpp',
+                    'PluginSystem.cpp')
 
 cppArgs = [
   '-stdlib=libc++',

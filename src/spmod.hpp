@@ -32,6 +32,7 @@ namespace fs = std::experimental::filesystem;
 
 // C
 #include <cstring>
+#include <cstdarg>
 
 // Sourcepawn
 #include <sp_vm_api.h>
@@ -57,8 +58,8 @@ extern bool initRehldsApi();
 using namespace SPMod;
 
 // SPMod specific
-#include <plugin.hpp>
-#include <pluginMngr.hpp>
+#include <PluginSystem.hpp>
+#include <ForwardSystem.hpp>
 #include <SPGlobal.hpp>
 
 constexpr auto gSPModAuthor = "SPMod Development Team";

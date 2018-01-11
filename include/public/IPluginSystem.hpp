@@ -17,8 +17,6 @@
 
 #pragma once
 
-#include <sp_vm_api.h>
-
 namespace SPMod
 {
     class IPlugin
@@ -35,5 +33,18 @@ namespace SPMod
 
     protected:
         virtual ~IPlugin() {};
+    };
+
+    class IPluginMngr
+    {
+    public:
+        virtual IPlugin *loadPlugin(const char *name, char *error, size_t size) = 0;
+        virtual IPlugin *getPlugin(size_t index) = 0;
+        virtual IPlugin *getPlugin(const char *name) = 0;
+
+        virtual size_t getPluginsNum() const = 0;
+
+    protected:
+        virtual ~IPluginMngr() {};
     };
 }

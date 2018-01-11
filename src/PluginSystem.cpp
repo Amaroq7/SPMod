@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <plugin.hpp>
+#include "PluginSystem.hpp"
 
 Plugin::Plugin(size_t id, const std::string &identity, const fs::path &path)
 {
@@ -94,4 +94,91 @@ Plugin::~Plugin()
 
     if (endFunction)
         endFunction->Execute(&result);
+}
+
+IPlugin *PluginMngr::getPlugin(size_t index)
+{
+    for (const auto &entry : m_plugins)
+    {
+        if (entry.second->getId() == index)
+            return entry.second.get();
+    }
+    return nullptr;
+}
+
+IPlugin *PluginMngr::getPlugin(const char *name)
+{
+    auto result = m_plugins.find(name);
+
+    return (result != m_plugins.end()) ? result->second.get() : nullptr;
+}
+
+IPlugin *PluginMngr::loadPlugin(const char *name, char *error, size_t size)
+{
+    std::string errorMsg;
+
+    if (!loadPluginFs(m_scriptsPath / name, errorMsg))
+    {
+        std::strncpy(error, errorMsg.c_str(), size);
+        return nullptr;
+    }
+
+    return m_plugins.find(name)->second.get();
+}
+
+bool PluginMngr::loadPluginFs(const fs::path &path, std::string &error)
+{
+    auto pluginId = m_plugins.size();
+    auto retResult = false;
+
+    if (path.extension().string() != ".smx")
+    {
+        std::stringstream msg;
+        msg << "[SPMod] Unrecognized file format: " << path << '\n';
+        error = msg.str();
+
+        return retResult;
+    }
+
+    auto fileName = path.stem().string();
+    try
+    {
+        auto result = m_plugins.try_emplace(fileName, std::make_shared<Plugin>(pluginId, fileName, path));
+        retResult = result.second;
+    }
+    catch (const std::exception &e)
+    {
+        std::stringstream msg;
+        msg << "[SPMod] " << e.what() << '\n';
+        error = msg.str();
+    }
+
+    return retResult;
+}
+
+size_t PluginMngr::loadPlugins()
+{
+    std::error_code errCode;
+    auto directoryIter = fs::directory_iterator(m_scriptsPath, errCode);
+
+    if (errCode)
+    {
+        std::stringstream msg;
+        msg << "[SPMod] Error while loading plugins: " << errCode.message() << '\n';
+        SERVER_PRINT(msg.str().c_str());
+
+        return 0;
+    }
+
+    std::string errorMsg;
+    for (const auto &entry : directoryIter)
+    {
+        auto filePath = entry.path();
+        if (!loadPluginFs(filePath, errorMsg))
+        {
+            SERVER_PRINT(errorMsg.c_str());
+            errorMsg.clear();
+        }
+    }
+    return m_plugins.size();
 }

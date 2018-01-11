@@ -17,7 +17,9 @@
 
 #pragma once
 
-#include <IPluginMngr.hpp>
+#include <sp_vm_api.h>
+#include <IForwardSystem.hpp>
+#include <IPluginSystem.hpp>
 
 // Platform defines
 #ifdef _WIN32
