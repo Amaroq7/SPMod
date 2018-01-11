@@ -26,10 +26,11 @@ class Forward final : public IForward
 public:
     Forward(const std::string &name,
             std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> &&paramstypes,
+            size_t params,
             IForward::ExecType type,
             Plugin *plugin) : m_name(name), m_execType(type),
                                 m_paramTypes(paramstypes), m_plugin(plugin),
-                                m_currentPos(0)
+                                m_currentPos(0), m_paramsNum(params)
                                 { }
     ~Forward() = default;
 

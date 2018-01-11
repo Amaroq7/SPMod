@@ -293,6 +293,7 @@ IForward *ForwardMngr::createForward(const char *name,
 
     auto result = m_forwards.insert_or_assign(name, std::make_shared<Forward>(name,
                                                 std::move(forwardParams),
+                                                params,
                                                 exec,
                                                 nullptr));
 
