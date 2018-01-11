@@ -44,14 +44,14 @@ void SPGlobal::initPluginManager()
     if (m_pluginManager)
         return;
 
-    m_pluginManager = std::make_unique<PluginMngr>(m_pyScriptsDir);
+    m_pluginManager = std::make_unique<PluginMngr>(m_SPModScriptsDir);
 }
 
 void SPGlobal::setScriptsDir(const std::string &folder)
 {
-    fs::path pathToScripts(m_pyModDir);
+    fs::path pathToScripts(m_SPModDir);
     pathToScripts /= folder;
-    m_pyScriptsDir = std::move(pathToScripts);
+    m_SPModScriptsDir = std::move(pathToScripts);
 }
 
 #ifdef SP_POSIX

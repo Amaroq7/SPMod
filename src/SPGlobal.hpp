@@ -26,7 +26,7 @@ class SPGlobal : public ISPGlobal
 {
 public:
     SPGlobal() = delete;
-    SPGlobal(const fs::path &dllDir) : m_pyModDir(dllDir.parent_path().parent_path()),
+    SPGlobal(const fs::path &dllDir) : m_SPModDir(dllDir.parent_path().parent_path()),
                                         m_pluginManager(nullptr),
                                         m_forwardManager(std::make_unique<ForwardMngr>()),
                                         m_spFactory(nullptr)
@@ -43,7 +43,7 @@ public:
     // ISPGlobal
     const char *getHome() const override
     {
-        return m_pyModDir.c_str();
+        return m_SPModDir.c_str();
     }
     const char *getModName() const override
     {
@@ -90,8 +90,8 @@ private:
         size_t num;
     };
 
-    fs::path m_pyScriptsDir;
-    fs::path m_pyModDir;
+    fs::path m_SPModScriptsDir;
+    fs::path m_SPModDir;
     std::unique_ptr<PluginMngr> m_pluginManager;
     std::unique_ptr<ForwardMngr> m_forwardManager;
     std::string m_modName;
