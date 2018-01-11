@@ -94,7 +94,11 @@ static bool InitializeSourcePawn()
     if (!SPFactory)
     {
         LOG_CONSOLE(PLID, "[SPMod] Wrong SourcePawn library version!");
+        #ifdef SP_POSIX
         dlclose(libraryHandle);
+        #else
+        // TODO: windows
+        #endif
         return false;
     }
 
