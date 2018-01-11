@@ -6,7 +6,8 @@ sourceFiles = files('plugin.cpp',
                     'dllapi.cpp',
                     'meta_api.cpp',
                     'SPGlobal.cpp',
-                    'rehlds_init.cpp')
+                    'rehlds_init.cpp',
+                    'forward.cpp')
 
 cppArgs = [
   '-stdlib=libc++',

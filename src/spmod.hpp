@@ -25,6 +25,8 @@
 #include <unordered_map>
 #include <experimental/filesystem>
 #include <exception>
+#include <array>
+#include <variant>
 
 namespace fs = std::experimental::filesystem;
 
