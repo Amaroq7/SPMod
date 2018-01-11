@@ -99,11 +99,16 @@ public:
     IForward *findForward(const char *name) override;
 
     // ForwardMngr
+    Forward *createForward(const std::string &name,
+                            IForward::ExecType exec,
+                            const std::initializer_list<IForward::ParamType> &params);
+
     void clearForwards()
     {
         m_forwards.clear();
     }
 
 private:
+    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> m_paramsToPush;
     std::unordered_map<std::string, std::shared_ptr<Forward>> m_forwards;
 };

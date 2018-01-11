@@ -309,3 +309,20 @@ IForward *ForwardMngr::findForward(const char *name)
 
     return nullptr;
 }
+
+Forward *ForwardMngr::createForward(const std::string &name,
+                                    IForward::ExecType exec,
+                                    const std::initializer_list<IForward::ParamType> &params)
+{
+    auto paramsNum = params.size();
+    if (paramsNum > SP_MAX_EXEC_PARAMS)
+        return nullptr;
+
+    std::copy(params.begin(), params.end(), m_paramsToPush.begin());
+
+    auto forwardPtr = std::make_shared<Forward>(name, std::move(m_paramsToPush),
+                                                paramsNum, exec, nullptr);
+
+    m_forwards.insert_or_assign(name, forwardPtr);
+    return forwardPtr.get();
+}
