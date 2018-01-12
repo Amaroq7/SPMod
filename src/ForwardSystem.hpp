@@ -27,14 +27,23 @@ public:
     Forward(const std::string &name,
             std::array<ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
             size_t params,
-            ExecType type,
-            Plugin *plugin) : m_name(name),
+            ExecType type) : m_name(name),
                                 m_execType(type),
                                 m_paramTypes(paramstypes),
-                                m_plugin(plugin),
+                                m_plugin(nullptr),
                                 m_currentPos(0),
                                 m_paramsNum(params)
                                 { }
+    Forward(const std::string &name,
+            std::array<ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
+            size_t params,
+            const Plugin *plugin) : m_name(name),
+                                    m_execType(ExecType::HIGHEST),
+                                    m_paramTypes(paramstypes),
+                                    m_plugin(plugin),
+                                    m_currentPos(0),
+                                    m_paramsNum(params)
+                                    { }
     ~Forward() = default;
 
     // IForward
@@ -42,9 +51,9 @@ public:
     {
         return m_name.c_str();
     }
-    IPlugin *getPlugin() const override
+    const IPlugin *getPlugin() const override
     {
-        return reinterpret_cast<IPlugin *>(m_plugin);
+        return reinterpret_cast<const IPlugin *>(m_plugin);
     }
     bool pushCell(cell_t cell) override;
     bool pushCellPtr(cell_t *cell,
@@ -92,7 +101,7 @@ private:
     ExecType m_execType;
     std::array<ParamType, SP_MAX_EXEC_PARAMS> m_paramTypes;
     std::array<ForwardParam, SP_MAX_EXEC_PARAMS> m_params;
-    Plugin *m_plugin;
+    const Plugin *m_plugin;
     size_t m_currentPos;
     size_t m_paramsNum;
 };
@@ -106,7 +115,6 @@ public:
     // IForwardMngr
     IForward *createForward(const char *name,
                             IForward::ExecType exec,
-                            IPlugin *plugin,
                             size_t params,
                             ...) override;
 
@@ -114,9 +122,14 @@ public:
 
     // ForwardMngr
     Forward *createForward(const std::string &name,
-                            Plugin *plugin,
                             Forward::ExecType exec,
                             const std::initializer_list<Forward::ParamType> &params);
+
+    bool addForward(std::shared_ptr<Forward> forward)
+    {
+        return m_forwards.insert(std::make_pair(forward->getNameString(),
+                                                forward)).second;
+    }
 
     void clearForwards()
     {
@@ -124,6 +137,5 @@ public:
     }
 
 private:
-    std::array<Forward::ParamType, SP_MAX_EXEC_PARAMS> m_paramsToPush;
     std::unordered_map<std::string, std::shared_ptr<Forward>> m_forwards;
 };

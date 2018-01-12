@@ -266,7 +266,6 @@ void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
 
 IForward *ForwardMngr::createForward(const char *name,
                                         IForward::ExecType exec,
-                                        IPlugin *plugin,
                                         size_t params,
                                         ...)
 {
@@ -287,8 +286,7 @@ IForward *ForwardMngr::createForward(const char *name,
     auto forwardPtr = std::make_shared<Forward>(name,
                                                 forwardParams,
                                                 params,
-                                                exec,
-                                                reinterpret_cast<Plugin *>(plugin));
+                                                exec);
 
     auto result = m_forwards.insert(std::make_pair(name, forwardPtr));
 
@@ -309,7 +307,6 @@ IForward *ForwardMngr::findForward(const char *name)
 }
 
 Forward *ForwardMngr::createForward(const std::string &name,
-                                    Plugin *plugin,
                                     Forward::ExecType exec,
                                     const std::initializer_list<Forward::ParamType> &params)
 {
@@ -318,13 +315,13 @@ Forward *ForwardMngr::createForward(const std::string &name,
     if (paramsNum > SP_MAX_EXEC_PARAMS)
         return nullptr;
 
-    std::copy(params.begin(), params.end(), m_paramsToPush.begin());
+    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
+    std::copy(params.begin(), params.end(), forwardParams.begin());
 
     auto forwardPtr = std::make_shared<Forward>(name,
-                                                m_paramsToPush,
+                                                forwardParams,
                                                 paramsNum,
-                                                exec,
-                                                plugin);
+                                                exec);
 
     auto result = m_forwards.insert(std::make_pair(name, forwardPtr));
 

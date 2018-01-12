@@ -19,6 +19,8 @@
 
 #include "spmod.hpp"
 
+class Forward;
+
 class Plugin final : public IPlugin
 {
 public:
@@ -31,42 +33,45 @@ public:
     Plugin(size_t id,
             const std::string &identity,
             const fs::path &path);
-            
+
     ~Plugin();
 
     // IPlugin
-    const char *getName() const
+    const char *getName() const override
     {
         return m_name.c_str();
     }
-    const char *getVersion() const
+    const char *getVersion() const override
     {
         return m_version.c_str();
     }
-    const char *getAuthor() const
+    const char *getAuthor() const override
     {
         return m_author.c_str();
     }
-    const char *getUrl() const
+    const char *getUrl() const override
     {
         return m_url.c_str();
     }
-    const char *getIndentity() const
+    const char *getIndentity() const override
     {
         return m_identity.c_str();
     }
-    const char *getFileName() const
+    const char *getFileName() const override
     {
         return m_filename.c_str();
     }
-    size_t getId() const
+    size_t getId() const override
     {
         return m_id;
     }
-    SourcePawn::IPluginRuntime *getRuntime() const
+    SourcePawn::IPluginRuntime *getRuntime() const override
     {
         return m_runtime;
     }
+    IForward *createForward(const char *name,
+                            size_t params,
+                            ...) const override;
 
     // Plugin
     const auto &getNameString() const
@@ -93,6 +98,8 @@ public:
     {
         return m_filename;
     }
+    Forward *createForward(const std::string &name,
+                            const std::initializer_list<IForward::ParamType> &params) const;
 
 private:
     SourcePawn::IPluginRuntime *m_runtime;
