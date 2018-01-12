@@ -297,10 +297,15 @@ IForward *ForwardMngr::createForward(const char *name,
 
 IForward *ForwardMngr::findForward(const char *name)
 {
+    return findForwardCore(name).get();
+}
+
+std::shared_ptr<Forward> ForwardMngr::findForwardCore(const std::string &name)
+{
     auto iter = m_forwards.find(name);
 
     if (iter != m_forwards.end())
-        return iter->second.get();
+        return iter->second;
 
     return nullptr;
 }

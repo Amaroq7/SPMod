@@ -22,7 +22,7 @@ qboolean dllapi_ClientConnect(edict_t *pEntity,
                                 const char *pszAddress,
                                 char szRejectReason[128])
 {
-    auto *fwdPlayerConnect = gSPGlobal->getForwardManagerCore()->findForward("OnClientConnect");
+    auto fwdPlayerConnect = gSPGlobal->getForwardManagerCore()->findForwardCore("OnClientConnect");
     using sflags = IForward::StringFlags;
 
     cell_t result;
