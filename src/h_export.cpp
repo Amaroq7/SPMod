@@ -16,7 +16,7 @@
 */
 
 
-#include <spmod.hpp>
+#include "spmod.hpp"
 
 enginefuncs_t g_engfuncs;
 globalvars_t *gpGlobals;

@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <spmod.hpp>
+#include "spmod.hpp"
 
 qboolean dllapi_ClientConnect(edict_t *pEntity,
                                 const char *pszName [[maybe_unused]],

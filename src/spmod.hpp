@@ -58,9 +58,9 @@ extern bool initRehldsApi();
 using namespace SPMod;
 
 // SPMod specific
-#include <PluginSystem.hpp>
-#include <ForwardSystem.hpp>
-#include <SPGlobal.hpp>
+#include "PluginSystem.hpp"
+#include "ForwardSystem.hpp"
+#include "SPGlobal.hpp"
 
 constexpr auto gSPModAuthor = "SPMod Development Team";
 constexpr auto gSPModVersion = "1.0.0";

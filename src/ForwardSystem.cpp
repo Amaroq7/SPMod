@@ -147,9 +147,7 @@ bool Forward::execFunc(cell_t *result)
 
         // Pass params if there are any
         if (m_paramsNum)
-        {
             pushParamsToFunction(funcToExecute);
-        }
 
         if (funcToExecute->Execute(result) != SP_ERROR_NONE)
             return false;
@@ -169,9 +167,7 @@ bool Forward::execFunc(cell_t *result)
 
             // Pass params if there are any
             if (m_paramsNum)
-            {
                 pushParamsToFunction(funcToExecute);
-            }
 
             funcToExecute->Execute(&tempResult);
 
@@ -282,10 +278,10 @@ IForward *ForwardMngr::createForward(const char *name,
     // Get passed params types
     va_list paramsList;
     va_start(paramsList, params);
+
     for (auto i = 0U; i < params; ++i)
-    {
         forwardParams.at(i) = static_cast<IForward::ParamType>(va_arg(paramsList, int));
-    }
+
     va_end(paramsList);
 
     auto forwardPtr = std::make_shared<Forward>(name,
@@ -317,6 +313,7 @@ Forward *ForwardMngr::createForward(const std::string &name,
                                     const std::initializer_list<IForward::ParamType> &params)
 {
     auto paramsNum = params.size();
+    
     if (paramsNum > SP_MAX_EXEC_PARAMS)
         return nullptr;
 

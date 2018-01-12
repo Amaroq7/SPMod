@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <spmod.hpp>
+#include "spmod.hpp"
 
 // native void printToConsole(const char[] text)
 static cell_t core_printToConsole(SourcePawn::IPluginContext *ctx, const cell_t *params)
