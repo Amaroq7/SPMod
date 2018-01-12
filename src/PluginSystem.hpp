@@ -134,8 +134,11 @@ public:
     }
 
     // PluginMngr
-    bool loadPluginFs(const fs::path &path,
-                        std::string &error);
+    Plugin *loadPluginCore(const std::string &name,
+                            std::string *error);
+
+    Plugin *getPluginCore(size_t index);
+    Plugin *getPluginCore(const std::string &name);
 
     const auto &getPluginsList() const
     {
@@ -148,6 +151,8 @@ public:
     size_t loadPlugins();
 
 private:
+    bool _loadPlugin(const fs::path &path,
+                        std::string *error);
     std::unordered_map<std::string, std::shared_ptr<Plugin>> m_plugins;
     fs::path m_scriptsPath;
 };
