@@ -65,6 +65,14 @@ public:
     bool addModule(sp_nativeinfo_t *natives, const char *name, sp_api_t api) override;
 
     // SPGlobal
+    PluginMngr *getPluginManagerCore() const
+    {
+        return m_pluginManager.get();
+    }
+    ForwardMngr *getForwardManagerCore() const
+    {
+        return m_forwardManager.get();
+    }
     void initPluginManager();
     void setModName(const std::string &name)
     {

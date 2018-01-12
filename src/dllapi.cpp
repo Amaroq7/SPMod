@@ -22,7 +22,7 @@ qboolean dllapi_ClientConnect(edict_t *pEntity,
                                 const char *pszAddress,
                                 char szRejectReason[128])
 {
-    auto *fwdPlayerConnect = gSPGlobal->getForwardManager()->findForward("OnClientConnect");
+    auto *fwdPlayerConnect = gSPGlobal->getForwardManagerCore()->findForward("OnClientConnect");
     using sflags = IForward::StringFlags;
 
     cell_t result;
@@ -43,14 +43,12 @@ void dllapi_ServerActivate(edict_t *pEdictList [[maybe_unused]],
                             int edictCount [[maybe_unused]],
                             int clientMax [[maybe_unused]])
 {
-    auto pluginManager = static_cast<PluginMngr *>(gSPGlobal->getPluginManager());
-    pluginManager->loadPlugins();
+    gSPGlobal->getPluginManagerCore()->loadPlugins();
 }
 
 void dllapi_ServerDeactivate()
 {
-    auto pluginManager = static_cast<PluginMngr *>(gSPGlobal->getPluginManager());
-    pluginManager->detachPlugins();
+    gSPGlobal->getPluginManagerCore()->detachPlugins();
 }
 
 DLL_FUNCTIONS gDllFunctionTable =

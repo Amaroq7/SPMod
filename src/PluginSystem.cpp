@@ -116,14 +116,12 @@ IForward *Plugin::createForward(const char *name,
 
     va_end(paramsList);
 
-    auto fwdManager = static_cast<ForwardMngr *>(gSPGlobal->getForwardManager());
-
     auto forwardPtr = std::make_shared<Forward>(name,
                                                 forwardParams,
                                                 params,
                                                 this);
 
-    auto added = fwdManager->addForward(forwardPtr);
+    auto added = gSPGlobal->getForwardManagerCore()->addForward(forwardPtr);
 
     if (!added)
         return nullptr;
@@ -142,14 +140,12 @@ Forward *Plugin::createForward(const std::string &name,
     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
     std::copy(params.begin(), params.end(), forwardParams.begin());
 
-    auto fwdManager = static_cast<ForwardMngr *>(gSPGlobal->getForwardManager());
-
     auto forwardPtr = std::make_shared<Forward>(name,
                                                 forwardParams,
                                                 paramsNum,
                                                 this);
 
-    auto added = fwdManager->addForward(forwardPtr);
+    auto added = gSPGlobal->getForwardManagerCore()->addForward(forwardPtr);
 
     if (!added)
         return nullptr;

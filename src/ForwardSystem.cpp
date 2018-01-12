@@ -155,9 +155,8 @@ bool Forward::execFunc(cell_t *result)
     // Forward for all plugins
     else
     {
-        auto *pluginManager = static_cast<PluginMngr *>(gSPGlobal->getPluginManager());
         cell_t tempResult = 0, returnValue = 0;
-        for (const auto &entry : pluginManager->getPluginsList())
+        for (const auto &entry : gSPGlobal->getPluginManagerCore()->getPluginsList())
         {
             auto plugin = entry.second;
             auto *funcToExecute = plugin->getRuntime()->GetFunctionByName(m_name.c_str());

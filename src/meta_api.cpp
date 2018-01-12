@@ -129,11 +129,7 @@ void SPModInfoCommand()
         std::string arg(CMD_ARGV(1));
         if (arg == "plugins")
         {
-            auto pluginManager = static_cast<PluginMngr *>(gSPGlobal->getPluginManager());
-            if (!pluginManager)
-                return;
-
-            for (auto entry : pluginManager->getPluginsList())
+            for (auto entry : gSPGlobal->getPluginManagerCore()->getPluginsList())
             {
                 LOG_CONSOLE(PLID, "[%3d] %-15.15s %-11.10s %-11.20s %-11.20s\n",
                                     entry.second->getId(),
@@ -227,9 +223,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
 C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now [[maybe_unused]],
                             PL_UNLOAD_REASON reason [[maybe_unused]])
 {
-    auto pluginManager = static_cast<PluginMngr *>(gSPGlobal->getPluginManager());
-
-    pluginManager->detachPlugins();
+    gSPGlobal->getPluginManagerCore()->detachPlugins();
     gSPGlobal->getSPEnvironment()->Shutdown();
 
     return 1;
