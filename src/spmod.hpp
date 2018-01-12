@@ -19,7 +19,6 @@
 
 // STL C++
 #include <memory>
-#include <fstream>
 #include <vector>
 #include <sstream>
 #include <unordered_map>
