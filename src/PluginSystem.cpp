@@ -191,17 +191,17 @@ IPlugin *PluginMngr::loadPlugin(const char *name,
 std::shared_ptr<Plugin> PluginMngr::loadPluginCore(const std::string &name,
                                                     std::string *error)
 {
-    if (!_loadPlugin(m_scriptsPath / name, error))
+    auto plugin = _loadPlugin(m_scriptsPath / name, error);
+    if (!plugin)
         return nullptr;
 
-    return m_plugins.find(name)->second;
+    return plugin;
 }
 
-bool PluginMngr::_loadPlugin(const fs::path &path,
-                                std::string *error)
+std::shared_ptr<Plugin> PluginMngr::_loadPlugin(const fs::path &path,
+                                                std::string *error)
 {
     auto pluginId = m_plugins.size();
-    auto retResult = false;
 
     if (path.extension().string() != ".smx")
     {
@@ -209,23 +209,28 @@ bool PluginMngr::_loadPlugin(const fs::path &path,
         msg << "[SPMod] Unrecognized file format: " << path << '\n';
         *error = msg.str();
 
-        return retResult;
+        return nullptr;
     }
 
     auto fileName = path.stem().string();
+    std::shared_ptr<Plugin> plugin;
     try
     {
-        auto result = m_plugins.try_emplace(fileName, std::make_shared<Plugin>(pluginId, fileName, path));
-        retResult = result.second;
+        plugin = std::make_shared<Plugin>(pluginId, fileName, path);
+        
+        if (!m_plugins.try_emplace(fileName, plugin).second)
+            return nullptr;
     }
     catch (const std::exception &e)
     {
         std::stringstream msg;
         msg << "[SPMod] " << e.what() << '\n';
         *error = msg.str();
+
+        return nullptr;
     }
 
-    return retResult;
+    return plugin;
 }
 
 size_t PluginMngr::loadPlugins()

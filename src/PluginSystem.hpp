@@ -156,8 +156,8 @@ public:
     size_t loadPlugins();
 
 private:
-    bool _loadPlugin(const fs::path &path,
-                        std::string *error);
+    std::shared_ptr<Plugin> _loadPlugin(const fs::path &path,
+                                        std::string *error);
     std::unordered_map<std::string, std::shared_ptr<Plugin>> m_plugins;
     fs::path m_scriptsPath;
 };
