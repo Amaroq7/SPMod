@@ -310,8 +310,8 @@ IForward *ForwardMngr::findForward(const char *name)
 
 Forward *ForwardMngr::createForward(const std::string &name,
                                     Plugin *plugin,
-                                    IForward::ExecType exec,
-                                    const std::initializer_list<IForward::ParamType> &params)
+                                    Forward::ExecType exec,
+                                    const std::initializer_list<Forward::ParamType> &params)
 {
     auto paramsNum = params.size();
 

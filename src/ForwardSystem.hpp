@@ -25,9 +25,9 @@ class Forward final : public IForward
 {
 public:
     Forward(const std::string &name,
-            std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
+            std::array<ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
             size_t params,
-            IForward::ExecType type,
+            ExecType type,
             Plugin *plugin) : m_name(name),
                                 m_execType(type),
                                 m_paramTypes(paramstypes),
@@ -85,12 +85,12 @@ private:
                     char *> m_param;
         bool m_copyback;
         size_t m_size;
-        IForward::StringFlags m_stringFlags;
+        StringFlags m_stringFlags;
     };
 
     std::string m_name;
-    IForward::ExecType m_execType;
-    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> m_paramTypes;
+    ExecType m_execType;
+    std::array<ParamType, SP_MAX_EXEC_PARAMS> m_paramTypes;
     std::array<ForwardParam, SP_MAX_EXEC_PARAMS> m_params;
     Plugin *m_plugin;
     size_t m_currentPos;
@@ -115,8 +115,8 @@ public:
     // ForwardMngr
     Forward *createForward(const std::string &name,
                             Plugin *plugin,
-                            IForward::ExecType exec,
-                            const std::initializer_list<IForward::ParamType> &params);
+                            Forward::ExecType exec,
+                            const std::initializer_list<Forward::ParamType> &params);
 
     void clearForwards()
     {
@@ -124,6 +124,6 @@ public:
     }
 
 private:
-    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> m_paramsToPush;
+    std::array<Forward::ParamType, SP_MAX_EXEC_PARAMS> m_paramsToPush;
     std::unordered_map<std::string, std::shared_ptr<Forward>> m_forwards;
 };
