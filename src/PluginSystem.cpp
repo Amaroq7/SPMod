@@ -116,21 +116,11 @@ IForward *Plugin::createForward(const char *name,
 
     va_end(paramsList);
 
-    auto forwardPtr = std::make_shared<Forward>(name,
-                                                forwardParams,
-                                                params,
-                                                this);
-
-    auto added = gSPGlobal->getForwardManagerCore()->addForward(forwardPtr);
-
-    if (!added)
-        return nullptr;
-
-    return forwardPtr.get();
+    return _createForward(name, forwardParams, params).get();
 }
 
-Forward *Plugin::createForward(const std::string &name,
-                                const std::initializer_list<IForward::ParamType> &params) const
+std::shared_ptr<Forward> Plugin::createForwardCore(const std::string &name,
+                                                    const std::initializer_list<IForward::ParamType> &params) const
 {
     auto paramsNum = params.size();
 
@@ -140,51 +130,46 @@ Forward *Plugin::createForward(const std::string &name,
     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
     std::copy(params.begin(), params.end(), forwardParams.begin());
 
-    auto forwardPtr = std::make_shared<Forward>(name,
-                                                forwardParams,
-                                                paramsNum,
-                                                this);
+    return _createForward(name, forwardParams, paramsNum);
+}
 
-    auto added = gSPGlobal->getForwardManagerCore()->addForward(forwardPtr);
+std::shared_ptr<Forward> Plugin::_createForward(const std::string &name,
+                                                std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramlist,
+                                                size_t paramsnum) const
+{
+    auto forwardPtr = std::make_shared<Forward>(name, paramlist, paramsnum, this);
 
-    if (!added)
+    if (!gSPGlobal->getForwardManagerCore()->addForward(forwardPtr))
         return nullptr;
 
-    return forwardPtr.get();
-}
-
-IPlugin *PluginMngr::getPlugin(size_t index)
-{
-    for (const auto &entry : m_plugins)
-    {
-        if (entry.second->getId() == index)
-            return entry.second.get();
-    }
-    return nullptr;
-}
-
-Plugin *PluginMngr::getPluginCore(const std::string &name)
-{
-    auto result = m_plugins.find(name);
-
-    return (result != m_plugins.end()) ? result->second.get() : nullptr;
-}
-
-Plugin *PluginMngr::getPluginCore(size_t index)
-{
-    for (const auto &entry : m_plugins)
-    {
-        if (entry.second->getId() == index)
-            return entry.second.get();
-    }
-    return nullptr;
+    return forwardPtr;
 }
 
 IPlugin *PluginMngr::getPlugin(const char *name)
 {
+    return getPluginCore(name).get();
+}
+
+IPlugin *PluginMngr::getPlugin(size_t index)
+{
+    return getPluginCore(index).get();
+}
+
+std::shared_ptr<Plugin> PluginMngr::getPluginCore(const std::string &name)
+{
     auto result = m_plugins.find(name);
 
-    return (result != m_plugins.end()) ? result->second.get() : nullptr;
+    return (result != m_plugins.end()) ? result->second : nullptr;
+}
+
+std::shared_ptr<Plugin> PluginMngr::getPluginCore(size_t index)
+{
+    for (const auto &entry : m_plugins)
+    {
+        if (entry.second->getId() == index)
+            return entry.second;
+    }
+    return nullptr;
 }
 
 IPlugin *PluginMngr::loadPlugin(const char *name,
@@ -192,23 +177,24 @@ IPlugin *PluginMngr::loadPlugin(const char *name,
                                 size_t size)
 {
     std::string errorMsg;
+    auto plugin = loadPluginCore(name, &errorMsg);
 
-    if (!_loadPlugin(m_scriptsPath / name, &errorMsg))
+    if (!plugin)
     {
         std::strncpy(error, errorMsg.c_str(), size);
         return nullptr;
     }
 
-    return m_plugins.find(name)->second.get();
+    return plugin.get();
 }
 
-Plugin *PluginMngr::loadPluginCore(const std::string &name,
-                                    std::string *error)
+std::shared_ptr<Plugin> PluginMngr::loadPluginCore(const std::string &name,
+                                                    std::string *error)
 {
     if (!_loadPlugin(m_scriptsPath / name, error))
         return nullptr;
 
-    return m_plugins.find(name)->second.get();
+    return m_plugins.find(name)->second;
 }
 
 bool PluginMngr::_loadPlugin(const fs::path &path,

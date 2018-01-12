@@ -310,9 +310,9 @@ std::shared_ptr<Forward> ForwardMngr::findForwardCore(const std::string &name)
     return nullptr;
 }
 
-Forward *ForwardMngr::createForwardCore(const std::string &name,
-                                    IForward::ExecType exec,
-                                    const std::initializer_list<IForward::ParamType> &params)
+std::shared_ptr<Forward> ForwardMngr::createForwardCore(const std::string &name,
+                                                        IForward::ExecType exec,
+                                                        const std::initializer_list<IForward::ParamType> &params)
 {
     auto paramsNum = params.size();
 
@@ -332,5 +332,5 @@ Forward *ForwardMngr::createForwardCore(const std::string &name,
     if (!result.second)
         return nullptr;
 
-    return forwardPtr.get();
+    return forwardPtr;
 }

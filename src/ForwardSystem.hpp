@@ -121,9 +121,9 @@ public:
     IForward *findForward(const char *name) override;
 
     // ForwardMngr
-    Forward *createForwardCore(const std::string &name,
-                            IForward::ExecType exec,
-                            const std::initializer_list<IForward::ParamType> &params);
+    std::shared_ptr<Forward> createForwardCore(const std::string &name,
+                                                IForward::ExecType exec,
+                                                const std::initializer_list<IForward::ParamType> &params);
 
     std::shared_ptr<Forward> findForwardCore(const std::string &name);
     bool addForward(std::shared_ptr<Forward> forward)

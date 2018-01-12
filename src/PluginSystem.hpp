@@ -98,10 +98,15 @@ public:
     {
         return m_filename;
     }
-    Forward *createForward(const std::string &name,
-                            const std::initializer_list<IForward::ParamType> &params) const;
+    std::shared_ptr<Forward> createForwardCore(const std::string &name,
+                                                const std::initializer_list<IForward::ParamType> &params) const;
 
 private:
+
+    std::shared_ptr<Forward> _createForward(const std::string &name,
+                                            std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramlist,
+                                            size_t paramsnum) const;
+
     SourcePawn::IPluginRuntime *m_runtime;
     std::string m_identity;
     std::string m_filename;
@@ -134,11 +139,11 @@ public:
     }
 
     // PluginMngr
-    Plugin *loadPluginCore(const std::string &name,
-                            std::string *error);
+    std::shared_ptr<Plugin> loadPluginCore(const std::string &name,
+                                            std::string *error);
 
-    Plugin *getPluginCore(size_t index);
-    Plugin *getPluginCore(const std::string &name);
+    std::shared_ptr<Plugin> getPluginCore(size_t index);
+    std::shared_ptr<Plugin> getPluginCore(const std::string &name);
 
     const auto &getPluginsList() const
     {
