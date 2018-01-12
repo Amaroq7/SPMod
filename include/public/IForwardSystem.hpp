@@ -17,10 +17,9 @@
 
 #pragma once
 
-#include <IPluginSystem.hpp>
-
 namespace SPMod
 {
+    class IPlugin;
     class IForward
     {
     public:
