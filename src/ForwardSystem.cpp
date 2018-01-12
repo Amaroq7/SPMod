@@ -276,10 +276,6 @@ IForward *ForwardMngr::createForward(const char *name,
     if (params > SP_MAX_EXEC_PARAMS)
         return nullptr;
 
-    // Forward exists
-    if (m_forwards.find(name) != m_forwards.end())
-        return nullptr;
-
     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
 
     // Get passed params types
@@ -291,13 +287,18 @@ IForward *ForwardMngr::createForward(const char *name,
     }
     va_end(paramsList);
 
-    auto result = m_forwards.insert_or_assign(name, std::make_shared<Forward>(name,
-                                                    forwardParams,
-                                                    params,
-                                                    exec,
-                                                    nullptr));
+    auto forwardPtr = std::make_shared<Forward>(name,
+                                                forwardParams,
+                                                params,
+                                                exec,
+                                                nullptr);
 
-    return result.first->second.get();
+    auto result = m_forwards.insert(std::make_pair(name, forwardPtr));
+
+    if (!result.second)
+        return nullptr;
+
+    return forwardPtr.get();
 }
 
 IForward *ForwardMngr::findForward(const char *name)
@@ -326,6 +327,10 @@ Forward *ForwardMngr::createForward(const std::string &name,
                                                 exec,
                                                 nullptr);
 
-    m_forwards.insert_or_assign(name, forwardPtr);
+    auto result = m_forwards.insert(std::make_pair(name, forwardPtr));
+
+    if (!result.second)
+        return nullptr;
+
     return forwardPtr.get();
 }
