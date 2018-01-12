@@ -270,6 +270,7 @@ void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
 
 IForward *ForwardMngr::createForward(const char *name,
                                         IForward::ExecType exec,
+                                        IPlugin *plugin,
                                         size_t params,
                                         ...)
 {
@@ -291,7 +292,7 @@ IForward *ForwardMngr::createForward(const char *name,
                                                 forwardParams,
                                                 params,
                                                 exec,
-                                                nullptr);
+                                                reinterpret_cast<Plugin *>(plugin));
 
     auto result = m_forwards.insert(std::make_pair(name, forwardPtr));
 

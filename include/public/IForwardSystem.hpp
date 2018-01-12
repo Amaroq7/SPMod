@@ -73,6 +73,7 @@ namespace SPMod
     public:
         virtual IForward *createForward(const char *name,
                                         IForward::ExecType exec,
+                                        IPlugin *plugin,
                                         size_t params,
                                         ...) = 0;
 
