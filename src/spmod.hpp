@@ -63,7 +63,7 @@ using namespace SPMod;
 #include "SPGlobal.hpp"
 
 constexpr auto gSPModAuthor = "SPMod Development Team";
-constexpr auto gSPModVersion = "1.0.0";
+constexpr auto gSPModVersion = "0.0.1";
 
 // Core natives (coreNatives.cpp)
 extern sp_nativeinfo_t gCoreNatives[];
