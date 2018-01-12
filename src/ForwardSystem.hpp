@@ -122,8 +122,8 @@ public:
 
     // ForwardMngr
     Forward *createForward(const std::string &name,
-                            Forward::ExecType exec,
-                            const std::initializer_list<Forward::ParamType> &params);
+                            IForward::ExecType exec,
+                            const std::initializer_list<IForward::ParamType> &params);
 
     bool addForward(std::shared_ptr<Forward> forward)
     {
