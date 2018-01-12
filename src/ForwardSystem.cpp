@@ -305,7 +305,7 @@ IForward *ForwardMngr::findForward(const char *name)
     return nullptr;
 }
 
-Forward *ForwardMngr::createForward(const std::string &name,
+Forward *ForwardMngr::createForwardCore(const std::string &name,
                                     IForward::ExecType exec,
                                     const std::initializer_list<IForward::ParamType> &params)
 {

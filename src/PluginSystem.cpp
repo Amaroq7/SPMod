@@ -163,6 +163,23 @@ IPlugin *PluginMngr::getPlugin(size_t index)
     return nullptr;
 }
 
+Plugin *PluginMngr::getPluginCore(const std::string &name)
+{
+    auto result = m_plugins.find(name);
+
+    return (result != m_plugins.end()) ? result->second.get() : nullptr;
+}
+
+Plugin *PluginMngr::getPluginCore(size_t index)
+{
+    for (const auto &entry : m_plugins)
+    {
+        if (entry.second->getId() == index)
+            return entry.second.get();
+    }
+    return nullptr;
+}
+
 IPlugin *PluginMngr::getPlugin(const char *name)
 {
     auto result = m_plugins.find(name);
@@ -176,7 +193,7 @@ IPlugin *PluginMngr::loadPlugin(const char *name,
 {
     std::string errorMsg;
 
-    if (!loadPluginFs(m_scriptsPath / name, errorMsg))
+    if (!_loadPlugin(m_scriptsPath / name, &errorMsg))
     {
         std::strncpy(error, errorMsg.c_str(), size);
         return nullptr;
@@ -185,8 +202,17 @@ IPlugin *PluginMngr::loadPlugin(const char *name,
     return m_plugins.find(name)->second.get();
 }
 
-bool PluginMngr::loadPluginFs(const fs::path &path,
-                                std::string &error)
+Plugin *PluginMngr::loadPluginCore(const std::string &name,
+                                    std::string *error)
+{
+    if (!_loadPlugin(m_scriptsPath / name, error))
+        return nullptr;
+
+    return m_plugins.find(name)->second.get();
+}
+
+bool PluginMngr::_loadPlugin(const fs::path &path,
+                                std::string *error)
 {
     auto pluginId = m_plugins.size();
     auto retResult = false;
@@ -195,7 +221,7 @@ bool PluginMngr::loadPluginFs(const fs::path &path,
     {
         std::stringstream msg;
         msg << "[SPMod] Unrecognized file format: " << path << '\n';
-        error = msg.str();
+        *error = msg.str();
 
         return retResult;
     }
@@ -210,7 +236,7 @@ bool PluginMngr::loadPluginFs(const fs::path &path,
     {
         std::stringstream msg;
         msg << "[SPMod] " << e.what() << '\n';
-        error = msg.str();
+        *error = msg.str();
     }
 
     return retResult;
@@ -234,7 +260,7 @@ size_t PluginMngr::loadPlugins()
     for (const auto &entry : directoryIter)
     {
         auto filePath = entry.path();
-        if (!loadPluginFs(filePath, errorMsg))
+        if (!_loadPlugin(filePath, &errorMsg))
         {
             SERVER_PRINT(errorMsg.c_str());
             errorMsg.clear();

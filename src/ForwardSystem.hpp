@@ -121,7 +121,7 @@ public:
     IForward *findForward(const char *name) override;
 
     // ForwardMngr
-    Forward *createForward(const std::string &name,
+    Forward *createForwardCore(const std::string &name,
                             IForward::ExecType exec,
                             const std::initializer_list<IForward::ParamType> &params);
 
