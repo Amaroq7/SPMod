@@ -174,7 +174,9 @@ IPlugin *PluginMngr::getPlugin(const char *name)
     return (result != m_plugins.end()) ? result->second.get() : nullptr;
 }
 
-IPlugin *PluginMngr::loadPlugin(const char *name, char *error, size_t size)
+IPlugin *PluginMngr::loadPlugin(const char *name,
+                                char *error,
+                                size_t size)
 {
     std::string errorMsg;
 
