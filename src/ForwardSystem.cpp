@@ -309,11 +309,12 @@ IForward *ForwardMngr::findForward(const char *name)
 }
 
 Forward *ForwardMngr::createForward(const std::string &name,
+                                    Plugin *plugin,
                                     IForward::ExecType exec,
                                     const std::initializer_list<IForward::ParamType> &params)
 {
     auto paramsNum = params.size();
-    
+
     if (paramsNum > SP_MAX_EXEC_PARAMS)
         return nullptr;
 
@@ -323,7 +324,7 @@ Forward *ForwardMngr::createForward(const std::string &name,
                                                 m_paramsToPush,
                                                 paramsNum,
                                                 exec,
-                                                nullptr);
+                                                plugin);
 
     auto result = m_forwards.insert(std::make_pair(name, forwardPtr));
 

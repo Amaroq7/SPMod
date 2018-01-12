@@ -104,6 +104,7 @@ public:
 
     // ForwardMngr
     Forward *createForward(const std::string &name,
+                            Plugin *plugin,
                             IForward::ExecType exec,
                             const std::initializer_list<IForward::ParamType> &params);
 
