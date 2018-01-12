@@ -18,8 +18,8 @@
 #include "spmod.hpp"
 
 qboolean dllapi_ClientConnect(edict_t *pEntity,
-                                const char *pszName [[maybe_unused]],
-                                const char *pszAddress [[maybe_unused]],
+                                const char *pszName,
+                                const char *pszAddress,
                                 char szRejectReason[128])
 {
     auto *fwdPlayerConnect = gSPGlobal->getForwardManager()->findForward("OnClientConnect");
