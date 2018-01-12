@@ -20,7 +20,7 @@
 namespace SPMod
 {
     class IPlugin;
-    class IForward
+    class IForward SPMOD_FINAL
     {
     public:
         enum class ExecType : uint8_t
@@ -68,7 +68,7 @@ namespace SPMod
         virtual ~IForward() { }
     };
 
-    class IForwardMngr
+    class IForwardMngr SPMOD_FINAL
     {
     public:
         virtual IForward *createForward(const char *name,

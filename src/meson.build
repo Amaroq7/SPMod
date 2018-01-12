@@ -1,3 +1,5 @@
+add_project_arguments('-DSPMOD_CORE', language : [ 'c', 'cpp' ])
+
 sourceFiles = files('coreNatives.cpp',
                     'h_export.cpp',
                     'engine_api.cpp',

@@ -19,7 +19,7 @@
 
 namespace SPMod
 {
-    class IPlugin
+    class IPlugin SPMOD_FINAL
     {
     public:
         virtual const char *getName() const = 0;
@@ -35,7 +35,7 @@ namespace SPMod
         virtual ~IPlugin() {};
     };
 
-    class IPluginMngr
+    class IPluginMngr SPMOD_FINAL
     {
     public:
         virtual IPlugin *loadPlugin(const char *name, char *error, size_t size) = 0;

@@ -17,10 +17,6 @@
 
 #pragma once
 
-#include <sp_vm_api.h>
-#include <IForwardSystem.hpp>
-#include <IPluginSystem.hpp>
-
 // Platform defines
 #ifdef _WIN32
     #define SP_WINDOWS
@@ -37,12 +33,23 @@
     #endif
 #endif
 
+// Avoid inheritance outside core
+#ifdef SPMOD_CORE
+    #define SPMOD_FINAL
+#else
+    #define SPMOD_FINAL final
+#endif
+
+#include <sp_vm_api.h>
+#include <IForwardSystem.hpp>
+#include <IPluginSystem.hpp>
+
 namespace SPMod
 {
     using sp_api_t = unsigned long;
     constexpr sp_api_t SPMOD_API_VERSION = 0;
 
-    class ISPGlobal
+    class ISPGlobal SPMOD_FINAL
     {
     public:
         virtual const char *getHome() const = 0;
