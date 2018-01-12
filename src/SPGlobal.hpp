@@ -77,7 +77,8 @@ public:
     }
 
     #ifdef SP_POSIX
-    void setSPFactory(void *library, SourcePawn::ISourcePawnFactory *factory);
+    void setSPFactory(void *library,
+                        SourcePawn::ISourcePawnFactory *factory);
     #else
     //void setSPFactory(void *library, SourcePawn::ISourcePawnFactory *factory);
     #endif

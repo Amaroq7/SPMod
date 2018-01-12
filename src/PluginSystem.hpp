@@ -28,7 +28,10 @@ public:
     static constexpr uint32_t FIELD_AUTHOR = 2;
     static constexpr uint32_t FIELD_URL = 3;
 
-    Plugin(size_t id, const std::string &identity, const fs::path &path);
+    Plugin(size_t id,
+            const std::string &identity,
+            const fs::path &path);
+            
     ~Plugin();
 
     // IPlugin
@@ -112,7 +115,10 @@ public:
     ~PluginMngr() = default;
 
     // IPluginMngr
-    IPlugin *loadPlugin(const char *name, char *error, size_t size) override;
+    IPlugin *loadPlugin(const char *name,
+                        char *error,
+                        size_t size) override;
+
     IPlugin *getPlugin(size_t index) override;
     IPlugin *getPlugin(const char *name) override;
     size_t getPluginsNum() const override
@@ -121,7 +127,9 @@ public:
     }
 
     // PluginMngr
-    bool loadPluginFs(const fs::path &path, std::string &error);
+    bool loadPluginFs(const fs::path &path,
+                        std::string &error);
+
     const auto &getPluginsList() const
     {
         return m_plugins;

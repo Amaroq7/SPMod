@@ -23,7 +23,8 @@ const RehldsFuncs_t *gRehldsFuncs;
 IRehldsHookchains *gRehldsHookchains;
 IRehldsServerStatic *gRehldsServerStatic;
 
-static bool _initRehldsApi(CSysModule *module, std::string *error = nullptr)
+static bool _initRehldsApi(CSysModule *module,
+                            std::string *error = nullptr)
 {
     if (!module)
     {

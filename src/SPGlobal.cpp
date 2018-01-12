@@ -19,7 +19,9 @@
 
 std::unique_ptr<SPGlobal> gSPGlobal;
 
-bool SPGlobal::addModule(sp_nativeinfo_t *natives, const char *name, sp_api_t api)
+bool SPGlobal::addModule(sp_nativeinfo_t *natives,
+                            const char *name,
+                            sp_api_t api)
 {
     //TODO: Error reporting?
     if (api > SPMOD_API_VERSION)
@@ -55,7 +57,8 @@ void SPGlobal::setScriptsDir(const std::string &folder)
 }
 
 #ifdef SP_POSIX
-void SPGlobal::setSPFactory(void *library, SourcePawn::ISourcePawnFactory *factory)
+void SPGlobal::setSPFactory(void *library,
+                            SourcePawn::ISourcePawnFactory *factory)
 #else
 // TODO: windows
 #endif

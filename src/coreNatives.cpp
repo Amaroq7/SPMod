@@ -18,7 +18,8 @@
 #include "spmod.hpp"
 
 // native void printToConsole(const char[] text)
-static cell_t core_printToConsole(SourcePawn::IPluginContext *ctx, const cell_t *params)
+static cell_t core_printToConsole(SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params)
 {
     char *stringToPrint;
     ctx->LocalToString(params[1], &stringToPrint);
@@ -29,7 +30,8 @@ static cell_t core_printToConsole(SourcePawn::IPluginContext *ctx, const cell_t 
 }
 
 // native int precacheModel(const char[] model)
-static cell_t core_precacheModel(SourcePawn::IPluginContext *ctx, const cell_t *params)
+static cell_t core_precacheModel(SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params)
 {
     char *modelToPrecache;
     ctx->LocalToString(params[1], &modelToPrecache);
@@ -38,7 +40,8 @@ static cell_t core_precacheModel(SourcePawn::IPluginContext *ctx, const cell_t *
 }
 
 // native int precacheSound(const char[] sound)
-static cell_t core_precacheSound(SourcePawn::IPluginContext *ctx, const cell_t *params)
+static cell_t core_precacheSound(SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params)
 {
     char *soundToPrecache;
     ctx->LocalToString(params[1], &soundToPrecache);
@@ -47,7 +50,8 @@ static cell_t core_precacheSound(SourcePawn::IPluginContext *ctx, const cell_t *
 }
 
 // native int precacheGeneric(const char[] generic)
-static cell_t core_precacheGeneric(SourcePawn::IPluginContext *ctx, const cell_t *params)
+static cell_t core_precacheGeneric(SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params)
 {
     char *genericToPrecache;
     ctx->LocalToString(params[1], &genericToPrecache);
@@ -56,7 +60,8 @@ static cell_t core_precacheGeneric(SourcePawn::IPluginContext *ctx, const cell_t
 }
 
 // native int numToString(int num, char[] converted_num, int size)
-static cell_t core_NumToString(SourcePawn::IPluginContext *ctx, const cell_t *params)
+static cell_t core_NumToString(SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params)
 {
     auto numToConvert = params[1];
     auto numConverted = std::to_string(numToConvert);
@@ -65,7 +70,8 @@ static cell_t core_NumToString(SourcePawn::IPluginContext *ctx, const cell_t *pa
     return numConverted.length();
 }
 
-static cell_t core_CopyString(SourcePawn::IPluginContext *ctx, const cell_t *params)
+static cell_t core_CopyString(SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params)
 {
     char *destArray, *stringToCopy;
     ctx->LocalToString(params[1], &destArray);

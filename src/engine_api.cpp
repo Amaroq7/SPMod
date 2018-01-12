@@ -361,7 +361,8 @@ enginefuncs_t gEngineFunctionsTablePost =
 	nullptr,	    // pfnEngCheckParm()
 };
 
-C_DLLEXPORT int GetEngineFunctions(enginefuncs_t *pengfuncsFromEngine, int *interfaceVersion)
+C_DLLEXPORT int GetEngineFunctions(enginefuncs_t *pengfuncsFromEngine,
+									int *interfaceVersion)
 {
 	if (!pengfuncsFromEngine)
 		return 0;
@@ -375,7 +376,8 @@ C_DLLEXPORT int GetEngineFunctions(enginefuncs_t *pengfuncsFromEngine, int *inte
 	return 1;
 }
 
-C_DLLEXPORT int GetEngineFunctions_Post(enginefuncs_t *pengfuncsFromEngine, int *interfaceVersion)
+C_DLLEXPORT int GetEngineFunctions_Post(enginefuncs_t *pengfuncsFromEngine,
+										int *interfaceVersion)
 {
 	if (!pengfuncsFromEngine)
 		return 0;

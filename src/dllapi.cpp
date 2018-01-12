@@ -179,7 +179,8 @@ NEW_DLL_FUNCTIONS gNewDllFunctionTablePost =
 	nullptr,					//! pfnCvarValue2()
 };
 
-C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion)
+C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
+                                int *interfaceVersion)
 {
 	if (!pFunctionTable)
 		return 0;
@@ -193,7 +194,8 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersi
 	return 1;
 }
 
-C_DLLEXPORT int GetEntityAPI2_Post(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion)
+C_DLLEXPORT int GetEntityAPI2_Post(DLL_FUNCTIONS *pFunctionTable,
+                                    int *interfaceVersion)
 {
 	if (!pFunctionTable)
 		return 0;
@@ -207,7 +209,8 @@ C_DLLEXPORT int GetEntityAPI2_Post(DLL_FUNCTIONS *pFunctionTable, int *interface
 	return 1;
 }
 
-C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pNewFunctionTable, int *interfaceVersion)
+C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pNewFunctionTable,
+                                    int *interfaceVersion)
 {
 	if (!pNewFunctionTable)
 		return 0;
@@ -221,7 +224,8 @@ C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pNewFunctionTable, int *in
 	return 1;
 }
 
-C_DLLEXPORT int GetNewDLLFunctions_Post(NEW_DLL_FUNCTIONS *pNewFunctionTable, int *interfaceVersion)
+C_DLLEXPORT int GetNewDLLFunctions_Post(NEW_DLL_FUNCTIONS *pNewFunctionTable,
+                                            int *interfaceVersion)
 {
 	if (!pNewFunctionTable)
 		return 0;

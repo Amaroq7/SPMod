@@ -17,7 +17,9 @@
 
 #include "PluginSystem.hpp"
 
-Plugin::Plugin(size_t id, const std::string &identity, const fs::path &path)
+Plugin::Plugin(size_t id,
+                const std::string &identity,
+                const fs::path &path)
 {
     char errorSPMsg[256];
     std::stringstream errorMsg;
@@ -126,7 +128,8 @@ IPlugin *PluginMngr::loadPlugin(const char *name, char *error, size_t size)
     return m_plugins.find(name)->second.get();
 }
 
-bool PluginMngr::loadPluginFs(const fs::path &path, std::string &error)
+bool PluginMngr::loadPluginFs(const fs::path &path,
+                                std::string &error)
 {
     auto pluginId = m_plugins.size();
     auto retResult = false;

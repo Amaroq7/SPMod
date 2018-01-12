@@ -47,12 +47,22 @@ public:
         return reinterpret_cast<IPlugin *>(m_plugin);
     }
     bool pushCell(cell_t cell) override;
-    bool pushCellPtr(cell_t *cell, bool copyback) override;
+    bool pushCellPtr(cell_t *cell,
+                        bool copyback) override;
+
     bool pushFloat(float real) override;
-    bool pushFloatPtr(float *real, bool copyback) override;
-    bool pushArray(cell_t *array, size_t size, bool copyback) override;
+    bool pushFloatPtr(float *real,
+                        bool copyback) override;
+
+    bool pushArray(cell_t *array,
+                        size_t size,
+                        bool copyback) override;
+
     bool pushString(const char *string) override;
-    bool pushStringEx(char *buffer, size_t length, StringFlags sflags, bool copyback) override;
+    bool pushStringEx(char *buffer,
+                        size_t length,
+                        StringFlags sflags,
+                        bool copyback) override;
     bool execFunc(cell_t *result) override;
     void resetParams() override;
 
