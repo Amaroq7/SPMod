@@ -292,10 +292,10 @@ IForward *ForwardMngr::createForward(const char *name,
     va_end(paramsList);
 
     auto result = m_forwards.insert_or_assign(name, std::make_shared<Forward>(name,
-                                                std::move(forwardParams),
-                                                params,
-                                                exec,
-                                                nullptr));
+                                                    forwardParams,
+                                                    params,
+                                                    exec,
+                                                    nullptr));
 
     return result.first->second.get();
 }
@@ -320,8 +320,11 @@ Forward *ForwardMngr::createForward(const std::string &name,
 
     std::copy(params.begin(), params.end(), m_paramsToPush.begin());
 
-    auto forwardPtr = std::make_shared<Forward>(name, std::move(m_paramsToPush),
-                                                paramsNum, exec, nullptr);
+    auto forwardPtr = std::make_shared<Forward>(name,
+                                                m_paramsToPush,
+                                                paramsNum,
+                                                exec,
+                                                nullptr);
 
     m_forwards.insert_or_assign(name, forwardPtr);
     return forwardPtr.get();
