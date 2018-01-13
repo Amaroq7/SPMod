@@ -25,7 +25,7 @@ class Forward final : public IForward
 {
 public:
     Forward(std::string_view name,
-            std::array<ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
+            fwdParamTypeList paramstypes,
             size_t params,
             ExecType type) : m_name(name),
                                 m_execType(type),
@@ -35,7 +35,7 @@ public:
                                 m_paramsNum(params)
                                 { }
     Forward(std::string_view name,
-            std::array<ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
+            fwdParamTypeList paramstypes,
             size_t params,
             const Plugin *plugin) : m_name(name),
                                     m_execType(ExecType::HIGHEST),
@@ -99,7 +99,7 @@ private:
 
     std::string m_name;
     ExecType m_execType;
-    std::array<ParamType, SP_MAX_EXEC_PARAMS> m_paramTypes;
+    fwdParamTypeList m_paramTypes;
     std::array<ForwardParam, SP_MAX_EXEC_PARAMS> m_params;
     const Plugin *m_plugin;
     size_t m_currentPos;
@@ -123,7 +123,7 @@ public:
     // ForwardMngr
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
                                                 IForward::ExecType exec,
-                                                std::initializer_list<IForward::ParamType> params);
+                                                fwdInitParamsList params);
 
     std::shared_ptr<Forward> findForwardCore(std::string_view name);
     bool addForward(std::shared_ptr<Forward> forward)
@@ -140,7 +140,7 @@ public:
 private:
     std::shared_ptr<Forward> _createForward(std::string_view name,
                                             IForward::ExecType exec,
-                                            std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> params,
+                                            fwdParamTypeList params,
                                             size_t paramsnum);
 
     std::unordered_map<std::string, std::shared_ptr<Forward>> m_forwards;

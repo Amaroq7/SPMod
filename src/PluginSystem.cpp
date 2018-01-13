@@ -120,7 +120,7 @@ IForward *Plugin::createForward(const char *name,
 }
 
 std::shared_ptr<Forward> Plugin::createForwardCore(std::string_view name,
-                                                    std::initializer_list<IForward::ParamType> params) const
+                                                    fwdInitParamsList params) const
 {
     auto paramsNum = params.size();
 
@@ -134,7 +134,7 @@ std::shared_ptr<Forward> Plugin::createForwardCore(std::string_view name,
 }
 
 std::shared_ptr<Forward> Plugin::_createForward(std::string_view name,
-                                                std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramlist,
+                                                fwdParamTypeList paramlist,
                                                 size_t paramsnum) const
 {
     auto forwardPtr = std::make_shared<Forward>(name, paramlist, paramsnum, this);

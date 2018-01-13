@@ -99,11 +99,11 @@ public:
         return m_filename;
     }
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
-                                                std::initializer_list<IForward::ParamType> params) const;
+                                                fwdInitParamsList params) const;
 
 private:
     std::shared_ptr<Forward> _createForward(std::string_view name,
-                                            std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramlist,
+                                            fwdParamTypeList paramlist,
                                             size_t paramsnum) const;
 
     SourcePawn::IPluginRuntime *m_runtime;

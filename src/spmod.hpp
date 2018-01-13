@@ -55,7 +55,10 @@ extern bool initRehldsApi();
 // SPMod interface
 #include <ISPGlobal.hpp>
 
+// Shortcuts for convenience
 using namespace SPMod;
+using fwdParamTypeList = std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS>;
+using fwdInitParamsList = std::initializer_list<IForward::ParamType>;
 
 // SPMod specific
 #include "PluginSystem.hpp"
