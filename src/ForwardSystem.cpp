@@ -32,7 +32,8 @@ bool Forward::pushCell(cell_t cell)
     return true;
 }
 
-bool Forward::pushCellPtr(cell_t *cell, bool copyback)
+bool Forward::pushCellPtr(cell_t *cell,
+                            bool copyback)
 {
     if (m_currentPos >= SP_MAX_EXEC_PARAMS)
         return false;
@@ -63,7 +64,8 @@ bool Forward::pushFloat(float real)
     return true;
 }
 
-bool Forward::pushFloatPtr(float *real, bool copyback)
+bool Forward::pushFloatPtr(float *real,
+                            bool copyback)
 {
     if (m_currentPos >= SP_MAX_EXEC_PARAMS)
         return false;
@@ -79,7 +81,9 @@ bool Forward::pushFloatPtr(float *real, bool copyback)
     return true;
 }
 
-bool Forward::pushArray(cell_t *array, size_t size, bool copyback)
+bool Forward::pushArray(cell_t *array,
+                        size_t size,
+                        bool copyback)
 {
     if (m_currentPos >= SP_MAX_EXEC_PARAMS)
         return false;
@@ -111,7 +115,10 @@ bool Forward::pushString(const char *string)
     return true;
 }
 
-bool Forward::pushStringEx(char *buffer, size_t size, StringFlags sflags, bool copyback)
+bool Forward::pushStringEx(char *buffer,
+                            size_t size,
+                            StringFlags sflags,
+                            bool copyback)
 {
     if (m_currentPos >= SP_MAX_EXEC_PARAMS)
         return false;
