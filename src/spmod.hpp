@@ -26,6 +26,7 @@
 #include <exception>
 #include <array>
 #include <variant>
+#include <string_view>
 
 namespace fs = std::experimental::filesystem;
 

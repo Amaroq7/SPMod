@@ -49,7 +49,7 @@ void SPGlobal::initPluginManager()
     m_pluginManager = std::make_unique<PluginMngr>(m_SPModScriptsDir);
 }
 
-void SPGlobal::setScriptsDir(const std::string &folder)
+void SPGlobal::setScriptsDir(std::string_view folder)
 {
     fs::path pathToScripts(m_SPModDir);
     pathToScripts /= folder;

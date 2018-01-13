@@ -74,11 +74,11 @@ public:
         return m_forwardManager.get();
     }
     void initPluginManager();
-    void setModName(const std::string &name)
+    void setModName(std::string_view name)
     {
         m_modName = name;
     }
-    void setScriptsDir(const std::string &folder);
+    void setScriptsDir(std::string_view folder);
     const auto &getModulesList() const
     {
         return m_modulesNames;

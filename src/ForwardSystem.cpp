@@ -300,9 +300,9 @@ IForward *ForwardMngr::findForward(const char *name)
     return findForwardCore(name).get();
 }
 
-std::shared_ptr<Forward> ForwardMngr::findForwardCore(const std::string &name)
+std::shared_ptr<Forward> ForwardMngr::findForwardCore(std::string_view name)
 {
-    auto iter = m_forwards.find(name);
+    auto iter = m_forwards.find(name.data());
 
     if (iter != m_forwards.end())
         return iter->second;
@@ -310,7 +310,7 @@ std::shared_ptr<Forward> ForwardMngr::findForwardCore(const std::string &name)
     return nullptr;
 }
 
-std::shared_ptr<Forward> ForwardMngr::createForwardCore(const std::string &name,
+std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
                                                         IForward::ExecType exec,
                                                         const std::initializer_list<IForward::ParamType> &params)
 {

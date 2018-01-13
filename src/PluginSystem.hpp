@@ -31,7 +31,7 @@ public:
     static constexpr uint32_t FIELD_URL = 3;
 
     Plugin(size_t id,
-            const std::string &identity,
+            std::string_view identity,
             const fs::path &path);
 
     ~Plugin();
@@ -98,12 +98,11 @@ public:
     {
         return m_filename;
     }
-    std::shared_ptr<Forward> createForwardCore(const std::string &name,
+    std::shared_ptr<Forward> createForwardCore(std::string_view name,
                                                 const std::initializer_list<IForward::ParamType> &params) const;
 
 private:
-
-    std::shared_ptr<Forward> _createForward(const std::string &name,
+    std::shared_ptr<Forward> _createForward(std::string_view name,
                                             std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramlist,
                                             size_t paramsnum) const;
 
@@ -139,11 +138,11 @@ public:
     }
 
     // PluginMngr
-    std::shared_ptr<Plugin> loadPluginCore(const std::string &name,
+    std::shared_ptr<Plugin> loadPluginCore(std::string_view name,
                                             std::string *error);
 
     std::shared_ptr<Plugin> getPluginCore(size_t index);
-    std::shared_ptr<Plugin> getPluginCore(const std::string &name);
+    std::shared_ptr<Plugin> getPluginCore(std::string_view name);
 
     const auto &getPluginsList() const
     {

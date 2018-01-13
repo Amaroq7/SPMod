@@ -24,7 +24,7 @@ class Plugin;
 class Forward final : public IForward
 {
 public:
-    Forward(const std::string &name,
+    Forward(std::string_view name,
             std::array<ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
             size_t params,
             ExecType type) : m_name(name),
@@ -34,7 +34,7 @@ public:
                                 m_currentPos(0),
                                 m_paramsNum(params)
                                 { }
-    Forward(const std::string &name,
+    Forward(std::string_view name,
             std::array<ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
             size_t params,
             const Plugin *plugin) : m_name(name),
@@ -121,11 +121,11 @@ public:
     IForward *findForward(const char *name) override;
 
     // ForwardMngr
-    std::shared_ptr<Forward> createForwardCore(const std::string &name,
+    std::shared_ptr<Forward> createForwardCore(std::string_view name,
                                                 IForward::ExecType exec,
                                                 const std::initializer_list<IForward::ParamType> &params);
 
-    std::shared_ptr<Forward> findForwardCore(const std::string &name);
+    std::shared_ptr<Forward> findForwardCore(std::string_view name);
     bool addForward(std::shared_ptr<Forward> forward)
     {
         return m_forwards.insert(std::make_pair(forward->getNameString(),

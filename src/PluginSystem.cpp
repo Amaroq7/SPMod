@@ -18,7 +18,7 @@
 #include "PluginSystem.hpp"
 
 Plugin::Plugin(size_t id,
-                const std::string &identity,
+                std::string_view identity,
                 const fs::path &path)
 {
     char errorSPMsg[256];
@@ -119,7 +119,7 @@ IForward *Plugin::createForward(const char *name,
     return _createForward(name, forwardParams, params).get();
 }
 
-std::shared_ptr<Forward> Plugin::createForwardCore(const std::string &name,
+std::shared_ptr<Forward> Plugin::createForwardCore(std::string_view name,
                                                     const std::initializer_list<IForward::ParamType> &params) const
 {
     auto paramsNum = params.size();
@@ -133,7 +133,7 @@ std::shared_ptr<Forward> Plugin::createForwardCore(const std::string &name,
     return _createForward(name, forwardParams, paramsNum);
 }
 
-std::shared_ptr<Forward> Plugin::_createForward(const std::string &name,
+std::shared_ptr<Forward> Plugin::_createForward(std::string_view name,
                                                 std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramlist,
                                                 size_t paramsnum) const
 {
@@ -155,9 +155,9 @@ IPlugin *PluginMngr::getPlugin(size_t index)
     return getPluginCore(index).get();
 }
 
-std::shared_ptr<Plugin> PluginMngr::getPluginCore(const std::string &name)
+std::shared_ptr<Plugin> PluginMngr::getPluginCore(std::string_view name)
 {
-    auto result = m_plugins.find(name);
+    auto result = m_plugins.find(name.data());
 
     return (result != m_plugins.end()) ? result->second : nullptr;
 }
@@ -188,7 +188,7 @@ IPlugin *PluginMngr::loadPlugin(const char *name,
     return plugin.get();
 }
 
-std::shared_ptr<Plugin> PluginMngr::loadPluginCore(const std::string &name,
+std::shared_ptr<Plugin> PluginMngr::loadPluginCore(std::string_view name,
                                                     std::string *error)
 {
     auto plugin = _loadPlugin(m_scriptsPath / name, error);
@@ -217,7 +217,7 @@ std::shared_ptr<Plugin> PluginMngr::_loadPlugin(const fs::path &path,
     try
     {
         plugin = std::make_shared<Plugin>(pluginId, fileName, path);
-        
+
         if (!m_plugins.try_emplace(fileName, plugin).second)
             return nullptr;
     }
