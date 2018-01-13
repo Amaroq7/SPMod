@@ -62,7 +62,7 @@ public:
         return m_spFactory->CurrentEnvironment();
     }
 
-    bool addModule(sp_nativeinfo_t *natives, const char *name, sp_api_t api) override;
+    bool addModule(IModuleInterface *interface) override;
 
     // SPGlobal
     PluginMngr *getPluginManagerCore() const

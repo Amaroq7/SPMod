@@ -49,13 +49,15 @@ namespace SPMod
     using sp_api_t = unsigned long;
     constexpr sp_api_t SPMOD_API_VERSION = 0;
 
+    class IModuleInterface;
+
     class ISPGlobal SPMOD_FINAL
     {
     public:
         virtual const char *getHome() const = 0;
         virtual const char *getModName() const = 0;
         virtual IPluginMngr *getPluginManager() const = 0;
-        virtual bool addModule(sp_nativeinfo_t *natives, const char *name, sp_api_t api = SPMOD_API_VERSION) = 0;
+        virtual bool addModule(IModuleInterface *interface) = 0;
         virtual IForwardMngr *getForwardManager() const = 0;
         virtual SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const = 0;
 
@@ -63,6 +65,30 @@ namespace SPMod
         virtual ~ISPGlobal() {};
     };
 
-    using fnSPModQuery = int (*)(ISPGlobal *spmodInstance, sp_api_t apiversion);
-    SPMOD_API int SPMod_Query(ISPGlobal *spmodInstance, sp_api_t apiversion);
+    using fnSPModQuery = int (*)(ISPGlobal *spmodInstance);
+    SPMOD_API int SPMod_Query(ISPGlobal *spmodInstance);
+
+    class IModuleInterface
+    {
+    public:
+        virtual sp_api_t getInterfaceVersion() const
+        {
+            return SPMOD_API_VERSION;
+        }
+        virtual sp_nativeinfo_t *getNatives()
+        {
+            return m_natives;
+        }
+        virtual size_t getNativesNum()
+        {
+            return m_nativesNum;
+        }
+        virtual const char *getName() const = 0;
+
+    protected:
+        virtual ~IModuleInterface() { }
+
+        sp_nativeinfo_t *m_natives;
+        size_t m_nativesNum;
+    };
 }

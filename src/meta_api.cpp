@@ -21,6 +21,8 @@ meta_globals_t *gpMetaGlobals;
 gamedll_funcs_t *gpGamedllFuncs;
 mutil_funcs_t *gpMetaUtilFuncs;
 
+std::unique_ptr<SPModModule> gSPModModuleDef;
+
 plugin_info_t gPluginInfo =
 {
     META_INTERFACE_VERSION,
@@ -207,7 +209,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
     if (!InitializeSourcePawn())
         return 0;
 
-    gSPGlobal->addModule(gCoreNatives, "core", SPMOD_API_VERSION);
+    gSPModModuleDef = std::make_unique<SPModModule>(gCoreNatives);
+    gSPGlobal->addModule(gSPModModuleDef.get());
     gSPGlobal->initPluginManager();
     gSPGlobal->initDefaultsForwards();
 

@@ -19,24 +19,21 @@
 
 std::unique_ptr<SPGlobal> gSPGlobal;
 
-bool SPGlobal::addModule(sp_nativeinfo_t *natives,
-                            const char *name,
-                            sp_api_t api)
+bool SPGlobal::addModule(IModuleInterface *interface)
 {
     //TODO: Error reporting?
-    if (api > SPMOD_API_VERSION)
+    if (interface->getInterfaceVersion() > SPMOD_API_VERSION)
         return false;
 
+    auto *name = interface->getName();
     if (m_modulesNames.find(name) != m_modulesNames.end())
         return false;
 
     NativeDef nativesDef;
-    nativesDef.natives = natives;
-    size_t numNatives = 0;
-    while ((natives + numNatives)->func) { ++numNatives; };
-    nativesDef.num = numNatives;
+    nativesDef.natives = interface->getNatives();
+    nativesDef.num = interface->getNativesNum();
 
-    m_modulesNames.insert({ name, nativesDef });
+    m_modulesNames.insert(std::make_pair(name, nativesDef));
 
     return true;
 }
