@@ -282,17 +282,7 @@ IForward *ForwardMngr::createForward(const char *name,
 
     va_end(paramsList);
 
-    auto forwardPtr = std::make_shared<Forward>(name,
-                                                forwardParams,
-                                                params,
-                                                exec);
-
-    auto result = m_forwards.insert(std::make_pair(name, forwardPtr));
-
-    if (!result.second)
-        return nullptr;
-
-    return forwardPtr.get();
+    return _createForward(name, exec, forwardParams, params).get();
 }
 
 IForward *ForwardMngr::findForward(const char *name)
@@ -322,10 +312,15 @@ std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
     std::copy(params.begin(), params.end(), forwardParams.begin());
 
-    auto forwardPtr = std::make_shared<Forward>(name,
-                                                forwardParams,
-                                                paramsNum,
-                                                exec);
+    return _createForward(name, exec, forwardParams, paramsNum);
+}
+
+std::shared_ptr<Forward> ForwardMngr::_createForward(std::string_view name,
+                                                        IForward::ExecType exec,
+                                                        std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> params,
+                                                        size_t paramsnum)
+{
+    auto forwardPtr = std::make_shared<Forward>(name, params, paramsnum, exec);
 
     auto result = m_forwards.insert(std::make_pair(name, forwardPtr));
 

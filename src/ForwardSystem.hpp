@@ -138,5 +138,10 @@ public:
     }
 
 private:
+    std::shared_ptr<Forward> _createForward(std::string_view name,
+                                            IForward::ExecType exec,
+                                            std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> params,
+                                            size_t paramsnum);
+
     std::unordered_map<std::string, std::shared_ptr<Forward>> m_forwards;
 };
