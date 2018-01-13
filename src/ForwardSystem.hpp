@@ -123,7 +123,7 @@ public:
     // ForwardMngr
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
                                                 IForward::ExecType exec,
-                                                const std::initializer_list<IForward::ParamType> &params);
+                                                std::initializer_list<IForward::ParamType> params);
 
     std::shared_ptr<Forward> findForwardCore(std::string_view name);
     bool addForward(std::shared_ptr<Forward> forward)

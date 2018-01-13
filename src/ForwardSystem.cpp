@@ -312,7 +312,7 @@ std::shared_ptr<Forward> ForwardMngr::findForwardCore(std::string_view name)
 
 std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
                                                         IForward::ExecType exec,
-                                                        const std::initializer_list<IForward::ParamType> &params)
+                                                        std::initializer_list<IForward::ParamType> params)
 {
     auto paramsNum = params.size();
 

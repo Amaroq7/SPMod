@@ -99,7 +99,7 @@ public:
         return m_filename;
     }
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
-                                                const std::initializer_list<IForward::ParamType> &params) const;
+                                                std::initializer_list<IForward::ParamType> params) const;
 
 private:
     std::shared_ptr<Forward> _createForward(std::string_view name,

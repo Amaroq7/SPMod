@@ -120,7 +120,7 @@ IForward *Plugin::createForward(const char *name,
 }
 
 std::shared_ptr<Forward> Plugin::createForwardCore(std::string_view name,
-                                                    const std::initializer_list<IForward::ParamType> &params) const
+                                                    std::initializer_list<IForward::ParamType> params) const
 {
     auto paramsNum = params.size();
 
