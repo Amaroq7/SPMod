@@ -26,11 +26,11 @@ class SPGlobal : public ISPGlobal
 {
 public:
     SPGlobal() = delete;
-    SPGlobal(const fs::path &dllDir) : m_SPModDir(dllDir.parent_path().parent_path()),
-                                        m_pluginManager(nullptr),
-                                        m_forwardManager(std::make_unique<ForwardMngr>()),
-                                        m_spFactory(nullptr)
-                                        { }
+    SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_path()),
+                                    m_pluginManager(nullptr),
+                                    m_forwardManager(std::make_unique<ForwardMngr>()),
+                                    m_spFactory(nullptr)
+                                    { }
     ~SPGlobal()
     {
         #ifdef SP_POSIX

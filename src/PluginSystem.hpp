@@ -122,7 +122,7 @@ class PluginMngr final : public IPluginMngr
 public:
     PluginMngr(const fs::path &pathToScripts)
     {
-        m_scriptsPath = std::move(pathToScripts);
+        m_scriptsPath = pathToScripts;
     }
     PluginMngr() = delete;
     ~PluginMngr() = default;
