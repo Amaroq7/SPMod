@@ -150,11 +150,11 @@ public:
     }
     void setPluginPrecache(bool canprecache)
     {
-        gCanPluginsPrecache = canprecache;
+        m_canPluginsPrecache = canprecache;
     }
     bool canPluginPrecache()
     {
-        return gCanPluginsPrecache;
+        return m_canPluginsPrecache;
     }
     std::shared_ptr<Plugin> loadPluginCore(std::string_view name,
                                             std::string *error);
@@ -170,5 +170,5 @@ private:
     fs::path m_scriptsPath;
 
     // Allow plugins to precache
-    bool gCanPluginsPrecache;
+    bool m_canPluginsPrecache;
 };
