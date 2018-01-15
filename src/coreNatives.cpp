@@ -33,6 +33,12 @@ static cell_t core_printToConsole(SourcePawn::IPluginContext *ctx,
 static cell_t core_precacheModel(SourcePawn::IPluginContext *ctx,
                                     const cell_t *params)
 {
+    if (!gSPGlobal->getPluginManagerCore()->canPluginPrecache())
+    {
+        ctx->ReportError("Precaching is not allowed");
+        return 0;
+    }
+
     char *modelToPrecache;
     ctx->LocalToString(params[1], &modelToPrecache);
 
@@ -43,6 +49,12 @@ static cell_t core_precacheModel(SourcePawn::IPluginContext *ctx,
 static cell_t core_precacheSound(SourcePawn::IPluginContext *ctx,
                                     const cell_t *params)
 {
+    if (!gSPGlobal->getPluginManagerCore()->canPluginPrecache())
+    {
+        ctx->ReportError("Precaching is not allowed");
+        return 0;
+    }
+
     char *soundToPrecache;
     ctx->LocalToString(params[1], &soundToPrecache);
 
@@ -53,6 +65,12 @@ static cell_t core_precacheSound(SourcePawn::IPluginContext *ctx,
 static cell_t core_precacheGeneric(SourcePawn::IPluginContext *ctx,
                                     const cell_t *params)
 {
+    if (!gSPGlobal->getPluginManagerCore()->canPluginPrecache())
+    {
+        ctx->ReportError("Precaching is not allowed");
+        return 0;
+    }
+
     char *genericToPrecache;
     ctx->LocalToString(params[1], &genericToPrecache);
 

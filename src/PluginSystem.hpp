@@ -143,6 +143,7 @@ public:
 
     std::shared_ptr<Plugin> getPluginCore(size_t index);
     std::shared_ptr<Plugin> getPluginCore(std::string_view name);
+    size_t loadPlugins();
 
     const auto &getPluginsList() const
     {
@@ -152,11 +153,21 @@ public:
     {
         m_plugins.clear();
     }
-    size_t loadPlugins();
+    void setPluginPrecache(bool canprecache)
+    {
+        gCanPluginsPrecache = canprecache;
+    }
+    bool canPluginPrecache()
+    {
+        return gCanPluginsPrecache;
+    }
 
 private:
     std::shared_ptr<Plugin> _loadPlugin(const fs::path &path,
                                         std::string *error);
     std::unordered_map<std::string, std::shared_ptr<Plugin>> m_plugins;
     fs::path m_scriptsPath;
+
+    // Allow plugins to precache
+    bool gCanPluginsPrecache;
 };
