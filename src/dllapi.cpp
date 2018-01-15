@@ -43,7 +43,7 @@ void dllapi_ServerActivate(edict_t *pEdictList [[maybe_unused]],
                             int edictCount [[maybe_unused]],
                             int clientMax [[maybe_unused]])
 {
-    auto *pluginManager = gSPGlobal->getPluginManagerCore();
+    auto &pluginManager = gSPGlobal->getPluginManagerCore();
     pluginManager->setPluginPrecache(true);
     pluginManager->loadPlugins();
     pluginManager->setPluginPrecache(false);

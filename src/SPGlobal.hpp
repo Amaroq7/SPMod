@@ -65,13 +65,13 @@ public:
     bool addModule(IModuleInterface *interface) override;
 
     // SPGlobal
-    PluginMngr *getPluginManagerCore() const
+    const std::unique_ptr<PluginMngr> &getPluginManagerCore() const
     {
-        return m_pluginManager.get();
+        return m_pluginManager;
     }
-    ForwardMngr *getForwardManagerCore() const
+    const std::unique_ptr<ForwardMngr> &getForwardManagerCore() const
     {
-        return m_forwardManager.get();
+        return m_forwardManager;
     }
     void initPluginManager();
     void setModName(std::string_view name)
