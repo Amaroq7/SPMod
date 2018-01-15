@@ -75,7 +75,7 @@ Plugin::Plugin(size_t id,
         }
     }
 
-    cell_t result = 0;
+    cell_t result;
     auto *initFunction = plugin->GetFunctionByName("pluginInit");
 
     if (initFunction)
