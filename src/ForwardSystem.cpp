@@ -278,7 +278,7 @@ IForward *ForwardMngr::createForward(const char *name,
     if (params > SP_MAX_EXEC_PARAMS)
         return nullptr;
 
-    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
+    fwdParamTypeList forwardParams;
 
     // Get passed params types
     va_list paramsList;
@@ -316,7 +316,7 @@ std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
     if (paramsNum > SP_MAX_EXEC_PARAMS)
         return nullptr;
 
-    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
+    fwdParamTypeList forwardParams;
     std::copy(params.begin(), params.end(), forwardParams.begin());
 
     return _createForward(name, exec, forwardParams, paramsNum);

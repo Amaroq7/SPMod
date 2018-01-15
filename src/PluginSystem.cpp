@@ -127,7 +127,7 @@ std::shared_ptr<Forward> Plugin::createForwardCore(std::string_view name,
     if (paramsNum > SP_MAX_EXEC_PARAMS)
         return nullptr;
 
-    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
+    fwdParamTypeList forwardParams;
     std::copy(params.begin(), params.end(), forwardParams.begin());
 
     return _createForward(name, forwardParams, paramsNum);
