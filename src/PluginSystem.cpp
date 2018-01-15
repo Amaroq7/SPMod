@@ -22,22 +22,15 @@ Plugin::Plugin(size_t id,
                 const fs::path &path)
 {
     char errorSPMsg[256];
-    std::stringstream errorMsg;
     auto *spAPIv2 = gSPGlobal->getSPEnvironment()->APIv2();
     auto *plugin = spAPIv2->LoadBinaryFromFile(path.string().c_str(), errorSPMsg, sizeof(errorSPMsg));
 
     if (!plugin)
-    {
-        errorMsg << "Can't load " << path.filename() << "! (" << errorSPMsg << ")";
-        throw std::runtime_error(errorMsg.str());
-    }
+        throw std::runtime_error(errorSPMsg);
 
     uint32_t infoVarIndex;
     if (plugin->FindPubvarByName("pluginInfo", &infoVarIndex) != SP_ERROR_NONE)
-    {
-        errorMsg << "Can't find plugin info! (" << path.filename() << ")";
-        throw std::runtime_error(errorMsg.str());
-    }
+        throw std::runtime_error("Can't find plugin info!");
 
     sp_pubvar_t *infoVar;
     plugin->GetPubvarByIndex(infoVarIndex, &infoVar);
@@ -205,10 +198,7 @@ std::shared_ptr<Plugin> PluginMngr::_loadPlugin(const fs::path &path,
 
     if (path.extension().string() != ".smx")
     {
-        std::stringstream msg;
-        msg << "[SPMod] Unrecognized file format: " << path << '\n';
-        *error = msg.str();
-
+        *error = "Unrecognized file format";
         return nullptr;
     }
 
@@ -223,10 +213,7 @@ std::shared_ptr<Plugin> PluginMngr::_loadPlugin(const fs::path &path,
     }
     catch (const std::exception &e)
     {
-        std::stringstream msg;
-        msg << "[SPMod] " << e.what() << '\n';
-        *error = msg.str();
-
+        *error = e.what();
         return nullptr;
     }
 
@@ -253,7 +240,9 @@ size_t PluginMngr::loadPlugins()
         auto filePath = entry.path();
         if (!_loadPlugin(filePath, &errorMsg))
         {
-            SERVER_PRINT(errorMsg.c_str());
+            std::stringstream msg;
+            msg << "[SPMod] " << errorMsg << '\n';
+            SERVER_PRINT(msg.str().c_str());
             errorMsg.clear();
         }
     }
