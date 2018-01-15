@@ -207,15 +207,15 @@ std::shared_ptr<Plugin> PluginMngr::_loadPlugin(const fs::path &path,
     try
     {
         plugin = std::make_shared<Plugin>(pluginId, fileName, path);
-
-        if (!m_plugins.try_emplace(fileName, plugin).second)
-            return nullptr;
     }
     catch (const std::exception &e)
     {
         *error = e.what();
         return nullptr;
     }
+
+    if (const auto [iter, added] = m_plugins.insert(std::make_pair(fileName, plugin)); !added)
+        return nullptr;
 
     return plugin;
 }
