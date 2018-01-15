@@ -99,7 +99,7 @@ IForward *Plugin::createForward(const char *name,
     if (params > SP_MAX_EXEC_PARAMS)
         return nullptr;
 
-    std::array<Forward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
+    fwdParamTypeList forwardParams;
 
     // Get passed params types
     va_list paramsList;
