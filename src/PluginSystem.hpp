@@ -34,6 +34,7 @@ public:
             std::string_view identity,
             const fs::path &path);
 
+    Plugin() = delete;
     ~Plugin();
 
     // IPlugin
@@ -123,28 +124,22 @@ public:
     {
         m_scriptsPath = std::move(pathToScripts);
     }
+    PluginMngr() = delete;
     ~PluginMngr() = default;
 
     // IPluginMngr
+    size_t getPluginsNum() const override
+    {
+        return m_plugins.size();
+    }
     IPlugin *loadPlugin(const char *name,
                         char *error,
                         size_t size) override;
 
     IPlugin *getPlugin(size_t index) override;
     IPlugin *getPlugin(const char *name) override;
-    size_t getPluginsNum() const override
-    {
-        return m_plugins.size();
-    }
 
     // PluginMngr
-    std::shared_ptr<Plugin> loadPluginCore(std::string_view name,
-                                            std::string *error);
-
-    std::shared_ptr<Plugin> getPluginCore(size_t index);
-    std::shared_ptr<Plugin> getPluginCore(std::string_view name);
-    size_t loadPlugins();
-
     const auto &getPluginsList() const
     {
         return m_plugins;
@@ -161,6 +156,12 @@ public:
     {
         return gCanPluginsPrecache;
     }
+    std::shared_ptr<Plugin> loadPluginCore(std::string_view name,
+                                            std::string *error);
+
+    std::shared_ptr<Plugin> getPluginCore(size_t index);
+    std::shared_ptr<Plugin> getPluginCore(std::string_view name);
+    size_t loadPlugins();
 
 private:
     std::shared_ptr<Plugin> _loadPlugin(const fs::path &path,

@@ -61,7 +61,6 @@ public:
     {
         return m_spFactory->CurrentEnvironment();
     }
-
     bool addModule(IModuleInterface *interface) override;
 
     // SPGlobal
@@ -73,12 +72,10 @@ public:
     {
         return m_forwardManager;
     }
-    void initPluginManager();
     void setModName(std::string_view name)
     {
         m_modName = name;
     }
-    void setScriptsDir(std::string_view folder);
     const auto &getModulesList() const
     {
         return m_modulesNames;
@@ -92,6 +89,8 @@ public:
     #endif
 
     void initDefaultsForwards();
+    void initPluginManager();
+    void setScriptsDir(std::string_view folder);
 
 private:
 

@@ -44,6 +44,7 @@ public:
                                     m_currentPos(0),
                                     m_paramsNum(params)
                                     { }
+    Forward() = delete;
     ~Forward() = default;
 
     // IForward
@@ -75,13 +76,13 @@ public:
     bool execFunc(cell_t *result) override;
     void resetParams() override;
 
+    // Forward
     const std::string &getNameString() const
     {
         return m_name;
     }
 
 private:
-
     void pushParamsToFunction(SourcePawn::IPluginFunction *func);
 
     struct ForwardParam
@@ -121,21 +122,20 @@ public:
     IForward *findForward(const char *name) override;
 
     // ForwardMngr
-    std::shared_ptr<Forward> createForwardCore(std::string_view name,
-                                                IForward::ExecType exec,
-                                                fwdInitParamsList params);
-
-    std::shared_ptr<Forward> findForwardCore(std::string_view name);
     bool addForward(std::shared_ptr<Forward> forward)
     {
         return m_forwards.insert(std::make_pair(forward->getNameString(),
                                                 forward)).second;
     }
-
     void clearForwards()
     {
         m_forwards.clear();
     }
+    std::shared_ptr<Forward> createForwardCore(std::string_view name,
+                                                IForward::ExecType exec,
+                                                fwdInitParamsList params);
+
+    std::shared_ptr<Forward> findForwardCore(std::string_view name);
 
 private:
     std::shared_ptr<Forward> _createForward(std::string_view name,
