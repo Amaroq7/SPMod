@@ -30,20 +30,20 @@ public:
             ExecType type) : m_name(name),
                                 m_execType(type),
                                 m_paramTypes(paramstypes),
-                                m_plugin(nullptr),
+                                m_plugin(std::shared_ptr<Plugin>(nullptr)),
                                 m_currentPos(0),
                                 m_paramsNum(params)
                                 { }
     Forward(std::string_view name,
             fwdParamTypeList paramstypes,
             size_t params,
-            const Plugin *plugin) : m_name(name),
-                                    m_execType(ExecType::HIGHEST),
-                                    m_paramTypes(paramstypes),
-                                    m_plugin(plugin),
-                                    m_currentPos(0),
-                                    m_paramsNum(params)
-                                    { }
+            std::shared_ptr<Plugin> plugin) : m_name(name),
+                                                m_execType(ExecType::HIGHEST),
+                                                m_paramTypes(paramstypes),
+                                                m_plugin(plugin),
+                                                m_currentPos(0),
+                                                m_paramsNum(params)
+                                                { }
     Forward() = delete;
     ~Forward() = default;
 
@@ -52,9 +52,9 @@ public:
     {
         return m_name.c_str();
     }
-    const IPlugin *getPlugin() const override
+    IPlugin *getPlugin() const override
     {
-        return reinterpret_cast<const IPlugin *>(m_plugin);
+        return reinterpret_cast<IPlugin *>(m_plugin.lock().get());
     }
     bool pushCell(cell_t cell) override;
     bool pushCellPtr(cell_t *cell,
@@ -102,7 +102,7 @@ private:
     ExecType m_execType;
     fwdParamTypeList m_paramTypes;
     std::array<ForwardParam, SP_MAX_EXEC_PARAMS> m_params;
-    const Plugin *m_plugin;
+    std::weak_ptr<Plugin> m_plugin;
     size_t m_currentPos;
     size_t m_paramsNum;
 };

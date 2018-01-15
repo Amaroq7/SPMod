@@ -131,7 +131,8 @@ std::shared_ptr<Forward> Plugin::_createForward(std::string_view name,
                                                 fwdParamTypeList paramlist,
                                                 size_t paramsnum) const
 {
-    auto forwardPtr = std::make_shared<Forward>(name, paramlist, paramsnum, this);
+    auto plugin = gSPGlobal->getPluginManagerCore()->getPluginCore(m_identity);
+    auto forwardPtr = std::make_shared<Forward>(name, paramlist, paramsnum, plugin);
 
     if (!gSPGlobal->getForwardManagerCore()->addForward(forwardPtr))
         return nullptr;

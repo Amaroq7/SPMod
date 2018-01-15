@@ -144,9 +144,9 @@ bool Forward::execFunc(cell_t *result)
         return false;
 
     // Forward for one plugin
-    if (m_plugin)
+    if (auto plugin = m_plugin.lock(); plugin)
     {
-        auto *pluginRuntime = m_plugin->getRuntime();
+        auto *pluginRuntime = plugin->getRuntime();
         auto *funcToExecute = pluginRuntime->GetFunctionByName(m_name.c_str());
 
         if (!funcToExecute)

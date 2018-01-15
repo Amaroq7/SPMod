@@ -53,7 +53,7 @@ namespace SPMod
         };
 
         virtual const char *getName() const = 0;
-        virtual const IPlugin *getPlugin() const = 0;
+        virtual IPlugin *getPlugin() const = 0;
         virtual bool pushCell(cell_t cell) = 0;
         virtual bool pushCellPtr(cell_t *cell, bool copyback) = 0;
         virtual bool pushFloat(float real) = 0;
