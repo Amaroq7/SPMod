@@ -8,7 +8,8 @@ sourceFiles = files('coreNatives.cpp',
                     'SPGlobal.cpp',
                     'rehlds_init.cpp',
                     'ForwardSystem.cpp',
-                    'PluginSystem.cpp')
+                    'PluginSystem.cpp',
+                    'LoggingSystem.cpp')
 
 cppArgs = [
   '-stdlib=libc++',

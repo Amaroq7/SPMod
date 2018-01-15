@@ -213,6 +213,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
     gSPGlobal->addModule(gSPModModuleDef.get());
     gSPGlobal->initPluginManager();
     gSPGlobal->initDefaultsForwards();
+    gSPGlobal->getSPEnvironment()->APIv2()->SetDebugListener(gSPGlobal->getLoggerCore().get());
 
     printInfo();
 

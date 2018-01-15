@@ -21,6 +21,7 @@
 
 class PluginMngr;
 class ForwardMngr;
+class Logger;
 
 class SPGlobal : public ISPGlobal
 {
@@ -29,6 +30,7 @@ public:
     SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_path()),
                                     m_pluginManager(nullptr),
                                     m_forwardManager(std::make_unique<ForwardMngr>()),
+                                    m_loggingSystem(std::make_unique<Logger>()),
                                     m_spFactory(nullptr)
                                     { }
     ~SPGlobal()
@@ -72,6 +74,10 @@ public:
     {
         return m_forwardManager;
     }
+    const std::unique_ptr<Logger> &getLoggerCore() const
+    {
+        return m_loggingSystem;
+    }
     void setModName(std::string_view name)
     {
         m_modName = name;
@@ -104,6 +110,7 @@ private:
     fs::path m_SPModDir;
     std::unique_ptr<PluginMngr> m_pluginManager;
     std::unique_ptr<ForwardMngr> m_forwardManager;
+    std::unique_ptr<Logger> m_loggingSystem;
     std::string m_modName;
     std::unordered_map<std::string, NativeDef> m_modulesNames;
     SourcePawn::ISourcePawnFactory *m_spFactory;

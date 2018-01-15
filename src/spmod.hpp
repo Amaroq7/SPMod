@@ -62,6 +62,7 @@ using fwdInitParamsList = std::initializer_list<IForward::ParamType>;
 
 // SPMod specific
 #include "SPModModuleDef.hpp"
+#include "LoggingSystem.hpp"
 #include "PluginSystem.hpp"
 #include "ForwardSystem.hpp"
 #include "SPGlobal.hpp"
