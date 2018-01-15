@@ -45,9 +45,7 @@ void Logger::ReportError(const SourcePawn::IErrorReport &report,
             pluginIdentity = plugin->getIndentityString();
         }
         else
-        {
             pluginIdentity = "???";
-        }
 
         auto *funcName = iter.FunctionName();
         if (!funcName)
