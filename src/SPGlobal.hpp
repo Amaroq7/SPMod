@@ -97,6 +97,7 @@ public:
     void initDefaultsForwards();
     void initPluginManager();
     void setScriptsDir(std::string_view folder);
+    void setLogsDir(std::string_view folder);
 
 private:
 
@@ -108,6 +109,7 @@ private:
 
     fs::path m_SPModScriptsDir;
     fs::path m_SPModDir;
+    fs::path m_SPModLogsDir;
     std::unique_ptr<PluginMngr> m_pluginManager;
     std::unique_ptr<ForwardMngr> m_forwardManager;
     std::unique_ptr<Logger> m_loggingSystem;

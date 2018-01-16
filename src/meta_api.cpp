@@ -205,6 +205,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
     gSPGlobal = std::make_unique<SPGlobal>(GET_PLUGIN_PATH(PLID));
     gSPGlobal->setModName(GET_GAME_INFO(PLID, GINFO_NAME));
     gSPGlobal->setScriptsDir("scripts");
+    gSPGlobal->setLogsDir("logs");
 
     if (!InitializeSourcePawn())
         return 0;

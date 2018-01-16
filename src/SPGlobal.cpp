@@ -53,6 +53,13 @@ void SPGlobal::setScriptsDir(std::string_view folder)
     m_SPModScriptsDir = std::move(pathToScripts);
 }
 
+void SPGlobal::setLogsDir(std::string_view folder)
+{
+    fs::path pathToLogs(m_SPModDir);
+    pathToLogs /= folder;
+    m_SPModLogsDir = std::move(pathToLogs);
+}
+
 #ifdef SP_POSIX
 void SPGlobal::setSPFactory(void *library,
                             SourcePawn::ISourcePawnFactory *factory)
