@@ -20,37 +20,60 @@
 void Logger::ReportError(const SourcePawn::IErrorReport &report,
                             SourcePawn::IFrameIterator &iter)
 {
-    char *pluginIdentity;
-    report.Context()->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
-
     auto *spErrorMsg = gSPGlobal->getSPEnvironment()->APIv2()->GetErrorString(report.Code());
-    LOG_CONSOLE(PLID, "[SPMOD] Error encountered: %s", report.Message());
-    LOG_CONSOLE(PLID, "[SPMOD] Displaying debug trace (plugin \"%s\")", pluginIdentity);
+    auto getPluginIdentity = [](SourcePawn::IPluginContext *ctx)
+    {
+        char *pluginIdentity;
+        ctx->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
+        return pluginIdentity;
+    };
+
     LOG_CONSOLE(PLID, "[SPMOD] Run time error %i: %s", report.Code(), spErrorMsg);
+    LOG_CONSOLE(PLID, "[SPMOD] Error: %s", report.Message());
+
+    if (report.Blame() || report.Context())
+    {
+        LOG_CONSOLE(PLID, "[SPMOD] Blaming:");
+
+        if (report.Blame())
+            LOG_CONSOLE(PLID, "[SPMOD]    Function: %s", report.Blame()->DebugName());
+
+        if (report.Context())
+            LOG_CONSOLE(PLID, "[SPMOD]    Plugin: %s", getPluginIdentity(report.Context()));
+    }
+
+    if (!iter.Done())
+        LOG_CONSOLE(PLID, "[SPMOD] Stack trace:");
 
     size_t entryPos = 0;
     while (!iter.Done())
     {
-        if (!iter.IsScriptedFrame())
+        if (iter.IsInternalFrame())
         {
             iter.Next();
             continue;
         }
 
-        auto *pluginCtx = iter.Context();
-        if (pluginCtx)
-            pluginCtx->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
-        else
-            pluginIdentity = "???";
-
         auto *funcName = iter.FunctionName();
         if (!funcName)
             funcName = "???";
 
-        LOG_CONSOLE(PLID, "[SPMOD]    [%i] %s::%s (line %i)", entryPos,
-                                                                pluginIdentity,
-                                                                funcName,
-                                                                iter.LineNumber());
+        if (iter.IsScriptedFrame())
+        {
+            const char *pluginIdentity;
+
+            if (auto *pluginCtx = iter.Context(); pluginCtx)
+                pluginIdentity = getPluginIdentity(pluginCtx);
+            else
+                pluginIdentity = "???";
+
+            LOG_CONSOLE(PLID, "[SPMOD]    [%i] %s::%s (line %i)", entryPos,
+                                                                    pluginIdentity,
+                                                                    funcName,
+                                                                    iter.LineNumber());
+        }
+        else if(iter.IsNativeFrame())
+            LOG_CONSOLE(PLID, "[SPMOD]    [%i] %s", entryPos, funcName);
 
         ++entryPos;
         iter.Next();
