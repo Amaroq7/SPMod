@@ -17,8 +17,8 @@
 
 #include "LoggingSystem.hpp"
 
-void OnDebugSpew(const char *msg,
-                    ...)
+void Logger::OnDebugSpew(const char *msg,
+                            ...)
 {
     char debugMsg[512];
     va_list paramsList;
