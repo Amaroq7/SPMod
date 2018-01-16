@@ -140,21 +140,6 @@ std::shared_ptr<Forward> Plugin::_createForward(std::string_view name,
     return forwardPtr;
 }
 
-IPlugin *PluginMngr::getPlugin(const char *name)
-{
-    return getPluginCore(name).get();
-}
-
-IPlugin *PluginMngr::getPlugin(size_t index)
-{
-    return getPluginCore(index).get();
-}
-
-IPlugin *PluginMngr::getPlugin(SourcePawn::IPluginContext *ctx)
-{
-    return getPluginCore(ctx).get();
-}
-
 std::shared_ptr<Plugin> PluginMngr::getPluginCore(std::string_view name)
 {
     auto result = m_plugins.find(name.data());

@@ -132,13 +132,21 @@ public:
     {
         return m_plugins.size();
     }
+    IPlugin *getPlugin(size_t index) override
+    {
+        return getPluginCore(index).get();
+    }
+    IPlugin *getPlugin(const char *name) override
+    {
+        return getPluginCore(name).get();
+    }
+    IPlugin *getPlugin(SourcePawn::IPluginContext *ctx) override
+    {
+        return getPluginCore(ctx).get();
+    }
     IPlugin *loadPlugin(const char *name,
                         char *error,
                         size_t size) override;
-
-    IPlugin *getPlugin(size_t index) override;
-    IPlugin *getPlugin(const char *name) override;
-    IPlugin *getPlugin(SourcePawn::IPluginContext *ctx) override;
 
     // PluginMngr
     const auto &getPluginsList() const
