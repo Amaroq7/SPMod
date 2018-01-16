@@ -25,10 +25,8 @@ public:
     Logger() = default;
     ~Logger() = default;
 
-    // Not implemented for now
-    void OnDebugSpew(const char *msg [[maybe_unused]],
-                        ...) override
-    { }
+    void OnDebugSpew(const char *msg,
+                        ...) override;
 
     void ReportError(const SourcePawn::IErrorReport &report,
                         SourcePawn::IFrameIterator &iter) override;

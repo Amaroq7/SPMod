@@ -17,6 +17,19 @@
 
 #include "LoggingSystem.hpp"
 
+void OnDebugSpew(const char *msg,
+                    ...)
+{
+    char debugMsg[512];
+    va_list paramsList;
+
+    va_start(paramsList, msg);
+    std::vsnprintf(debugMsg, sizeof(debugMsg), msg, paramsList);
+    va_end(paramsList);
+
+    LOG_CONSOLE(PLID, "[SPMOD] %s", debugMsg);
+}
+
 void Logger::ReportError(const SourcePawn::IErrorReport &report,
                             SourcePawn::IFrameIterator &iter)
 {
