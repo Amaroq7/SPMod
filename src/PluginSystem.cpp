@@ -51,7 +51,7 @@ Plugin::Plugin(size_t id,
     m_id = id;
     m_identity = identity;
     m_runtime = plugin;
-    m_runtime->GetDefaultContext()->SetKey(1, this);
+    m_runtime->GetDefaultContext()->SetKey(1, const_cast<char *>(m_identity.c_str()));
 
     auto nativesNum = plugin->GetNativesNum();
     for (uint32_t index = 0; index < nativesNum; ++index)

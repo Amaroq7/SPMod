@@ -20,13 +20,12 @@
 void Logger::ReportError(const SourcePawn::IErrorReport &report,
                             SourcePawn::IFrameIterator &iter)
 {
-    Plugin *plugin;
-    report.Context()->GetKey(1, reinterpret_cast<void **>(&plugin));
+    char *pluginIdentity;
+    report.Context()->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
 
-    auto pluginIdentity = plugin->getIndentityString();
     auto *spErrorMsg = gSPGlobal->getSPEnvironment()->APIv2()->GetErrorString(report.Code());
     LOG_CONSOLE(PLID, "[SPMOD] Error encountered: %s", report.Message());
-    LOG_CONSOLE(PLID, "[SPMOD] Displaying debug trace (plugin \"%s\")", pluginIdentity.c_str());
+    LOG_CONSOLE(PLID, "[SPMOD] Displaying debug trace (plugin \"%s\")", pluginIdentity);
     LOG_CONSOLE(PLID, "[SPMOD] Run time error %i: %s", report.Code(), spErrorMsg);
 
     size_t entryPos = 0;
@@ -40,10 +39,7 @@ void Logger::ReportError(const SourcePawn::IErrorReport &report,
 
         auto *pluginCtx = iter.Context();
         if (pluginCtx)
-        {
-            pluginCtx->GetKey(1, reinterpret_cast<void **>(&plugin));
-            pluginIdentity = plugin->getIndentityString();
-        }
+            pluginCtx->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
         else
             pluginIdentity = "???";
 
@@ -52,7 +48,7 @@ void Logger::ReportError(const SourcePawn::IErrorReport &report,
             funcName = "???";
 
         LOG_CONSOLE(PLID, "[SPMOD]    [%i] %s::%s (line %i)", entryPos,
-                                                                pluginIdentity.c_str(),
+                                                                pluginIdentity,
                                                                 funcName,
                                                                 iter.LineNumber());
 
