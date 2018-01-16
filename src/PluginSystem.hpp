@@ -138,6 +138,7 @@ public:
 
     IPlugin *getPlugin(size_t index) override;
     IPlugin *getPlugin(const char *name) override;
+    IPlugin *getPlugin(SourcePawn::IPluginContext *ctx) override;
 
     // PluginMngr
     const auto &getPluginsList() const
@@ -161,6 +162,7 @@ public:
 
     std::shared_ptr<Plugin> getPluginCore(size_t index);
     std::shared_ptr<Plugin> getPluginCore(std::string_view name);
+    std::shared_ptr<Plugin> getPluginCore(SourcePawn::IPluginContext *ctx);
     size_t loadPlugins();
 
 private:

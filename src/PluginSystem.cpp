@@ -150,6 +150,11 @@ IPlugin *PluginMngr::getPlugin(size_t index)
     return getPluginCore(index).get();
 }
 
+IPlugin *PluginMngr::getPlugin(SourcePawn::IPluginContext *ctx)
+{
+    return getPluginCore(ctx).get();
+}
+
 std::shared_ptr<Plugin> PluginMngr::getPluginCore(std::string_view name)
 {
     auto result = m_plugins.find(name.data());
@@ -165,6 +170,14 @@ std::shared_ptr<Plugin> PluginMngr::getPluginCore(size_t index)
             return entry.second;
     }
     return nullptr;
+}
+
+std::shared_ptr<Plugin> PluginMngr::getPluginCore(SourcePawn::IPluginContext *ctx)
+{
+    char *pluginIdentity;
+    ctx->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
+
+    return getPluginCore(pluginIdentity);
 }
 
 IPlugin *PluginMngr::loadPlugin(const char *name,
