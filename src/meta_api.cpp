@@ -229,6 +229,7 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now [[maybe_unused]],
                             PL_UNLOAD_REASON reason [[maybe_unused]])
 {
     gSPGlobal->getPluginManagerCore()->detachPlugins();
+    gSPGlobal->getForwardManagerCore()->clearForwards();
     gSPGlobal->getSPEnvironment()->Shutdown();
 
     return 1;
