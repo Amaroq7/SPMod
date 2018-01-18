@@ -67,32 +67,32 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
     gpMetaGlobals = pMGlobals;
     gpGamedllFuncs = pGamedllFuncs;
 
-    {
-        std::stringstream msg;
-        msg << '\n';
-        msg << "   SPMod Copyright (c) 2018 " << gSPModAuthor << '\n';
-        msg << "   This program comes with ABSOLUTELY NO WARRANTY; for details type `spmod gpl'." << '\n';
-        msg << "   This is free software, and you are welcome to redistribute it" << '\n';
-        msg << "   under certain conditions; type `spmod gpl' for details." << '\n';
-        msg << '\n';
-        msg << "SPMod " << gSPModVersion << ", API " << SPMOD_API_VERSION << '\n';
-        msg << "SPMod build: " << __TIME__ << " " << __DATE__ << '\n';
-        SERVER_PRINT(msg.str().c_str());
-    }
-
-    if (!initRehldsApi())
-    {
-        LOG_CONSOLE(PLID, "[SPMOD] SPMod requires to have ReHLDS installed!");
-        return 0;
-    }
-
     try
     {
         gSPGlobal = std::make_unique<SPGlobal>(GET_PLUGIN_PATH(PLID));
     }
     catch (const std::exception &e)
     {
+        // Failed to initialize gSPGlobal, we gotta use this util func
         LOG_CONSOLE(PLID, "[SPMOD] %s", e.what());
+        return 0;
+    }
+
+    auto &logSystem = gSPGlobal->getLoggerCore();
+    {
+        logSystem->LogConsoleCore(""); // Empty line
+        logSystem->LogConsoleCore("   SPMod Copyright (c) 2018 ", gSPModAuthor);
+        logSystem->LogConsoleCore("   This program comes with ABSOLUTELY NO WARRANTY; for details type `spmod gpl'.");
+        logSystem->LogConsoleCore("   This is free software, and you are welcome to redistribute it");
+        logSystem->LogConsoleCore("   under certain conditions; type `spmod gpl' for details.");
+        logSystem->LogConsoleCore(""); // Empty line
+        logSystem->LogConsoleCore("SPMod ", gSPModVersion, ", API ", SPMOD_API_VERSION);
+        logSystem->LogConsoleCore("SPMod build: ", __TIME__, " ", __DATE__);
+    }
+
+    if (!initRehldsApi())
+    {
+        logSystem->LogErrorCore("SPMod requires to have ReHLDS installed!");
         return 0;
     }
 
