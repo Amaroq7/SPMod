@@ -34,6 +34,18 @@ public:
 
     // Logger
     template <typename ...Args>
+    void LogConsoleCore(Args... args)
+    {
+        std::stringstream messageToLog;
+
+        messageToLog << "[SPMOD] ";
+        (messageToLog << ... << args);
+        messageToLog << '\n';
+
+        SERVER_PRINT(messageToLog.str().c_str());
+    }
+
+    template <typename ...Args>
     void LogMessageCore(Args... args)
     {
         std::stringstream messageToLog;
