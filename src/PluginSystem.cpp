@@ -184,7 +184,7 @@ IPlugin *PluginMngr::loadPlugin(const char *name,
 std::shared_ptr<Plugin> PluginMngr::loadPluginCore(std::string_view name,
                                                     std::string *error)
 {
-    auto plugin = _loadPlugin(m_scriptsPath / name, error);
+    auto plugin = _loadPlugin(gSPGlobal->getScriptsDirCore() / name, error);
     if (!plugin)
         return nullptr;
 
@@ -223,7 +223,7 @@ std::shared_ptr<Plugin> PluginMngr::_loadPlugin(const fs::path &path,
 size_t PluginMngr::loadPlugins()
 {
     std::error_code errCode;
-    auto directoryIter = fs::directory_iterator(m_scriptsPath, errCode);
+    auto directoryIter = fs::directory_iterator(gSPGlobal->getScriptsDirCore(), errCode);
 
     if (errCode)
     {

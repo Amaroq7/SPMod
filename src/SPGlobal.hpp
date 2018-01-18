@@ -26,13 +26,11 @@ class Logger;
 class SPGlobal : public ISPGlobal
 {
 public:
+
+    static constexpr auto *sourcepawnLibrary = "sourcepawn.jit.x86.so";
+
     SPGlobal() = delete;
-    SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_path()),
-                                    m_pluginManager(nullptr),
-                                    m_forwardManager(std::make_unique<ForwardMngr>()),
-                                    m_loggingSystem(std::make_unique<Logger>()),
-                                    m_spFactory(nullptr)
-                                    { }
+    SPGlobal(fs::path &&dllDir);
     ~SPGlobal()
     {
         #ifdef SP_POSIX
@@ -78,28 +76,21 @@ public:
     {
         return m_loggingSystem;
     }
-    void setModName(std::string_view name)
-    {
-        m_modName = name;
-    }
     const auto &getModulesList() const
     {
         return m_modulesNames;
     }
+    const auto &getScriptsDirCore()
+    {
+        return m_SPModScriptsDir;
+    }
 
-    #ifdef SP_POSIX
-    void setSPFactory(void *library,
-                        SourcePawn::ISourcePawnFactory *factory);
-    #else
-    //void setSPFactory(void *library, SourcePawn::ISourcePawnFactory *factory);
-    #endif
-
-    void initDefaultsForwards();
-    void initPluginManager();
     void setScriptsDir(std::string_view folder);
     void setLogsDir(std::string_view folder);
 
 private:
+
+    void _initSourcePawn();
 
     struct NativeDef
     {
@@ -118,11 +109,11 @@ private:
     SourcePawn::ISourcePawnFactory *m_spFactory;
 
     // SourcePawn library handle
-    #ifdef SP_POSIX
+#ifdef SP_POSIX
     void *m_SPLibraryHandle;
-    #else
+#else
     // TODO: windows
-    #endif
+#endif
 };
 
 extern std::unique_ptr<SPGlobal> gSPGlobal;

@@ -110,7 +110,10 @@ private:
 class ForwardMngr final : public IForwardMngr
 {
 public:
-    ForwardMngr() = default;
+    ForwardMngr()
+    {
+        _addDefaultsForwards();
+    }
     ~ForwardMngr() = default;
 
     // IForwardMngr
@@ -138,6 +141,9 @@ public:
     std::shared_ptr<Forward> findForwardCore(std::string_view name);
 
 private:
+
+    void _addDefaultsForwards();
+
     std::shared_ptr<Forward> _createForward(std::string_view name,
                                             IForward::ExecType exec,
                                             fwdParamTypeList params,

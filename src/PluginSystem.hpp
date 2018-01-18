@@ -120,11 +120,7 @@ private:
 class PluginMngr final : public IPluginMngr
 {
 public:
-    PluginMngr(const fs::path &pathToScripts)
-    {
-        m_scriptsPath = pathToScripts;
-    }
-    PluginMngr() = delete;
+    PluginMngr() = default;
     ~PluginMngr() = default;
 
     // IPluginMngr
@@ -177,7 +173,6 @@ private:
     std::shared_ptr<Plugin> _loadPlugin(const fs::path &path,
                                         std::string *error);
     std::unordered_map<std::string, std::shared_ptr<Plugin>> m_plugins;
-    fs::path m_scriptsPath;
 
     // Allow plugins to precache
     bool m_canPluginsPrecache;

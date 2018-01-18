@@ -9,7 +9,8 @@ sourceFiles = files('coreNatives.cpp',
                     'rehlds_init.cpp',
                     'ForwardSystem.cpp',
                     'PluginSystem.cpp',
-                    'LoggingSystem.cpp')
+                    'LoggingSystem.cpp',
+                    'SrvCommand.cpp')
 
 cppArgs = [
   '-stdlib=libc++',

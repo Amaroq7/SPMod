@@ -17,7 +17,7 @@
 
 #include "spmod.hpp"
 
-qboolean dllapi_ClientConnect(edict_t *pEntity,
+static qboolean ClientConnect(edict_t *pEntity,
                                 const char *pszName,
                                 const char *pszAddress,
                                 char szRejectReason[128])
@@ -39,21 +39,6 @@ qboolean dllapi_ClientConnect(edict_t *pEntity,
     RETURN_META_VALUE(MRES_IGNORED, TRUE);
 }
 
-void dllapi_ServerActivate(edict_t *pEdictList [[maybe_unused]],
-                            int edictCount [[maybe_unused]],
-                            int clientMax [[maybe_unused]])
-{
-    auto &pluginManager = gSPGlobal->getPluginManagerCore();
-    pluginManager->setPluginPrecache(true);
-    pluginManager->loadPlugins();
-    pluginManager->setPluginPrecache(false);
-}
-
-void dllapi_ServerDeactivate()
-{
-    gSPGlobal->getPluginManagerCore()->detachPlugins();
-}
-
 DLL_FUNCTIONS gDllFunctionTable =
 {
 	nullptr,					// pfnGameInit
@@ -71,14 +56,14 @@ DLL_FUNCTIONS gDllFunctionTable =
 	nullptr,					// pfnSaveGlobalState
 	nullptr,					// pfnRestoreGlobalState
 	nullptr,					// pfnResetGlobalState
-	dllapi_ClientConnect,		// pfnClientConnect
+	ClientConnect,              // pfnClientConnect
 	nullptr,					// pfnClientDisconnect
 	nullptr,					// pfnClientKill
 	nullptr,					// pfnClientPutInServer
 	nullptr,					// pfnClientCommand
 	nullptr,					// pfnClientUserInfoChanged
-	dllapi_ServerActivate,      // pfnServerActivate
-	dllapi_ServerDeactivate,	// pfnServerDeactivate
+	nullptr,                    // pfnServerActivate
+	nullptr,	                // pfnServerDeactivate
 	nullptr,					// pfnPlayerPreThink
 	nullptr,					// pfnPlayerPostThink
 	nullptr,					// pfnStartFrame
@@ -108,9 +93,29 @@ DLL_FUNCTIONS gDllFunctionTable =
 	nullptr,					// pfnAllowLagCompensation
 };
 
+static void ServerActivatePost(edict_t *pEdictList [[maybe_unused]],
+                                int edictCount [[maybe_unused]],
+                                int clientMax [[maybe_unused]])
+{
+    auto &pluginManager = gSPGlobal->getPluginManagerCore();
+    pluginManager->setPluginPrecache(true);
+    pluginManager->loadPlugins();
+    pluginManager->setPluginPrecache(false);
+}
+
+static void ServerDeactivatePost()
+{
+    gSPGlobal->getPluginManagerCore()->detachPlugins();
+}
+
+static void GameInitPost()
+{
+    REG_SVR_COMMAND("spmod", SPModInfoCommand);
+}
+
 DLL_FUNCTIONS gDllFunctionTablePost =
 {
-	nullptr,					// pfnGameInit
+	GameInitPost,				// pfnGameInit
 	nullptr,					// pfnSpawn
 	nullptr,					// pfnThink
 	nullptr,					// pfnUse
@@ -131,8 +136,8 @@ DLL_FUNCTIONS gDllFunctionTablePost =
 	nullptr,					// pfnClientPutInServer
 	nullptr,					// pfnClientCommand
 	nullptr,					// pfnClientUserInfoChanged
-	nullptr,					// pfnServerActivate
-	nullptr,					// pfnServerDeactivate
+	ServerActivatePost,			// pfnServerActivate
+	ServerDeactivatePost,       // pfnServerDeactivate
 	nullptr,					// pfnPlayerPreThink
 	nullptr,					// pfnPlayerPostThink
 	nullptr,					// pfnStartFrame
@@ -171,10 +176,15 @@ NEW_DLL_FUNCTIONS gNewDllFunctionTable =
 	nullptr,					//! pfnCvarValue2()
 };
 
+void GameShutdownPost()
+{
+    gSPGlobal->getSPEnvironment()->Shutdown();
+}
+
 NEW_DLL_FUNCTIONS gNewDllFunctionTablePost =
 {
 	nullptr,					//! pfnOnFreeEntPrivateData()	Called right before the object's memory is freed.  Calls its destructor.
-	nullptr,					//! pfnGameShutdown()
+	GameShutdownPost,			//! pfnGameShutdown()
 	nullptr,					//! pfnShouldCollide()
 	nullptr,					//! pfnCvarValue()
 	nullptr,					//! pfnCvarValue2()

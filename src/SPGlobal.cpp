@@ -19,6 +19,28 @@
 
 std::unique_ptr<SPGlobal> gSPGlobal;
 
+SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_path()),
+                                        m_pluginManager(std::make_unique<PluginMngr>()),
+                                        m_forwardManager(std::make_unique<ForwardMngr>()),
+                                        m_loggingSystem(std::make_unique<Logger>()),
+                                        m_modName(GET_GAME_INFO(PLID, GINFO_NAME)),
+                                        m_spFactory(nullptr)
+{
+    // Sets defaults dirs
+    setScriptsDir("scripts");
+    setLogsDir("logs");
+
+    // Initialize SourcePawn library
+    _initSourcePawn();
+
+    // Create definition of core module
+    gSPModModuleDef = std::make_unique<SPModModule>(gCoreNatives);
+    addModule(gSPModModuleDef.get());
+
+    // Sets up listener for debbugging
+    getSPEnvironment()->APIv2()->SetDebugListener(m_loggingSystem.get());
+}
+
 bool SPGlobal::addModule(IModuleInterface *interface)
 {
     //TODO: Error reporting?
@@ -38,14 +60,6 @@ bool SPGlobal::addModule(IModuleInterface *interface)
     return true;
 }
 
-void SPGlobal::initPluginManager()
-{
-    if (m_pluginManager)
-        return;
-
-    m_pluginManager = std::make_unique<PluginMngr>(m_SPModScriptsDir);
-}
-
 void SPGlobal::setScriptsDir(std::string_view folder)
 {
     fs::path pathToScripts(m_SPModDir);
@@ -60,25 +74,55 @@ void SPGlobal::setLogsDir(std::string_view folder)
     m_SPModLogsDir = std::move(pathToLogs);
 }
 
+void SPGlobal::_initSourcePawn()
+{
+    fs::path dllsDir(getHome());
+    dllsDir /= "dlls";
+    dllsDir /= SPGlobal::sourcepawnLibrary;
+
 #ifdef SP_POSIX
-void SPGlobal::setSPFactory(void *library,
-                            SourcePawn::ISourcePawnFactory *factory)
+    void *libraryHandle = dlopen(dllsDir.c_str(), RTLD_NOW);
 #else
-// TODO: windows
+    // TODO: windows
 #endif
-{
-    if (m_spFactory)
-        return;
 
-    m_spFactory = factory;
+    if (!libraryHandle)
+        throw std::runtime_error("Failed to open SourcePawn library");
+
+#ifdef SP_POSIX
+    auto getFactoryFunc = reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>
+                                (dlsym(libraryHandle, "GetSourcePawnFactory"));
+#else
+    //TODO: windows
+#endif
+
+    if (!getFactoryFunc)
+    {
+#ifdef SP_POSIX
+        dlclose(libraryHandle);
+#else
+        //TODO: windows
+#endif
+        throw std::runtime_error("Cannot find SourcePawn factory function");
+    }
+
+    SourcePawn::ISourcePawnFactory *SPFactory = getFactoryFunc(SOURCEPAWN_API_VERSION);
+    if (!SPFactory)
+    {
+#ifdef SP_POSIX
+        dlclose(libraryHandle);
+#else
+        // TODO: windows
+#endif
+        throw std::runtime_error("Wrong SourcePawn library version");
+    }
+
+#ifdef SP_POSIX
+    m_SPLibraryHandle = libraryHandle;
+#else
+    // TODO: windows
+#endif
+    m_spFactory = SPFactory;
     m_spFactory->NewEnvironment();
-    m_SPLibraryHandle = library;
-};
-
-void SPGlobal::initDefaultsForwards()
-{
-    using et = IForward::ExecType;
-    using param = IForward::ParamType;
-    auto paramsList = { param::CELL, param::STRING, param::STRING, param::STRINGEX };
-    m_forwardManager->createForwardCore("OnClientConnect", et::STOP, paramsList);
+    getSPEnvironment()->APIv2()->SetJitEnabled(true);
 }

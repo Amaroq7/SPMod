@@ -336,3 +336,12 @@ std::shared_ptr<Forward> ForwardMngr::_createForward(std::string_view name,
 
     return forwardPtr;
 }
+
+void ForwardMngr::_addDefaultsForwards()
+{
+    using et = IForward::ExecType;
+    using param = IForward::ParamType;
+
+    auto paramsList = { param::CELL, param::STRING, param::STRING, param::STRINGEX };
+    createForwardCore("OnClientConnect", et::STOP, paramsList);
+}
