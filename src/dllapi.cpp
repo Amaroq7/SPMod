@@ -106,6 +106,7 @@ static void ServerActivatePost(edict_t *pEdictList [[maybe_unused]],
 static void ServerDeactivatePost()
 {
     gSPGlobal->getPluginManagerCore()->detachPlugins();
+    gSPGlobal->getLoggerCore()->resetErrorState();
 }
 
 static void GameInitPost()

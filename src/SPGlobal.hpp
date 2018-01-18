@@ -84,6 +84,10 @@ public:
     {
         return m_SPModScriptsDir;
     }
+    const auto &getLogsDirCore()
+    {
+        return m_SPModLogsDir;
+    }
 
     void setScriptsDir(std::string_view folder);
     void setLogsDir(std::string_view folder);

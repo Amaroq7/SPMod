@@ -41,22 +41,22 @@ void Logger::ReportError(const SourcePawn::IErrorReport &report,
         return pluginIdentity;
     };
 
-    LOG_CONSOLE(PLID, "[SPMOD] Run time error %i: %s", report.Code(), spErrorMsg);
-    LOG_CONSOLE(PLID, "[SPMOD] Error: %s", report.Message());
+    LogErrorCore("[SPMOD] Run time error ", report.Code(), ": ", spErrorMsg);
+    LogErrorCore("[SPMOD] Error: ", report.Message());
 
     if (report.Blame() || report.Context())
     {
-        LOG_CONSOLE(PLID, "[SPMOD] Blaming:");
+        LogErrorCore("[SPMOD] Blaming:");
 
         if (report.Blame())
-            LOG_CONSOLE(PLID, "[SPMOD]    Function: %s", report.Blame()->DebugName());
+            LogErrorCore("[SPMOD]    Function: ", report.Blame()->DebugName());
 
         if (report.Context())
-            LOG_CONSOLE(PLID, "[SPMOD]    Plugin: %s", getPluginIdentity(report.Context()));
+            LogErrorCore("[SPMOD]    Plugin: ", getPluginIdentity(report.Context()));
     }
 
     if (!iter.Done())
-        LOG_CONSOLE(PLID, "[SPMOD] Stack trace:");
+        LogErrorCore("[SPMOD] Stack trace:");
 
     size_t entryPos = 0;
     while (!iter.Done())
@@ -80,15 +80,43 @@ void Logger::ReportError(const SourcePawn::IErrorReport &report,
             else
                 pluginIdentity = "???";
 
-            LOG_CONSOLE(PLID, "[SPMOD]    [%i] %s::%s (line %i)", entryPos,
-                                                                    pluginIdentity,
+            LogErrorCore("[SPMOD]    [", entryPos, "] ", pluginIdentity, "::",
                                                                     funcName,
-                                                                    iter.LineNumber());
+                                                                    "(line ",
+                                                                    iter.LineNumber(),
+                                                                    ")");
         }
         else if(iter.IsNativeFrame())
-            LOG_CONSOLE(PLID, "[SPMOD]    [%i] %s", entryPos, funcName);
+            LogErrorCore("[SPMOD]    [", entryPos, "] ", funcName);
 
         ++entryPos;
         iter.Next();
     }
+}
+
+void Logger::_writeErrorToFile(std::string_view errormsg)
+{
+    using fFlags = std::ios_base;
+
+    time_t currentTime;
+    time(&currentTime);
+    tm *convertedTime = std::localtime(&currentTime);
+
+    char logDateTime[64], fileName[256];
+    std::strftime(logDateTime, sizeof(logDateTime), "%Y/%m/%d - %H:%M:%S: ", convertedTime);
+    std::strftime(fileName, sizeof(fileName), "error_%Y%m%d.log", convertedTime);
+
+    std::fstream errorFile(gSPGlobal->getLogsDirCore() / fileName, fFlags::out | fFlags::app);
+
+    if (!m_alreadyReportedError)
+    {
+        errorFile << logDateTime << "Start of error session.\n";
+        errorFile << logDateTime  << "Info (map " << STRING(gpGlobals->mapname)
+                                                    << ") (CRC "
+                                                    << gRehldsServerData->GetWorldmapCrc()
+                                                    << ")\n";
+        m_alreadyReportedError = true;
+    }
+
+    errorFile << logDateTime << errormsg;
 }

@@ -25,9 +25,44 @@ public:
     Logger() = default;
     ~Logger() = default;
 
+    // IDebugListener
     void OnDebugSpew(const char *msg,
                         ...) override;
 
     void ReportError(const SourcePawn::IErrorReport &report,
                         SourcePawn::IFrameIterator &iter) override;
+
+    // Logger
+    template <typename ...Args>
+    void LogMessageCore(Args... args)
+    {
+        std::stringstream messageToLog;
+
+        (messageToLog << ... << args);
+        messageToLog << '\n';
+
+        SERVER_PRINT(messageToLog.str().c_str());
+    }
+
+    template <typename ...Args>
+    void LogErrorCore(Args... args)
+    {
+        std::stringstream errorToLog;
+
+        (errorToLog << ... << args);
+        errorToLog << '\n';
+
+        _writeErrorToFile(errorToLog.str());
+
+        SERVER_PRINT(errorToLog.str().c_str());
+    }
+
+    void resetErrorState()
+    {
+        m_alreadyReportedError = false;
+    }
+
+private:
+    void _writeErrorToFile(std::string_view errormsg);
+    bool m_alreadyReportedError;
 };
