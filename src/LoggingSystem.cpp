@@ -111,10 +111,21 @@ void Logger::_writeErrorToFile(std::string_view errormsg)
     if (!m_alreadyReportedError)
     {
         errorFile << logDateTime << "Start of error session.\n";
-        errorFile << logDateTime << "Info (map " << STRING(gpGlobals->mapname)
-                                                    << ") (CRC "
-                                                    << gRehldsServerData->GetWorldmapCrc()
-                                                    << ")\n";
+        errorFile << logDateTime << "Info (map ";
+
+        if (STRING(gpGlobals->mapname))
+            errorFile << STRING(gpGlobals->mapname);
+        else
+            errorFile << "<unknown>";
+
+        errorFile << ") (CRC ";
+
+        if (gRehldsServerData)
+            errorFile << gRehldsServerData->GetWorldmapCrc();
+        else
+            errorFile << "<unknown>";
+
+        errorFile << ")\n";
         m_alreadyReportedError = true;
     }
 
