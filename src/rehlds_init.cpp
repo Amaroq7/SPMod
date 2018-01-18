@@ -66,7 +66,9 @@ static bool _initRehldsApi(CSysModule *module,
 
         msg << "ReHLDS API Major version mismatch; expected " << REHLDS_API_VERSION_MAJOR;
         msg << ", got " << majorVersion;
-        *error = msg.str();
+
+        if (error)
+            *error = msg.str();
 
         return false;
     }
@@ -77,7 +79,9 @@ static bool _initRehldsApi(CSysModule *module,
 
         msg << "ReHLDS API minor version mismatch; excpected at least " << REHLDS_API_VERSION_MINOR;
         msg << ", got " << minorVersion;
-        *error = msg.str();
+
+        if (error)
+            *error = msg.str();
 
         return false;
     }
