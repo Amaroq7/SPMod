@@ -22,6 +22,7 @@ IRehldsApi *gRehldsApi;
 const RehldsFuncs_t *gRehldsFuncs;
 IRehldsHookchains *gRehldsHookchains;
 IRehldsServerStatic *gRehldsServerStatic;
+IRehldsServerData *gRehldsServerData;
 
 static bool _initRehldsApi(CSysModule *module,
                             std::string *error = nullptr)
@@ -84,6 +85,7 @@ static bool _initRehldsApi(CSysModule *module,
     gRehldsFuncs = gRehldsApi->GetFuncs();
     gRehldsHookchains = gRehldsApi->GetHookchains();
     gRehldsServerStatic = gRehldsApi->GetServerStatic();
+    gRehldsServerData = gRehldsApi->GetServerData();
 
     return true;
 }

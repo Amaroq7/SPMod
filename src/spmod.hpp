@@ -49,6 +49,7 @@ extern IRehldsApi *gRehldsApi;
 extern const RehldsFuncs_t *gRehldsFuncs;
 extern IRehldsHookchains *gRehldsHookchains;
 extern IRehldsServerStatic *gRehldsServerStatic;
+extern IRehldsServerData *gRehldsServerData;
 
 extern bool initRehldsApi();
 
