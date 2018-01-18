@@ -98,8 +98,12 @@ private:
 
     struct NativeDef
     {
-        sp_nativeinfo_t *natives;
-        size_t num;
+        NativeDef(const sp_nativeinfo_t *natives,
+                    const size_t num) : m_natives(natives), m_num(num)
+                    { }
+
+        const sp_nativeinfo_t *m_natives;
+        const size_t m_num;
     };
 
     fs::path m_SPModScriptsDir;

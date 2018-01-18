@@ -75,11 +75,11 @@ namespace SPMod
         {
             return SPMOD_API_VERSION;
         }
-        virtual sp_nativeinfo_t *getNatives()
+        virtual const sp_nativeinfo_t *getNatives() const
         {
             return m_natives;
         }
-        virtual size_t getNativesNum()
+        virtual size_t getNativesNum() const
         {
             return m_nativesNum;
         }
