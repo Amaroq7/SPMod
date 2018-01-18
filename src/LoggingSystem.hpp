@@ -38,7 +38,6 @@ public:
     {
         std::stringstream messageToLog;
 
-        messageToLog << "[SPMOD] ";
         (messageToLog << ... << args);
         messageToLog << '\n';
 
@@ -50,9 +49,11 @@ public:
     {
         std::stringstream messageToLog;
 
+        messageToLog << "[SPMOD] ";
         (messageToLog << ... << args);
         messageToLog << '\n';
 
+        // TODO: logging to file
         SERVER_PRINT(messageToLog.str().c_str());
     }
 
@@ -61,6 +62,7 @@ public:
     {
         std::stringstream errorToLog;
 
+        errorToLog << "[SPMOD] ";
         (errorToLog << ... << args);
         errorToLog << '\n';
 

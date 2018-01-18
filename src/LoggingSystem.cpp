@@ -41,22 +41,22 @@ void Logger::ReportError(const SourcePawn::IErrorReport &report,
         return pluginIdentity;
     };
 
-    LogErrorCore("[SPMOD] Run time error ", report.Code(), ": ", spErrorMsg);
-    LogErrorCore("[SPMOD] Error: ", report.Message());
+    LogErrorCore("Run time error ", report.Code(), ": ", spErrorMsg);
+    LogErrorCore("Error: ", report.Message());
 
     if (report.Blame() || report.Context())
     {
-        LogErrorCore("[SPMOD] Blaming:");
+        LogErrorCore("Blaming:");
 
         if (report.Blame())
-            LogErrorCore("[SPMOD]    Function: ", report.Blame()->DebugName());
+            LogErrorCore("   Function: ", report.Blame()->DebugName());
 
         if (report.Context())
-            LogErrorCore("[SPMOD]    Plugin: ", getPluginIdentity(report.Context()));
+            LogErrorCore("   Plugin: ", getPluginIdentity(report.Context()));
     }
 
     if (!iter.Done())
-        LogErrorCore("[SPMOD] Stack trace:");
+        LogErrorCore("Stack trace:");
 
     size_t entryPos = 0;
     while (!iter.Done())
@@ -80,14 +80,14 @@ void Logger::ReportError(const SourcePawn::IErrorReport &report,
             else
                 pluginIdentity = "???";
 
-            LogErrorCore("[SPMOD]    [", entryPos, "] ", pluginIdentity, "::",
+            LogErrorCore("   [", entryPos, "] ", pluginIdentity, "::",
                                                                     funcName,
                                                                     " (line ",
                                                                     iter.LineNumber(),
                                                                     ")");
         }
         else if(iter.IsNativeFrame())
-            LogErrorCore("[SPMOD]    [", entryPos, "] ", funcName);
+            LogErrorCore("   [", entryPos, "] ", funcName);
 
         ++entryPos;
         iter.Next();
@@ -111,7 +111,7 @@ void Logger::_writeErrorToFile(std::string_view errormsg)
     if (!m_alreadyReportedError)
     {
         errorFile << logDateTime << "Start of error session.\n";
-        errorFile << logDateTime  << "Info (map " << STRING(gpGlobals->mapname)
+        errorFile << logDateTime << "Info (map " << STRING(gpGlobals->mapname)
                                                     << ") (CRC "
                                                     << gRehldsServerData->GetWorldmapCrc()
                                                     << ")\n";
