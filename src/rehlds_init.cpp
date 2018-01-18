@@ -102,7 +102,7 @@ bool initRehldsApi()
     CSysModule *engineModule = Sys_LoadModule("engine_i486.so");
     if (!_initRehldsApi(engineModule, &errorMsg))
     {
-        LOG_CONSOLE(PLID, "%s", errorMsg.c_str());
+        gSPGlobal->getLoggerCore()->LogErrorCore(errorMsg.c_str());
         return false;
     }
 #else
@@ -112,7 +112,7 @@ bool initRehldsApi()
         engineModule = Sys_LoadModule("filesystem_stdio.dll");
         if (!_initRehldsApi(engineModule, &errorMsg))
         {
-            LOG_CONSOLE(PLID, "%s", errorMsg.c_str());
+            gSPGlobal->->getLoggerCore()->LogErrorCore(errorMsg.c_str());
             return false;
         }
     }
