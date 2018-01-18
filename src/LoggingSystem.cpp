@@ -82,7 +82,7 @@ void Logger::ReportError(const SourcePawn::IErrorReport &report,
 
             LogErrorCore("[SPMOD]    [", entryPos, "] ", pluginIdentity, "::",
                                                                     funcName,
-                                                                    "(line ",
+                                                                    " (line ",
                                                                     iter.LineNumber(),
                                                                     ")");
         }
