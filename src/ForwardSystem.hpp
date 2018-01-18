@@ -127,8 +127,7 @@ public:
     // ForwardMngr
     bool addForward(std::shared_ptr<Forward> forward)
     {
-        return m_forwards.insert(std::make_pair(forward->getNameString(),
-                                                forward)).second;
+        return m_forwards.try_emplace(forward->getNameString(), forward).second;
     }
     void clearForwards()
     {

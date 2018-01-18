@@ -214,7 +214,7 @@ std::shared_ptr<Plugin> PluginMngr::_loadPlugin(const fs::path &path,
         return nullptr;
     }
 
-    if (const auto [iter, added] = m_plugins.insert(std::make_pair(fileName, plugin)); !added)
+    if (const auto [iter, added] = m_plugins.try_emplace(fileName, plugin); !added)
         return nullptr;
 
     return plugin;
