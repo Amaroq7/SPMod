@@ -51,7 +51,7 @@ static bool _initRehldsApi(CSysModule *module,
         if (error)
         {
             *error = "Failed to retrieve rehlds api interface, code ";
-            *error += retCode;
+            *error += std::to_string(retCode);
         }
 
         return false;
