@@ -224,13 +224,11 @@ size_t PluginMngr::loadPlugins()
 {
     std::error_code errCode;
     auto directoryIter = fs::directory_iterator(gSPGlobal->getScriptsDirCore(), errCode);
+    auto &loggingSystem = gSPGlobal->getLoggerCore();
 
     if (errCode)
     {
-        std::stringstream msg;
-        msg << "[SPMod] Error while loading plugins: " << errCode.message() << '\n';
-        SERVER_PRINT(msg.str().c_str());
-
+        loggingSystem->LogMessageCore("Error while loading plugins: ", errCode.message());
         return 0;
     }
 
@@ -239,12 +237,7 @@ size_t PluginMngr::loadPlugins()
     {
         auto filePath = entry.path();
         if (!_loadPlugin(filePath, &errorMsg))
-        {
-            std::stringstream msg;
-            msg << "[SPMod] " << errorMsg << '\n';
-            SERVER_PRINT(msg.str().c_str());
-            errorMsg.clear();
-        }
+            loggingSystem->LogErrorCore(errorMsg);
     }
     return m_plugins.size();
 }
