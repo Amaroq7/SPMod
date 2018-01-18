@@ -49,27 +49,25 @@ void SPModInfoCommand()
         }
         else if (arg == "gpl")
         {
-            std::stringstream msg;
-
-            msg << '\n';
-            msg << "   SPMod - SourcePawn Scripting Engine for Half-Life\n";
-            msg << "   Copyright (C) 2018  SPMod Development Team\n";
-            msg << '\n';
-            msg << "   This program is free software: you can redistribute it and/or modify\n";
-            msg << "   it under the terms of the GNU General Public License as published by\n";
-            msg << "   the Free Software Foundation, either version 3 of the License, or\n";
-            msg << "   (at your option) any later version.\n";
-            msg << '\n';
-            msg << "   This program is distributed in the hope that it will be useful,\n";
-            msg << "   but WITHOUT ANY WARRANTY; without even the implied warranty of\n";
-            msg << "   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n";
-            msg << "   GNU General Public License for more details.\n";
-            msg << '\n';
-            msg << "   You should have received a copy of the GNU General Public License\n";
-            msg << "   along with this program.  If not, see <https://www.gnu.org/licenses/>.\n";
-            msg << '\n';
-
-            SERVER_PRINT(msg.str().c_str());
+            auto &logSystem = gSPGlobal->getLoggerCore();
+            
+            logSystem->LogConsoleCore(""); //Empty line
+            logSystem->LogConsoleCore("   SPMod - SourcePawn Scripting Engine for Half-Life");
+            logSystem->LogConsoleCore("   Copyright (C) 2018  SPMod Development Team");
+            logSystem->LogConsoleCore("");
+            logSystem->LogConsoleCore("   This program is free software: you can redistribute it and/or modify");
+            logSystem->LogConsoleCore("   it under the terms of the GNU General Public License as published by");
+            logSystem->LogConsoleCore("   the Free Software Foundation, either version 3 of the License, or");
+            logSystem->LogConsoleCore("   (at your option) any later version.");
+            logSystem->LogConsoleCore("");
+            logSystem->LogConsoleCore("   This program is distributed in the hope that it will be useful,");
+            logSystem->LogConsoleCore("   but WITHOUT ANY WARRANTY; without even the implied warranty of");
+            logSystem->LogConsoleCore("   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
+            logSystem->LogConsoleCore("   GNU General Public License for more details.");
+            logSystem->LogConsoleCore("");
+            logSystem->LogConsoleCore("   You should have received a copy of the GNU General Public License");
+            logSystem->LogConsoleCore("   along with this program.  If not, see <https://www.gnu.org/licenses/>.");
+            logSystem->LogConsoleCore("");
         }
     }
 }
