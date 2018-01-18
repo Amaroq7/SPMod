@@ -21,8 +21,6 @@ meta_globals_t *gpMetaGlobals;
 gamedll_funcs_t *gpGamedllFuncs;
 mutil_funcs_t *gpMetaUtilFuncs;
 
-std::unique_ptr<SPModModule> gSPModModuleDef;
-
 plugin_info_t gPluginInfo =
 {
     META_INTERFACE_VERSION,

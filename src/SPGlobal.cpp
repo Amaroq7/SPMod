@@ -18,6 +18,7 @@
 #include "spmod.hpp"
 
 std::unique_ptr<SPGlobal> gSPGlobal;
+std::unique_ptr<SPModModule> gSPModModuleDef;
 
 SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_path()),
                                         m_pluginManager(std::make_unique<PluginMngr>()),
