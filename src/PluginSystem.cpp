@@ -63,9 +63,9 @@ Plugin::Plugin(size_t id,
 
         for (const auto &entry : gSPGlobal->getModulesList())
         {
-            for (auto nativePos = 0U; nativePos <= entry.second.num; ++nativePos)
+            for (auto nativePos = 0U; nativePos <= entry.second.m_num; ++nativePos)
             {
-                auto nativeDef = entry.second.natives + nativePos;
+                auto nativeDef = entry.second.m_natives + nativePos;
 
                 if (std::strcmp(native->name, nativeDef->name))
                     continue;

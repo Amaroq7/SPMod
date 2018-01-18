@@ -47,17 +47,11 @@ bool SPGlobal::addModule(IModuleInterface *interface)
     if (interface->getInterfaceVersion() > SPMOD_API_VERSION)
         return false;
 
-    auto *name = interface->getName();
-    if (m_modulesNames.find(name) != m_modulesNames.end())
-        return false;
+    const auto [iter, added] = m_modulesNames.try_emplace(interface->getName(),
+                                                            interface->getNatives(),
+                                                            interface->getNativesNum());
 
-    NativeDef nativesDef;
-    nativesDef.natives = interface->getNatives();
-    nativesDef.num = interface->getNativesNum();
-
-    m_modulesNames.insert(std::make_pair(name, nativesDef));
-
-    return true;
+    return added;
 }
 
 void SPGlobal::setScriptsDir(std::string_view folder)
