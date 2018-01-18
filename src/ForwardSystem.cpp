@@ -329,9 +329,7 @@ std::shared_ptr<Forward> ForwardMngr::_createForward(std::string_view name,
 {
     auto forwardPtr = std::make_shared<Forward>(name, params, paramsnum, exec);
 
-    const auto [iter, added] = m_forwards.try_emplace(name.data(), forwardPtr);
-
-    if (!added)
+    if (const auto [iter, added] = m_forwards.try_emplace(name.data(), forwardPtr); !added)
         return nullptr;
 
     return forwardPtr;
