@@ -95,6 +95,10 @@ public:
     {
         return m_name;
     }
+    std::shared_ptr<Plugin> getPluginCore() const
+    {
+        return m_plugin.lock();
+    }
     std::shared_ptr<Plugin> getOwnerPluginCore() const;
 
 private:
