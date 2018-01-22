@@ -335,12 +335,12 @@ IForward *ForwardMngr::createForward(const char *name,
     return createdForward.get();
 }
 
-IForward *ForwardMngr::findForward(const char *name)
+IForward *ForwardMngr::findForward(const char *name) const
 {
     return findForwardCore(name).get();
 }
 
-std::shared_ptr<Forward> ForwardMngr::findForwardCore(std::string_view name)
+std::shared_ptr<Forward> ForwardMngr::findForwardCore(std::string_view name) const
 {
     auto iter = m_forwards.find(name.data());
 

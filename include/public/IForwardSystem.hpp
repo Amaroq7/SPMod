@@ -88,7 +88,8 @@ namespace SPMod
                                         size_t params,
                                         ...) = 0;
 
-        virtual IForward *findForward(const char *name) = 0;
+        virtual IForward *findForward(const char *name) const = 0;
+
 
     protected:
         virtual ~IForwardMngr() { };

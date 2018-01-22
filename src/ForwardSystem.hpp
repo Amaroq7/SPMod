@@ -145,7 +145,7 @@ public:
                             size_t params,
                             ...) override;
 
-    IForward *findForward(const char *name) override;
+    IForward *findForward(const char *name) const override;
 
     // ForwardMngr
     bool addForward(std::shared_ptr<Forward> forward)
@@ -162,7 +162,7 @@ public:
                                                 IForward::ExecType exec,
                                                 fwdInitParamsList params);
 
-    std::shared_ptr<Forward> findForwardCore(std::string_view name);
+    std::shared_ptr<Forward> findForwardCore(std::string_view name) const;
 
 private:
     void _addDefaultsForwards();
