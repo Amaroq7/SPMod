@@ -430,7 +430,7 @@ std::shared_ptr<Forward> ForwardMngr::_createForwardVa(std::string_view name,
 {
     fwdParamTypeList forwardParams;
 
-    for (auto i = 0U; i < paramsnum; ++i)
+    for (size_t i = 0; i < paramsnum; ++i)
         forwardParams.at(i) = static_cast<IForward::ParamType>(va_arg(params, int));
 
     return _createForward(name, owner, exec, forwardParams, paramsnum);
