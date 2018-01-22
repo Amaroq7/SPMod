@@ -50,7 +50,7 @@ void SPModInfoCommand()
         else if (arg == "gpl")
         {
             auto &logSystem = gSPGlobal->getLoggerCore();
-            
+
             logSystem->LogConsoleCore(""); //Empty line
             logSystem->LogConsoleCore("   SPMod - SourcePawn Scripting Engine for Half-Life");
             logSystem->LogConsoleCore("   Copyright (C) 2018  SPMod Development Team");
