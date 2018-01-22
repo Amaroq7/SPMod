@@ -95,6 +95,7 @@ public:
     {
         return m_name;
     }
+    std::shared_ptr<Plugin> getOwnerPluginCore() const;
 
 private:
     void pushParamsToFunction(SourcePawn::IPluginFunction *func);

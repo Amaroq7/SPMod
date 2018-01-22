@@ -233,6 +233,19 @@ void Forward::resetParams()
     m_params.fill(ForwardParam());
 }
 
+std::shared_ptr<Plugin> Forward::getOwnerPluginCore() const
+{
+    try
+    {
+        auto plOwner = std::get<std::weak_ptr<Plugin>>(m_owner);
+        return plOwner.lock();
+    }
+    catch (const std::exception &e)
+    {
+        return nullptr;
+    }
+}
+
 void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
 {
     for (auto i = 0U; i < m_paramsNum; ++i)
