@@ -93,27 +93,57 @@ Plugin::~Plugin()
 }
 
 IForward *Plugin::createForward(const char *name,
+                                IModuleInterface *owner,
                                 size_t params,
                                 ...) const
 {
-    if (params > SP_MAX_EXEC_PARAMS)
+    if (params > SP_MAX_EXEC_PARAMS || !owner)
         return nullptr;
-
-    fwdParamTypeList forwardParams;
 
     // Get passed params types
     va_list paramsList;
     va_start(paramsList, params);
-
-    for (auto i = 0U; i < params; ++i)
-        forwardParams.at(i) = static_cast<Forward::ParamType>(va_arg(paramsList, int));
-
+    auto createdForward = _createForwardVa(name, owner, paramsList, params);
     va_end(paramsList);
 
-    return _createForward(name, forwardParams, params).get();
+    return createdForward.get();
+}
+
+IForward *Plugin::createForward(const char *name,
+                                IPlugin *owner,
+                                size_t params,
+                                ...) const
+{
+    if (params > SP_MAX_EXEC_PARAMS || !owner)
+        return nullptr;
+
+    // Find plugin shared_ptr
+    auto plOwner = gSPGlobal->getPluginManagerCore()->getPluginCore(owner->getIndentity());
+
+    // Get passed params types
+    va_list paramsList;
+    va_start(paramsList, params);
+    auto createdForward = _createForwardVa(name, plOwner, paramsList, params);
+    va_end(paramsList);
+
+    return createdForward.get();
+}
+
+std::shared_ptr<Forward> Plugin::_createForwardVa(std::string_view name,
+                                                    fwdOwnerVariant owner,
+                                                    va_list paramsList,
+                                                    size_t paramsnum) const
+{
+    fwdParamTypeList forwardParams;
+
+    for (size_t i = 0; i < paramsnum; ++i)
+        forwardParams.at(i) = static_cast<Forward::ParamType>(va_arg(paramsList, int));
+
+    return _createForward(name, owner, forwardParams, paramsnum);
 }
 
 std::shared_ptr<Forward> Plugin::createForwardCore(std::string_view name,
+                                                    fwdOwnerVariant owner,
                                                     fwdInitParamsList params) const
 {
     auto paramsNum = params.size();
@@ -124,15 +154,16 @@ std::shared_ptr<Forward> Plugin::createForwardCore(std::string_view name,
     fwdParamTypeList forwardParams;
     std::copy(params.begin(), params.end(), forwardParams.begin());
 
-    return _createForward(name, forwardParams, paramsNum);
+    return _createForward(name, owner, forwardParams, paramsNum);
 }
 
 std::shared_ptr<Forward> Plugin::_createForward(std::string_view name,
+                                                fwdOwnerVariant owner,
                                                 fwdParamTypeList paramlist,
                                                 size_t paramsnum) const
 {
     auto plugin = gSPGlobal->getPluginManagerCore()->getPluginCore(m_identity);
-    auto forwardPtr = std::make_shared<Forward>(name, paramlist, paramsnum, plugin);
+    auto forwardPtr = std::make_shared<Forward>(name, owner, paramlist, paramsnum, plugin);
 
     if (!gSPGlobal->getForwardManagerCore()->addForward(forwardPtr))
         return nullptr;
@@ -239,5 +270,6 @@ size_t PluginMngr::loadPlugins()
         if (!_loadPlugin(filePath, &errorMsg))
             loggingSystem->LogErrorCore(errorMsg);
     }
+    gSPGlobal->getForwardManagerCore()->findForward("OnPluginsLoaded")->execFunc(nullptr);
     return m_plugins.size();
 }

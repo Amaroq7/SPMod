@@ -17,6 +17,32 @@
 
 #include "ForwardSystem.hpp"
 
+IPlugin *Forward::getOwnerPlugin() const
+{
+    try
+    {
+        auto plOwner = std::get<std::weak_ptr<Plugin>>(m_owner);
+        return plOwner.lock().get();
+    }
+    catch (const std::exception &e)
+    {
+        return nullptr;
+    }
+}
+
+IModuleInterface *Forward::getOwnerModule() const
+{
+    try
+    {
+        auto *modOwner = std::get<IModuleInterface *>(m_owner);
+        return modOwner;
+    }
+    catch (const std::exception &e)
+    {
+        return nullptr;
+    }
+}
+
 bool Forward::pushCell(cell_t cell)
 {
     if (m_currentPos >= SP_MAX_EXEC_PARAMS)
@@ -271,25 +297,42 @@ void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
 }
 
 IForward *ForwardMngr::createForward(const char *name,
+                                        IModuleInterface *owner,
                                         IForward::ExecType exec,
                                         size_t params,
                                         ...)
 {
-    if (params > SP_MAX_EXEC_PARAMS)
+    if (params > SP_MAX_EXEC_PARAMS || !owner)
         return nullptr;
-
-    fwdParamTypeList forwardParams;
 
     // Get passed params types
     va_list paramsList;
     va_start(paramsList, params);
-
-    for (auto i = 0U; i < params; ++i)
-        forwardParams.at(i) = static_cast<IForward::ParamType>(va_arg(paramsList, int));
-
+    auto createdForward = _createForwardVa(name, owner, exec, paramsList, params);
     va_end(paramsList);
 
-    return _createForward(name, exec, forwardParams, params).get();
+    return createdForward.get();
+}
+
+IForward *ForwardMngr::createForward(const char *name,
+                                        IPlugin *owner,
+                                        IForward::ExecType exec,
+                                        size_t params,
+                                        ...)
+{
+    if (params > SP_MAX_EXEC_PARAMS || !owner)
+        return nullptr;
+
+    // Find plugin shared_ptr
+    auto plOwner = gSPGlobal->getPluginManagerCore()->getPluginCore(owner->getIndentity());
+
+    // Get passed params types
+    va_list paramsList;
+    va_start(paramsList, params);
+    auto createdForward = _createForwardVa(name, plOwner, exec, paramsList, params);
+    va_end(paramsList);
+
+    return createdForward.get();
 }
 
 IForward *ForwardMngr::findForward(const char *name)
@@ -308,6 +351,7 @@ std::shared_ptr<Forward> ForwardMngr::findForwardCore(std::string_view name)
 }
 
 std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
+                                                        fwdOwnerVariant owner,
                                                         IForward::ExecType exec,
                                                         fwdInitParamsList params)
 {
@@ -319,15 +363,51 @@ std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
     fwdParamTypeList forwardParams;
     std::copy(params.begin(), params.end(), forwardParams.begin());
 
-    return _createForward(name, exec, forwardParams, paramsNum);
+    return _createForward(name, owner, exec, forwardParams, paramsNum);
+}
+
+void ForwardMngr::clearNonDefaults()
+{
+    auto it = m_forwards.begin();
+    while (it != m_forwards.end())
+    {
+        auto *moduleOwner = it->second->getOwnerModule();
+        if (!moduleOwner)
+        {
+            it = m_forwards.erase(it);
+            continue;
+        }
+
+        if (std::strcmp(moduleOwner->getName(), "spmod"))
+        {
+            it = m_forwards.erase(it);
+            continue;
+        }
+        it++;
+    }
+}
+
+std::shared_ptr<Forward> ForwardMngr::_createForwardVa(std::string_view name,
+                                                        fwdOwnerVariant owner,
+                                                        IForward::ExecType exec,
+                                                        va_list params,
+                                                        size_t paramsnum)
+{
+    fwdParamTypeList forwardParams;
+
+    for (auto i = 0U; i < paramsnum; ++i)
+        forwardParams.at(i) = static_cast<IForward::ParamType>(va_arg(params, int));
+
+    return _createForward(name, owner, exec, forwardParams, paramsnum);
 }
 
 std::shared_ptr<Forward> ForwardMngr::_createForward(std::string_view name,
+                                                        fwdOwnerVariant owner,
                                                         IForward::ExecType exec,
                                                         fwdParamTypeList params,
                                                         size_t paramsnum)
 {
-    auto forwardPtr = std::make_shared<Forward>(name, params, paramsnum, exec);
+    auto forwardPtr = std::make_shared<Forward>(name, owner, params, paramsnum, exec);
 
     if (const auto [iter, added] = m_forwards.try_emplace(name.data(), forwardPtr); !added)
         return nullptr;
@@ -341,5 +421,8 @@ void ForwardMngr::_addDefaultsForwards()
     using param = IForward::ParamType;
 
     auto paramsList = { param::CELL, param::STRING, param::STRING, param::STRINGEX };
-    createForwardCore("OnClientConnect", et::STOP, paramsList);
+    createForwardCore("OnClientConnect", gSPModModuleDef.get(), et::STOP, paramsList);
+
+    paramsList = { };
+    createForwardCore("OnPluginsLoaded", gSPModModuleDef.get(), et::IGNORE, paramsList);
 }

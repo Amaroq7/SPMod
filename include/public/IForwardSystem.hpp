@@ -20,6 +20,7 @@
 namespace SPMod
 {
     class IPlugin;
+    class IModuleInterface;
     class IForward SPMOD_FINAL
     {
     public:
@@ -54,6 +55,10 @@ namespace SPMod
 
         virtual const char *getName() const = 0;
         virtual IPlugin *getPlugin() const = 0;
+        virtual ParamType getParamType(size_t id) const = 0;
+        virtual size_t getParamsNum() const = 0;
+        virtual IPlugin *getOwnerPlugin() const = 0;
+        virtual IModuleInterface *getOwnerModule() const = 0;
         virtual bool pushCell(cell_t cell) = 0;
         virtual bool pushCellPtr(cell_t *cell, bool copyback) = 0;
         virtual bool pushFloat(float real) = 0;
@@ -72,6 +77,13 @@ namespace SPMod
     {
     public:
         virtual IForward *createForward(const char *name,
+                                        IModuleInterface *owner,
+                                        IForward::ExecType exec,
+                                        size_t params,
+                                        ...) = 0;
+
+        virtual IForward *createForward(const char *name,
+                                        IPlugin *owner,
                                         IForward::ExecType exec,
                                         size_t params,
                                         ...) = 0;

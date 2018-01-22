@@ -21,6 +21,9 @@ meta_globals_t *gpMetaGlobals;
 gamedll_funcs_t *gpGamedllFuncs;
 mutil_funcs_t *gpMetaUtilFuncs;
 
+// Core module definition
+std::unique_ptr<SPModModule> gSPModModuleDef;
+
 plugin_info_t gPluginInfo =
 {
     META_INTERFACE_VERSION,
@@ -64,6 +67,9 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
 {
     gpMetaGlobals = pMGlobals;
     gpGamedllFuncs = pGamedllFuncs;
+
+    // Have to be created before global object
+    gSPModModuleDef = std::make_unique<SPModModule>(gCoreNatives);
 
     try
     {

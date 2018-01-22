@@ -71,6 +71,11 @@ public:
         return m_runtime;
     }
     IForward *createForward(const char *name,
+                            IModuleInterface *owner,
+                            size_t params,
+                            ...) const override;
+    IForward *createForward(const char *name,
+                            IPlugin *owner,
                             size_t params,
                             ...) const override;
 
@@ -100,10 +105,16 @@ public:
         return m_filename;
     }
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
+                                                fwdOwnerVariant owner,
                                                 fwdInitParamsList params) const;
 
 private:
+    std::shared_ptr<Forward> _createForwardVa(std::string_view name,
+                                                fwdOwnerVariant owner,
+                                                va_list paramsList,
+                                                size_t paramsnum) const;
     std::shared_ptr<Forward> _createForward(std::string_view name,
+                                            fwdOwnerVariant owner,
                                             fwdParamTypeList paramlist,
                                             size_t paramsnum) const;
 

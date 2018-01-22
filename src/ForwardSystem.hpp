@@ -25,6 +25,7 @@ class Forward final : public IForward
 {
 public:
     Forward(std::string_view name,
+            fwdOwnerVariant owner,
             fwdParamTypeList paramstypes,
             size_t params,
             ExecType type) : m_name(name),
@@ -32,9 +33,11 @@ public:
                                 m_paramTypes(paramstypes),
                                 m_plugin(std::shared_ptr<Plugin>(nullptr)),
                                 m_currentPos(0),
-                                m_paramsNum(params)
+                                m_paramsNum(params),
+                                m_owner(owner)
                                 { }
     Forward(std::string_view name,
+            fwdOwnerVariant owner,
             fwdParamTypeList paramstypes,
             size_t params,
             std::shared_ptr<Plugin> plugin) : m_name(name),
@@ -42,7 +45,8 @@ public:
                                                 m_paramTypes(paramstypes),
                                                 m_plugin(plugin),
                                                 m_currentPos(0),
-                                                m_paramsNum(params)
+                                                m_paramsNum(params),
+                                                m_owner(owner)
                                                 { }
     Forward() = delete;
     ~Forward() = default;
@@ -56,6 +60,16 @@ public:
     {
         return reinterpret_cast<IPlugin *>(m_plugin.lock().get());
     }
+    ParamType getParamType(size_t id) const override
+    {
+        return m_paramTypes.at(id);
+    }
+    size_t getParamsNum() const override
+    {
+        return m_paramsNum;
+    }
+    IPlugin *getOwnerPlugin() const override;
+    IModuleInterface *getOwnerModule() const override;
     bool pushCell(cell_t cell) override;
     bool pushCellPtr(cell_t *cell,
                         bool copyback) override;
@@ -105,6 +119,8 @@ private:
     std::weak_ptr<Plugin> m_plugin;
     size_t m_currentPos;
     size_t m_paramsNum;
+
+    fwdOwnerVariant m_owner;
 };
 
 class ForwardMngr final : public IForwardMngr
@@ -118,6 +134,13 @@ public:
 
     // IForwardMngr
     IForward *createForward(const char *name,
+                            IModuleInterface *owner,
+                            IForward::ExecType exec,
+                            size_t params,
+                            ...) override;
+
+    IForward *createForward(const char *name,
+                            IPlugin *owner,
                             IForward::ExecType exec,
                             size_t params,
                             ...) override;
@@ -133,17 +156,25 @@ public:
     {
         m_forwards.clear();
     }
+    void clearNonDefaults();
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
+                                                fwdOwnerVariant owner,
                                                 IForward::ExecType exec,
                                                 fwdInitParamsList params);
 
     std::shared_ptr<Forward> findForwardCore(std::string_view name);
 
 private:
-
     void _addDefaultsForwards();
 
+    std::shared_ptr<Forward> _createForwardVa(std::string_view name,
+                                                fwdOwnerVariant owner,
+                                                IForward::ExecType exec,
+                                                va_list params,
+                                                size_t paramsnum);
+
     std::shared_ptr<Forward> _createForward(std::string_view name,
+                                            fwdOwnerVariant owner,
                                             IForward::ExecType exec,
                                             fwdParamTypeList params,
                                             size_t paramsnum);

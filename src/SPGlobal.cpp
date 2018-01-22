@@ -18,7 +18,6 @@
 #include "spmod.hpp"
 
 std::unique_ptr<SPGlobal> gSPGlobal;
-std::unique_ptr<SPModModule> gSPModModuleDef;
 
 SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_path()),
                                         m_pluginManager(std::make_unique<PluginMngr>()),
@@ -27,15 +26,14 @@ SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_p
                                         m_modName(GET_GAME_INFO(PLID, GINFO_NAME)),
                                         m_spFactory(nullptr)
 {
-    // Sets defaults dirs
+    // Sets default dirs
     setScriptsDir("scripts");
     setLogsDir("logs");
 
     // Initialize SourcePawn library
     _initSourcePawn();
 
-    // Create definition of core module
-    gSPModModuleDef = std::make_unique<SPModModule>(gCoreNatives);
+    // Add definition of core module
     addModule(gSPModModuleDef.get());
 
     // Sets up listener for debbugging

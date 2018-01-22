@@ -31,6 +31,12 @@ namespace SPMod
         virtual size_t getId() const = 0;
         virtual SourcePawn::IPluginRuntime *getRuntime() const = 0;
         virtual IForward *createForward(const char *name,
+                                        IModuleInterface *owner,
+                                        size_t params,
+                                        ...) const = 0;
+
+        virtual IForward *createForward(const char *name,
+                                        IPlugin *owner,
                                         size_t params,
                                         ...) const = 0;
 
