@@ -391,7 +391,7 @@ void ForwardMngr::clearNonDefaults()
             continue;
         }
 
-        if (std::strcmp(moduleOwner->getName(), "spmod"))
+        if (moduleOwner != gSPModModuleDef.get())
         {
             it = m_forwards.erase(it);
             continue;
