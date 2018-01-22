@@ -165,6 +165,8 @@ public:
 
     std::shared_ptr<Forward> findForwardCore(std::string_view name) const;
 
+    void deletePluginForwards(std::string_view identity);
+
 private:
     void _addDefaultsForwards();
 

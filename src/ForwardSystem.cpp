@@ -400,6 +400,21 @@ void ForwardMngr::clearNonDefaults()
     }
 }
 
+void ForwardMngr::deletePluginForwards(std::string_view identity)
+{
+    auto it = m_forwards.begin();
+    while (it != m_forwards.end())
+    {
+        auto plOwner = it->second->getOwnerPluginCore();
+        if (!plOwner || plOwner->getIndentityString() != identity)
+        {
+            it++;
+            continue;
+        }
+        it = m_forwards.erase(it);
+    }
+}
+
 std::shared_ptr<Forward> ForwardMngr::_createForwardVa(std::string_view name,
                                                         fwdOwnerVariant owner,
                                                         IForward::ExecType exec,
