@@ -39,7 +39,7 @@ void SPModInfoCommand()
         {
             for (auto entry : gSPGlobal->getPluginManagerCore()->getPluginsList())
             {
-                LOG_CONSOLE(PLID, "[%3d] %-15.15s %-11.10s %-11.20s %-11.20s\n",
+                LOG_CONSOLE(PLID, "[%3d] %-15.15s %-11.10s %-11.20s %-11.20s",
                                     entry.second->getId(),
                                     entry.second->getName(),
                                     entry.second->getVersion(),
