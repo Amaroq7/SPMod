@@ -80,27 +80,27 @@ public:
                             ...) const override;
 
     // Plugin
-    const auto &getNameString() const
+    std::string_view getNameCore() const
     {
         return m_name;
     }
-    const auto &getVersionString() const
+    std::string_view getVersionCore() const
     {
         return m_version;
     }
-    const auto &getAuthorString() const
+    std::string_view getAuthorCore() const
     {
         return m_author;
     }
-    const auto &getUrlString() const
+    std::string_view getUrlCore() const
     {
         return m_url;
     }
-    const auto &getIndentityString() const
+    std::string_view getIndentityCore() const
     {
         return m_identity;
     }
-    const auto &getFileNameString() const
+    std::string_view getFileNameCore() const
     {
         return m_filename;
     }

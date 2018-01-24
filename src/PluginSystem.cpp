@@ -93,7 +93,7 @@ Plugin::~Plugin()
 
     // Clear all forwards owned by plugin and all dependent on it
     auto &fwdManager = gSPGlobal->getForwardManagerCore();
-    fwdManager->deletePluginForwards(getIndentityString());
+    fwdManager->deletePluginForwards(getIndentityCore().data());
 }
 
 IForward *Plugin::createForward(const char *name,

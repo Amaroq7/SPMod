@@ -91,7 +91,7 @@ public:
     void resetParams() override;
 
     // Forward
-    const std::string &getNameString() const
+    std::string_view getNameCore() const
     {
         return m_name;
     }
@@ -155,7 +155,7 @@ public:
     // ForwardMngr
     bool addForward(std::shared_ptr<Forward> forward)
     {
-        return m_forwards.try_emplace(forward->getNameString(), forward).second;
+        return m_forwards.try_emplace(forward->getNameCore().data(), forward).second;
     }
     void clearForwards()
     {

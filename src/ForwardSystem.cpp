@@ -407,13 +407,13 @@ void ForwardMngr::deletePluginForwards(std::string_view identity)
     {
         auto plOwner = it->second->getOwnerPluginCore();
         // Remove forwards which are owned by plugin
-        if (plOwner && plOwner->getIndentityString() == identity)
+        if (plOwner && plOwner->getIndentityCore() == identity)
         {
             it = m_forwards.erase(it);
             continue;
         }
         // Remove forwards which depend on the plugin
-        if (auto plDep = it->second->getPluginCore(); plDep && plDep->getIndentityString() == identity)
+        if (auto plDep = it->second->getPluginCore(); plDep && plDep->getIndentityCore() == identity)
         {
             it = m_forwards.erase(it);
             continue;
