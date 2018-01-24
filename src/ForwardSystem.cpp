@@ -19,15 +19,7 @@
 
 IPlugin *Forward::getOwnerPlugin() const
 {
-    try
-    {
-        auto plOwner = std::get<std::weak_ptr<Plugin>>(m_owner);
-        return plOwner.lock().get();
-    }
-    catch (const std::exception &e)
-    {
-        return nullptr;
-    }
+    return getOwnerPluginCore().get();
 }
 
 IModuleInterface *Forward::getOwnerModule() const
