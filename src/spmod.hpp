@@ -28,6 +28,8 @@
 #include <variant>
 #include <string_view>
 #include <fstream>
+#include <any>
+#include <optional>
 
 namespace fs = std::experimental::filesystem;
 

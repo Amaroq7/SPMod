@@ -371,6 +371,59 @@ std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
     return _createForward(name, owner, exec, forwardParams, paramsNum);
 }
 
+size_t ForwardMngr::getParamSize(size_t id)
+{
+    if (id >= m_preparedParamsNum)
+        return 0;
+
+    return m_preparedParams.at(id).m_size;
+}
+
+bool ForwardMngr::getParamCb(size_t id)
+{
+    if (id >= m_preparedParamsNum)
+        return false;
+
+    return m_preparedParams.at(id).m_copyback;
+}
+
+IForward::StringFlags ForwardMngr::getParamSf(size_t id)
+{
+    if (id >= m_preparedParamsNum)
+        return IForward::StringFlags::NONE;
+
+    return m_preparedParams.at(id).m_sflags;
+}
+
+std::optional<size_t> ForwardMngr::addParam(std::any param,
+                                            size_t size,
+                                            bool copyback,
+                                            IForward::StringFlags sflags)
+{
+    if (!param.has_value() || m_preparedParamsNum >= SP_MAX_EXEC_PARAMS)
+        return std::nullopt;
+
+    PreparedParam preparedParam;
+    // Check for cell_t array first
+    try
+    {
+        preparedParam.m_param = std::any_cast<cell_t *>(param);
+    }
+    catch (const std::exception &e)
+    {
+        // If fails get string array
+        preparedParam.m_param = std::any_cast<char *>(param);
+    }
+
+    preparedParam.m_size = size;
+    preparedParam.m_copyback = copyback;
+    preparedParam.m_sflags = sflags;
+
+    m_preparedParams.at(m_preparedParamsNum++) = preparedParam;
+
+    return m_preparedParamsNum - 1;
+}
+
 void ForwardMngr::clearNonDefaults()
 {
     auto it = m_forwards.begin();

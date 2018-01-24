@@ -131,7 +131,7 @@ private:
 class ForwardMngr final : public IForwardMngr
 {
 public:
-    ForwardMngr()
+    ForwardMngr() : m_preparedParamsNum(0)
     {
         _addDefaultsForwards();
     }
@@ -161,6 +161,35 @@ public:
     {
         m_forwards.clear();
     }
+    void resetPreparedParams()
+    {
+        m_preparedParamsNum = 0;
+    }
+    template<typename T>
+    std::optional<T> getParam(size_t id)
+    {
+        if (id >= m_preparedParamsNum)
+            return std::nullopt;
+
+        T result;
+        try
+        {
+            result = std::get<T>(m_preparedParams.at(id).m_param);
+        }
+        catch(const std::exception &e)
+        {
+            return std::nullopt;
+        }
+        return result;
+    }
+    size_t getParamSize(size_t id);
+    bool getParamCb(size_t id);
+    IForward::StringFlags getParamSf(size_t id);
+    std::optional<size_t> addParam(std::any param,
+                                    size_t size,
+                                    bool copyback,
+                                    IForward::StringFlags sflags);
+
     void clearNonDefaults();
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
                                                 fwdOwnerVariant owner,
@@ -172,6 +201,15 @@ public:
     void deletePluginForwards(std::string_view identity);
 
 private:
+    // Plugin use-only
+    // Struct for stringex and arrays
+    struct PreparedParam
+    {
+        std::variant<cell_t *, char *> m_param;
+        size_t m_size;
+        bool m_copyback;
+        IForward::StringFlags m_sflags;
+    };
     void _addDefaultsForwards();
 
     std::shared_ptr<Forward> _createForwardVa(std::string_view name,
@@ -186,5 +224,7 @@ private:
                                             fwdParamTypeList params,
                                             size_t paramsnum);
 
+    size_t m_preparedParamsNum;
+    std::array<PreparedParam, SP_MAX_EXEC_PARAMS> m_preparedParams;
     std::unordered_map<std::string, std::shared_ptr<Forward>> m_forwards;
 };
