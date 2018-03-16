@@ -33,7 +33,7 @@ llvmIncludesDir = [
 ]
 
 spIncludesDir = [
-  join_paths('include', 'sourcepawn')
+  join_paths('include', 'sourcepawn', 'include')
 ]
 
 publicIncludesDir = [
