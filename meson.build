@@ -5,12 +5,22 @@ project('SPMod', ['c', 'cpp'],
 
 add_global_arguments('-std=c11', '-m32', language : 'c')
 add_global_arguments('-std=c++17', '-m32', language : 'cpp')
-add_global_link_arguments('-m32', language : [ 'c', 'cpp' ])
 
-# TODO: build python & llvm stuff
+# TODO: build llvm stuff
 find_program('ninja', required : true)
 find_program('clang', required : true)
 find_program('clang++', required : true)
+
+gLinkArguments = [
+  '-m32',
+]
+
+# use LLVM linker if available
+if find_program('lld', required : false).found() == true
+  gLinkArguments += '-fuse-ld=lld'
+endif
+
+add_global_link_arguments(gLinkArguments, language : [ 'c', 'cpp' ])
 
 compiler = meson.get_compiler('cpp')
 
