@@ -24,7 +24,7 @@ mutil_funcs_t *gpMetaUtilFuncs;
 // Core module definition
 std::unique_ptr<SPModModule> gSPModModuleDef;
 
-plugin_info_t gPluginInfo =
+plugin_info_t Plugin_info =
 {
     META_INTERFACE_VERSION,
     "SPMod",
@@ -42,7 +42,7 @@ C_DLLEXPORT int Meta_Query(char *interfaceVersion [[maybe_unused]],
                             mutil_funcs_t *pMetaUtilFuncs)
 {
 
-    *plinfo = &gPluginInfo;
+    *plinfo = &Plugin_info;
     gpMetaUtilFuncs = pMetaUtilFuncs;
 
     return 1;

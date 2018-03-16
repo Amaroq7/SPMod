@@ -41,7 +41,7 @@ publicIncludesDir = [
 ]
 
 metamodIncludesDir = [
-  join_paths('include', 'metamod')
+  join_paths('include', 'metamod-r', 'metamod', 'src')
 ]
 
 rehldsIncludesDir = [

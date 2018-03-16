@@ -1,3 +1,6 @@
 [submodule "include/rehlds"]
 	path = include/rehlds
 	url = https://github.com/dreamstalker/rehlds
+[submodule "include/metamod-r"]
+	path = include/metamod-r
+	url = https://github.com/theAsmodai/metamod-r
