@@ -34,8 +34,6 @@
 # Build folder
 build/
 
-# LLVM & Python header files
+# LLVM header files
 include/llvm/*
-include/python/*
 !include/llvm/.gitkeep
-!include/python/.gitkeep
