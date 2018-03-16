@@ -45,13 +45,13 @@ metamodIncludesDir = [
 ]
 
 rehldsIncludesDir = [
-  join_paths('include', 'rehlds', 'common'),
-  join_paths('include', 'rehlds', 'dlls'),
-  join_paths('include', 'rehlds', 'engine'),
-  join_paths('include', 'rehlds', 'game_shared'),
-  join_paths('include', 'rehlds', 'pm_shared'),
-  join_paths('include', 'rehlds', 'public'),
-  join_paths('include', 'rehlds', 'public', 'rehlds')
+  join_paths('include', 'rehlds', 'rehlds', 'common'),
+  join_paths('include', 'rehlds', 'rehlds', 'dlls'),
+  join_paths('include', 'rehlds', 'rehlds', 'engine'),
+  join_paths('include', 'rehlds', 'rehlds', 'game_shared'),
+  join_paths('include', 'rehlds', 'rehlds', 'pm_shared'),
+  join_paths('include', 'rehlds', 'rehlds', 'public'),
+  join_paths('include', 'rehlds', 'rehlds', 'public', 'rehlds')
 ]
 
 includeDirs = include_directories(publicIncludesDir,

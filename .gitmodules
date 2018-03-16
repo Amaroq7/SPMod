@@ -1,0 +1,3 @@
+[submodule "include/rehlds"]
+	path = include/rehlds
+	url = https://github.com/dreamstalker/rehlds
