@@ -1,7 +1,7 @@
-project('PyMod', ['c', 'cpp'],
+project('SPMod', ['c', 'cpp'],
                   license : 'GPLv3',
                   meson_version : '>=0.36.0',
-                  version : '1.0.0')
+                  version : '0.0.1')
 
 add_global_arguments('-std=c11', '-m32', language : 'c')
 add_global_arguments('-std=c++17', '-m32', language : 'cpp')
