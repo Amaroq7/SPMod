@@ -17,6 +17,17 @@
 
 #pragma once
 
+// Metamod & HLSDK
+#include <extdll.h>
+#include <meta_api.h>
+
+// ReHLDS
+#include <osconfig.h>
+#include <rehlds_api.h>
+
+#undef max
+#undef min
+
 // STL C++
 #include <memory>
 #include <vector>
@@ -39,14 +50,6 @@ namespace fs = std::experimental::filesystem;
 
 // Sourcepawn
 #include <sp_vm_api.h>
-
-// Metamod & HLSDK
-#include <extdll.h>
-#include <meta_api.h>
-
-// ReHLDS
-#include <osconfig.h>
-#include <rehlds_api.h>
 
 extern IRehldsApi *gRehldsApi;
 extern const RehldsFuncs_t *gRehldsFuncs;

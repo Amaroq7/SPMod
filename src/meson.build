@@ -12,24 +12,44 @@ sourceFiles = files('coreNatives.cpp',
                     'LoggingSystem.cpp',
                     'SrvCommand.cpp')
 
-cppArgs = [
-  '-stdlib=libc++',
-  '-Wall',
-  '-Wextra',
-  '-Wno-unknown-pragmas',
-  '-Wno-non-virtual-dtor',
-  '-g3',
-  '-ggdb',
-  '-fvisibility=hidden'
-]
+cppArgs = []
+linkArgs = []
+if build_machine.system() == 'linux'
+  cppArgs = [
+    '-Wall',
+    '-Wextra',
+    '-Wno-unknown-pragmas',
+    '-Wno-non-virtual-dtor',
+    '-g3',
+    '-ggdb',
+    '-fvisibility=hidden'
+  ]
 
-linkArgs = [
-  '-ldl',
-  '-lc++',
-  '-lc++abi',
-  '-L.',
-  'libc++experimental.a'
-]
+  linkArgs = [
+    '-ldl',
+  ]
+
+  if cppCompiler.get_id() == 'clang'
+    cppArgs += [
+      '-stdlib=libc++',
+    ]
+    linkArgs += [
+      '-l:libc++.so.1',
+      '-l:libc++abi.so.1',
+      '-L.',
+      'libc++experimental.a'
+    ]
+  elif cppCompiler.get_id() == 'gcc'
+    # link libstdc++ and libgcc_s statically
+    linkArgs += [
+      '-static-libgcc',
+      '-static-libstdc++',
+      '-lstdc++fs'
+    ]
+  endif
+elif build_machine.system() == 'windows'
+  # support for msvc
+endif
 
 shared_library('spmod_mm', sourceFiles,
                           cpp_args : cppArgs,
