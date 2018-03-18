@@ -40,7 +40,7 @@ bool Forward::pushCell(cell_t cell)
     if (m_currentPos >= SP_MAX_EXEC_PARAMS)
         return false;
 
-    if (m_paramTypes.at(m_currentPos) != ParamType::CELL)
+    if (m_paramTypes.at(m_currentPos) != ParamType::Cell)
         return false;
 
     ForwardParam param;
@@ -56,7 +56,7 @@ bool Forward::pushCellPtr(cell_t *cell,
     if (m_currentPos >= SP_MAX_EXEC_PARAMS)
         return false;
 
-    if (m_paramTypes.at(m_currentPos) != ParamType::CELL_REF)
+    if (m_paramTypes.at(m_currentPos) != ParamType::CellRef)
         return false;
 
     ForwardParam param;
@@ -72,7 +72,7 @@ bool Forward::pushFloat(float real)
     if (m_currentPos >= SP_MAX_EXEC_PARAMS)
         return false;
 
-    if (m_paramTypes.at(m_currentPos) != ParamType::FLOAT)
+    if (m_paramTypes.at(m_currentPos) != ParamType::Float)
         return false;
 
     ForwardParam param;
@@ -88,7 +88,7 @@ bool Forward::pushFloatPtr(float *real,
     if (m_currentPos >= SP_MAX_EXEC_PARAMS)
         return false;
 
-    if (m_paramTypes.at(m_currentPos) != ParamType::FLOAT_REF)
+    if (m_paramTypes.at(m_currentPos) != ParamType::FloatRef)
         return false;
 
     ForwardParam param;
@@ -106,7 +106,7 @@ bool Forward::pushArray(cell_t *array,
     if (m_currentPos >= SP_MAX_EXEC_PARAMS)
         return false;
 
-    if (m_paramTypes.at(m_currentPos) != ParamType::ARRAY)
+    if (m_paramTypes.at(m_currentPos) != ParamType::Array)
         return false;
 
     ForwardParam param;
@@ -123,7 +123,7 @@ bool Forward::pushString(const char *string)
     if (m_currentPos >= SP_MAX_EXEC_PARAMS)
         return false;
 
-    if (m_paramTypes.at(m_currentPos) != ParamType::STRING)
+    if (m_paramTypes.at(m_currentPos) != ParamType::String)
         return false;
 
     ForwardParam param;
@@ -141,7 +141,7 @@ bool Forward::pushStringEx(char *buffer,
     if (m_currentPos >= SP_MAX_EXEC_PARAMS)
         return false;
 
-    if (m_paramTypes.at(m_currentPos) != ParamType::STRINGEX)
+    if (m_paramTypes.at(m_currentPos) != ParamType::StringEx)
         return false;
 
     ForwardParam param;
@@ -195,22 +195,22 @@ bool Forward::execFunc(cell_t *result)
 
             funcToExecute->Execute(&tempResult);
 
-            if (m_execType == ExecType::IGNORE)
+            if (m_execType == ExecType::Ignore)
                 continue;
 
             if (returnValue < tempResult)
                 returnValue = tempResult;
 
-            if (m_execType & ExecType::STOP && tempResult == ReturnValue::PLUGIN_STOP)
+            if (m_execType & ExecType::Stop && tempResult == ReturnValue::PluginStop)
             {
-                if (!(m_execType & ExecType::HIGHEST))
+                if (!(m_execType & ExecType::Highest))
                     returnValue = tempResult;
 
                 break;
             }
 
         }
-        if (m_execType != ExecType::IGNORE)
+        if (m_execType != ExecType::Ignore)
             *result = returnValue;
     }
 
@@ -246,52 +246,52 @@ void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
         auto paramVar = paramObj.m_param;
         switch (m_paramTypes.at(i))
         {
-            case ParamType::CELL:
+            case ParamType::Cell:
             {
                 func->PushCell(std::get<cell_t>(paramVar));
                 break;
             }
-            case ParamType::CELL_REF:
+            case ParamType::CellRef:
             {
                 auto spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
                 func->PushCellByRef(std::get<cell_t *>(paramVar), spFlags);
                 break;
             }
-            case ParamType::FLOAT:
+            case ParamType::Float:
             {
                 func->PushFloat(std::get<float>(paramVar));
                 break;
             }
-            case ParamType::FLOAT_REF:
+            case ParamType::FloatRef:
             {
                 auto spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
                 func->PushFloatByRef(std::get<float *>(paramVar), spFlags);
                 break;
             }
-            case ParamType::ARRAY:
+            case ParamType::Array:
             {
                 auto spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
                 func->PushArray(std::get<cell_t *>(paramVar), paramObj.m_size, spFlags);
                 break;
             }
-            case ParamType::STRING:
+            case ParamType::String:
             {
                 func->PushString(std::get<const char *>(paramVar));
                 break;
             }
-            case ParamType::STRINGEX:
+            case ParamType::StringEx:
             {
                 auto spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
                 auto spStringFlags = 0;
-                if (paramObj.m_stringFlags != StringFlags::NONE)
+                if (paramObj.m_stringFlags != StringFlags::None)
                 {
-                    if (paramObj.m_stringFlags & StringFlags::UTF8)
+                    if (paramObj.m_stringFlags & StringFlags::Utf8)
                         spStringFlags |= SM_PARAM_STRING_UTF8;
 
-                    if (paramObj.m_stringFlags & StringFlags::COPY)
+                    if (paramObj.m_stringFlags & StringFlags::Copy)
                         spStringFlags |= SM_PARAM_STRING_COPY;
 
-                    if (paramObj.m_stringFlags & StringFlags::BINARY)
+                    if (paramObj.m_stringFlags & StringFlags::Binary)
                         spStringFlags |= SM_PARAM_STRING_BINARY;
                 }
 
@@ -390,7 +390,7 @@ bool ForwardMngr::getParamCb(size_t id)
 IForward::StringFlags ForwardMngr::getParamSf(size_t id)
 {
     if (id >= m_preparedParamsNum)
-        return IForward::StringFlags::NONE;
+        return IForward::StringFlags::None;
 
     return m_preparedParams.at(id).m_sflags;
 }
@@ -500,9 +500,9 @@ void ForwardMngr::_addDefaultsForwards()
     using et = IForward::ExecType;
     using param = IForward::ParamType;
 
-    auto paramsList = { param::CELL, param::STRING, param::STRING, param::STRINGEX };
-    createForwardCore("OnClientConnect", gSPModModuleDef.get(), et::STOP, paramsList);
+    auto paramsList = { param::Cell, param::String, param::String, param::StringEx };
+    createForwardCore("OnClientConnect", gSPModModuleDef.get(), et::Stop, paramsList);
 
     paramsList = { };
-    createForwardCore("OnPluginsLoaded", gSPModModuleDef.get(), et::IGNORE, paramsList);
+    createForwardCore("OnPluginsLoaded", gSPModModuleDef.get(), et::Ignore, paramsList);
 }

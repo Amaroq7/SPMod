@@ -30,10 +30,10 @@ static qboolean ClientConnect(edict_t *pEntity,
     fwdPlayerConnect->pushCell(ENTINDEX(pEntity));
     fwdPlayerConnect->pushString(pszName);
     fwdPlayerConnect->pushString(pszAddress);
-    fwdPlayerConnect->pushStringEx(szRejectReason, 128, sflags::UTF8 | sflags::COPY, true);
+    fwdPlayerConnect->pushStringEx(szRejectReason, 128, sflags::Utf8 | sflags::Copy, true);
     fwdPlayerConnect->execFunc(&result);
 
-    if (result == IForward::ReturnValue::PLUGIN_STOP)
+    if (result == IForward::ReturnValue::PluginStop)
         RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
 
     RETURN_META_VALUE(MRES_IGNORED, TRUE);

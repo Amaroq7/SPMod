@@ -41,7 +41,7 @@ public:
             fwdParamTypeList paramstypes,
             size_t params,
             std::shared_ptr<Plugin> plugin) : m_name(name),
-                                                m_execType(ExecType::HIGHEST),
+                                                m_execType(ExecType::Highest),
                                                 m_paramTypes(paramstypes),
                                                 m_plugin(plugin),
                                                 m_currentPos(0),

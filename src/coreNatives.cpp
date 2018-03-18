@@ -172,32 +172,32 @@ static cell_t core_executeForward(SourcePawn::IPluginContext *ctx,
     for (size_t i = 0; i < fwdParamsNum; ++i)
     {
         ptype paramType = fwdToExecute->getParamType(i);
-        if (paramType == ptype::CELL)
+        if (paramType == ptype::Cell)
         {
             cell_t *paramToPass;
             ctx->LocalToPhysAddr(params[i + 3], &paramToPass);
             fwdToExecute->pushCell(*paramToPass);
         }
-        else if (paramType == ptype::CELL_REF)
+        else if (paramType == ptype::CellRef)
         {
             cell_t *paramToPass;
             ctx->LocalToPhysAddr(params[i + 3], &paramToPass);
             fwdToExecute->pushCellPtr(paramToPass, true);
         }
-        else if (paramType == ptype::FLOAT)
+        else if (paramType == ptype::Float)
         {
             cell_t *paramToPass;
             ctx->LocalToPhysAddr(params[i + 3], &paramToPass);
             fwdToExecute->pushFloat(sp_ctof(*paramToPass));
         }
-        else if (paramType == ptype::FLOAT_REF)
+        else if (paramType == ptype::FloatRef)
         {
             cell_t *paramToPass;
             ctx->LocalToPhysAddr(params[i + 3], &paramToPass);
             // TODO: do it the better way
             fwdToExecute->pushFloatPtr(*reinterpret_cast<float **>(&paramToPass), true);
         }
-        else if (paramType == ptype::ARRAY)
+        else if (paramType == ptype::Array)
         {
             cell_t *paramToPass;
             ctx->LocalToPhysAddr(params[i + 3], &paramToPass);
@@ -214,13 +214,13 @@ static cell_t core_executeForward(SourcePawn::IPluginContext *ctx,
                                             fwdManager->getParamCb(*paramToPass));
 
         }
-        else if (paramType == ptype::STRING)
+        else if (paramType == ptype::String)
         {
             char *strToPass;
             ctx->LocalToString(params[i + 3], &strToPass);
             fwdToExecute->pushString(strToPass);
         }
-        else if (paramType == ptype::STRINGEX)
+        else if (paramType == ptype::StringEx)
         {
             cell_t *paramToPass;
             ctx->LocalToPhysAddr(params[i + 3], &paramToPass);
@@ -252,7 +252,7 @@ static cell_t core_prepareFwdArray(SourcePawn::IPluginContext *ctx,
     auto &fwdManager = gSPGlobal->getForwardManagerCore();
 
     ctx->LocalToPhysAddr(params[1], &arrayForFwd);
-    auto id = fwdManager->addParam(arrayForFwd, params[2], params[3], IForward::StringFlags::NONE);
+    auto id = fwdManager->addParam(arrayForFwd, params[2], params[3], IForward::StringFlags::None);
 
     return id.has_value() ? *id : -1;
 }

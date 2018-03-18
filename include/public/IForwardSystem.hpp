@@ -26,31 +26,31 @@ namespace SPMod
     public:
         enum class ExecType : uint8_t
         {
-            IGNORE = 0,
-            STOP = (1 << 0),
-            HIGHEST = (1 << 1)
+            Ignore = 0,
+            Stop = (1 << 0),
+            Highest = (1 << 1)
         };
         enum class ParamType : uint8_t
         {
-            CELL = 0,
-            CELL_REF,
-            FLOAT,
-            FLOAT_REF,
-            ARRAY,
-            STRING,
-            STRINGEX
+            Cell = 0,
+            CellRef,
+            Float,
+            FloatRef,
+            Array,
+            String,
+            StringEx
         };
         enum class ReturnValue : uint8_t
         {
-            PLUGIN_IGNORED = 0,
-            PLUGIN_STOP,
+            PluginIgnored = 0,
+            PluginStop,
         };
         enum class StringFlags : uint8_t
         {
-            NONE = 0,
-            UTF8 = (1 << 0),
-            COPY = (1 << 1),
-            BINARY = (1 << 2)
+            None = 0,
+            Utf8 = (1 << 0),
+            Copy = (1 << 1),
+            Binary = (1 << 2)
         };
 
         virtual const char *getName() const = 0;
