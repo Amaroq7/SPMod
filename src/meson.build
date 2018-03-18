@@ -57,7 +57,47 @@ if build_machine.system() == 'linux'
     ]
   endif
 elif build_machine.system() == 'windows'
-  # support for msvc
+  cppArgs = [
+    '/Wall',
+    '/TP',
+    '/RTC1'
+  ]
+  linkArgs = [
+    '/MACHINE:X86',
+    '/SUBSYSTEM:WINDOWS',
+    'kernel32.lib',
+    'user32.lib',
+    'gdi32.lib',
+    'winspool.lib',
+    'comdlg32.lib',
+    'advapi32.lib',
+    'shell32.lib',
+    'ole32.lib',
+    'oleaut32.lib',
+    'uuid.lib',
+    'odbc32.lib',
+    'odbccp32.lib'
+  ]
+
+  if get_option('debug') == true
+    cppArgs += [
+      '/MTd',
+      '/Od',
+      '/NODEFAULTLIB:libcmt'
+    ]
+    linkArgs += [
+
+    ]
+  else
+    cppArgs += [
+      '/MT',
+      '/O2',
+      '/GL'
+    ]
+    linkArgs += [
+
+    ]
+  endif
 endif
 
 shared_library('spmod_mm', sourceFiles,
