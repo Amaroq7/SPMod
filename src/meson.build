@@ -20,10 +20,19 @@ if build_machine.system() == 'linux'
     '-Wextra',
     '-Wno-unknown-pragmas',
     '-Wno-non-virtual-dtor',
-    '-g3',
-    '-ggdb',
     '-fvisibility=hidden'
   ]
+
+  if get_option('debug') == true
+    cppArgs += [
+      '-g3',
+      '-ggdb3',
+    ]
+  else
+    cppArgs += [
+      '-O3'
+    ]
+  endif
 
   linkArgs = [
     '-ldl',

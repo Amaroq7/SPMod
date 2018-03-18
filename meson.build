@@ -2,6 +2,8 @@ project('SPMod', ['c', 'cpp'],
                   license : 'GPLv3',
                   meson_version : '>=0.44.0',
                   version : '0.0.1')
+# If debug build
+option('debug', type : 'boolean', value : true)
 
 add_global_arguments('-std=c11', '-m32', language : 'c')
 add_global_arguments('-std=c++17', '-m32', language : 'cpp')
