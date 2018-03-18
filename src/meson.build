@@ -24,7 +24,6 @@ if build_machine.system() == 'linux'
     '-Wall',
     '-Wextra',
     '-Wno-unknown-pragmas',
-    '-Wno-non-virtual-dtor',
     '-fvisibility=hidden'
   ]
 

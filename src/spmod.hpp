@@ -17,13 +17,30 @@
 
 #pragma once
 
+// SPMod interface
+#include <ISPGlobal.hpp>
+
 // Metamod & HLSDK
 #include <extdll.h>
 #include <meta_api.h>
+// Supress warning about redefining
+#undef MAX_PATH
 
 // ReHLDS
+#ifdef SP_CLANG
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+#elif defined SP_GCC
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
 #include <osconfig.h>
 #include <rehlds_api.h>
+#ifdef SP_CLANG
+    #pragma clang diagnostic pop
+#elif defined SP_GCC
+    #pragma GCC diagnostic push
+#endif
 
 #undef max
 #undef min
@@ -48,9 +65,6 @@ namespace fs = std::experimental::filesystem;
 #include <cstring>
 #include <cstdarg>
 
-// Sourcepawn
-#include <sp_vm_api.h>
-
 extern IRehldsApi *gRehldsApi;
 extern const RehldsFuncs_t *gRehldsFuncs;
 extern IRehldsHookchains *gRehldsHookchains;
@@ -58,9 +72,6 @@ extern IRehldsServerStatic *gRehldsServerStatic;
 extern IRehldsServerData *gRehldsServerData;
 
 extern bool initRehldsApi();
-
-// SPMod interface
-#include <ISPGlobal.hpp>
 
 // Aliases for convenience
 using namespace SPMod;

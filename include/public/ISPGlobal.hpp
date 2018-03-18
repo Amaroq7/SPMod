@@ -53,7 +53,22 @@
     #define SPMOD_FINAL final
 #endif
 
+#ifdef SP_CLANG
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+    #pragma clang diagnostic ignored "-Wunused-parameter"
+#elif defined SP_GCC
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+    #pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 #include <sp_vm_api.h>
+#ifdef SP_CLANG
+    #pragma clang diagnostic pop
+#elif defined SP_GCC
+    #pragma GCC diagnostic push
+#endif
+
 #include <IForwardSystem.hpp>
 #include <IPluginSystem.hpp>
 
