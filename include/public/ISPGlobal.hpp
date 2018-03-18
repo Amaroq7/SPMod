@@ -25,6 +25,19 @@
     #define SP_POSIX
 #endif
 
+// Compiler defines
+#ifdef SP_POSIX
+    #ifdef __clang__
+        #define SP_CLANG
+    #elif __GNUC__
+        #define SP_GCC
+    #endif
+#elif SP_WINDOWS
+    #ifdef _MSC_VER
+        #define SP_MSVC
+    #endif
+#endif
+
 #ifndef SPMOD_API
     #ifdef SP_POSIX
         #define SPMOD_API	extern "C" __attribute__((visibility("default")))
