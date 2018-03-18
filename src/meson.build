@@ -1,5 +1,10 @@
 add_project_arguments('-DSPMOD_CORE', language : [ 'c', 'cpp' ])
 
+# We cannot set c++ standard by meson configure
+if build_machine.system() == 'windows'
+  add_project_arguments('/std:c++latest', language : 'cpp')
+endif
+
 sourceFiles = files('coreNatives.cpp',
                     'h_export.cpp',
                     'engine_api.cpp',
@@ -22,17 +27,6 @@ if build_machine.system() == 'linux'
     '-Wno-non-virtual-dtor',
     '-fvisibility=hidden'
   ]
-
-  if get_option('debug') == true
-    cppArgs += [
-      '-g3',
-      '-ggdb3',
-    ]
-  else
-    cppArgs += [
-      '-O3'
-    ]
-  endif
 
   linkArgs = [
     '-ldl',
@@ -63,7 +57,6 @@ elif build_machine.system() == 'windows'
     '/RTC1'
   ]
   linkArgs = [
-    '/MACHINE:X86',
     '/SUBSYSTEM:WINDOWS',
     'kernel32.lib',
     'user32.lib',
@@ -78,26 +71,6 @@ elif build_machine.system() == 'windows'
     'odbc32.lib',
     'odbccp32.lib'
   ]
-
-  if get_option('debug') == true
-    cppArgs += [
-      '/MTd',
-      '/Od',
-      '/NODEFAULTLIB:libcmt'
-    ]
-    linkArgs += [
-
-    ]
-  else
-    cppArgs += [
-      '/MT',
-      '/O2',
-      '/GL'
-    ]
-    linkArgs += [
-
-    ]
-  endif
 endif
 
 shared_library('spmod_mm', sourceFiles,
