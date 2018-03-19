@@ -47,7 +47,7 @@ Plugin::Plugin(size_t id,
     m_author = gatherInfo(Plugin::FIELD_AUTHOR);
     m_url = gatherInfo(Plugin::FIELD_URL);
 
-    m_filename = path.filename();
+    m_filename = path.filename().string();
     m_id = id;
     m_identity = identity;
     m_runtime = plugin;
@@ -219,7 +219,7 @@ IPlugin *PluginMngr::loadPlugin(const char *name,
 std::shared_ptr<Plugin> PluginMngr::loadPluginCore(std::string_view name,
                                                     std::string *error)
 {
-    auto plugin = _loadPlugin(gSPGlobal->getScriptsDirCore() / name, error);
+    auto plugin = _loadPlugin(gSPGlobal->getScriptsDirCore() / name.data(), error);
     if (!plugin)
         return nullptr;
 

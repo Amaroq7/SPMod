@@ -1,0 +1,1 @@
+option('windebug', type : 'boolean', value : true, description : 'Enable debug build (Windows only)')

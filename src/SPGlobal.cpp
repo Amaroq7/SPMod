@@ -56,14 +56,14 @@ bool SPGlobal::addModule(IModuleInterface *interface)
 void SPGlobal::setScriptsDir(std::string_view folder)
 {
     fs::path pathToScripts(m_SPModDir);
-    pathToScripts /= folder;
+    pathToScripts /= folder.data();
     m_SPModScriptsDir = std::move(pathToScripts);
 }
 
 void SPGlobal::setLogsDir(std::string_view folder)
 {
     fs::path pathToLogs(m_SPModDir);
-    pathToLogs /= folder;
+    pathToLogs /= folder.data();
     m_SPModLogsDir = std::move(pathToLogs);
 }
 
@@ -76,7 +76,7 @@ void SPGlobal::_initSourcePawn()
 #ifdef SP_POSIX
     void *libraryHandle = dlopen(dllsDir.c_str(), RTLD_NOW);
 #else
-    #error Need Windows implementation
+    HMODULE libraryHandle = LoadLibrary(dllsDir.string().c_str());
 #endif
 
     if (!libraryHandle)
@@ -86,7 +86,8 @@ void SPGlobal::_initSourcePawn()
     auto getFactoryFunc = reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>
                                 (dlsym(libraryHandle, "GetSourcePawnFactory"));
 #else
-    //TODO: windows
+    auto getFactoryFunc = reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>
+                                (GetProcAddress(libraryHandle, "GetSourcePawnFactory"));
 #endif
 
     if (!getFactoryFunc)
@@ -94,7 +95,7 @@ void SPGlobal::_initSourcePawn()
 #ifdef SP_POSIX
         dlclose(libraryHandle);
 #else
-        //TODO: windows
+        FreeLibrary(libraryHandle);
 #endif
         throw std::runtime_error("Cannot find SourcePawn factory function");
     }
@@ -105,16 +106,12 @@ void SPGlobal::_initSourcePawn()
 #ifdef SP_POSIX
         dlclose(libraryHandle);
 #else
-        #error Need Windows implementation
+        FreeLibrary(libraryHandle);
 #endif
         throw std::runtime_error("Wrong SourcePawn library version");
     }
 
-#ifdef SP_POSIX
     m_SPLibraryHandle = libraryHandle;
-#else
-    #error Need Windows implementation
-#endif
     m_spFactory = SPFactory;
     m_spFactory->NewEnvironment();
     getSPEnvironment()->APIv2()->SetJitEnabled(true);

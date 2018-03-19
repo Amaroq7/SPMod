@@ -36,6 +36,11 @@ elif build_machine.system() == 'windows'
   if cppCompiler.get_id() != 'msvc'
     error('Only MSVC is supported.')
   endif
+  # At the time of writing MSVC support is not mature enough
+  # We will setup compiler/linker flags by ourselves later
+  if get_option('buildtype') != 'plain'
+    error('Configure build dir with "meson configure -Dbuildtype=plain"')
+  endif
 endif
 
 add_global_link_arguments(gLinkArguments, language : [ 'c', 'cpp' ])

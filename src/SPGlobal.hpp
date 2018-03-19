@@ -27,7 +27,11 @@ class SPGlobal : public ISPGlobal
 {
 public:
 
-    static constexpr auto *sourcepawnLibrary = "sourcepawn.jit.x86.so";
+    #ifdef SP_LINUX
+        static constexpr auto *sourcepawnLibrary = "sourcepawn.jit.x86.so";
+    #elif defined SP_WINDOWS
+        static constexpr auto *sourcepawnLibrary = "sourcepawn.jit.x86.dll";
+    #endif
 
     SPGlobal() = delete;
     SPGlobal(fs::path &&dllDir);
@@ -36,14 +40,14 @@ public:
         #ifdef SP_POSIX
             dlclose(m_SPLibraryHandle);
         #else
-            #error Need Windows implementation
+            FreeLibrary(m_SPLibraryHandle);
         #endif
     }
 
     // ISPGlobal
     const char *getHome() const override
     {
-        return m_SPModDir.c_str();
+        return m_SPModDir.string().c_str();
     }
     const char *getModName() const override
     {
@@ -120,7 +124,7 @@ private:
 #ifdef SP_POSIX
     void *m_SPLibraryHandle;
 #else
-    #error Need Windows implementation
+    HMODULE m_SPLibraryHandle;
 #endif
 };
 

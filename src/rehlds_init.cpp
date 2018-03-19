@@ -112,7 +112,7 @@ bool initRehldsApi()
         engineModule = Sys_LoadModule("filesystem_stdio.dll");
         if (!_initRehldsApi(engineModule, &errorMsg))
         {
-            gSPGlobal->->getLoggerCore()->LogErrorCore(errorMsg.c_str());
+            gSPGlobal->getLoggerCore()->LogErrorCore(errorMsg.c_str());
             return false;
         }
     }

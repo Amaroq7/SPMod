@@ -1,10 +1,5 @@
 add_project_arguments('-DSPMOD_CORE', language : [ 'c', 'cpp' ])
 
-# We cannot set c++ standard by meson configure
-if build_machine.system() == 'windows'
-  add_project_arguments('/std:c++latest', language : 'cpp')
-endif
-
 sourceFiles = files('coreNatives.cpp',
                     'h_export.cpp',
                     'engine_api.cpp',
@@ -20,9 +15,8 @@ sourceFiles = files('coreNatives.cpp',
 cppArgs = []
 linkArgs = []
 if build_machine.system() == 'linux'
+  #-Wall and -Wextra are set by warning_level option
   cppArgs = [
-    '-Wall',
-    '-Wextra',
     '-Wno-unknown-pragmas',
     '-fvisibility=hidden'
   ]
@@ -51,25 +45,31 @@ if build_machine.system() == 'linux'
   endif
 elif build_machine.system() == 'windows'
   cppArgs = [
-    '/W4',
-    '/TP',
-    '/RTC1'
+    '/W4',  # Warning level 4
+    '/TP'   # Treat files as c++ sources
   ]
   linkArgs = [
-    '/SUBSYSTEM:WINDOWS',
-    'kernel32.lib',
-    'user32.lib',
-    'gdi32.lib',
-    'winspool.lib',
-    'comdlg32.lib',
-    'advapi32.lib',
-    'shell32.lib',
-    'ole32.lib',
-    'oleaut32.lib',
-    'uuid.lib',
-    'odbc32.lib',
-    'odbccp32.lib'
+    '/EXPORT:GiveFnptrsToDll=_GiveFnptrsToDll@8',
+    '/SECTION:.data,RW'
   ]
+
+  # MSVC support is limited, we need to set compile options here for the time being
+  add_project_arguments('/std:c++17', language : 'cpp')
+  if get_option('windebug') == true
+    cppArgs += [
+      '/MTd',   # static linking (debug)
+      '/RTC1',   # runtime checks
+    ]
+  else
+    cppArgs += [
+      '/O2',    # optimization fast code
+      '/MT',    # static linking (release)
+      '/GL'     # whole program optimization
+    ]
+    linkArgs += [
+      '/LTCG'   # linker optimization
+    ]
+  endif
 endif
 
 shared_library('spmod_mm', sourceFiles,
