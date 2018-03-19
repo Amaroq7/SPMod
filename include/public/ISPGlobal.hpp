@@ -32,7 +32,7 @@
     #elif __GNUC__
         #define SP_GCC
     #endif
-#elif SP_WINDOWS
+#elif defined SP_WINDOWS
     #ifdef _MSC_VER
         #define SP_MSVC
     #endif
