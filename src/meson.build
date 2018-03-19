@@ -51,7 +51,7 @@ if build_machine.system() == 'linux'
   endif
 elif build_machine.system() == 'windows'
   cppArgs = [
-    '/Wall',
+    '/W4',
     '/TP',
     '/RTC1'
   ]
