@@ -36,7 +36,7 @@ public:
         #ifdef SP_POSIX
             dlclose(m_SPLibraryHandle);
         #else
-            // TODO: windows
+            #error Need Windows implementation
         #endif
     }
 
@@ -120,7 +120,7 @@ private:
 #ifdef SP_POSIX
     void *m_SPLibraryHandle;
 #else
-    // TODO: windows
+    #error Need Windows implementation
 #endif
 };
 

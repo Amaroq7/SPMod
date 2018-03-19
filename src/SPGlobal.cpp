@@ -76,7 +76,7 @@ void SPGlobal::_initSourcePawn()
 #ifdef SP_POSIX
     void *libraryHandle = dlopen(dllsDir.c_str(), RTLD_NOW);
 #else
-    // TODO: windows
+    #error Need Windows implementation
 #endif
 
     if (!libraryHandle)
@@ -105,7 +105,7 @@ void SPGlobal::_initSourcePawn()
 #ifdef SP_POSIX
         dlclose(libraryHandle);
 #else
-        // TODO: windows
+        #error Need Windows implementation
 #endif
         throw std::runtime_error("Wrong SourcePawn library version");
     }
@@ -113,7 +113,7 @@ void SPGlobal::_initSourcePawn()
 #ifdef SP_POSIX
     m_SPLibraryHandle = libraryHandle;
 #else
-    // TODO: windows
+    #error Need Windows implementation
 #endif
     m_spFactory = SPFactory;
     m_spFactory->NewEnvironment();
