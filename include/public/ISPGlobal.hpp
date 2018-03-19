@@ -61,12 +61,18 @@
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
     #pragma GCC diagnostic ignored "-Wunused-parameter"
+#elif defined SP_MSVC
+    #pragma warning(push)
+    // Unreferenced formal parameter
+    #pragma warning(disable : 4100)
 #endif
 #include <sp_vm_api.h>
 #ifdef SP_CLANG
     #pragma clang diagnostic pop
 #elif defined SP_GCC
     #pragma GCC diagnostic push
+#elif defined SP_MSVC
+    #pragma warning(pop)
 #endif
 
 #include <IForwardSystem.hpp>
