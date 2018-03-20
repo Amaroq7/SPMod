@@ -39,7 +39,7 @@ elif build_machine.system() == 'windows'
   # At the time of writing MSVC support is not mature enough
   # We will setup compiler/linker flags by ourselves later
   if get_option('buildtype') != 'plain'
-    error('Configure build dir with "meson configure -Dbuildtype=plain"')
+    warning('Configure build dir with "meson configure -Dbuildtype=plain"')
   endif
 endif
 
