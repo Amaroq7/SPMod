@@ -57,13 +57,11 @@ elif build_machine.system() == 'windows'
   add_project_arguments('/std:c++17', language : 'cpp')
   if get_option('windebug') == true
     cppArgs += [
-      '/MTd',   # static linking (debug)
-      '/RTC1',   # runtime checks
+      '/RTC1'  # runtime checks
     ]
   else
     cppArgs += [
       '/O2',    # optimization fast code
-      '/MT',    # static linking (release)
       '/GL'     # whole program optimization
     ]
     linkArgs += [
