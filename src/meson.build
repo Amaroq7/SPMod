@@ -22,26 +22,35 @@ if build_machine.system() == 'linux'
   ]
 
   linkArgs = [
-    '-ldl',
+    '-ldl'
   ]
 
   if cppCompiler.get_id() == 'clang'
     cppArgs += [
-      '-stdlib=libc++',
+      '-stdlib=libc++'
     ]
-    linkArgs += [
-      '-l:libc++.so.1',
-      '-l:libc++abi.so.1',
-      '-L.',
-      'libc++experimental.a'
-    ]
+    linkArgs += '-L.'
+    if get_option('dynamic_link') == true
+      linkArgs += [
+        '-l:libc++.so.1',
+        '-l:libc++abi.so.1'
+      ]
+    else
+      linkArgs += [
+        '-l:libc++.a',
+        '-l:libc++abi.a',
+        '-pthread',
+      ]
+    endif
+    linkArgs += '-lc++experimental'
   elif cppCompiler.get_id() == 'gcc'
-    # link libstdc++ and libgcc_s statically
-    linkArgs += [
-      '-static-libgcc',
-      '-static-libstdc++',
-      '-lstdc++fs'
-    ]
+    if get_option('dynamic_link') == false
+      linkArgs += [
+        '-static-libgcc',
+        '-static-libstdc++'
+      ]
+    endif
+    linkArgs += '-lstdc++fs'
   endif
 elif build_machine.system() == 'windows'
   cppArgs = [
