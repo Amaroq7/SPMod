@@ -92,9 +92,14 @@ public:
     {
         return m_SPModLogsDir;
     }
+    const auto &getDllsDirCore()
+    {
+        return m_SPModDllsDir;
+    }
 
     void setScriptsDir(std::string_view folder);
     void setLogsDir(std::string_view folder);
+    void setDllsDir(std::string_view folder);
 
 private:
 
@@ -113,6 +118,7 @@ private:
     fs::path m_SPModScriptsDir;
     fs::path m_SPModDir;
     fs::path m_SPModLogsDir;
+    fs::path m_SPModDllsDir;
     std::unique_ptr<PluginMngr> m_pluginManager;
     std::unique_ptr<ForwardMngr> m_forwardManager;
     std::unique_ptr<Logger> m_loggingSystem;

@@ -29,6 +29,7 @@ SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_p
     // Sets default dirs
     setScriptsDir("scripts");
     setLogsDir("logs");
+    setDllsDir("dlls");
 
     // Initialize SourcePawn library
     _initSourcePawn();
@@ -67,16 +68,22 @@ void SPGlobal::setLogsDir(std::string_view folder)
     m_SPModLogsDir = std::move(pathToLogs);
 }
 
+void SPGlobal::setDllsDir(std::string_view folder)
+{
+    fs::path pathToDlls(m_SPModDir);
+    pathToDlls /= folder.data();
+    m_SPModDllsDir = std::move(pathToDlls);
+}
+
 void SPGlobal::_initSourcePawn()
 {
-    fs::path dllsDir(getHome());
-    dllsDir /= "dlls";
-    dllsDir /= SPGlobal::sourcepawnLibrary;
+    fs::path SPDir(getDllsDirCore());
+    SPDir /= SPGlobal::sourcepawnLibrary;
 
 #ifdef SP_POSIX
-    void *libraryHandle = dlopen(dllsDir.c_str(), RTLD_NOW);
+    void *libraryHandle = dlopen(SPDir.c_str(), RTLD_NOW);
 #else
-    HMODULE libraryHandle = LoadLibrary(dllsDir.string().c_str());
+    HMODULE libraryHandle = LoadLibrary(SPDir.string().c_str());
 #endif
 
     if (!libraryHandle)
