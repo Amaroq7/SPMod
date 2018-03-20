@@ -68,11 +68,21 @@ elif build_machine.system() == 'windows'
     cppArgs += [
       '/RTC1'  # runtime checks
     ]
+    if get_option('dynamic_link') == true
+      cppArgs += [
+        '/MDd',
+      ]
+    endif
   else
     cppArgs += [
       '/O2',    # optimization fast code
       '/GL'     # whole program optimization
     ]
+    if get_option('dynamic_link') == true
+      cppArgs += [
+        '/MD',
+      ]
+    endif
     linkArgs += [
       '/LTCG',   # linker optimization
       '/DEBUG:NONE' # Meson adds /DEBUG by default, we need to override it
