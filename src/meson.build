@@ -65,7 +65,8 @@ elif build_machine.system() == 'windows'
       '/GL'     # whole program optimization
     ]
     linkArgs += [
-      '/LTCG'   # linker optimization
+      '/LTCG',   # linker optimization
+      '/DEBUG:NONE' # Meson adds /DEBUG by default, we need to override it
     ]
   endif
 endif
