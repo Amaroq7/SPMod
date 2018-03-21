@@ -3,16 +3,14 @@ SourcePawn Scripting Engine for Half-Life 1 based games
 
 ## About
 
-SPMod is a Metamod's plugin which is intended to be used as plugin system for Half-Life 1 and its derivatives. It uses [SourcePawn](https://github.com/alliedmodders/sourcepawn) as scripting language and allows to change completely the rules of a game or can ease the server administration by adding commands. SPMod's abilites can be extended by writing extensions, known as modules.
+SPMod is a [Metamod's](https://github.com/theAsmodai/metamod-r) plugin which is intended to be used as plugin system for Half-Life 1 and its derivatives. It uses [SourcePawn](https://github.com/alliedmodders/sourcepawn) as scripting language and allows to change completely the rules of a game or can ease the server administration by adding commands. SPMod's abilities can be extended by writing extensions, known as modules.
 
-### Motivation
-
-You may ask, why you should use this project while there are more mature and ready to use addons out there, which do the same, like [AMX Mod X](http://www.amxmodx.org) or [AMX Mod](http://www.amxmod.net), answer is simple, you shouldn't! It's just a prototype, not production ready in any mean, but you still can build and give it a try!
-
-Goals:
-* modern codebase
-* modern API for modules
-* actively developed scripting language
+## Supported games (in future)
+* Half-Life
+* Counter-Strike
+* Counter-Strike: Condiiton Zero
+* Day of Defeat
+* Team Fortress Classic
 
 ### Example plugin
 
@@ -44,7 +42,7 @@ public void pluginInit()
 
 ## Building & Installing
 
-Steps to build SPMod from source and install it can be found project's wiki soon.
+Steps to build SPMod from source can be found on project's wiki.
 
 ## API Reference
 
