@@ -10,8 +10,7 @@ cppCompiler = meson.get_compiler('cpp')
 
 llvmIncludesDir = []
 if build_machine.system() == 'linux'
-  add_global_arguments('-m32', language : 'c')
-  add_global_arguments('-m32', language : 'cpp')
+  add_global_arguments('-m32', language : ['c', 'cpp'])
   gLinkArguments = [
     '-m32'
   ]
@@ -29,7 +28,7 @@ if build_machine.system() == 'linux'
       warning('GCC v' + cppCompiler.version() + ' doesn\'t fully support C++17.')
     endif
   else
-    error('Only Clang or GCC are supported.')
+    error('Either Clang or GCC is supported.')
   endif
 elif build_machine.system() == 'windows'
   gLinkArguments = '/MACHINE:X86'

@@ -16,19 +16,15 @@ cppArgs = []
 linkArgs = []
 if build_machine.system() == 'linux'
   #-Wall and -Wextra are set by warning_level option
-  cppArgs = [
+  cppArgs += [
     '-Wno-unknown-pragmas',
     '-fvisibility=hidden'
   ]
 
-  linkArgs = [
-    '-ldl'
-  ]
+  linkArgs += '-ldl'
 
   if cppCompiler.get_id() == 'clang'
-    cppArgs += [
-      '-stdlib=libc++'
-    ]
+    cppArgs += '-stdlib=libc++'
     linkArgs += '-L.'
     if get_option('dynamic_link') == true
       linkArgs += [
@@ -65,13 +61,9 @@ elif build_machine.system() == 'windows'
   # MSVC support is limited, we need to set compile options here for the time being
   add_project_arguments('/std:c++17', language : 'cpp')
   if get_option('windebug') == true
-    cppArgs += [
-      '/RTC1'  # runtime checks
-    ]
+    cppArgs += '/RTC1'  # runtime checks
     if get_option('dynamic_link') == true
-      cppArgs += [
-        '/MDd',
-      ]
+      cppArgs += '/MDd'
     endif
   else
     cppArgs += [
@@ -79,9 +71,7 @@ elif build_machine.system() == 'windows'
       '/GL'     # whole program optimization
     ]
     if get_option('dynamic_link') == true
-      cppArgs += [
-        '/MD',
-      ]
+      cppArgs += '/MD'
     endif
     linkArgs += [
       '/LTCG',   # linker optimization
