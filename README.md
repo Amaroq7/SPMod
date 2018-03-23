@@ -5,12 +5,14 @@ SourcePawn Scripting Engine for Half-Life 1 based games
 
 SPMod is a [Metamod's](https://github.com/theAsmodai/metamod-r) plugin which is intended to be used as plugin system for Half-Life 1 and its derivatives. It uses [SourcePawn](https://github.com/alliedmodders/sourcepawn) as scripting language and allows to change completely the rules of a game or can ease the server administration by adding commands. SPMod's abilities can be extended by writing extensions, known as modules.
 
-## Supported games (in future)
+## Supported games & mods (in future)
 * Half-Life
 * Counter-Strike
 * Counter-Strike: Condiiton Zero
 * Day of Defeat
 * Team Fortress Classic
+
+For mods and games not listed here, check [here](https://github.com/Amaroq7/SPMod/wiki/Unsupported-games).
 
 ### Example plugin
 
@@ -26,7 +28,7 @@ struct PluginInfo
 public PluginInfo pluginInfo =
 {
 	name = "test",
-    version = "0.0.0",
+	version = "0.0.0",
 	author = "author",
 	url = "https://github.com/Amaroq7/SPMod"
 };
