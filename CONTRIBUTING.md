@@ -124,7 +124,7 @@ Every contributor who has made non-trivial changes to the project will be added 
 TC consists of collaborators which are nominated by other collaborators. TC uses its consensus seeking process to accept or rejected a nominee for TC as for issues which have been passed on it. TC tries to find resolution which has no objections among the members of the group. If reaching consensus is impossible then majority wins vote is called, but that is the last-resort option.
 
 # Community
-The core team is @Amaroq7. Everyone is welcomed to participate in SPMod's development.
+The core team is [@Amaroq7](https://github.com/Amaroq7). Everyone is welcomed to participate in SPMod's development.
 
 You can chat with the core team on https://gitter.im/SPMod.
 
