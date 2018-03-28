@@ -1,3 +1,40 @@
+# Overview
+
+- [Introduction](#introduction)
+  - [Contributing to SPMod](#contributing-to-spmod)
+  - [How can I contribute?](#how-can-i-contribute)
+  - [Code of Conduct](#code-of-conduct)
+- [Your First Contribution](#your-first-contribution)
+  - [First contribution to an open source project](#first-contribution-to-an-open-source-project)
+- [Getting started](#getting-started)
+  - [Submitting contribution](#submitting-contribution)
+- [How to report a bug](#how-to-report-a-bug)
+  - [Security issues](#security-issues)
+  - [Before filing a bug report](#before-filing-a-bug-report)
+  - [The same bug has already been reported](#the-same-bug-has-already-been-reported)
+- [How to suggest a feature or enhancement](#how-to-suggest-a-feature-or-enhancement)
+  - [Goals](#goals)
+  - [Process for suggesting a feature](#process-for-suggesting-a-feature)
+- [Code review process](#code-review-process)
+  - [Reviewers](#reviewers)
+  - [Feedback](#feedback)
+  - [Becoming a collaborator](#becoming-a-collaborator)
+  - [TC](#tc)
+- [Community](#community)
+- [Extra notes](#extra-notes)
+  - [Pull request and issues labels](#pull-request-and-issues-labels)
+  - [Code style](#code-style)
+    - [General](#general)
+    - [Naming conventions](#naming-conventions)
+      - [Variables & functions](#variables--functions)
+      - [Classes, structures, filenames, unions](#classes-structures-filenames-unions)
+    - [Function's parameters](#functions-parameters)
+    - [Brackets](#brackets)
+    - [auto keyword](#auto-keyword)
+      - [Type can be easily determined](#type-can-be-easily-determined)
+      - [Loops](#loops)
+      - [Lambdas](#lambdas)
+
 # Introduction
 
 ### Contributing to SPMod
@@ -171,7 +208,7 @@ void getId()
 }
 ```
 
-##### Classes, structures, filenames, unions names
+##### Classes, structures, filenames, unions
 For naming those use PascalCase.
 
 ###### Examples
