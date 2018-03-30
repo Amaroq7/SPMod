@@ -20,8 +20,9 @@ if build_machine.system() == 'linux'
     endif
     llvmIncludesDir += join_paths('include', 'llvm')
     # use LLVM linker if available
-    if find_program('lld-6.0', 'lld-5.0', 'lld', required : false).found() == true
-      gLinkArguments += '-fuse-ld=lld'
+    llvmLinker = find_program('lld-6.0', 'lld-5.0', 'lld', required : false)
+    if llvmLinker.found() == true
+      gLinkArguments += '-fuse-ld=' + llvmLinker.path().split('/')[-1]
     endif
   elif cppCompiler.get_id() == 'gcc'
     if cppCompiler.version() < '7.0.0'
