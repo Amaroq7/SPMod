@@ -1,4 +1,4 @@
-# SPMod [![License](https://img.shields.io/badge/License-GPLv3-brightgreen.svg?style=flat-square)](LICENSE)
+# SPMod [![License](https://img.shields.io/badge/License-GPLv3-brightgreen.svg?style=flat-square)](LICENSE) [![Travis branch](https://img.shields.io/travis/Amaroq7/SPMod/master.svg?style=flat-square)](https://travis-ci.org/Amaroq7/SPMod)
 SourcePawn Scripting Engine for Half-Life 1 based games
 
 ## About
