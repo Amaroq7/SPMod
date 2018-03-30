@@ -34,7 +34,7 @@ before_script:
     - LDFLAGS=-fuse-ld=lld-6.0 cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../libcxxabi/include -DLIBCXX_BUILD_32_BITS=ON -DCMAKE_SHARED_LINKER_FLAGS="-L../libcxxabi_build/lib" ../libcxx/
     - ninja
 script:
-    - mkdir build
+    - cd SPMod && mkdir build
     - cp ../libcxxabi_build/libcxxabi_build/lib/* build
     - cp ../libcxxabi_build/libcxxabi/include/* include/llvm
     - cp ../libcxx_build/lib/* build
