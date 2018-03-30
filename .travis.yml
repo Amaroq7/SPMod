@@ -1,0 +1,24 @@
+os: linux
+addons:
+    apt:
+        sources:
+            - llvm-toolchain-trusty-5.0
+            - deadsnakes #python3.5
+            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
+        packages:
+            - clang-5.0
+            - python3.5
+            - meson
+            - cmake
+            - ninja-build
+            - lib32z1-dev
+            - libc6-dev-i386
+            - linux-libc-dev
+            - gcc-multilib
+language: cpp
+compiler:
+    - clang
+before_script:
+    -
+script:
+    -
