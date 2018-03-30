@@ -34,11 +34,12 @@ before_script:
     - LDFLAGS=-fuse-ld=lld-6.0 cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../libcxxabi/include -DLIBCXX_BUILD_32_BITS=ON -DCMAKE_SHARED_LINKER_FLAGS="-L../libcxxabi_build/lib" ../libcxx/
     - ninja
 script:
+    - export CC=clang-6.0 CXX=clang++-6.0 PYTHON=python3.6
     - cd ../SPMod && mkdir build
-    - cp ../libcxxabi_build/libcxxabi_build/lib/* build
-    - cp ../libcxxabi_build/libcxxabi/include/* include/llvm
-    - cp ../libcxx_build/lib/* build
-    - cp ../libcxx/include/* include/llvm
+    - cp ../libcxxabi_build/lib/* build
+    - cp ../libcxxabi/include/* include/llvm
+    - cp ../libcxx_build/lib/libc* build
+    - cp -r ../libcxx/include/* include/llvm
     - cd build
     - meson configure -Ddynamic-link=true -Dc_std=c11 -Dcpp_std=c++17
     - ninja
