@@ -41,5 +41,8 @@ script:
     - cp ../libcxx_build/lib/libc* build
     - cp -r ../libcxx/include/* include/llvm
     - cd build
-    - python3.6 /usr/bin/meson configure -Ddynamic-link=true -Dc_std=c11 -Dcpp_std=c++17
+    - python3.6 /usr/bin/meson .. .
+    - python3.6 /usr/bin/meson configure
+    - python3.6 /usr/bin/meson configure -Ddynamic_link=true -Dc_std=c11 -Dcpp_std=c++17
+    - python3.6 /usr/bin/meson configure
     - ninja
