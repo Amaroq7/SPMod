@@ -1,24 +1,46 @@
+sudo: required
 os: linux
 addons:
     apt:
         sources:
-            - llvm-toolchain-trusty-5.0
-            - deadsnakes #python3.5
+            - llvm-toolchain-trusty-6.0
+            - ubuntu-toolchain-r-test
+            - deadsnakes #python3.6
             - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
         packages:
-            - clang-5.0
-            - python3.5
+            - clang-6.0
+            - lld-6.0
+            - python3.6
             - meson
-            - cmake
             - ninja-build
             - lib32z1-dev
+            - lib32stdc++6
             - libc6-dev-i386
             - linux-libc-dev
             - gcc-multilib
+            - g++-multilib
 language: cpp
 compiler:
     - clang
 before_script:
-    -
+    - cd ..
+    - export CC=clang-6.0 CXX=clang++-6.0
+    - ln -sf /usr/bin/ld.lld-6.0 /usr/bin/ld
+    - git clone -b release_60 https://github.com/llvm-mirror/libcxx.git
+    - git clone -b release_60 https://github.com/llvm-mirror/libcxxabi.git
+    - mkdir libcxx_build libcxxabi_build
+    - cd libcxxabi_build
+    - cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-m32 -DLIBCXXABI_LIBCXX_INCLUDES=../libcxx/include ../libcxxabi/
+    - ninja
+    - cd ../libcxx_build
+    - cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../libcxxabi/include -DLIBCXX_BUILD_32_BITS=ON -DCMAKE_SHARED_LINKER_FLAGS="-L../libcxxabi_build/lib" ../libcxx/
+    - ninja
 script:
-    -
+    - mkdir build
+    - cp ../libcxxabi_build/libcxxabi_build/lib/* build
+    - cp ../libcxxabi_build/libcxxabi/include/* include/llvm
+    - cp ../libcxx_build/lib/* build
+    - cp ../libcxx/include/* include/llvm
+    - cd build
+    - meson configure -Ddynamic-link=true -Dc_std=c11 -Dcpp_std=c++17
+    - ninja
