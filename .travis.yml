@@ -1,14 +1,27 @@
+language: cpp
+branches:
+  only:
+    - master
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+sudo: required
 os: linux
-addons:
-    apt:
-        sources:
+dist: trusty
+group: stable
+
+matrix:
+  include:
+    - addons:
+        apt:
+          sources:
             - llvm-toolchain-trusty-6.0
             - ubuntu-toolchain-r-test
             - deadsnakes #python3.6
             - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
-        packages:
+          packages:
             - clang-6.0
             - lld-6.0
+            - gcc-multilib
+            - g++-multilib
             - python3.6
             - meson
             - ninja-build
@@ -16,33 +29,58 @@ addons:
             - lib32stdc++6
             - libc6-dev-i386
             - linux-libc-dev
+      env:
+        - CLANG_VERSION=6
+        - COMPILERS="export CC=clang-6.0 CXX=clang++-6.0"
+
+    - addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+            - ubuntu-toolchain-r-test
+            - deadsnakes #python3.6
+            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
+          packages:
+            - clang-5.0
+            - lld-5.0
             - gcc-multilib
             - g++-multilib
-language: cpp
-compiler:
-    - clang
+            - python3.6
+            - meson
+            - ninja-build
+            - lib32z1-dev
+            - lib32stdc++6
+            - libc6-dev-i386
+            - linux-libc-dev
+      env:
+          - CLANG_VERSION=5
+          - COMPILERS="export CC=clang-5.0 CXX=clang++-5.0"
+          
+    - addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - deadsnakes #python3.6
+            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
+          packages:
+            - gcc-7
+            - g++-7
+            - gcc-7-multilib
+            - g++-7-multilib
+            - python3.6
+            - meson
+            - ninja-build
+            - lib32z1-dev
+            - lib32stdc++6
+            - libc6-dev-i386
+            - linux-libc-dev
+      env:
+        - GCC_VERSION=7
+        - COMPILERS="export CC=gcc-7 CXX=g++-7"
+
 before_script:
-    - cd ..
-    - export CC=clang-6.0 CXX=clang++-6.0
-    - git clone -b release_60 https://github.com/llvm-mirror/libcxx.git
-    - git clone -b release_60 https://github.com/llvm-mirror/libcxxabi.git
-    - mkdir libcxx_build libcxxabi_build
-    - cd libcxxabi_build
-    - LDFLAGS=-fuse-ld=lld-6.0 cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-m32 -DLIBCXXABI_LIBCXX_INCLUDES=../libcxx/include ../libcxxabi/
-    - ninja
-    - cd ../libcxx_build
-    - LDFLAGS=-fuse-ld=lld-6.0 cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../libcxxabi/include -DLIBCXX_BUILD_32_BITS=ON -DCMAKE_SHARED_LINKER_FLAGS="-L../libcxxabi_build/lib" ../libcxx/
-    - ninja
+    - eval ${COMPILERS}
+    - travis/prepare.sh
 script:
-    - export CC=clang-6.0 CXX=clang++-6.0
-    - cd ../SPMod && mkdir build
-    - cp ../libcxxabi_build/lib/* build
-    - cp ../libcxxabi/include/* include/llvm
-    - cp ../libcxx_build/lib/libc* build
-    - cp -r ../libcxx/include/* include/llvm
-    - cd build
-    - python3.6 /usr/bin/meson .. .
-    - python3.6 /usr/bin/meson configure
-    - python3.6 /usr/bin/meson configure -Ddynamic_link=true -Dc_std=c11 -Dcpp_std=c++17
-    - python3.6 /usr/bin/meson configure
-    - ninja
+    - eval ${COMPILERS}
+    - travis/build.sh

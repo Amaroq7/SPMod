@@ -1,5 +1,13 @@
 add_project_arguments('-DSPMOD_CORE', language : [ 'c', 'cpp' ])
 
+if get_option('c_std') == 'none'
+  add_project_arguments('-std=c11', language : 'c')
+endif
+
+if get_option('cpp_std') == 'none'
+  add_project_arguments('-std=c++17', language : 'cpp')
+endif
+
 sourceFiles = files('coreNatives.cpp',
                     'h_export.cpp',
                     'engine_api.cpp',
