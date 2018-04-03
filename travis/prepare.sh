@@ -7,14 +7,16 @@ then
     # Overwrite default linker
     if [ ${CLANG_VERSION} == 5 ]
     then
-    	export LDFLAGS=-fuse-ld=lld-5.0
+        export LDFLAGS=-fuse-ld=lld-5.0
+        BRANCH_NAME=release_50
     elif [ ${CLANG_VERSION} == 6 ]
     then
-    	export LDFLAGS=-fuse-ld=lld-6.0
+        export LDFLAGS=-fuse-ld=lld-6.0
+        BRANCH_NAME=release_60
     fi
 
-    git clone -b release_60 https://github.com/llvm-mirror/libcxx.git ../libcxx
-    git clone -b release_60 https://github.com/llvm-mirror/libcxxabi.git ../libcxxabi
+    git clone -b ${BRANCH_NAME} https://github.com/llvm-mirror/libcxx.git ../libcxx
+    git clone -b ${BRANCH_NAME} https://github.com/llvm-mirror/libcxxabi.git ../libcxxabi
     mkdir ../libcxx_build ../libcxxabi_build
     cd ../libcxxabi_build
     cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-m32 -DLIBCXXABI_LIBCXX_INCLUDES=../libcxx/include ../libcxxabi/
