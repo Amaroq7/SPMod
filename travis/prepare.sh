@@ -4,16 +4,25 @@ then
     # Save repo dir
     REPDIR="${PWD}"
 
-    # Overwrite default linker
+    # Overwrite default compiler
     if [ ${CLANG_VERSION} == 5 ]
     then
         export LDFLAGS=-fuse-ld=lld-5.0
         BRANCH_NAME=release_50
+
+        CLANG_COMPILER=/usr/bin/clang-5.0
+        CLANGPP_COMPILER=/usr/bin/clang++-5.0
     elif [ ${CLANG_VERSION} == 6 ]
     then
         export LDFLAGS=-fuse-ld=lld-6.0
         BRANCH_NAME=release_60
+
+        CLANG_COMPILER=/usr/bin/clang-6.0
+        CLANGPP_COMPILER=/usr/bin/clang++-6.0
     fi
+
+    sudo update-alternatives --install /usr/bin/clang clang ${CLANG_COMPILER} 1000
+    sudo update-alternatives --install /usr/bin/clang++ clang++ ${CLANGPP_COMPILER} 1000
 
     git clone -b ${BRANCH_NAME} https://github.com/llvm-mirror/libcxx.git ../libcxx
     git clone -b ${BRANCH_NAME} https://github.com/llvm-mirror/libcxxabi.git ../libcxxabi
@@ -35,7 +44,7 @@ then
 
 elif [[ ! -z "${GCC_VERSION}" ]]
 then
-    # Ubuntu has named dir as asm-generic while gcc searches for asm
+    # Ubuntu has named dir as asm-generic while gcc searching for asm
     sudo ln -sv /usr/include/asm-generic/ /usr/include/asm
 
     # Overwrite default version of compilers
@@ -43,6 +52,6 @@ then
     GCC_COMPILER=/usr/bin/gcc-7
     GPP_COMPILER=/usr/bin/g++-7
 
-    sudo ln -sfv ${GCC_COMPILER} /usr/bin/gcc
-    sudo ln -sfv ${GPP_COMPILER} /usr/bin/g++
+    sudo update-alternatives --install /usr/bin/gcc gcc ${GCC_COMPILER} 1000
+    sudo update-alternatives --install /usr/bin/g++ g++ ${GPP_COMPILER} 1000
 fi

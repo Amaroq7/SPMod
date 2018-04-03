@@ -31,7 +31,7 @@ matrix:
             - linux-libc-dev
       env:
         - CLANG_VERSION=6
-        - COMPILERS="export CC=clang-6.0 CXX=clang++-6.0"
+      compiler: clang
 
     - addons:
         apt:
@@ -53,9 +53,9 @@ matrix:
             - libc6-dev-i386
             - linux-libc-dev
       env:
-          - CLANG_VERSION=5
-          - COMPILERS="export CC=clang-5.0 CXX=clang++-5.0"
-          
+        - CLANG_VERSION=5
+      compiler: clang
+
     - addons:
         apt:
           sources:
@@ -76,11 +76,10 @@ matrix:
             - linux-libc-dev
       env:
         - GCC_VERSION=7
-        - COMPILERS="export CC=gcc-7 CXX=g++-7"
+      compiler: gcc
 
 before_script:
-    - eval ${COMPILERS}
+    - export PATH=/usr/bin:$PATH
     - travis/prepare.sh
 script:
-    - eval ${COMPILERS}
     - travis/build.sh
