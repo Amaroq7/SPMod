@@ -12,7 +12,7 @@ SPMod is a [Metamod's](https://github.com/theAsmodai/metamod-r) plugin which is 
 * Day of Defeat
 * Team Fortress Classic
 
-For not listed mods and games, check [here](https://github.com/Amaroq7/SPMod/wiki/Unsupported-games).
+For unsupported mods and games, check [here](https://github.com/Amaroq7/SPMod/wiki/Unsupported-games).
 
 ### Example plugin
 
