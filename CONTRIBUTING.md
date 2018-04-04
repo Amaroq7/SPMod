@@ -327,3 +327,11 @@ auto someLambdaFunc = [](int a, int b)
     // ...
 }
 ```
+### Naming commits
+
+Add `[skip ci]` or `[ci skip]` to commit message whenever you change anything related to documentation.
+
+###### Examples
+`[skip ci] Fix 'get_user_name' description`
+
+`[ci skip] Fix example`
