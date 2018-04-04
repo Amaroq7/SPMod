@@ -24,6 +24,7 @@ then
     sudo update-alternatives --install /usr/bin/clang clang ${CLANG_COMPILER} 1000
     sudo update-alternatives --install /usr/bin/clang++ clang++ ${CLANGPP_COMPILER} 1000
 
+    # Build libcxxabi & libcxx
     git clone -b ${BRANCH_NAME} https://github.com/llvm-mirror/libcxx.git ../libcxx
     git clone -b ${BRANCH_NAME} https://github.com/llvm-mirror/libcxxabi.git ../libcxxabi
     mkdir ../libcxx_build ../libcxxabi_build
