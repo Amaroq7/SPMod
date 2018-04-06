@@ -60,12 +60,19 @@ namespace SPMod
         virtual IPlugin *getOwnerPlugin() const = 0;
         virtual IModuleInterface *getOwnerModule() const = 0;
         virtual bool pushCell(cell_t cell) = 0;
-        virtual bool pushCellPtr(cell_t *cell, bool copyback) = 0;
+        virtual bool pushCellPtr(cell_t *cell,
+                                    bool copyback) = 0;
         virtual bool pushFloat(float real) = 0;
-        virtual bool pushFloatPtr(float *real, bool copyback) = 0;
-        virtual bool pushArray(cell_t *array, size_t size, bool copyback) = 0;
+        virtual bool pushFloatPtr(float *real,
+                                    bool copyback) = 0;
+        virtual bool pushArray(cell_t *array,
+                                size_t size,
+                                bool copyback) = 0;
         virtual bool pushString(const char *string) = 0;
-        virtual bool pushStringEx(char *buffer, size_t length, StringFlags sflags, bool copyback) = 0;
+        virtual bool pushStringEx(char *buffer,
+                                    size_t length,
+                                    StringFlags sflags,
+                                    bool copyback) = 0;
         virtual bool execFunc(cell_t *result) = 0;
         virtual void resetParams() = 0;
 
