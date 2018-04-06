@@ -15,13 +15,12 @@ install:
   - cd ..
   - ps: Start-FileDownload 'https://github.com/mesonbuild/meson/releases/download/0.45.1/meson-0.45.1-64.msi'
   - start /wait msiexec.exe /i meson-0.45.1-64.msi /quiet /qn /norestart /log install.log
-  - cat install.log
   - cd SPMod
 build_script:
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
   - set PATH=C:\Program Files\Meson;%PATH%
-  - echo %PATH%
   - mkdir build
   - cd build
-  - meson .. .
+  - meson .. . --buildtype plain
+  - meson configure
   - ninja
