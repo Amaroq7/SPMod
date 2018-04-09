@@ -204,9 +204,9 @@ static cell_t core_executeForward(SourcePawn::IPluginContext *ctx,
             auto param = fwdManager->getParam<cell_t *>(*paramToPass);
             if (!param.has_value())
             {
-                assert(0);
                 fwdManager->resetPreparedParams();
                 fwdToExecute->resetParams();
+                ctx->ReportError("Passed argument is not prepared array! %d", i + 3);
                 return 0;
             }
 
@@ -227,9 +227,9 @@ static cell_t core_executeForward(SourcePawn::IPluginContext *ctx,
             auto param = fwdManager->getParam<char *>(*paramToPass);
             if (!param.has_value())
             {
-                assert(0);
                 fwdManager->resetPreparedParams();
                 fwdToExecute->resetParams();
+                ctx->ReportError("Passed argument is not prepared string! %d", i + 3);
                 return 0;
             }
 
