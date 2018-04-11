@@ -17,8 +17,7 @@
 
 #pragma once
 
-// SPMod interface
-#include <ISPGlobal.hpp>
+#include <IHelpers.hpp>
 
 // Metamod & HLSDK
 #include <extdll.h>
@@ -46,6 +45,9 @@
 
 #undef max
 #undef min
+
+// SPMod interface
+#include <ISPGlobal.hpp>
 
 // STL C++
 #include <memory>

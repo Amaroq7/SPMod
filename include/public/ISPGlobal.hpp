@@ -17,41 +17,7 @@
 
 #pragma once
 
-// Platform defines
-#ifdef _WIN32
-    #define SP_WINDOWS
-#elif __linux__
-    #define SP_LINUX
-    #define SP_POSIX
-#endif
-
-// Compiler defines
-#ifdef SP_POSIX
-    #ifdef __clang__
-        #define SP_CLANG
-    #elif __GNUC__
-        #define SP_GCC
-    #endif
-#elif defined SP_WINDOWS
-    #ifdef _MSC_VER
-        #define SP_MSVC
-    #endif
-#endif
-
-#ifndef SPMOD_API
-    #ifdef SP_POSIX
-        #define SPMOD_API	extern "C" __attribute__((visibility("default")))
-    #else
-        #define SPMOD_API	extern "C" __declspec(dllexport)
-    #endif
-#endif
-
-// Avoid inheritance outside core
-#ifdef SPMOD_CORE
-    #define SPMOD_FINAL
-#else
-    #define SPMOD_FINAL final
-#endif
+#include <IHelpers.hpp>
 
 #ifdef SP_CLANG
     #pragma clang diagnostic push
