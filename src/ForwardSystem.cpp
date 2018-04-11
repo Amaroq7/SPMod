@@ -201,9 +201,9 @@ bool Forward::execFunc(cell_t *result)
             if (returnValue < tempResult)
                 returnValue = tempResult;
 
-            if (m_execType & ExecType::Stop && tempResult == ReturnValue::PluginStop)
+            if (hasEnumFlag(m_execType, ExecType::Stop) && tempResult == ReturnValue::PluginStop)
             {
-                if (!(m_execType & ExecType::Highest))
+                if (!hasEnumFlag(m_execType, ExecType::Highest))
                     returnValue = tempResult;
 
                 break;
@@ -285,13 +285,13 @@ void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
                 auto spStringFlags = 0;
                 if (paramObj.m_stringFlags != StringFlags::None)
                 {
-                    if (paramObj.m_stringFlags & StringFlags::Utf8)
+                    if (hasEnumFlag(paramObj.m_stringFlags, StringFlags::Utf8))
                         spStringFlags |= SM_PARAM_STRING_UTF8;
 
-                    if (paramObj.m_stringFlags & StringFlags::Copy)
+                    if (hasEnumFlag(paramObj.m_stringFlags, StringFlags::Copy))
                         spStringFlags |= SM_PARAM_STRING_COPY;
 
-                    if (paramObj.m_stringFlags & StringFlags::Binary)
+                    if (hasEnumFlag(paramObj.m_stringFlags, StringFlags::Binary))
                         spStringFlags |= SM_PARAM_STRING_BINARY;
                 }
 

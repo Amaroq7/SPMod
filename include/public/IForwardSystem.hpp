@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 namespace SPMod
 {
     class IPlugin;
@@ -102,108 +104,79 @@ namespace SPMod
         virtual ~IForwardMngr() { };
     };
 
-    // ExecType operators
-    inline uint8_t operator &(const IForward::ExecType lhs, const IForward::ExecType rhs)
+    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+    inline bool hasEnumFlag(const T type,
+                            const T flag)
     {
-        return static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs);
+        return static_cast<bool>(static_cast<std::underlying_type_t<T>>(type) &
+                                static_cast<std::underlying_type_t<T>>(flag));
     }
 
-    inline IForward::ExecType operator &=(const IForward::ExecType lhs, const IForward::ExecType rhs)
+    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+    inline T operator &(const T lhs,
+                        const T rhs)
     {
-        auto returnVal = static_cast<uint8_t>(lhs);
-        returnVal &= static_cast<uint8_t>(rhs);
-
-        return static_cast<IForward::ExecType>(returnVal);
+        return static_cast<T>(static_cast<std::underlying_type_t<T>>(lhs) &
+                                static_cast<std::underlying_type_t<T>>(rhs));
     }
 
-    inline bool operator !(const IForward::ExecType lhs)
+    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+    inline T operator &=(const T lhs,
+                        const T rhs)
     {
-        return !!static_cast<uint8_t>(lhs);
+        auto returnVal = static_cast<std::underlying_type_t<T>>(lhs);
+        returnVal &= static_cast<std::underlying_type_t<T>>(rhs);
+
+        return static_cast<T>(returnVal);
     }
 
-    inline IForward::ExecType operator |(const IForward::ExecType lhs, const IForward::ExecType rhs)
+    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+    inline T operator |(const T lhs,
+                        const T rhs)
     {
-        return static_cast<IForward::ExecType>(static_cast<uint8_t>(lhs) |
-                                                static_cast<uint8_t>(rhs));
+        return static_cast<T>(static_cast<std::underlying_type_t<T>>(lhs) |
+                                static_cast<std::underlying_type_t<T>>(rhs));
     }
 
-    inline IForward::ExecType operator |=(const IForward::ExecType lhs, const IForward::ExecType rhs)
+    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+    inline T operator |=(const T lhs,
+                        const T rhs)
     {
-        auto returnVal = static_cast<uint8_t>(lhs);
-        returnVal |= static_cast<uint8_t>(rhs);
+        auto returnVal = static_cast<std::underlying_type_t<T>>(lhs);
+        returnVal |= static_cast<std::underlying_type_t<T>>(rhs);
 
-        return static_cast<IForward::ExecType>(returnVal);
+        return static_cast<T>(returnVal);
     }
 
-    inline IForward::ExecType operator ^(const IForward::ExecType lhs, const IForward::ExecType rhs)
+    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+    inline T operator ^(const T lhs,
+                        const T rhs)
     {
-        return static_cast<IForward::ExecType>(static_cast<uint8_t>(lhs) ^
-                                                static_cast<uint8_t>(rhs));
+        return static_cast<T>(static_cast<std::underlying_type_t<T>>(lhs) ^
+                                static_cast<std::underlying_type_t<T>>(rhs));
     }
 
-    inline IForward::ExecType operator ^=(const IForward::ExecType lhs, const IForward::ExecType rhs)
+    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+    inline T operator ^=(const T lhs,
+                        const T rhs)
     {
-        auto returnVal = static_cast<uint8_t>(lhs);
-        returnVal ^= static_cast<uint8_t>(rhs);
+        auto returnVal = static_cast<std::underlying_type_t<T>>(lhs);
+        returnVal ^= static_cast<std::underlying_type_t<T>>(rhs);
 
-        return static_cast<IForward::ExecType>(returnVal);
+        return static_cast<T>(returnVal);
     }
 
-    // StringFlags operators
-    inline uint8_t operator &(const IForward::StringFlags lhs, const IForward::StringFlags rhs)
+    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+    inline bool operator ==(cell_t lhs,
+                            const T rhs)
     {
-        return static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs);
+        return lhs == static_cast<std::underlying_type_t<T>>(rhs);
     }
 
-    inline IForward::StringFlags operator &=(const IForward::StringFlags lhs, const IForward::StringFlags rhs)
+    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+    inline bool operator !=(cell_t lhs,
+                            const T rhs)
     {
-        auto returnVal = static_cast<uint8_t>(lhs);
-        returnVal &= static_cast<uint8_t>(rhs);
-
-        return static_cast<IForward::StringFlags>(returnVal);
-    }
-
-    inline bool operator !(const IForward::StringFlags lhs)
-    {
-        return !!static_cast<uint8_t>(lhs);
-    }
-
-    inline IForward::StringFlags operator |(const IForward::StringFlags lhs, const IForward::StringFlags rhs)
-    {
-        return static_cast<IForward::StringFlags>(static_cast<uint8_t>(lhs) |
-                                                static_cast<uint8_t>(rhs));
-    }
-
-    inline IForward::StringFlags operator |=(const IForward::StringFlags lhs, const IForward::StringFlags rhs)
-    {
-        auto returnVal = static_cast<uint8_t>(lhs);
-        returnVal |= static_cast<uint8_t>(rhs);
-
-        return static_cast<IForward::StringFlags>(returnVal);
-    }
-
-    inline IForward::StringFlags operator ^(const IForward::StringFlags lhs, const IForward::StringFlags rhs)
-    {
-        return static_cast<IForward::StringFlags>(static_cast<uint8_t>(lhs) ^
-                                                static_cast<uint8_t>(rhs));
-    }
-
-    inline IForward::StringFlags operator ^=(const IForward::StringFlags lhs, const IForward::StringFlags rhs)
-    {
-        auto returnVal = static_cast<uint8_t>(lhs);
-        returnVal ^= static_cast<uint8_t>(rhs);
-
-        return static_cast<IForward::StringFlags>(returnVal);
-    }
-
-    // ReturnValue operators
-    inline bool operator ==(cell_t lhs, IForward::ReturnValue rhs)
-    {
-        return lhs == static_cast<uint8_t>(rhs);
-    }
-
-    inline bool operator !=(cell_t lhs, IForward::ReturnValue rhs)
-    {
-        return lhs != static_cast<uint8_t>(rhs);
+        return lhs != static_cast<std::underlying_type_t<T>>(rhs);
     }
 }
