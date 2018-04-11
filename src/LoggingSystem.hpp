@@ -19,6 +19,14 @@
 
 #include "spmod.hpp"
 
+#ifdef SP_CLANG
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+#elif defined SP_GCC
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+
 class Logger final : public SourcePawn::IDebugListener
 {
 public:
@@ -80,3 +88,9 @@ private:
     void _writeErrorToFile(std::string_view errormsg);
     bool m_alreadyReportedError;
 };
+
+#ifdef SP_CLANG
+    #pragma clang diagnostic pop
+#elif defined SP_GCC
+    #pragma GCC diagnostic pop
+#endif
