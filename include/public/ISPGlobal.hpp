@@ -70,7 +70,7 @@
 #ifdef SP_CLANG
     #pragma clang diagnostic pop
 #elif defined SP_GCC
-    #pragma GCC diagnostic push
+    #pragma GCC diagnostic pop
 #elif defined SP_MSVC
     #pragma warning(pop)
 #endif

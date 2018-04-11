@@ -34,12 +34,14 @@
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #endif
+
 #include <osconfig.h>
 #include <rehlds_api.h>
+
 #ifdef SP_CLANG
     #pragma clang diagnostic pop
 #elif defined SP_GCC
-    #pragma GCC diagnostic push
+    #pragma GCC diagnostic pop
 #endif
 
 #undef max
