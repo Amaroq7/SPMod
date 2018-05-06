@@ -65,7 +65,12 @@
 // As of GCC 8.1 filesystem is no longer part of experimental
 #if __has_include(<filesystem>)
     #include <filesystem>
-    namespace fs = std::filesystem;
+    // MSVC filesystem is still experimental
+    #ifndef SP_MSVC
+        namespace fs = std::filesystem;
+    #else
+        namespace fs = std::experimental::filesystem;
+    #endif
 #elif __has_include(<experimental/filesystem>)
     #include <experimental/filesystem>
     namespace fs = std::experimental::filesystem;
