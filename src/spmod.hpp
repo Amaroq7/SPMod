@@ -54,7 +54,6 @@
 #include <vector>
 #include <sstream>
 #include <unordered_map>
-#include <experimental/filesystem>
 #include <exception>
 #include <array>
 #include <variant>
@@ -63,7 +62,14 @@
 #include <any>
 #include <optional>
 
-namespace fs = std::experimental::filesystem;
+// As of GCC 8.1 filesystem is no longer part of experimental
+#if __has_include(<filesystem>)
+    #include <filesystem>
+    namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+    #include <experimental/filesystem>
+    namespace fs = std::experimental::filesystem;
+#endif
 
 // C
 #include <cstring>
