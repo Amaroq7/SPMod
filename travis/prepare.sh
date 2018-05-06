@@ -49,7 +49,7 @@ then
     sudo ln -sv /usr/include/asm-generic/ /usr/include/asm
 
     # Overwrite default version of compilers
-    if [ ${CLANG_VERSION} == 7 ]
+    if [ ${GCC_VERSION} == 7 ]
     then
         GCC_COMPILER=/usr/bin/gcc-7
         GPP_COMPILER=/usr/bin/g++-7
