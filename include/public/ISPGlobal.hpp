@@ -61,6 +61,25 @@ namespace SPMod
         virtual IForwardMngr *getForwardManager() const = 0;
         virtual SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const = 0;
 
+        /**
+         * @brief Formats a string according to the SPMod format rules.
+         *
+         * @param buffer		Destination buffer.
+         * @param length		Length of buffer.
+         * @param format		Formatting string.
+         * @param ctx           Plugin context.
+         * @param params        Params list passed by native.
+         * @param param			Index of param which contains first formatting argument.
+         *
+         * @return				Number of characters written.
+         */
+        virtual unsigned int formatString(char *buffer,
+                                        size_t length,
+                                        const char *format,
+                                        SourcePawn::IPluginContext *ctx,
+                                        const cell_t *params,
+                                        size_t param) const = 0;
+
     protected:
         virtual ~ISPGlobal() {};
     };

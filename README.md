@@ -72,3 +72,8 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 ## License
 
 SPMod is licensed under the General Public License version 3 - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+The SPMod uses code from the following libraries:
+- [Printf Implementation](https://github.com/mpaland/printf), The MIT License (MIT)

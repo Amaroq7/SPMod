@@ -20,7 +20,8 @@ sourceFiles = files('coreNatives.cpp',
                     'ForwardSystem.cpp',
                     'PluginSystem.cpp',
                     'LoggingSystem.cpp',
-                    'SrvCommand.cpp')
+                    'SrvCommand.cpp',
+                    'PrintfImpl.cpp')
 
 cppArgs = []
 linkArgs = []
