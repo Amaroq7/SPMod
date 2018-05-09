@@ -27,7 +27,7 @@ void Logger::OnDebugSpew(const char *msg,
     std::vsnprintf(debugMsg, sizeof(debugMsg), msg, paramsList);
     va_end(paramsList);
 
-    LOG_CONSOLE(PLID, "[SPMOD] %s", debugMsg);
+    LogConsoleCore("[SPMOD] ", debugMsg);
 }
 
 void Logger::ReportError(const SourcePawn::IErrorReport &report,
