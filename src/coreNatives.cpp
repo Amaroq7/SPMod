@@ -17,14 +17,17 @@
 
 #include "spmod.hpp"
 
-// native void printToConsole(const char[] text)
+// native void printToConsole(const char[] text, ...)
 static cell_t core_printToConsole(SourcePawn::IPluginContext *ctx,
                                     const cell_t *params)
 {
-    char *stringToPrint;
-    ctx->LocalToString(params[1], &stringToPrint);
+    char *formatString;
+    char bufferOutput[1024];
 
-    SERVER_PRINT(stringToPrint);
+    ctx->LocalToString(params[1], &formatString);
+    gSPGlobal->formatString(bufferOutput, sizeof(bufferOutput), formatString, ctx, params, 2);
+
+    SERVER_PRINT(bufferOutput);
 
     return 1;
 }
