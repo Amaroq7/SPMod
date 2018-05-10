@@ -269,8 +269,11 @@ size_t PluginMngr::loadPlugins()
     for (const auto &entry : directoryIter)
     {
         auto filePath = entry.path();
-        if (!_loadPlugin(filePath, &errorMsg))
+        if (!_loadPlugin(filePath, &errorMsg) && !errorMsg.empty())
+        {
             loggingSystem->LogErrorCore(errorMsg);
+            errorMsg.clear();
+        }
     }
     gSPGlobal->getForwardManagerCore()->findForward("OnPluginsLoaded")->execFunc(nullptr);
     return m_plugins.size();
