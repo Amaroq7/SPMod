@@ -24,6 +24,21 @@ IRehldsHookchains *gRehldsHookchains;
 IRehldsServerStatic *gRehldsServerStatic;
 IRehldsServerData *gRehldsServerData;
 
+static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain,
+                            IGameClient *client,
+                            bool crash,
+                            const char *string)
+{
+    std::shared_ptr<Forward> fwdDisconnect = gSPGlobal->getForwardManagerCore()->findForwardCore("OnClientDisconnect");
+
+    fwdDisconnect->pushCell(ENTINDEX(client->GetEdict()));
+    fwdDisconnect->pushCell(crash);
+    fwdDisconnect->pushString(string);
+    fwdDisconnect->execFunc(nullptr);
+
+    chain->callNext(client, crash, string);
+}
+
 static bool _initRehldsApi(CSysModule *module,
                             std::string *error = nullptr)
 {
@@ -118,5 +133,12 @@ bool initRehldsApi()
     }
 #endif
 
+    gRehldsHookchains->SV_DropClient()->registerHook(SV_DropClientHook);
+
     return true;
+}
+
+void unintRehldsApi()
+{
+    gRehldsHookchains->SV_DropClient()->unregisterHook(SV_DropClientHook);
 }

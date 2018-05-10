@@ -503,6 +503,9 @@ void ForwardMngr::_addDefaultsForwards()
     auto paramsList = { param::Cell, param::String, param::String, param::StringEx };
     createForwardCore("OnClientConnect", gSPModModuleDef.get(), et::Stop, paramsList);
 
+    paramsList = { param::Cell, param::Cell, param::String };
+    createForwardCore("OnClientDisconnect", gSPModModuleDef.get(), et::Ignore, paramsList);
+
     paramsList = { };
     createForwardCore("OnPluginsLoaded", gSPModModuleDef.get(), et::Ignore, paramsList);
 }

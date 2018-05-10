@@ -87,6 +87,7 @@ extern IRehldsServerStatic *gRehldsServerStatic;
 extern IRehldsServerData *gRehldsServerData;
 
 extern bool initRehldsApi();
+extern void unintRehldsApi();
 
 // Aliases for convenience
 using namespace SPMod;

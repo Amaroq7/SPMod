@@ -180,6 +180,7 @@ NEW_DLL_FUNCTIONS gNewDllFunctionTable =
 
 void GameShutdownPost()
 {
+    unintRehldsApi();
     gSPGlobal->getSPEnvironment()->Shutdown();
 }
 
