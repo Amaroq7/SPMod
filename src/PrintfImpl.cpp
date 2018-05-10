@@ -308,12 +308,11 @@ unsigned int SPGlobal::formatString(char *buffer,
         return -1;
 
     // Check for bounds
-    auto checkArgs = [ctx, params, param](size_t paramCheck)
+    auto checkArgs = [ctx, params](size_t paramCheck)
     {
-        if (static_cast<size_t>(params[0] - param) < paramCheck + 1)
+        if (static_cast<size_t>(params[0]) < paramCheck)
         {
-            ctx->ReportError("String formatted incorrectly - parameter %u (total %u)",
-                            paramCheck + 1, params[0] - param);
+            ctx->ReportError("String formatted incorrectly - parameter %u (total %u)", paramCheck, params[0]);
             return false;
         }
         return true;
