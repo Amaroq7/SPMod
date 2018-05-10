@@ -75,6 +75,15 @@ Plugin::Plugin(size_t id,
             }
         }
     }
+
+    // Setup maxclients num
+    uint32_t maxClientsVarIndex;
+    if (plugin->FindPubvarByName("maxClients", &maxClientsVarIndex) == SP_ERROR_NONE)
+    {
+        cell_t local_addr, *phys_addr;
+        plugin->GetPubvarAddrs(maxClientsVarIndex, &local_addr, &phys_addr);
+        *phys_addr = gRehldsServerStatic->GetMaxClients();
+    }
 }
 
 Plugin::~Plugin()
