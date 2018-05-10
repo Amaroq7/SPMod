@@ -14,7 +14,7 @@ install:
   - git submodule update --init --recursive
   - cd ..
   - ps: Start-FileDownload 'https://github.com/mesonbuild/meson/releases/download/0.45.1/meson-0.45.1-64.msi'
-  - start /wait msiexec.exe /i meson-0.45.1-64.msi /quiet /qn /norestart /log install.log
+  - start /wait msiexec.exe /i meson-0.46.0-64.msi /quiet /qn /norestart /log install.log
   - cd SPMod
 build_script:
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
