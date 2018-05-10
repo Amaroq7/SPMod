@@ -105,6 +105,9 @@ static void ServerActivatePost(edict_t *pEdictList [[maybe_unused]],
 
 static void ServerDeactivatePost()
 {
+    const std::unique_ptr<ForwardMngr> &fwdManager = gSPGlobal->getForwardManagerCore();
+    fwdManager->findForwardCore("OnPluginEnd")->execFunc(nullptr);
+
     gSPGlobal->getPluginManagerCore()->detachPlugins();
     gSPGlobal->getForwardManagerCore()->clearNonDefaults();
     gSPGlobal->getLoggerCore()->resetErrorState();

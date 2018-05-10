@@ -75,22 +75,10 @@ Plugin::Plugin(size_t id,
             }
         }
     }
-
-    cell_t result;
-    auto *initFunction = plugin->GetFunctionByName("pluginInit");
-
-    if (initFunction)
-        initFunction->Execute(&result);
 }
 
 Plugin::~Plugin()
 {
-    cell_t result;
-    auto *endFunction = m_runtime->GetFunctionByName("pluginEnd");
-
-    if (endFunction)
-        endFunction->Execute(&result);
-
     // Clear all forwards owned by plugin and all dependent on it
     auto &fwdManager = gSPGlobal->getForwardManagerCore();
     fwdManager->deletePluginForwards(getIndentityCore().data());
@@ -275,6 +263,7 @@ size_t PluginMngr::loadPlugins()
             errorMsg.clear();
         }
     }
+    gSPGlobal->getForwardManagerCore()->findForward("OnPluginInit")->execFunc(nullptr);
     gSPGlobal->getForwardManagerCore()->findForward("OnPluginsLoaded")->execFunc(nullptr);
     return m_plugins.size();
 }

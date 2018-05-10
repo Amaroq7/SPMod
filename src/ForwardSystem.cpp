@@ -508,4 +508,6 @@ void ForwardMngr::_addDefaultsForwards()
 
     paramsList = { };
     createForwardCore("OnPluginsLoaded", gSPModModuleDef.get(), et::Ignore, paramsList);
+    createForwardCore("OnPluginInit", gSPModModuleDef.get(), et::Ignore, paramsList);
+    createForwardCore("OnPluginEnd", gSPModModuleDef.get(), et::Ignore, paramsList);
 }
