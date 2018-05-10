@@ -231,11 +231,9 @@ std::shared_ptr<Plugin> PluginMngr::_loadPlugin(const fs::path &path,
 {
     auto pluginId = m_plugins.size();
 
+    // Omit any unknown extension
     if (path.extension().string() != ".smx")
-    {
-        *error = "Unrecognized file format";
         return nullptr;
-    }
 
     auto fileName = path.stem().string();
     std::shared_ptr<Plugin> plugin;
