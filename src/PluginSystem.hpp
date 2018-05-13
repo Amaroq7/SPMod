@@ -97,7 +97,7 @@ public:
      *
      * @return        Plugin filename.
      */
-    const char *getFileName() const override
+    const char *getFilename() const override
     {
         return m_filename.c_str();
     }

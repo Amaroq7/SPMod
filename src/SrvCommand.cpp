@@ -44,7 +44,7 @@ void SPModInfoCommand()
                                         std::setw(-15), entry.second->getName(), " ",
                                         std::setw(-11), entry.second->getVersion(), " ",
                                         std::setw(-11), entry.second->getAuthor(), " ",
-                                        std::setw(-11), entry.second->getFileName());
+                                        std::setw(-11), entry.second->getFilename());
             }
         }
         else if (arg == "gpl")

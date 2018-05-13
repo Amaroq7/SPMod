@@ -66,7 +66,7 @@ namespace SPMod
          *
          * @return        Plugin filename.
          */
-        virtual const char *getFileName() const = 0;
+        virtual const char *getFilename() const = 0;
 
         /**
          * @brief Returns id of plugin.
