@@ -38,42 +38,115 @@ public:
     ~Plugin();
 
     // IPlugin
+
+    /**
+     * @brief Returns name of plugin.
+     *
+     * @return        Plugin name.
+     */
     const char *getName() const override
     {
         return m_name.c_str();
     }
+
+    /**
+     * @brief Returns version of plugin.
+     *
+     * @return        Plugin version.
+     */
     const char *getVersion() const override
     {
         return m_version.c_str();
     }
+
+    /**
+     * @brief Returns author of plugin.
+     *
+     * @return        Plugin author.
+     */
     const char *getAuthor() const override
     {
         return m_author.c_str();
     }
+
+    /**
+     * @brief Returns url address of plugin.
+     *
+     * @return        Plugin url address.
+     */
     const char *getUrl() const override
     {
         return m_url.c_str();
     }
+
+    /**
+     * @brief Returns identity of plugin.
+     *
+     * @note          It's the same as getFilename() except it doesn't contain extension.
+     *                For plugin named "example.smx" it returns "example".
+     *
+     * @return        Plugin identity.
+     */
     const char *getIndentity() const override
     {
         return m_identity.c_str();
     }
+
+    /**
+     * @brief Returns filename of plugin.
+     *
+     * @return        Plugin filename.
+     */
     const char *getFileName() const override
     {
         return m_filename.c_str();
     }
+
+    /**
+     * @brief Returns id of plugin.
+     *
+     * @return        Plugin id.
+     */
     size_t getId() const override
     {
         return m_id;
     }
+
+    /**
+     * @brief Returns SourcePawn runtime of plugin.
+     *
+     * @return        Plugin runtime.
+     */
     SourcePawn::IPluginRuntime *getRuntime() const override
     {
         return m_runtime;
     }
+
+    /**
+     * @brief Creates forward for plugin.
+     *
+     * @param name    Forward name.
+     * @param owner   Module owner of forward.
+     * @param params  Number of paramaters in forward.
+     * @param ...     Type of parameters.
+     *
+     * @return        Forward pointer, nullptr if creation failed.
+     */
     IForward *createForward(const char *name,
                             IModuleInterface *owner,
                             size_t params,
                             ...) const override;
+
+    /**
+     * @brief Creates forward for plugin.
+     *
+     * @param name    Forward name.
+     * @param owner   Plugin owner of forward.
+     * @param params  Number of paramaters in forward.
+     * @param ...     Type of parameters.
+     *
+     * @return        Forward pointer, nullptr if creation failed.
+     */
     IForward *createForward(const char *name,
                             IPlugin *owner,
                             size_t params,
@@ -135,22 +208,64 @@ public:
     ~PluginMngr() = default;
 
     // IPluginMngr
+
+    /**
+     * @brief Returns numbers of loaded plugins.
+     *
+     * @return        Number of loaded plugins.
+     */
     size_t getPluginsNum() const override
     {
         return m_plugins.size();
     }
+
+    /**
+     * @brief Searches for plugin by specified id.
+     *
+     * @param index   Index to search for.
+     *
+     * @return        Plugin pointer, nullptr if not found.
+     */
     IPlugin *getPlugin(size_t index) override
     {
         return getPluginCore(index).get();
     }
+
+    /**
+     * @brief Searches for plugin by specified identity.
+     *
+     * @param name    Identity to search for.
+     *
+     * @return        Plugin pointer, nullptr if not found.
+     */
     IPlugin *getPlugin(const char *name) override
     {
         return getPluginCore(name).get();
     }
+
+    /**
+     * @brief Searches for plugin by SourcePawn context.
+     *
+     * @param ctx     Find plugin with exact SourcePawn context.
+     *
+     * @return        Plugin pointer, nullptr if not found.
+     */
     IPlugin *getPlugin(SourcePawn::IPluginContext *ctx) override
     {
         return getPluginCore(ctx).get();
     }
+
+    /**
+     * @brief Loads a plugin.
+     *
+     * @note          Loads a plugin present in "scripts" folder.
+     *
+     * @param name    Filename to load, must contain ".smx" extension.
+     * @param error   Buffer to store an error message.
+     * @param size    Size of the buffer to store the message.
+     *
+     * @return        Plugin pointer, nullptr if loading failed.
+     */
     IPlugin *loadPlugin(const char *name,
                         char *error,
                         size_t size) override;
