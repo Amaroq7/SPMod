@@ -45,26 +45,64 @@ public:
     }
 
     // ISPGlobal
+
+    /**
+     * @brief Returns home dir of SPMod.
+     *
+     * @return        Home dir.
+     */
     const char *getHome() const override
     {
         return m_SPModDir.string().c_str();
     }
+
+    /**
+     * @brief Returns name of the mod.
+     *
+     * @return        Mod name.
+     */
     const char *getModName() const override
     {
         return m_modName.c_str();
     }
+
+    /**
+     * @brief Returns SPMod plugin manager.
+     *
+     * @return        Plugin manager.
+     */
     IPluginMngr *getPluginManager() const override
     {
         return reinterpret_cast<IPluginMngr *>(m_pluginManager.get());
     }
+
+    /**
+     * @brief Returns SPMod forward manager.
+     *
+     * @return				Forward manager.
+     */
     IForwardMngr *getForwardManager() const override
     {
         return reinterpret_cast<IForwardMngr *>(m_forwardManager.get());
     }
+
+    /**
+     * @brief Returns current SourcePawn environment.
+     *
+     * @return				SourcePawn environment.
+     */
     SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const override
     {
         return m_spFactory->CurrentEnvironment();
     }
+
+    /**
+     * @brief Adds module interface to SPMod.
+     *
+     * @param interface     Module interface.
+     *
+     * @return              True if succeed, false otherwise.
+     */
     bool addModule(IModuleInterface *interface) override;
 
     /**
@@ -79,12 +117,12 @@ public:
      *
      * @return				Number of characters written.
      */
-    virtual unsigned int formatString(char *buffer,
-                                    size_t length,
-                                    const char *format,
-                                    SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params,
-                                    size_t param) const override;
+    unsigned int formatString(char *buffer,
+                              size_t length,
+                              const char *format,
+                              SourcePawn::IPluginContext *ctx,
+                              const cell_t *params,
+                              size_t param) const override;
 
     // SPGlobal
     const std::unique_ptr<PluginMngr> &getPluginManagerCore() const
