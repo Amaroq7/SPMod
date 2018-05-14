@@ -20,7 +20,7 @@
 // Platform defines
 #ifdef _WIN32
     #define SP_WINDOWS
-#elif __linux__
+#elif defined __linux__
     #define SP_LINUX
     #define SP_POSIX
 #endif
@@ -29,7 +29,7 @@
 #ifdef SP_POSIX
     #ifdef __clang__
         #define SP_CLANG
-    #elif __GNUC__
+    #elif defined __GNUC__
         #define SP_GCC
     #endif
 #elif defined SP_WINDOWS
