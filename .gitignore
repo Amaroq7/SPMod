@@ -37,3 +37,10 @@ build/
 # LLVM header files
 include/llvm/*
 !include/llvm/.gitkeep
+
+# Temp files
+*~
+
+# Anjuta configure files
+.anjuta*
+*.anjuta
