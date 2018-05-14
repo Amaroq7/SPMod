@@ -26,12 +26,6 @@ public:
     SPModModule(sp_nativeinfo_t *natives)
     {
         this->m_natives = natives;
-        
-        size_t paramsNum = 0;
-        while ((natives + paramsNum)->func)
-            ++paramsNum;
-
-        this->m_nativesNum = paramsNum;
     }
 
     const char *getName() const override

@@ -47,9 +47,12 @@ bool SPGlobal::addModule(IModuleInterface *interface)
     if (interface->getInterfaceVersion() > SPMOD_API_VERSION)
         return false;
 
-    const auto [iter, added] = m_modulesNames.try_emplace(interface->getName(),
-                                                            interface->getNatives(),
-                                                            interface->getNativesNum());
+    size_t nativesNum = 0;
+    const sp_nativeinfo_t *moduleNatives = interface->getNatives();
+    while ((moduleNatives + nativesNum)->func && (moduleNatives + nativesNum)->name)
+        nativesNum++;
+
+    const auto [iter, added] = m_modulesNames.try_emplace(interface->getName(), moduleNatives, nativesNum);
 
     return added;
 }

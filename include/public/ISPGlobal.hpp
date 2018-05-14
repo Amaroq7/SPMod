@@ -135,6 +135,7 @@ namespace SPMod
     class IModuleInterface
     {
     public:
+
         /**
          * @brief Returns SPMod API version used by module.
          *
@@ -156,21 +157,11 @@ namespace SPMod
         }
 
         /**
-         * @brief Returns number of natives in the list.
-         *
-         * @return        Number of natives.
-         */
-        virtual size_t getNativesNum() const
-        {
-            return m_nativesNum;
-        }
-
-        /**
          * @brief Returns name of the module.
          *
          * @note        Must be implemented.
          *
-         * @return      SPMod API version.
+         * @return      Module name.
          */
         virtual const char *getName() const = 0;
 
@@ -178,6 +169,5 @@ namespace SPMod
         virtual ~IModuleInterface() { }
 
         sp_nativeinfo_t *m_natives;
-        size_t m_nativesNum;
     };
 }
