@@ -59,23 +59,17 @@ bool SPGlobal::addModule(IModuleInterface *interface)
 
 void SPGlobal::setScriptsDir(std::string_view folder)
 {
-    fs::path pathToScripts(m_SPModDir);
-    pathToScripts /= folder.data();
-    m_SPModScriptsDir = std::move(pathToScripts);
+    m_SPModScriptsDir = m_SPModDir / folder.data();
 }
 
 void SPGlobal::setLogsDir(std::string_view folder)
 {
-    fs::path pathToLogs(m_SPModDir);
-    pathToLogs /= folder.data();
-    m_SPModLogsDir = std::move(pathToLogs);
+    m_SPModLogsDir = m_SPModDir / folder.data();
 }
 
 void SPGlobal::setDllsDir(std::string_view folder)
 {
-    fs::path pathToDlls(m_SPModDir);
-    pathToDlls /= folder.data();
-    m_SPModDllsDir = std::move(pathToDlls);
+    m_SPModDllsDir = m_SPModDir / folder.data();
 }
 
 void SPGlobal::_initSourcePawn()
