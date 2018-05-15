@@ -157,7 +157,7 @@ You can chat with the core team on https://gitter.im/SPMod.
 
 ### Code style
 #### General
-- tabs for indentation (length: 4),
+- spaces for indentation (length: 4),
 - line's length can not exceed 120 characters.
 
 #### Naming conventions
