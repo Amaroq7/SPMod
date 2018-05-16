@@ -165,47 +165,50 @@ static cell_t core_executeForward(SourcePawn::IPluginContext *ctx,
     using ptype = IForward::ParamType;
     char *fwdName;
     cell_t *retResult;
-    auto &fwdManager = gSPGlobal->getForwardManagerCore();
+    const std::unique_ptr<ForwardMngr> &fwdManager = gSPGlobal->getForwardManagerCore();
 
     ctx->LocalToString(params[1], &fwdName);
     ctx->LocalToPhysAddr(params[2], &retResult);
 
-    auto fwdToExecute = fwdManager->findForwardCore(fwdName);
+    std::shared_ptr<Forward> fwdToExecute = fwdManager->findForwardCore(fwdName);    
     if (!fwdToExecute)
+    {
+        fwdManager->resetPreparedParams();
         return 0;
-
+    }
+    
     size_t fwdParamsPassed = params[0] - 2;
     if (fwdParamsPassed < fwdToExecute->getParamsNum())
+    {
+        fwdManager->resetPreparedParams();
         return 0;
+    }
 
     size_t floatValues = 0;
     std::array<std::shared_ptr<FloatFromNative>, SP_MAX_EXEC_PARAMS> floatsToCopyBack;
 
-    auto fwdParamsNum = fwdToExecute->getParamsNum();
+    size_t fwdParamsNum = fwdToExecute->getParamsNum();
+    cell_t *paramToPass;
     for (size_t i = 3; i < fwdParamsNum + 3; ++i)
     {
         ptype paramType = fwdToExecute->getParamType(i);
         if (paramType == ptype::Cell)
         {
-            cell_t *paramToPass;
             ctx->LocalToPhysAddr(params[i], &paramToPass);
             fwdToExecute->pushCell(*paramToPass);
         }
         else if (paramType == ptype::CellRef)
         {
-            cell_t *paramToPass;
             ctx->LocalToPhysAddr(params[i], &paramToPass);
             fwdToExecute->pushCellPtr(paramToPass, true);
         }
         else if (paramType == ptype::Float)
         {
-            cell_t *paramToPass;
             ctx->LocalToPhysAddr(params[i], &paramToPass);
             fwdToExecute->pushFloat(sp_ctof(*paramToPass));
         }
         else if (paramType == ptype::FloatRef)
         {
-            cell_t *paramToPass;
             ctx->LocalToPhysAddr(params[i], &paramToPass);
             auto floatStr = std::make_shared<FloatFromNative>(sp_ctof(*paramToPass), i);
 
@@ -215,7 +218,6 @@ static cell_t core_executeForward(SourcePawn::IPluginContext *ctx,
         }
         else if (paramType == ptype::Array)
         {
-            cell_t *paramToPass;
             ctx->LocalToPhysAddr(params[i], &paramToPass);
             auto param = fwdManager->getParam<cell_t *>(*paramToPass);
             if (!param.has_value())
@@ -238,7 +240,6 @@ static cell_t core_executeForward(SourcePawn::IPluginContext *ctx,
         }
         else if (paramType == ptype::StringEx)
         {
-            cell_t *paramToPass;
             ctx->LocalToPhysAddr(params[i], &paramToPass);
             auto param = fwdManager->getParam<char *>(*paramToPass);
             if (!param.has_value())
@@ -260,10 +261,9 @@ static cell_t core_executeForward(SourcePawn::IPluginContext *ctx,
     bool result = fwdToExecute->execFunc(retResult);
 
     // Copyback float values
-    cell_t *paramToPass;
     for (size_t i = 0; i < floatValues; ++i)
     {
-        auto floatStr = floatsToCopyBack.at(i);
+        std::shared_ptr<FloatFromNative> floatStr = floatsToCopyBack.at(i);
         ctx->LocalToPhysAddr(params[floatStr->m_param], &paramToPass);
         *paramToPass = sp_ftoc(floatStr->m_realVal);
     }
