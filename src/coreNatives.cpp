@@ -103,13 +103,17 @@ static cell_t core_realToString(SourcePawn::IPluginContext *ctx,
 }
 
 static cell_t core_copyString(SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
+                              const cell_t *params)
 {
     char *destArray, *stringToCopy;
+    size_t arraySize = params[2];
+
     ctx->LocalToString(params[1], &destArray);
     ctx->LocalToString(params[3], &stringToCopy);
 
-    std::strncpy(destArray, stringToCopy, params[2]);
+    std::strncpy(destArray, stringToCopy, arraySize);
+
+    destArray[arraySize - 1] = '\0';
 
     return 1;
 }
