@@ -39,6 +39,44 @@ static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain,
     chain->callNext(client, crash, string);
 }
 
+static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain,
+                               cvar_t *cvar,
+                               const char *value)
+{
+    // If value of cvar is the same, do not execute forward
+    if (!strcmp(cvar->string, value))
+    {
+        chain->callNext(cvar, value);
+        return;
+    }
+
+    std::shared_ptr<Forward> fwdCvarChange = gSPGlobal->getForwardManagerCore()->findForwardCore("OnCvarChange");
+    if (!fwdCvarChange)
+    {
+        chain->callNext(cvar, value);
+        return;
+    }
+
+    fwdCvarChange->pushString(cvar->name);
+    fwdCvarChange->pushString(cvar->string);
+    fwdCvarChange->pushString(value);
+
+    float valueFl;
+    try
+    {
+        valueFl = std::stof(value);
+    }
+    catch (const std::exception &e)
+    {
+        valueFl = 0.0f;
+    }
+
+    fwdCvarChange->pushFloat(valueFl);
+    fwdCvarChange->execFunc(nullptr);
+
+    chain->callNext(cvar, value);
+}
+
 static bool _initRehldsApi(CSysModule *module,
                             std::string *error = nullptr)
 {
@@ -134,6 +172,7 @@ bool initRehldsApi()
 #endif
 
     gRehldsHookchains->SV_DropClient()->registerHook(SV_DropClientHook);
+    gRehldsHookchains->Cvar_DirectSet()->registerHook(Cvar_DirectSetHook);
 
     return true;
 }
@@ -141,4 +180,5 @@ bool initRehldsApi()
 void unintRehldsApi()
 {
     gRehldsHookchains->SV_DropClient()->unregisterHook(SV_DropClientHook);
+    gRehldsHookchains->Cvar_DirectSet()->unregisterHook(Cvar_DirectSetHook);
 }
