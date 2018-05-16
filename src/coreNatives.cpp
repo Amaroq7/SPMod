@@ -153,9 +153,9 @@ static cell_t core_createForward(SourcePawn::IPluginContext *ctx,
 
 struct FloatFromNative
 {
-	FloatFromNative(float val, size_t param) : m_realVal(val), m_param(param) { }
-	float m_realVal;
-	size_t m_param;
+    FloatFromNative(float val, size_t param) : m_realVal(val), m_param(param) { }
+    float m_realVal;
+    size_t m_param;
 };
 
 // native bool executeForward(const char[] name, int &result = 0, ...)
