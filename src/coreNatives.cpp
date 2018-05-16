@@ -45,7 +45,7 @@ static cell_t core_precacheModel(SourcePawn::IPluginContext *ctx,
     char *modelToPrecache;
     ctx->LocalToString(params[1], &modelToPrecache);
 
-    return PRECACHE_MODEL(STRING(ALLOC_STRING(modelToPrecache)));
+    return PRECACHE_MODEL(modelToPrecache);
 }
 
 // native int precacheSound(const char[] sound)
@@ -61,7 +61,7 @@ static cell_t core_precacheSound(SourcePawn::IPluginContext *ctx,
     char *soundToPrecache;
     ctx->LocalToString(params[1], &soundToPrecache);
 
-    return PRECACHE_SOUND(STRING(ALLOC_STRING(soundToPrecache)));
+    return PRECACHE_SOUND(soundToPrecache);
 }
 
 // native int precacheGeneric(const char[] generic)
@@ -77,7 +77,7 @@ static cell_t core_precacheGeneric(SourcePawn::IPluginContext *ctx,
     char *genericToPrecache;
     ctx->LocalToString(params[1], &genericToPrecache);
 
-    return PRECACHE_GENERIC(STRING(ALLOC_STRING(genericToPrecache)));
+    return PRECACHE_GENERIC(genericToPrecache);
 }
 
 // native int numToString(int num, char[] converted_num, int size)
