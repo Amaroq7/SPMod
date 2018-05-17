@@ -22,8 +22,10 @@ Plugin::Plugin(size_t id,
                 const fs::path &path)
 {
     char errorSPMsg[256];
-    auto *spAPIv2 = gSPGlobal->getSPEnvironment()->APIv2();
-    auto *plugin = spAPIv2->LoadBinaryFromFile(path.string().c_str(), errorSPMsg, sizeof(errorSPMsg));
+    SourcePawn::ISourcePawnEngine2 *spAPIv2 = gSPGlobal->getSPEnvironment()->APIv2();
+    SourcePawn::IPluginRuntime *plugin = spAPIv2->LoadBinaryFromFile(path.string().c_str(),
+                                                                     errorSPMsg,
+                                                                     sizeof(errorSPMsg));
 
     if (!plugin)
         throw std::runtime_error(errorSPMsg);
@@ -53,7 +55,7 @@ Plugin::Plugin(size_t id,
     m_runtime = plugin;
     m_runtime->GetDefaultContext()->SetKey(1, const_cast<char *>(m_identity.c_str()));
 
-    auto nativesNum = plugin->GetNativesNum();
+    uint32_t nativesNum = plugin->GetNativesNum();
     for (uint32_t index = 0; index < nativesNum; ++index)
     {
         const sp_native_t *native = m_runtime->GetNative(index);
@@ -63,9 +65,9 @@ Plugin::Plugin(size_t id,
 
         for (const auto &entry : gSPGlobal->getModulesList())
         {
-            for (auto nativePos = 0U; nativePos <= entry.second.m_num; ++nativePos)
+            for (size_t nativePos = 0; nativePos <= entry.second.m_num; ++nativePos)
             {
-                auto nativeDef = entry.second.m_natives + nativePos;
+                const sp_nativeinfo_t *nativeDef = entry.second.m_natives + nativePos;
 
                 if (std::strcmp(native->name, nativeDef->name))
                     continue;
@@ -73,6 +75,10 @@ Plugin::Plugin(size_t id,
                 plugin->UpdateNativeBinding(index, nativeDef->func, 0, nullptr);
                 break;
             }
+
+            // Native has been binded
+            if (native->status == SP_NATIVE_BOUND)
+                break;
         }
     }
 
