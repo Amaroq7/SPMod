@@ -415,7 +415,7 @@ static cell_t core_cvarRegister(SourcePawn::IPluginContext *ctx,
     ctx->LocalToString(params[1], &cvarName);
     ctx->LocalToString(params[2], &cvarValue);
 
-    cvar_t cvarToRegister;
+    static cvar_t cvarToRegister;
     cvarToRegister.name = cvarName;
     cvarToRegister.string = cvarValue;
     cvarToRegister.flags = params[3];
