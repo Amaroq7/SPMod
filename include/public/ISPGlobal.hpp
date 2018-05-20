@@ -43,6 +43,7 @@
 
 #include <IForwardSystem.hpp>
 #include <IPluginSystem.hpp>
+#include <INativeSystem.hpp>
 
 namespace SPMod
 {
@@ -77,13 +78,11 @@ namespace SPMod
         virtual IPluginMngr *getPluginManager() const = 0;
 
         /**
-         * @brief Adds module interface to SPMod.
+         * @brief Returns SPMod native manager.
          *
-         * @param interface     Module interface.
-         *
-         * @return              True if succeed, false otherwise.
+         * @return              Native manager.
          */
-        virtual bool addModule(IModuleInterface *interface) = 0;
+        virtual INativeMngr *getNativeManager() const = 0;
 
         /**
          * @brief Returns SPMod forward manager.

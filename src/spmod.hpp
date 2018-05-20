@@ -102,6 +102,7 @@ using fwdInitParamsList = std::initializer_list<IForward::ParamType>;
 #include "LoggingSystem.hpp"
 #include "PluginSystem.hpp"
 #include "ForwardSystem.hpp"
+#include "NativeSystem.hpp"
 #include "SPGlobal.hpp"
 
 constexpr auto gSPModAuthor = "SPMod Development Team";

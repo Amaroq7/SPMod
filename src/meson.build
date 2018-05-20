@@ -20,6 +20,7 @@ sourceFiles = files('coreNatives.cpp',
                     'ForwardSystem.cpp',
                     'PluginSystem.cpp',
                     'LoggingSystem.cpp',
+                    'NativeSystem.cpp',
                     'SrvCommand.cpp',
                     'PrintfImpl.cpp')
 

@@ -26,7 +26,6 @@ class Logger;
 class SPGlobal : public ISPGlobal
 {
 public:
-
     #ifdef SP_LINUX
         static constexpr auto *sourcepawnLibrary = "sourcepawn.jit.x86.so";
     #elif defined SP_WINDOWS
@@ -97,13 +96,14 @@ public:
     }
 
     /**
-     * @brief Adds module interface to SPMod.
+     * @brief Returns SPMod native manager.
      *
-     * @param interface     Module interface.
-     *
-     * @return              True if succeed, false otherwise.
+     * @return              Native manager.
      */
-    bool addModule(IModuleInterface *interface) override;
+    INativeMngr *getNativeManager() const override
+    {
+        return reinterpret_cast<INativeMngr *>(m_nativeManager.get());
+    }
 
     /**
      * @brief Formats a string according to the SPMod format rules.
@@ -137,9 +137,9 @@ public:
     {
         return m_loggingSystem;
     }
-    const auto &getModulesList() const
+    const std::unique_ptr<NativeMngr> &getNativeManagerCore() const
     {
-        return m_modulesNames;
+        return m_nativeManager;
     }
     const auto &getScriptsDirCore()
     {
@@ -159,28 +159,17 @@ public:
     void setDllsDir(std::string_view folder);
 
 private:
-
     void _initSourcePawn();
-
-    struct NativeDef
-    {
-        NativeDef(const sp_nativeinfo_t *natives,
-                    const size_t num) : m_natives(natives), m_num(num)
-                    { }
-
-        const sp_nativeinfo_t *m_natives;
-        const size_t m_num;
-    };
 
     fs::path m_SPModScriptsDir;
     fs::path m_SPModDir;
     fs::path m_SPModLogsDir;
     fs::path m_SPModDllsDir;
+    std::unique_ptr<NativeMngr> m_nativeManager;
     std::unique_ptr<PluginMngr> m_pluginManager;
     std::unique_ptr<ForwardMngr> m_forwardManager;
     std::unique_ptr<Logger> m_loggingSystem;
     std::string m_modName;
-    std::unordered_map<std::string, NativeDef> m_modulesNames;
     SourcePawn::ISourcePawnFactory *m_spFactory;
 
     // SourcePawn library handle

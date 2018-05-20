@@ -174,13 +174,13 @@ static cell_t core_executeForward(SourcePawn::IPluginContext *ctx,
     ctx->LocalToString(params[1], &fwdName);
     ctx->LocalToPhysAddr(params[2], &retResult);
 
-    std::shared_ptr<Forward> fwdToExecute = fwdManager->findForwardCore(fwdName);    
+    std::shared_ptr<Forward> fwdToExecute = fwdManager->findForwardCore(fwdName);
     if (!fwdToExecute)
     {
         fwdManager->resetPreparedParams();
         return 0;
     }
-    
+
     size_t fwdParamsPassed = params[0] - 2;
     if (fwdParamsPassed < fwdToExecute->getParamsNum())
     {
@@ -425,6 +425,185 @@ static cell_t core_cvarRegister(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
+// native bool nativeRegister(const char[] name, PluginNative func)
+static cell_t core_nativeRegister(SourcePawn::IPluginContext *ctx,
+                                  const cell_t *params)
+{
+    char *nativeName, *pluginIdentity;
+    ctx->LocalToString(params[1], &nativeName);
+    ctx->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
+
+    SourcePawn::IPluginFunction *fnToExecute = ctx->GetFunctionById(params[2]);
+
+    return gSPGlobal->getNativeManagerCore()->addFakeNative(pluginIdentity, nativeName, fnToExecute);
+}
+
+// native any nativeGetCell(int param)
+static cell_t core_nativeGetCell(SourcePawn::IPluginContext *ctx,
+                                 const cell_t *params)
+{
+    cell_t param = params[1];
+    if (param > NativeMngr::m_callerParams[0] || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, NativeMngr::m_callerParams[0]);
+        return 0;
+    }
+    if (!NativeMngr::m_callerPlugin)
+    {
+        ctx->ReportError("No caller plugin!");
+        return 0;
+    }
+
+    return NativeMngr::m_callerParams[param];
+}
+
+// native any nativeGetCellRef(int param)
+static cell_t core_nativeGetCellRef(SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params)
+{
+    cell_t param = params[1];
+    if (param > NativeMngr::m_callerParams[0] || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, NativeMngr::m_callerParams[0]);
+        return 0;
+    }
+    if (!NativeMngr::m_callerPlugin)
+    {
+        ctx->ReportError("No caller plugin!");
+        return 0;
+    }
+
+    cell_t *paramToGet;
+    NativeMngr::m_callerPlugin->LocalToPhysAddr(NativeMngr::m_callerParams[param], &paramToGet);
+    return *paramToGet;
+}
+
+// native int nativeGetString(int param, char[] buffer, int size)
+static cell_t core_nativeGetString(SourcePawn::IPluginContext *ctx,
+                                   const cell_t *params)
+{
+    cell_t param = params[1];
+    if (param > NativeMngr::m_callerParams[0] || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, NativeMngr::m_callerParams[0]);
+        return 0;
+    }
+    if (!NativeMngr::m_callerPlugin)
+    {
+        ctx->ReportError("No caller plugin!");
+        return 0;
+    }
+
+    char *stringToCopy;
+    NativeMngr::m_callerPlugin->LocalToString(NativeMngr::m_callerParams[param], &stringToCopy);
+
+    size_t writtenBytes;
+    ctx->StringToLocalUTF8(params[2], params[3], stringToCopy, &writtenBytes);
+
+    return writtenBytes;
+}
+
+// native int nativeGetArray(int param, any[] buffer, int size)
+static cell_t core_nativeGetArray(SourcePawn::IPluginContext *ctx,
+                                  const cell_t *params)
+{
+    cell_t param = params[1];
+    if (param > NativeMngr::m_callerParams[0] || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, NativeMngr::m_callerParams[0]);
+        return 0;
+    }
+    if (!NativeMngr::m_callerPlugin)
+    {
+        ctx->ReportError("No caller plugin!");
+        return 0;
+    }
+
+    cell_t *arrayToCopy, *destArray;
+    NativeMngr::m_callerPlugin->LocalToPhysAddr(NativeMngr::m_callerParams[param], &arrayToCopy);
+    ctx->LocalToPhysAddr(params[2], &destArray);
+
+    std::copy_n(arrayToCopy, params[3], destArray);
+
+    return 1;
+}
+
+// native int nativeSetCellRef(int param, any value)
+static cell_t core_nativeSetCellRef(SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params)
+{
+    cell_t param = params[1];
+    if (param > NativeMngr::m_callerParams[0] || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, NativeMngr::m_callerParams[0]);
+        return 0;
+    }
+    if (!NativeMngr::m_callerPlugin)
+    {
+        ctx->ReportError("No caller plugin!");
+        return 0;
+    }
+
+    cell_t *paramToSet;
+    NativeMngr::m_callerPlugin->LocalToPhysAddr(NativeMngr::m_callerParams[param], &paramToSet);
+
+    *paramToSet = params[2];
+    return 1;
+}
+
+// native int nativeSetString(int param, const char[] string, int size)
+static cell_t core_nativeSetString(SourcePawn::IPluginContext *ctx,
+                                   const cell_t *params)
+{
+    cell_t param = params[1];
+    if (param > NativeMngr::m_callerParams[0] || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, NativeMngr::m_callerParams[0]);
+        return 0;
+    }
+    if (!NativeMngr::m_callerPlugin)
+    {
+        ctx->ReportError("No caller plugin!");
+        return 0;
+    }
+
+    char *stringToCopy;
+    ctx->LocalToString(params[2], &stringToCopy);
+
+    size_t writtenBytes;
+    NativeMngr::m_callerPlugin->StringToLocalUTF8(NativeMngr::m_callerParams[param],
+                                                  params[3],
+                                                  stringToCopy,
+                                                  &writtenBytes);
+
+    return writtenBytes;
+}
+
+// native int nativeSetArray(int param, const any[] buffer, int size)
+static cell_t core_nativeSetArray(SourcePawn::IPluginContext *ctx,
+                                  const cell_t *params)
+{
+    cell_t param = params[1];
+    if (param > NativeMngr::m_callerParams[0] || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, NativeMngr::m_callerParams[0]);
+        return 0;
+    }
+    if (!NativeMngr::m_callerPlugin)
+    {
+        ctx->ReportError("No caller plugin!");
+        return 0;
+    }
+
+    cell_t *arrayToCopy, *destArray;
+    NativeMngr::m_callerPlugin->LocalToPhysAddr(NativeMngr::m_callerParams[param], &destArray);
+    ctx->LocalToPhysAddr(params[2], &arrayToCopy);
+
+    std::copy_n(arrayToCopy, params[3], destArray);
+
+    return 1;
+}
+
 sp_nativeinfo_t gCoreNatives[] =
 {
     { "printToConsole",     core_printToConsole     },
@@ -447,5 +626,13 @@ sp_nativeinfo_t gCoreNatives[] =
     { "cvarSetInt",         core_cvarSetInt         },
     { "cvarSetFlags",       core_cvarSetFlags       },
     { "cvarRegister",       core_cvarRegister       },
+    { "nativeRegister",     core_nativeRegister     },
+    { "nativeGetCell",      core_nativeGetCell      },
+    { "nativeGetCellRef",   core_nativeGetCellRef   },
+    { "nativeGetString",    core_nativeGetString    },
+    { "nativeGetArray",     core_nativeGetArray     },
+    { "nativeSetCellRef",   core_nativeSetCellRef   },
+    { "nativeSetString",    core_nativeSetString    },
+    { "nativeSetArray",     core_nativeSetArray     },
     { nullptr,              nullptr                 }
 };

@@ -88,7 +88,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
 \n   This is free software, and you are welcome to redistribute it\n\
    under certain conditions; type `spmod gpl' for details.\n\n\
 SPMod ", gSPModVersion, ", API ", SPMOD_API_VERSION, \
-"SPMod build: ", __TIME__, " ", __DATE__);
+"\nSPMod build: ", __TIME__, " ", __DATE__);
 
     if (!initRehldsApi())
     {

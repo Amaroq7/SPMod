@@ -20,6 +20,7 @@
 std::unique_ptr<SPGlobal> gSPGlobal;
 
 SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_path()),
+                                        m_nativeManager(std::make_unique<NativeMngr>()),
                                         m_pluginManager(std::make_unique<PluginMngr>()),
                                         m_forwardManager(std::make_unique<ForwardMngr>()),
                                         m_loggingSystem(std::make_unique<Logger>()),
@@ -35,26 +36,10 @@ SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_p
     _initSourcePawn();
 
     // Add definition of core module
-    addModule(gSPModModuleDef.get());
+    m_nativeManager->addNatives(gSPModModuleDef.get());
 
     // Sets up listener for debbugging
     getSPEnvironment()->APIv2()->SetDebugListener(m_loggingSystem.get());
-}
-
-bool SPGlobal::addModule(IModuleInterface *interface)
-{
-    //TODO: Error reporting?
-    if (interface->getInterfaceVersion() > SPMOD_API_VERSION)
-        return false;
-
-    size_t nativesNum = 0;
-    const sp_nativeinfo_t *moduleNatives = interface->getNatives();
-    while ((moduleNatives + nativesNum)->func && (moduleNatives + nativesNum)->name)
-        nativesNum++;
-
-    const auto [iter, added] = m_modulesNames.try_emplace(interface->getName(), moduleNatives, nativesNum);
-
-    return added;
 }
 
 void SPGlobal::setScriptsDir(std::string_view folder)

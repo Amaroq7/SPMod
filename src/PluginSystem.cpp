@@ -56,30 +56,19 @@ Plugin::Plugin(size_t id,
     m_runtime->GetDefaultContext()->SetKey(1, const_cast<char *>(m_identity.c_str()));
 
     uint32_t nativesNum = plugin->GetNativesNum();
+    const std::unique_ptr<NativeMngr> &nativeManager = gSPGlobal->getNativeManagerCore();
     for (uint32_t index = 0; index < nativesNum; ++index)
     {
-        const sp_native_t *native = m_runtime->GetNative(index);
+        const sp_native_t *pluginNative = m_runtime->GetNative(index);
 
-        if (native->status == SP_NATIVE_BOUND)
+        if (pluginNative->status == SP_NATIVE_BOUND)
             continue;
 
-        for (const auto &entry : gSPGlobal->getModulesList())
-        {
-            for (size_t nativePos = 0; nativePos <= entry.second.m_num; ++nativePos)
-            {
-                const sp_nativeinfo_t *nativeDef = entry.second.m_natives + nativePos;
+        std::shared_ptr<Native> native = nativeManager->getNativeCore(pluginNative->name);
+        if (!native)
+            continue;
 
-                if (std::strcmp(native->name, nativeDef->name))
-                    continue;
-
-                plugin->UpdateNativeBinding(index, nativeDef->func, 0, nullptr);
-                break;
-            }
-
-            // Native has been binded
-            if (native->status == SP_NATIVE_BOUND)
-                break;
-        }
+        plugin->UpdateNativeBinding(index, native->getRouter(), 0, nullptr);
     }
 
     // Setup maxclients num
@@ -278,6 +267,31 @@ size_t PluginMngr::loadPlugins()
             errorMsg.clear();
         }
     }
+
+    // After first binding let plugins add their natives
+    gSPGlobal->getForwardManagerCore()->findForward("OnPluginNatives")->execFunc(nullptr);
+
+    // Try to bind unbound natives
+    const std::unique_ptr<NativeMngr> &nativeManager = gSPGlobal->getNativeManagerCore();
+    for (const auto &entry : m_plugins)
+    {
+        SourcePawn::IPluginRuntime *runtime = entry.second->getRuntime();
+        uint32_t nativesNum = runtime->GetNativesNum();
+        for (uint32_t index = 0; index < nativesNum; ++index)
+        {
+            const sp_native_t *pluginNative = runtime->GetNative(index);
+
+            if (pluginNative->status == SP_NATIVE_BOUND)
+                continue;
+
+            std::shared_ptr<Native> native = nativeManager->getNativeCore(pluginNative->name);
+            if (!native)
+                continue;
+
+            runtime->UpdateNativeBinding(index, native->getRouter(), 0, nullptr);
+        }
+    }
+
     gSPGlobal->getForwardManagerCore()->findForward("OnPluginInit")->execFunc(nullptr);
     gSPGlobal->getForwardManagerCore()->findForward("OnPluginsLoaded")->execFunc(nullptr);
     return m_plugins.size();

@@ -109,8 +109,9 @@ static void ServerDeactivatePost()
     fwdManager->findForwardCore("OnPluginEnd")->execFunc(nullptr);
 
     gSPGlobal->getPluginManagerCore()->detachPlugins();
-    gSPGlobal->getForwardManagerCore()->clearNonDefaults();
+    fwdManager->clearNonDefaults();
     gSPGlobal->getLoggerCore()->resetErrorState();
+    gSPGlobal->getNativeManagerCore()->freeFakeNatives();
 }
 
 static void GameInitPost()
