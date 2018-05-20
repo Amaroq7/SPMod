@@ -202,6 +202,7 @@ IPlugin *PluginMngr::loadPlugin(const char *name,
     if (!plugin)
     {
         std::strncpy(error, errorMsg.c_str(), size);
+        error[size - 1] = '\0';
         return nullptr;
     }
 
