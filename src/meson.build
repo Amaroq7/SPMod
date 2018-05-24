@@ -11,6 +11,7 @@ if build_machine.system() == 'linux'
 endif
 
 sourceFiles = files('coreNatives.cpp',
+                    'CvarsNatives.cpp',
                     'h_export.cpp',
                     'engine_api.cpp',
                     'dllapi.cpp',

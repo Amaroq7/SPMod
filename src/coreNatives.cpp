@@ -118,17 +118,15 @@ static cell_t core_copyString(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-// native bool createForward(const char[] name, exectype, ...)
+// native bool createForward(const char[] name, ExecType exectype, ...)
 static cell_t core_createForward(SourcePawn::IPluginContext *ctx,
                                     const cell_t *params)
 {
-    char *pluginId, *fwdName;
+    char *fwdName;
     auto execType = static_cast<IForward::ExecType>(params[2]);
     auto &fwdManager = gSPGlobal->getForwardManagerCore();
 
     ctx->LocalToString(params[1], &fwdName);
-    ctx->GetKey(1, reinterpret_cast<void **>(&pluginId));
-    auto plOwner = gSPGlobal->getPluginManagerCore()->getPluginCore(pluginId);
 
     size_t fwdParamsNum = params[0] - 2;
     fwdParamTypeList fwdParamsList;
@@ -141,10 +139,9 @@ static cell_t core_createForward(SourcePawn::IPluginContext *ctx,
     }
 
     auto plForward = std::make_shared<Forward>(fwdName,
-                                                plOwner,
-                                                fwdParamsList,
-                                                fwdParamsNum,
-                                                execType);
+                                               fwdParamsList,
+                                               fwdParamsNum,
+                                               execType);
 
     if (!plForward)
     {
@@ -299,130 +296,6 @@ static cell_t core_prepareFwdString(SourcePawn::IPluginContext *ctx,
     auto id = fwdManager->addParam(arrayForFwd, params[2], params[3], static_cast<IForward::StringFlags>(params[4]));
 
     return id.has_value() ? *id : -1;
-}
-
-// native float cvarGetFloat(const char[] name)
-static cell_t core_cvarGetFloat(SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
-{
-    char *cvarName;
-    ctx->LocalToString(params[1], &cvarName);
-
-    return sp_ftoc(CVAR_GET_FLOAT(cvarName));
-}
-
-// native void cvarGetString(const char[] name, char[] value, int size)
-static cell_t core_cvarGetString(SourcePawn::IPluginContext *ctx,
-                                 const cell_t *params)
-{
-    char *cvarName, *destBuffer;
-    size_t bufferSize = params[3];
-
-    ctx->LocalToString(params[1], &cvarName);
-    ctx->LocalToString(params[2], &destBuffer);
-
-    const char *value = CVAR_GET_STRING(cvarName);
-
-    std::strncpy(destBuffer, value, bufferSize);
-
-    destBuffer[bufferSize - 1] = '\0';
-
-    return 1;
-}
-
-// native int cvarGetInt(const char[] name)
-static cell_t core_cvarGetInt(SourcePawn::IPluginContext *ctx,
-                              const cell_t *params)
-{
-    char *cvarName;
-    ctx->LocalToString(params[1], &cvarName);
-
-    return CVAR_GET_FLOAT(cvarName);
-}
-
-// native int cvarGetFlags(const char[] name)
-static cell_t core_cvarGetFlags(SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
-{
-    char *cvarName;
-    ctx->LocalToString(params[1], &cvarName);
-
-    cvar_t *cvar = CVAR_GET_POINTER(cvarName);
-    if (!cvar)
-        return 0;
-
-    return cvar->flags;
-}
-
-// native void cvarSetFloat(const char[] name, float value)
-static cell_t core_cvarSetFloat(SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
-{
-    char *cvarName;
-    ctx->LocalToString(params[1], &cvarName);
-
-    CVAR_SET_FLOAT(cvarName, sp_ctof(params[2]));
-
-    return 1;
-}
-
-// native void cvarSetString(const char[] name, const char[] value)
-static cell_t core_cvarSetString(SourcePawn::IPluginContext *ctx,
-                                 const cell_t *params)
-{
-    char *cvarName, *cvarValue;
-    ctx->LocalToString(params[1], &cvarName);
-    ctx->LocalToString(params[2], &cvarValue);
-
-    CVAR_SET_STRING(cvarName, cvarValue);
-
-    return 1;
-}
-
-// native void cvarSetInt(const char[] name, int value)
-static cell_t core_cvarSetInt(SourcePawn::IPluginContext *ctx,
-                              const cell_t *params)
-{
-    char *cvarName;
-    ctx->LocalToString(params[1], &cvarName);
-
-    CVAR_SET_FLOAT(cvarName, params[2]);
-
-    return 1;
-}
-
-// native void cvarSetFlags(const char[] name, int flags)
-static cell_t core_cvarSetFlags(SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
-{
-    char *cvarName;
-    ctx->LocalToString(params[1], &cvarName);
-
-    cvar_t *cvar = CVAR_GET_POINTER(cvarName);
-    if (!cvar)
-        return 0;
-
-    cvar->flags = params[2];
-
-    return 1;
-}
-
-// native void cvarRegister(const char[] name, const char[] value, int flags = 0)
-static cell_t core_cvarRegister(SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
-{
-    char *cvarName, *cvarValue;
-    ctx->LocalToString(params[1], &cvarName);
-    ctx->LocalToString(params[2], &cvarValue);
-
-    static cvar_t cvarToRegister;
-    cvarToRegister.name = cvarName;
-    cvarToRegister.string = cvarValue;
-    cvarToRegister.flags = params[3];
-
-    CVAR_REGISTER(&cvarToRegister);
-
-    return 1;
 }
 
 // native bool nativeRegister(const char[] name, PluginNative func)
@@ -617,15 +490,6 @@ sp_nativeinfo_t gCoreNatives[] =
     { "executeForward",     core_executeForward     },
     { "prepareFwdArray",    core_prepareFwdArray    },
     { "prepareFwdString",   core_prepareFwdString   },
-    { "cvarGetFloat",       core_cvarGetFloat       },
-    { "cvarGetString",      core_cvarGetString      },
-    { "cvarGetInt",         core_cvarGetInt         },
-    { "cvarGetFlags",       core_cvarGetFlags       },
-    { "cvarSetFloat",       core_cvarSetFloat       },
-    { "cvarSetString",      core_cvarSetString      },
-    { "cvarSetInt",         core_cvarSetInt         },
-    { "cvarSetFlags",       core_cvarSetFlags       },
-    { "cvarRegister",       core_cvarRegister       },
     { "nativeRegister",     core_nativeRegister     },
     { "nativeGetCell",      core_nativeGetCell      },
     { "nativeGetCellRef",   core_nativeGetCellRef   },

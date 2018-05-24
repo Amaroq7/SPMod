@@ -97,7 +97,10 @@ static void ServerActivatePost(edict_t *pEdictList [[maybe_unused]],
                                 int edictCount [[maybe_unused]],
                                 int clientMax [[maybe_unused]])
 {
-    auto &pluginManager = gSPGlobal->getPluginManagerCore();
+    gSPGlobal->getForwardManagerCore()->addDefaultsForwards();
+
+    const std::unique_ptr<PluginMngr> &pluginManager = gSPGlobal->getPluginManagerCore();
+
     pluginManager->setPluginPrecache(true);
     pluginManager->loadPlugins();
     pluginManager->setPluginPrecache(false);
@@ -108,8 +111,8 @@ static void ServerDeactivatePost()
     const std::unique_ptr<ForwardMngr> &fwdManager = gSPGlobal->getForwardManagerCore();
     fwdManager->findForwardCore("OnPluginEnd")->execFunc(nullptr);
 
-    gSPGlobal->getPluginManagerCore()->detachPlugins();
-    fwdManager->clearNonDefaults();
+    gSPGlobal->getPluginManagerCore()->clearPlugins();
+    fwdManager->clearForwards();
     gSPGlobal->getLoggerCore()->resetErrorState();
     gSPGlobal->getNativeManagerCore()->freeFakeNatives();
 }
@@ -200,59 +203,63 @@ NEW_DLL_FUNCTIONS gNewDllFunctionTablePost =
 C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
                                 int *interfaceVersion)
 {
-	if (!pFunctionTable)
-		return 0;
+    if (!pFunctionTable)
+        return 0;
 
-	if (*interfaceVersion != INTERFACE_VERSION) {
-		*interfaceVersion = INTERFACE_VERSION;
-		return 0;
-	}
+    if (*interfaceVersion != INTERFACE_VERSION)
+    {
+        *interfaceVersion = INTERFACE_VERSION;
+        return 0;
+    }
 
-	memcpy(pFunctionTable, &gDllFunctionTable, sizeof(DLL_FUNCTIONS));
-	return 1;
+    memcpy(pFunctionTable, &gDllFunctionTable, sizeof(DLL_FUNCTIONS));
+    return 1;
 }
 
 C_DLLEXPORT int GetEntityAPI2_Post(DLL_FUNCTIONS *pFunctionTable,
                                     int *interfaceVersion)
 {
-	if (!pFunctionTable)
-		return 0;
+    if (!pFunctionTable)
+        return 0;
 
-	if (*interfaceVersion != INTERFACE_VERSION) {
-		*interfaceVersion = INTERFACE_VERSION;
-		return 0;
-	}
+    if (*interfaceVersion != INTERFACE_VERSION)
+    {
+        *interfaceVersion = INTERFACE_VERSION;
+        return 0;
+    }
 
-	memcpy(pFunctionTable, &gDllFunctionTablePost, sizeof(DLL_FUNCTIONS));
-	return 1;
+    memcpy(pFunctionTable, &gDllFunctionTablePost, sizeof(DLL_FUNCTIONS));
+    return 1;
 }
 
 C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pNewFunctionTable,
                                     int *interfaceVersion)
 {
-	if (!pNewFunctionTable)
-		return 0;
+    if (!pNewFunctionTable)
+        return 0;
 
-	if (*interfaceVersion != NEW_DLL_FUNCTIONS_VERSION) {
-		*interfaceVersion = NEW_DLL_FUNCTIONS_VERSION;
-		return 0;
-	}
+    if (*interfaceVersion != NEW_DLL_FUNCTIONS_VERSION)
+    {
+        *interfaceVersion = NEW_DLL_FUNCTIONS_VERSION;
+        return 0;
+    }
 
-	memcpy(pNewFunctionTable, &gNewDllFunctionTable, sizeof(NEW_DLL_FUNCTIONS));
-	return 1;
+    memcpy(pNewFunctionTable, &gNewDllFunctionTable, sizeof(NEW_DLL_FUNCTIONS));
+    return 1;
 }
 
 C_DLLEXPORT int GetNewDLLFunctions_Post(NEW_DLL_FUNCTIONS *pNewFunctionTable,
                                             int *interfaceVersion)
 {
-	if (!pNewFunctionTable)
-		return 0;
+    if (!pNewFunctionTable)
+        return 0;
 
-	if (*interfaceVersion != NEW_DLL_FUNCTIONS_VERSION) {
-		*interfaceVersion = NEW_DLL_FUNCTIONS_VERSION;
-		return 0;
-	}
+    if (*interfaceVersion != NEW_DLL_FUNCTIONS_VERSION)
+    {
+        *interfaceVersion = NEW_DLL_FUNCTIONS_VERSION;
+        return 0;
+    }
 
-	memcpy(pNewFunctionTable, &gNewDllFunctionTablePost, sizeof(NEW_DLL_FUNCTIONS));
-	return 1;
+    memcpy(pNewFunctionTable, &gNewDllFunctionTablePost, sizeof(NEW_DLL_FUNCTIONS));
+    return 1;
 }

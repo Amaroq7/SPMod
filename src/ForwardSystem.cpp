@@ -17,24 +17,6 @@
 
 #include "ForwardSystem.hpp"
 
-IPlugin *Forward::getOwnerPlugin() const
-{
-    return getOwnerPluginCore().get();
-}
-
-IModuleInterface *Forward::getOwnerModule() const
-{
-    try
-    {
-        auto *modOwner = std::get<IModuleInterface *>(m_owner);
-        return modOwner;
-    }
-    catch (const std::exception &e)
-    {
-        return nullptr;
-    }
-}
-
 bool Forward::pushCell(cell_t cell)
 {
     if (m_currentPos >= SP_MAX_EXEC_PARAMS)
@@ -225,19 +207,6 @@ void Forward::resetParams()
     m_params.fill(ForwardParam());
 }
 
-std::shared_ptr<Plugin> Forward::getOwnerPluginCore() const
-{
-    try
-    {
-        auto plOwner = std::get<std::weak_ptr<Plugin>>(m_owner);
-        return plOwner.lock();
-    }
-    catch (const std::exception &e)
-    {
-        return nullptr;
-    }
-}
-
 void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
 {
     for (auto i = 0U; i < m_paramsNum; ++i)
@@ -302,39 +271,17 @@ void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
 }
 
 IForward *ForwardMngr::createForward(const char *name,
-                                        IModuleInterface *owner,
-                                        IForward::ExecType exec,
-                                        size_t params,
-                                        ...)
+                                     IForward::ExecType exec,
+                                     size_t params,
+                                     ...)
 {
-    if (params > SP_MAX_EXEC_PARAMS || !owner)
+    if (params > SP_MAX_EXEC_PARAMS)
         return nullptr;
 
     // Get passed params types
     va_list paramsList;
     va_start(paramsList, params);
-    auto createdForward = _createForwardVa(name, owner, exec, paramsList, params);
-    va_end(paramsList);
-
-    return createdForward.get();
-}
-
-IForward *ForwardMngr::createForward(const char *name,
-                                        IPlugin *owner,
-                                        IForward::ExecType exec,
-                                        size_t params,
-                                        ...)
-{
-    if (params > SP_MAX_EXEC_PARAMS || !owner)
-        return nullptr;
-
-    // Find plugin shared_ptr
-    auto plOwner = gSPGlobal->getPluginManagerCore()->getPluginCore(owner->getIndentity());
-
-    // Get passed params types
-    va_list paramsList;
-    va_start(paramsList, params);
-    auto createdForward = _createForwardVa(name, plOwner, exec, paramsList, params);
+    auto createdForward = _createForwardVa(name, exec, paramsList, params);
     va_end(paramsList);
 
     return createdForward.get();
@@ -356,7 +303,6 @@ std::shared_ptr<Forward> ForwardMngr::findForwardCore(std::string_view name) con
 }
 
 std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
-                                                        fwdOwnerVariant owner,
                                                         IForward::ExecType exec,
                                                         fwdInitParamsList params)
 {
@@ -368,7 +314,7 @@ std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
     fwdParamTypeList forwardParams;
     std::copy(params.begin(), params.end(), forwardParams.begin());
 
-    return _createForward(name, owner, exec, forwardParams, paramsNum);
+    return _createForward(name, exec, forwardParams, paramsNum);
 }
 
 size_t ForwardMngr::getParamSize(size_t id)
@@ -424,94 +370,49 @@ std::optional<size_t> ForwardMngr::addParam(std::any param,
     return m_preparedParamsNum - 1;
 }
 
-void ForwardMngr::clearNonDefaults()
+void ForwardMngr::addDefaultsForwards()
 {
-    auto it = m_forwards.begin();
-    while (it != m_forwards.end())
-    {
-        auto *moduleOwner = it->second->getOwnerModule();
-        if (!moduleOwner)
-        {
-            it = m_forwards.erase(it);
-            continue;
-        }
+    using et = IForward::ExecType;
+    using param = IForward::ParamType;
 
-        if (moduleOwner != gSPModModuleDef.get())
-        {
-            it = m_forwards.erase(it);
-            continue;
-        }
-        it++;
-    }
-}
+    auto paramsList = { param::Cell, param::String, param::String, param::StringEx };
+    createForwardCore("OnClientConnect", et::Stop, paramsList);
 
-void ForwardMngr::deletePluginForwards(std::string_view identity)
-{
-    auto it = m_forwards.begin();
-    while (it != m_forwards.end())
-    {
-        auto plOwner = it->second->getOwnerPluginCore();
-        // Remove forwards which are owned by plugin
-        if (plOwner && plOwner->getIndentityCore() == identity)
-        {
-            it = m_forwards.erase(it);
-            continue;
-        }
-        // Remove forwards which depend on the plugin
-        if (auto plDep = it->second->getPluginCore(); plDep && plDep->getIndentityCore() == identity)
-        {
-            it = m_forwards.erase(it);
-            continue;
-        }
-        it++;
-    }
+    paramsList = { param::Cell, param::Cell, param::String };
+    createForwardCore("OnClientDisconnect", et::Ignore, paramsList);
+
+    paramsList = { param::String, param::String, param::String, param::Float };
+    createForwardCore("OnCvarChange", et::Ignore, paramsList);
+
+    paramsList = { };
+    createForwardCore("OnPluginsLoaded", et::Ignore, paramsList);
+    createForwardCore("OnPluginInit", et::Ignore, paramsList);
+    createForwardCore("OnPluginEnd", et::Ignore, paramsList);
+    createForwardCore("OnPluginNatives", et::Ignore, paramsList);
 }
 
 std::shared_ptr<Forward> ForwardMngr::_createForwardVa(std::string_view name,
-                                                        fwdOwnerVariant owner,
-                                                        IForward::ExecType exec,
-                                                        va_list params,
-                                                        size_t paramsnum)
+                                                       IForward::ExecType exec,
+                                                       std::va_list params,
+                                                       size_t paramsnum)
 {
     fwdParamTypeList forwardParams;
 
     for (size_t i = 0; i < paramsnum; ++i)
         forwardParams.at(i) = static_cast<IForward::ParamType>(va_arg(params, int));
 
-    return _createForward(name, owner, exec, forwardParams, paramsnum);
+    return _createForward(name, exec, forwardParams, paramsnum);
 }
 
 std::shared_ptr<Forward> ForwardMngr::_createForward(std::string_view name,
-                                                        fwdOwnerVariant owner,
-                                                        IForward::ExecType exec,
-                                                        fwdParamTypeList params,
-                                                        size_t paramsnum)
+                                                     IForward::ExecType exec,
+                                                     fwdParamTypeList params,
+                                                     size_t paramsnum)
 {
-    auto forwardPtr = std::make_shared<Forward>(name, owner, params, paramsnum, exec);
+    auto forwardPtr = std::make_shared<Forward>(name, params, paramsnum, exec);
 
     if (const auto [iter, added] = m_forwards.try_emplace(name.data(), forwardPtr); !added)
         return nullptr;
 
     return forwardPtr;
-}
-
-void ForwardMngr::_addDefaultsForwards()
-{
-    using et = IForward::ExecType;
-    using param = IForward::ParamType;
-
-    auto paramsList = { param::Cell, param::String, param::String, param::StringEx };
-    createForwardCore("OnClientConnect", gSPModModuleDef.get(), et::Stop, paramsList);
-
-    paramsList = { param::Cell, param::Cell, param::String };
-    createForwardCore("OnClientDisconnect", gSPModModuleDef.get(), et::Ignore, paramsList);
-
-    paramsList = { param::String, param::String, param::String, param::Float };
-    createForwardCore("OnCvarChange", gSPModModuleDef.get(), et::Ignore, paramsList);
-
-    paramsList = { };
-    createForwardCore("OnPluginsLoaded", gSPModModuleDef.get(), et::Ignore, paramsList);
-    createForwardCore("OnPluginInit", gSPModModuleDef.get(), et::Ignore, paramsList);
-    createForwardCore("OnPluginEnd", gSPModModuleDef.get(), et::Ignore, paramsList);
-    createForwardCore("OnPluginNatives", gSPModModuleDef.get(), et::Ignore, paramsList);
 }

@@ -25,29 +25,27 @@ class Forward final : public IForward
 {
 public:
     Forward(std::string_view name,
-            fwdOwnerVariant owner,
             fwdParamTypeList paramstypes,
             size_t params,
             ExecType type) : m_name(name),
-                                m_execType(type),
-                                m_paramTypes(paramstypes),
-                                m_plugin(std::shared_ptr<Plugin>(nullptr)),
-                                m_currentPos(0),
-                                m_paramsNum(params),
-                                m_owner(owner)
-                                { }
+                             m_execType(type),
+                             m_paramTypes(paramstypes),
+                             m_plugin(std::shared_ptr<Plugin>(nullptr)),
+                             m_currentPos(0),
+                             m_paramsNum(params)
+    {}
+
     Forward(std::string_view name,
-            fwdOwnerVariant owner,
             fwdParamTypeList paramstypes,
             size_t params,
             std::shared_ptr<Plugin> plugin) : m_name(name),
-                                                m_execType(ExecType::Highest),
-                                                m_paramTypes(paramstypes),
-                                                m_plugin(plugin),
-                                                m_currentPos(0),
-                                                m_paramsNum(params),
-                                                m_owner(owner)
-                                                { }
+                                              m_execType(ExecType::Highest),
+                                              m_paramTypes(paramstypes),
+                                              m_plugin(plugin),
+                                              m_currentPos(0),
+                                              m_paramsNum(params)
+    {}
+
     Forward() = delete;
     ~Forward() = default;
 
@@ -68,8 +66,6 @@ public:
     {
         return m_paramsNum;
     }
-    IPlugin *getOwnerPlugin() const override;
-    IModuleInterface *getOwnerModule() const override;
     bool pushCell(cell_t cell) override;
     bool pushCellPtr(cell_t *cell,
                         bool copyback) override;
@@ -107,11 +103,11 @@ private:
     struct ForwardParam
     {
         std::variant<cell_t,
-                    cell_t *,
-                    float,
-                    float *,
-                    const char *,
-                    char *> m_param;
+                     cell_t *,
+                     float,
+                     float *,
+                     const char *,
+                     char *> m_param;
         bool m_copyback;
         size_t m_size;
         StringFlags m_stringFlags;
@@ -124,28 +120,17 @@ private:
     std::weak_ptr<Plugin> m_plugin;
     size_t m_currentPos;
     size_t m_paramsNum;
-
-    fwdOwnerVariant m_owner;
 };
 
 class ForwardMngr final : public IForwardMngr
 {
 public:
     ForwardMngr() : m_preparedParamsNum(0)
-    {
-        _addDefaultsForwards();
-    }
+    {}
     ~ForwardMngr() = default;
 
     // IForwardMngr
     IForward *createForward(const char *name,
-                            IModuleInterface *owner,
-                            IForward::ExecType exec,
-                            size_t params,
-                            ...) override;
-
-    IForward *createForward(const char *name,
-                            IPlugin *owner,
                             IForward::ExecType exec,
                             size_t params,
                             ...) override;
@@ -153,18 +138,17 @@ public:
     IForward *findForward(const char *name) const override;
 
     // ForwardMngr
+
     bool addForward(std::shared_ptr<Forward> forward)
     {
         return m_forwards.try_emplace(forward->getNameCore().data(), forward).second;
     }
-    void clearForwards()
-    {
-        m_forwards.clear();
-    }
+
     void resetPreparedParams()
     {
         m_preparedParamsNum = 0;
     }
+
     template<typename T>
     std::optional<T> getParam(size_t id)
     {
@@ -182,23 +166,30 @@ public:
         }
         return result;
     }
-    size_t getParamSize(size_t id);
-    bool getParamCb(size_t id);
-    IForward::StringFlags getParamSf(size_t id);
-    std::optional<size_t> addParam(std::any param,
-                                    size_t size,
-                                    bool copyback,
-                                    IForward::StringFlags sflags);
 
-    void clearNonDefaults();
+    void clearForwards()
+    {
+        m_forwards.clear();
+    }
+
+    void addDefaultsForwards();
+
+    size_t getParamSize(size_t id);
+
+    bool getParamCb(size_t id);
+
+    IForward::StringFlags getParamSf(size_t id);
+
+    std::optional<size_t> addParam(std::any param,
+                                   size_t size,
+                                   bool copyback,
+                                   IForward::StringFlags sflags);
+
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
-                                                fwdOwnerVariant owner,
-                                                IForward::ExecType exec,
-                                                fwdInitParamsList params);
+                                               IForward::ExecType exec,
+                                               fwdInitParamsList params);
 
     std::shared_ptr<Forward> findForwardCore(std::string_view name) const;
-
-    void deletePluginForwards(std::string_view identity);
 
 private:
     // Plugin use-only
@@ -210,16 +201,13 @@ private:
         bool m_copyback;
         IForward::StringFlags m_sflags;
     };
-    void _addDefaultsForwards();
 
     std::shared_ptr<Forward> _createForwardVa(std::string_view name,
-                                                fwdOwnerVariant owner,
-                                                IForward::ExecType exec,
-                                                va_list params,
-                                                size_t paramsnum);
+                                              IForward::ExecType exec,
+                                              va_list params,
+                                              size_t paramsnum);
 
     std::shared_ptr<Forward> _createForward(std::string_view name,
-                                            fwdOwnerVariant owner,
                                             IForward::ExecType exec,
                                             fwdParamTypeList params,
                                             size_t paramsnum);

@@ -68,7 +68,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
     gpMetaGlobals = pMGlobals;
     gpGamedllFuncs = pGamedllFuncs;
 
-    // Have to be created before global object
+    // Has to be created before global object
     gSPModModuleDef = std::make_unique<SPModModule>(gCoreNatives);
 
     try
@@ -104,8 +104,12 @@ SPMod ", gSPModVersion, ", API ", SPMOD_API_VERSION, \
 C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now [[maybe_unused]],
                             PL_UNLOAD_REASON reason [[maybe_unused]])
 {
-    gSPGlobal->getPluginManagerCore()->detachPlugins();
-    gSPGlobal->getForwardManagerCore()->clearForwards();
+    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
+    fwdMngr->findForwardCore("OnPluginEnd")->execFunc(nullptr);
+
+    gSPGlobal->getPluginManagerCore()->clearPlugins();
+    fwdMngr->clearForwards();
+    gSPGlobal->getNativeManagerCore()->clearNatives();
 
     return 1;
 }

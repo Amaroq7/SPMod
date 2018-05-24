@@ -86,29 +86,12 @@ namespace SPMod
          * @brief Creates forward for plugin.
          *
          * @param name    Forward name.
-         * @param owner   Module owner of forward.
          * @param params  Number of paramaters in forward.
          * @param ...     Type of parameters.
          *
          * @return        Forward pointer, nullptr if creation failed.
          */
         virtual IForward *createForward(const char *name,
-                                        IModuleInterface *owner,
-                                        size_t params,
-                                        ...) const = 0;
-
-        /**
-         * @brief Creates forward for plugin.
-         *
-         * @param name    Forward name.
-         * @param owner   Plugin owner of forward.
-         * @param params  Number of paramaters in forward.
-         * @param ...     Type of parameters.
-         *
-         * @return        Forward pointer, nullptr if creation failed.
-         */
-        virtual IForward *createForward(const char *name,
-                                        IPlugin *owner,
                                         size_t params,
                                         ...) const = 0;
 

@@ -120,6 +120,13 @@ public:
     {
         return m_natives;
     }
+
+    void clearNatives()
+    {
+        freeFakeNatives();
+        m_natives.clear();
+    }
+
     void freeFakeNatives();
     bool addFakeNative(std::string_view pluginname,
                        std::string_view name,

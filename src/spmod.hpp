@@ -86,14 +86,12 @@ extern IRehldsHookchains *gRehldsHookchains;
 extern IRehldsServerStatic *gRehldsServerStatic;
 extern IRehldsServerData *gRehldsServerData;
 
-extern bool initRehldsApi();
-extern void unintRehldsApi();
+bool initRehldsApi();
+void unintRehldsApi();
 
 // Aliases for convenience
 using namespace SPMod;
 
-class Plugin;
-using fwdOwnerVariant = std::variant<std::weak_ptr<Plugin>, IModuleInterface *>;
 using fwdParamTypeList = std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS>;
 using fwdInitParamsList = std::initializer_list<IForward::ParamType>;
 
@@ -108,8 +106,8 @@ using fwdInitParamsList = std::initializer_list<IForward::ParamType>;
 constexpr auto gSPModAuthor = "SPMod Development Team";
 constexpr auto gSPModVersion = "0.0.1";
 
-// Core natives (coreNatives.cpp)
 extern sp_nativeinfo_t gCoreNatives[];
+extern sp_nativeinfo_t gCvarsNatives[];
 
 // Server command function (SrvCommand.cpp)
 void SPModInfoCommand();

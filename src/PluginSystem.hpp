@@ -35,7 +35,7 @@ public:
             const fs::path &path);
 
     Plugin() = delete;
-    ~Plugin();
+    ~Plugin() = default;
 
     // IPlugin
 
@@ -126,29 +126,12 @@ public:
      * @brief Creates forward for plugin.
      *
      * @param name    Forward name.
-     * @param owner   Module owner of forward.
      * @param params  Number of paramaters in forward.
      * @param ...     Type of parameters.
      *
      * @return        Forward pointer, nullptr if creation failed.
      */
     IForward *createForward(const char *name,
-                            IModuleInterface *owner,
-                            size_t params,
-                            ...) const override;
-
-    /**
-     * @brief Creates forward for plugin.
-     *
-     * @param name    Forward name.
-     * @param owner   Plugin owner of forward.
-     * @param params  Number of paramaters in forward.
-     * @param ...     Type of parameters.
-     *
-     * @return        Forward pointer, nullptr if creation failed.
-     */
-    IForward *createForward(const char *name,
-                            IPlugin *owner,
                             size_t params,
                             ...) const override;
 
@@ -178,16 +161,13 @@ public:
         return m_filename;
     }
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
-                                                fwdOwnerVariant owner,
                                                 fwdInitParamsList params) const;
 
 private:
     std::shared_ptr<Forward> _createForwardVa(std::string_view name,
-                                                fwdOwnerVariant owner,
                                                 va_list paramsList,
                                                 size_t paramsnum) const;
     std::shared_ptr<Forward> _createForward(std::string_view name,
-                                            fwdOwnerVariant owner,
                                             fwdParamTypeList paramlist,
                                             size_t paramsnum) const;
 
@@ -275,7 +255,7 @@ public:
     {
         return m_plugins;
     }
-    void detachPlugins()
+    void clearPlugins()
     {
         m_plugins.clear();
     }
