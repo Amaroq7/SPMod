@@ -101,7 +101,7 @@ cell_t NativeMngr::fakeNativeRouter(SourcePawn::IPluginContext *ctx,
 
     const std::unique_ptr<NativeMngr> &nativeMngr = gSPGlobal->getNativeManagerCore();
     std::shared_ptr<Native> native = nativeMngr->getNativeCore(reinterpret_cast<const char *>(data));
-    
+
     m_callerPlugin = ctx;
     std::shared_ptr<Plugin> caller = gSPGlobal->getPluginManagerCore()->getPluginCore(ctx);
 
@@ -111,7 +111,7 @@ cell_t NativeMngr::fakeNativeRouter(SourcePawn::IPluginContext *ctx,
     cell_t result = 0;
 
     SourcePawn::IPluginFunction *func = native->getFunc();
-	func->PushCell(caller->getId());
+    func->PushCell(caller->getId());
     func->Execute(&result);
 
     m_callerPlugin = nullptr;

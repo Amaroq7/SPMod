@@ -89,11 +89,8 @@ extern IRehldsServerData *gRehldsServerData;
 bool initRehldsApi();
 void unintRehldsApi();
 
-// Aliases for convenience
+// For convenience
 using namespace SPMod;
-
-using fwdParamTypeList = std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS>;
-using fwdInitParamsList = std::initializer_list<IForward::ParamType>;
 
 // SPMod specific
 #include "SPModModuleDef.hpp"

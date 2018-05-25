@@ -18,8 +18,8 @@
 #include "PluginSystem.hpp"
 
 Plugin::Plugin(size_t id,
-                std::string_view identity,
-                const fs::path &path)
+               std::string_view identity,
+               const fs::path &path)
 {
     char errorSPMsg[256];
     SourcePawn::ISourcePawnEngine2 *spAPIv2 = gSPGlobal->getSPEnvironment()->APIv2();
@@ -89,7 +89,7 @@ IForward *Plugin::createForward(const char *name,
         return nullptr;
 
     // Get passed params types
-    va_list paramsList;
+    std::va_list paramsList;
     va_start(paramsList, params);
     auto createdForward = _createForwardVa(name, paramsList, params);
     va_end(paramsList);
@@ -101,7 +101,7 @@ std::shared_ptr<Forward> Plugin::_createForwardVa(std::string_view name,
                                                   std::va_list paramsList,
                                                   size_t paramsnum) const
 {
-    fwdParamTypeList forwardParams;
+    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
 
     for (size_t i = 0; i < paramsnum; ++i)
         forwardParams.at(i) = static_cast<Forward::ParamType>(va_arg(paramsList, int));
@@ -110,30 +110,30 @@ std::shared_ptr<Forward> Plugin::_createForwardVa(std::string_view name,
 }
 
 std::shared_ptr<Forward> Plugin::createForwardCore(std::string_view name,
-                                                   fwdInitParamsList params) const
+                                                   std::initializer_list<IForward::ParamType> params) const
 {
-    auto paramsNum = params.size();
+    size_t paramsNum = params.size();
 
     if (paramsNum > SP_MAX_EXEC_PARAMS)
         return nullptr;
 
-    fwdParamTypeList forwardParams;
+    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
     std::copy(params.begin(), params.end(), forwardParams.begin());
 
     return _createForward(name, forwardParams, paramsNum);
 }
 
 std::shared_ptr<Forward> Plugin::_createForward(std::string_view name,
-                                                fwdParamTypeList paramlist,
+                                                std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramlist,
                                                 size_t paramsnum) const
 {
-    auto plugin = gSPGlobal->getPluginManagerCore()->getPluginCore(m_identity);
-    auto forwardPtr = std::make_shared<Forward>(name, paramlist, paramsnum, plugin);
+    std::shared_ptr<Plugin> plugin = gSPGlobal->getPluginManagerCore()->getPluginCore(m_identity);
+    auto forward = std::make_shared<Forward>(name, paramlist, paramsnum, plugin);
 
-    if (!gSPGlobal->getForwardManagerCore()->addForward(forwardPtr))
+    if (!gSPGlobal->getForwardManagerCore()->addForward(forward))
         return nullptr;
 
-    return forwardPtr;
+    return forward;
 }
 
 std::shared_ptr<Plugin> PluginMngr::getPluginCore(std::string_view name)
@@ -166,7 +166,7 @@ IPlugin *PluginMngr::loadPlugin(const char *name,
                                 size_t size)
 {
     std::string errorMsg;
-    auto plugin = loadPluginCore(name, &errorMsg);
+    std::shared_ptr<Plugin> plugin = loadPluginCore(name, &errorMsg);
 
     if (!plugin)
     {
@@ -181,7 +181,7 @@ IPlugin *PluginMngr::loadPlugin(const char *name,
 std::shared_ptr<Plugin> PluginMngr::loadPluginCore(std::string_view name,
                                                     std::string *error)
 {
-    auto plugin = _loadPlugin(gSPGlobal->getScriptsDirCore() / name.data(), error);
+    std::shared_ptr<Plugin> plugin = _loadPlugin(gSPGlobal->getScriptsDirCore() / name.data(), error);
     if (!plugin)
         return nullptr;
 
@@ -191,25 +191,25 @@ std::shared_ptr<Plugin> PluginMngr::loadPluginCore(std::string_view name,
 std::shared_ptr<Plugin> PluginMngr::_loadPlugin(const fs::path &path,
                                                 std::string *error)
 {
-    auto pluginId = m_plugins.size();
+    size_t pluginId = m_plugins.size();
 
     // Omit any unknown extension
     if (path.extension().string() != ".smx")
         return nullptr;
 
-    auto fileName = path.stem().string();
+    std::string fileName = path.stem().string();
     std::shared_ptr<Plugin> plugin;
     try
     {
         plugin = std::make_shared<Plugin>(pluginId, fileName, path);
     }
-    catch (const std::exception &e)
+    catch (const std::runtime_error &e)
     {
         *error = e.what();
         return nullptr;
     }
 
-    if (const auto [iter, added] = m_plugins.try_emplace(fileName, plugin); !added)
+    if (!m_plugins.try_emplace(fileName, plugin).second)
         return nullptr;
 
     return plugin;
@@ -230,7 +230,7 @@ size_t PluginMngr::loadPlugins()
     std::string errorMsg;
     for (const auto &entry : directoryIter)
     {
-        auto filePath = entry.path();
+        fs::path filePath = entry.path();
         if (!_loadPlugin(filePath, &errorMsg) && !errorMsg.empty())
         {
             loggingSystem->LogErrorCore(errorMsg);

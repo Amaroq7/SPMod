@@ -129,7 +129,7 @@ static cell_t core_createForward(SourcePawn::IPluginContext *ctx,
     ctx->LocalToString(params[1], &fwdName);
 
     size_t fwdParamsNum = params[0] - 2;
-    fwdParamTypeList fwdParamsList;
+    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> fwdParamsList;
 
     for (size_t i = 0; i < fwdParamsNum; ++i)
     {

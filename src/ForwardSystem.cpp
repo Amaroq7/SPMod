@@ -116,9 +116,9 @@ bool Forward::pushString(const char *string)
 }
 
 bool Forward::pushStringEx(char *buffer,
-                            size_t size,
-                            StringFlags sflags,
-                            bool copyback)
+                           size_t size,
+                           StringFlags sflags,
+                           bool copyback)
 {
     if (m_currentPos >= SP_MAX_EXEC_PARAMS)
         return false;
@@ -144,10 +144,10 @@ bool Forward::execFunc(cell_t *result)
         return false;
 
     // Forward for one plugin
-    if (auto plugin = m_plugin.lock(); plugin)
+    if (std::shared_ptr<Plugin> plugin = m_plugin.lock(); plugin)
     {
-        auto *pluginRuntime = plugin->getRuntime();
-        auto *funcToExecute = pluginRuntime->GetFunctionByName(m_name.c_str());
+        SourcePawn::IPluginRuntime *pluginRuntime = plugin->getRuntime();
+        SourcePawn::IPluginFunction *funcToExecute = pluginRuntime->GetFunctionByName(m_name.c_str());
 
         if (!funcToExecute)
             return false;
@@ -165,8 +165,8 @@ bool Forward::execFunc(cell_t *result)
         cell_t tempResult = 0, returnValue = 0;
         for (const auto &entry : gSPGlobal->getPluginManagerCore()->getPluginsList())
         {
-            auto plugin = entry.second;
-            auto *funcToExecute = plugin->getRuntime()->GetFunctionByName(m_name.c_str());
+            std::shared_ptr<Plugin> plugin = entry.second;
+            SourcePawn::IPluginFunction *funcToExecute = plugin->getRuntime()->GetFunctionByName(m_name.c_str());
 
             if (!funcToExecute)
                 continue;
@@ -203,16 +203,18 @@ bool Forward::execFunc(cell_t *result)
 void Forward::resetParams()
 {
     m_currentPos = 0;
-    // Clear array of pushed params
-    m_params.fill(ForwardParam());
 }
 
 void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
 {
-    for (auto i = 0U; i < m_paramsNum; ++i)
+    std::variant<cell_t, cell_t *, float, float *, const char *, char *> paramVar;
+    ForwardParam paramObj;
+
+    for (size_t i = 0; i < m_paramsNum; ++i)
     {
-        auto paramObj = m_params.at(i);
-        auto paramVar = paramObj.m_param;
+        paramObj = m_params.at(i);
+        paramVar = paramObj.m_param;
+
         switch (m_paramTypes.at(i))
         {
             case ParamType::Cell:
@@ -222,7 +224,7 @@ void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
             }
             case ParamType::CellRef:
             {
-                auto spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
+                int spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
                 func->PushCellByRef(std::get<cell_t *>(paramVar), spFlags);
                 break;
             }
@@ -233,13 +235,13 @@ void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
             }
             case ParamType::FloatRef:
             {
-                auto spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
+                int spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
                 func->PushFloatByRef(std::get<float *>(paramVar), spFlags);
                 break;
             }
             case ParamType::Array:
             {
-                auto spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
+                int spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
                 func->PushArray(std::get<cell_t *>(paramVar), paramObj.m_size, spFlags);
                 break;
             }
@@ -250,8 +252,8 @@ void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
             }
             case ParamType::StringEx:
             {
-                auto spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
-                auto spStringFlags = 0;
+                int spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
+                int spStringFlags = 0;
                 if (paramObj.m_stringFlags != StringFlags::None)
                 {
                     if (hasEnumFlag(paramObj.m_stringFlags, StringFlags::Utf8))
@@ -281,7 +283,7 @@ IForward *ForwardMngr::createForward(const char *name,
     // Get passed params types
     va_list paramsList;
     va_start(paramsList, params);
-    auto createdForward = _createForwardVa(name, exec, paramsList, params);
+    std::shared_ptr<Forward> createdForward = _createForwardVa(name, exec, paramsList, params);
     va_end(paramsList);
 
     return createdForward.get();
@@ -304,14 +306,14 @@ std::shared_ptr<Forward> ForwardMngr::findForwardCore(std::string_view name) con
 
 std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
                                                         IForward::ExecType exec,
-                                                        fwdInitParamsList params)
+                                                        std::initializer_list<IForward::ParamType> params)
 {
-    auto paramsNum = params.size();
+    size_t paramsNum = params.size();
 
     if (paramsNum > SP_MAX_EXEC_PARAMS)
         return nullptr;
 
-    fwdParamTypeList forwardParams;
+    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
     std::copy(params.begin(), params.end(), forwardParams.begin());
 
     return _createForward(name, exec, forwardParams, paramsNum);
@@ -319,26 +321,38 @@ std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
 
 size_t ForwardMngr::getParamSize(size_t id)
 {
-    if (id >= m_preparedParamsNum)
+    try
+    {
+        return m_preparedParams.at(id).m_size;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
         return 0;
-
-    return m_preparedParams.at(id).m_size;
+    }
 }
 
 bool ForwardMngr::getParamCb(size_t id)
 {
-    if (id >= m_preparedParamsNum)
+    try
+    {
+        return m_preparedParams.at(id).m_copyback;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
         return false;
-
-    return m_preparedParams.at(id).m_copyback;
+    }
 }
 
 IForward::StringFlags ForwardMngr::getParamSf(size_t id)
 {
-    if (id >= m_preparedParamsNum)
+    try
+    {
+        return m_preparedParams.at(id).m_sflags;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
         return IForward::StringFlags::None;
-
-    return m_preparedParams.at(id).m_sflags;
+    }
 }
 
 std::optional<size_t> ForwardMngr::addParam(std::any param,
@@ -355,7 +369,7 @@ std::optional<size_t> ForwardMngr::addParam(std::any param,
     {
         preparedParam.m_param = std::any_cast<cell_t *>(param);
     }
-    catch (const std::exception &e)
+    catch (const std::bad_any_cast &e [[maybe_unused]])
     {
         // If fails get string array
         preparedParam.m_param = std::any_cast<char *>(param);
@@ -374,8 +388,9 @@ void ForwardMngr::addDefaultsForwards()
 {
     using et = IForward::ExecType;
     using param = IForward::ParamType;
+    std::initializer_list<IForward::ParamType> paramsList;
 
-    auto paramsList = { param::Cell, param::String, param::String, param::StringEx };
+    paramsList = { param::Cell, param::String, param::String, param::StringEx };
     createForwardCore("OnClientConnect", et::Stop, paramsList);
 
     paramsList = { param::Cell, param::Cell, param::String };
@@ -396,7 +411,7 @@ std::shared_ptr<Forward> ForwardMngr::_createForwardVa(std::string_view name,
                                                        std::va_list params,
                                                        size_t paramsnum)
 {
-    fwdParamTypeList forwardParams;
+    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
 
     for (size_t i = 0; i < paramsnum; ++i)
         forwardParams.at(i) = static_cast<IForward::ParamType>(va_arg(params, int));
@@ -406,13 +421,13 @@ std::shared_ptr<Forward> ForwardMngr::_createForwardVa(std::string_view name,
 
 std::shared_ptr<Forward> ForwardMngr::_createForward(std::string_view name,
                                                      IForward::ExecType exec,
-                                                     fwdParamTypeList params,
+                                                     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> params,
                                                      size_t paramsnum)
 {
-    auto forwardPtr = std::make_shared<Forward>(name, params, paramsnum, exec);
+    auto forward = std::make_shared<Forward>(name, params, paramsnum, exec);
 
-    if (const auto [iter, added] = m_forwards.try_emplace(name.data(), forwardPtr); !added)
+    if (!m_forwards.try_emplace(name.data(), forward).second)
         return nullptr;
 
-    return forwardPtr;
+    return forward;
 }

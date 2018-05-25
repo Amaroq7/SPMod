@@ -161,14 +161,14 @@ public:
         return m_filename;
     }
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
-                                                fwdInitParamsList params) const;
+                                               std::initializer_list<IForward::ParamType> params) const;
 
 private:
     std::shared_ptr<Forward> _createForwardVa(std::string_view name,
-                                                va_list paramsList,
-                                                size_t paramsnum) const;
+                                              std::va_list paramsList,
+                                              size_t paramsnum) const;
     std::shared_ptr<Forward> _createForward(std::string_view name,
-                                            fwdParamTypeList paramlist,
+                                            std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramlist,
                                             size_t paramsnum) const;
 
     SourcePawn::IPluginRuntime *m_runtime;
@@ -268,7 +268,7 @@ public:
         return m_canPluginsPrecache;
     }
     std::shared_ptr<Plugin> loadPluginCore(std::string_view name,
-                                            std::string *error);
+                                           std::string *error);
 
     std::shared_ptr<Plugin> getPluginCore(size_t index);
     std::shared_ptr<Plugin> getPluginCore(std::string_view name);

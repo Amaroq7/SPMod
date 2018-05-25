@@ -25,7 +25,7 @@ class Forward final : public IForward
 {
 public:
     Forward(std::string_view name,
-            fwdParamTypeList paramstypes,
+            std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
             size_t params,
             ExecType type) : m_name(name),
                              m_execType(type),
@@ -36,7 +36,7 @@ public:
     {}
 
     Forward(std::string_view name,
-            fwdParamTypeList paramstypes,
+            std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
             size_t params,
             std::shared_ptr<Plugin> plugin) : m_name(name),
                                               m_execType(ExecType::Highest),
@@ -102,20 +102,15 @@ private:
 
     struct ForwardParam
     {
-        std::variant<cell_t,
-                     cell_t *,
-                     float,
-                     float *,
-                     const char *,
-                     char *> m_param;
+        std::variant<cell_t, cell_t *, float, float *, const char *, char *> m_param;
         bool m_copyback;
         size_t m_size;
-        StringFlags m_stringFlags;
+        IForward::StringFlags m_stringFlags;
     };
 
     std::string m_name;
     ExecType m_execType;
-    fwdParamTypeList m_paramTypes;
+    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> m_paramTypes;
     std::array<ForwardParam, SP_MAX_EXEC_PARAMS> m_params;
     std::weak_ptr<Plugin> m_plugin;
     size_t m_currentPos;
@@ -152,15 +147,12 @@ public:
     template<typename T>
     std::optional<T> getParam(size_t id)
     {
-        if (id >= m_preparedParamsNum)
-            return std::nullopt;
-
         T result;
         try
         {
             result = std::get<T>(m_preparedParams.at(id).m_param);
         }
-        catch(const std::exception &e)
+        catch(const std::exception &e [[maybe_unused]])
         {
             return std::nullopt;
         }
@@ -187,7 +179,7 @@ public:
 
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
                                                IForward::ExecType exec,
-                                               fwdInitParamsList params);
+                                               std::initializer_list<IForward::ParamType> params);
 
     std::shared_ptr<Forward> findForwardCore(std::string_view name) const;
 
@@ -209,7 +201,7 @@ private:
 
     std::shared_ptr<Forward> _createForward(std::string_view name,
                                             IForward::ExecType exec,
-                                            fwdParamTypeList params,
+                                            std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> params,
                                             size_t paramsnum);
 
     size_t m_preparedParamsNum;
