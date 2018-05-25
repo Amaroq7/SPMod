@@ -19,65 +19,77 @@
 
 bool Forward::pushCell(cell_t cell)
 {
-    if (m_currentPos >= SP_MAX_EXEC_PARAMS)
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::Cell)
+            return false;
+
+        ForwardParam &param = m_params.at(m_currentPos++);
+        param.m_param = cell;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
         return false;
+    }
 
-    if (m_paramTypes.at(m_currentPos) != ParamType::Cell)
-        return false;
-
-    ForwardParam param;
-    param.m_param = cell;
-
-    m_params.at(m_currentPos++) = param;
     return true;
 }
 
 bool Forward::pushCellPtr(cell_t *cell,
-                            bool copyback)
+                          bool copyback)
 {
-    if (m_currentPos >= SP_MAX_EXEC_PARAMS)
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::CellRef)
+            return false;
+
+        ForwardParam &param = m_params.at(m_currentPos++);
+        param.m_param = cell;
+        param.m_copyback = copyback;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
         return false;
+    }
 
-    if (m_paramTypes.at(m_currentPos) != ParamType::CellRef)
-        return false;
-
-    ForwardParam param;
-    param.m_param = cell;
-    param.m_copyback = copyback;
-
-    m_params.at(m_currentPos++) = param;
     return true;
 }
 
 bool Forward::pushFloat(float real)
 {
-    if (m_currentPos >= SP_MAX_EXEC_PARAMS)
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::Float)
+            return false;
+
+        ForwardParam &param = m_params.at(m_currentPos++);
+        param.m_param = real;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
         return false;
+    }
 
-    if (m_paramTypes.at(m_currentPos) != ParamType::Float)
-        return false;
-
-    ForwardParam param;
-    param.m_param = real;
-
-    m_params.at(m_currentPos++) = param;
     return true;
 }
 
 bool Forward::pushFloatPtr(float *real,
-                            bool copyback)
+                           bool copyback)
 {
-    if (m_currentPos >= SP_MAX_EXEC_PARAMS)
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::FloatRef)
+            return false;
+
+        ForwardParam &param = m_params.at(m_currentPos++);
+        param.m_param = real;
+        param.m_copyback = copyback;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
         return false;
+    }
 
-    if (m_paramTypes.at(m_currentPos) != ParamType::FloatRef)
-        return false;
-
-    ForwardParam param;
-    param.m_param = real;
-    param.m_copyback = copyback;
-
-    m_params.at(m_currentPos++) = param;
     return true;
 }
 
@@ -85,54 +97,63 @@ bool Forward::pushArray(cell_t *array,
                         size_t size,
                         bool copyback)
 {
-    if (m_currentPos >= SP_MAX_EXEC_PARAMS)
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::Array)
+            return false;
+
+        ForwardParam &param = m_params.at(m_currentPos++);
+        param.m_param = array;
+        param.m_copyback = copyback;
+        param.m_size = size;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
         return false;
+    }
 
-    if (m_paramTypes.at(m_currentPos) != ParamType::Array)
-        return false;
-
-    ForwardParam param;
-    param.m_param = array;
-    param.m_copyback = copyback;
-    param.m_size = size;
-
-    m_params.at(m_currentPos++) = param;
     return true;
 }
 
 bool Forward::pushString(const char *string)
 {
-    if (m_currentPos >= SP_MAX_EXEC_PARAMS)
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::String)
+            return false;
+
+        ForwardParam &param = m_params.at(m_currentPos++);
+        param.m_param = string;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
         return false;
+    }
 
-    if (m_paramTypes.at(m_currentPos) != ParamType::String)
-        return false;
-
-    ForwardParam param;
-    param.m_param = string;
-
-    m_params.at(m_currentPos++) = param;
     return true;
 }
 
 bool Forward::pushStringEx(char *buffer,
                            size_t size,
-                           StringFlags sflags,
+                           IForward::StringFlags sflags,
                            bool copyback)
 {
-    if (m_currentPos >= SP_MAX_EXEC_PARAMS)
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::StringEx)
+            return false;
+
+        ForwardParam &param = m_params.at(m_currentPos++);
+        param.m_param = buffer;
+        param.m_copyback = copyback;
+        param.m_size = size;
+        param.m_stringFlags = sflags;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
         return false;
+    }
 
-    if (m_paramTypes.at(m_currentPos) != ParamType::StringEx)
-        return false;
-
-    ForwardParam param;
-    param.m_param = buffer;
-    param.m_copyback = copyback;
-    param.m_size = size;
-    param.m_stringFlags = sflags;
-
-    m_params.at(m_currentPos++) = param;
     return true;
 }
 

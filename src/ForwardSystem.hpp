@@ -81,7 +81,7 @@ public:
     bool pushString(const char *string) override;
     bool pushStringEx(char *buffer,
                         size_t length,
-                        StringFlags sflags,
+                        IForward::StringFlags sflags,
                         bool copyback) override;
     bool execFunc(cell_t *result) override;
     void resetParams() override;
