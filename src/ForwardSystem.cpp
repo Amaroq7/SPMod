@@ -302,7 +302,7 @@ IForward *ForwardMngr::createForward(const char *name,
         return nullptr;
 
     // Get passed params types
-    va_list paramsList;
+    std::va_list paramsList;
     va_start(paramsList, params);
     std::shared_ptr<Forward> createdForward = _createForwardVa(name, exec, paramsList, params);
     va_end(paramsList);
