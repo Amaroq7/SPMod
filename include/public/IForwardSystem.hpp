@@ -291,6 +291,13 @@ namespace SPMod
          */
         virtual void deleteForward(IForward *forward) = 0;
 
+        /*
+         * @brief Returns number of forwards.
+         *
+         * @return          Number of created forwards.
+         */
+        virtual size_t getForwardsNum() = 0;
+
     protected:
         virtual ~IForwardMngr() {}
     };

@@ -155,6 +155,10 @@ public:
     {
         m_forwards.erase(forward->getName());
     }
+    size_t getForwardsNum() override
+    {
+        return m_forwards.size();
+    }
 
     // ForwardMngr
     void clearForwards()
