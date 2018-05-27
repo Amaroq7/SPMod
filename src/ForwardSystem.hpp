@@ -159,6 +159,8 @@ public:
     {
         return m_forwards.size();
     }
+    const ForwardList *getForwardsList() const override;
+    void freeForwardsList(const ForwardList *list) const override;
 
     // ForwardMngr
     void clearForwards()

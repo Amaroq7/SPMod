@@ -295,6 +295,47 @@ void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
     }
 }
 
+const ForwardList *ForwardMngr::getForwardsList() const
+{
+    if (!getForwardsNum())
+        return nullptr;
+
+    auto *begin = new ForwardList;
+
+    ForwardList *list = begin;
+    for (const auto &pair : m_forwards)
+    {
+        list->forward = pair.second.get();
+        list = list->next = new ForwardList;
+    }
+    list->next = nullptr;
+
+    // Remove empty last element
+    list = begin;
+    while (list)
+    {
+        // Check if the next is last element
+        if (!list->next->next)
+        {
+            delete list->next;
+            list->next = nullptr;
+        }
+        list = list->next;
+    }
+
+    return begin;
+}
+
+void ForwardMngr::freeForwardsList(const ForwardList *list) const
+{
+    while (list)
+    {
+        const ForwardList *toDelete = list;
+        list = list->next;
+        delete toDelete;
+    }
+}
+
 IForward *ForwardMngr::createForward(const char *name,
                                      IForward::ExecType exec,
                                      size_t params,

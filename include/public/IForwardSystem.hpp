@@ -224,6 +224,15 @@ namespace SPMod
         virtual ~IForward() {}
     };
 
+    struct ForwardList
+    {
+        /* Current forward */
+        IForward *forward;
+
+        /* Next forward in the list, nullptr if there is no more forwards */
+        ForwardList *next;
+    };
+
     class IForwardMngr SPMOD_FINAL
     {
     public:
@@ -297,6 +306,23 @@ namespace SPMod
          * @return          Number of created forwards.
          */
         virtual size_t getForwardsNum() const = 0;
+
+        /*
+         * @brief Gets list of forwards.
+         *
+         * @note Static list. It is safe to remove forwards while iterating it.
+         * @note Needs to be freed using freeForwardsList().
+         *
+         * @return          Pointer to list, nullptr if there is no forwards.
+         */
+         virtual const ForwardList *getForwardsList() const = 0;
+
+        /*
+         * @brief Frees list of forwards.
+         *
+         * @noreturn
+         */
+         virtual void freeForwardsList(const ForwardList *list) const = 0;
 
     protected:
         virtual ~IForwardMngr() {}
