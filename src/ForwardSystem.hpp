@@ -1,5 +1,7 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018 SPMod Development Team
+ *
+ *  This file is part of SPMod.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,47 +23,28 @@
 
 class Plugin;
 
-class Forward final : public IForward
+/* @brief General forward used in SPMod.
+ *        It can be either SingleForward or MutliForward.
+ *        To distinguish them between them value returned from getPluginCore() needs to be checked against nullptr
+ *        if it is nullptr then Forward is MultiForward, otherwise it is SingleForward.
+ */
+class Forward : public IForward
 {
 public:
-    Forward(std::string_view name,
-            size_t id,
-            std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
-            size_t params,
-            ExecType type) : m_name(name),
-                             m_id(id),
-                             m_execType(type),
-                             m_paramTypes(paramstypes),
-                             m_plugin(std::shared_ptr<Plugin>(nullptr)),
-                             m_currentPos(0),
-                             m_paramsNum(params)
-    {}
 
-    Forward(std::string_view name,
-            size_t id,
-            std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
-            size_t params,
-            std::shared_ptr<Plugin> plugin) : m_name(name),
-                                              m_id(id),
-                                              m_execType(ExecType::Highest),
-                                              m_paramTypes(paramstypes),
-                                              m_plugin(plugin),
-                                              m_currentPos(0),
-                                              m_paramsNum(params)
-    {}
-
-    Forward() = delete;
-    ~Forward() = default;
-
-    // IForward
+    /* name of the forward */
     const char *getName() const override
     {
         return m_name.c_str();
     }
-    IPlugin *getPlugin() const override
+
+    /* id of the forward */
+    size_t getId() const override
     {
-        return reinterpret_cast<IPlugin *>(m_plugin.lock().get());
+        return m_id;
     }
+
+    /* type of parameter */
     ParamType getParamType(size_t id) const override
     {
         try
@@ -73,13 +56,63 @@ public:
             return ParamType::None;
         }
     }
+
+    /* number of parameters */
     size_t getParamsNum() const override
     {
         return m_paramsNum;
     }
-    size_t getId() const override
+
+    /* name of the forward for use across SPMod */
+    std::string_view getNameCore() const
     {
-        return m_id;
+        return m_name;
+    }
+
+    /* plugin which the function will be executed in */
+    virtual std::shared_ptr<Plugin> getPluginCore() const = 0;
+
+protected:
+
+    /* forward name */
+    std::string m_name;
+
+    /* forward id */
+    size_t m_id;
+
+    /* parameters types */
+    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> m_paramTypes;
+
+    /* number of already pushed params */
+    size_t m_currentPos;
+
+    /* number of parameters in forward */
+    size_t m_paramsNum;
+};
+
+/*
+ * @brief Forward type which is executed in every loaded plugin.
+ *        push* functions push params to cache. When calling execFunc()
+ *        function is searched in a plugin, if it is found, parameters
+ *        are read from cache and are pushed to SourcePawn::IPluginFunction.
+ */
+
+class MultiForward final : public Forward
+{
+public:
+    MultiForward(std::string_view name,
+                 size_t id,
+                 std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
+                 size_t params,
+                 ExecType type);
+
+    MultiForward() = delete;
+    ~MultiForward() = default;
+
+    // IForward
+    IPlugin *getPlugin() const override
+    {
+        return nullptr;
     }
     bool pushCell(cell_t cell) override;
     bool pushCellPtr(cell_t *cell,
@@ -99,21 +132,23 @@ public:
                       IForward::StringFlags sflags,
                       bool copyback) override;
     bool execFunc(cell_t *result) override;
-    void resetParams() override;
+    void resetParams() override
+    {
+        m_currentPos = 0;
+    }
 
     // Forward
-    std::string_view getNameCore() const
+    std::shared_ptr<Plugin> getPluginCore() const override
     {
-        return m_name;
-    }
-    std::shared_ptr<Plugin> getPluginCore() const
-    {
-        return m_plugin.lock();
+        return nullptr;
     }
 
 private:
+
+    /* helper function to push params to plugin function */
     void pushParamsToFunction(SourcePawn::IPluginFunction *func);
 
+    /* defines how parameters are stored in cache */
     struct ForwardParam
     {
         std::variant<cell_t, cell_t *, float, float *, const char *, char *> m_param;
@@ -122,15 +157,76 @@ private:
         IForward::StringFlags m_stringFlags;
     };
 
-    std::string m_name;
-    size_t m_id;
+    /* exec type of forward */
     ExecType m_execType;
-    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> m_paramTypes;
+
+    /* stores cached parameters */
     std::array<ForwardParam, SP_MAX_EXEC_PARAMS> m_params;
-    std::weak_ptr<Plugin> m_plugin;
-    size_t m_currentPos;
-    size_t m_paramsNum;
 };
+
+/*
+ * @brief Forward type which is executed in only one plugin.
+ *        push* functions work a bit different than MultiForward ones
+ *        since they push parameters directly to SourcePawn::IPluginFunction
+ *        SingleForward guarantees that the function, that is going to be executed
+ *        in the plugin, exists.
+ */
+
+class SingleForward final : public Forward
+{
+public:
+    SingleForward(std::string_view name,
+                  size_t id,
+                  std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
+                  size_t params,
+                  std::shared_ptr<Plugin> plugin);
+
+    SingleForward() = delete;
+    ~SingleForward() = default;
+
+    // IForward
+    IPlugin *getPlugin() const override
+    {
+        return reinterpret_cast<IPlugin *>(m_plugin.lock().get());
+    }
+    bool pushCell(cell_t cell) override;
+    bool pushCellPtr(cell_t *cell,
+                     bool copyback) override;
+
+    bool pushFloat(float real) override;
+    bool pushFloatPtr(float *real,
+                      bool copyback) override;
+
+    bool pushArray(cell_t *array,
+                   size_t size,
+                   bool copyback) override;
+
+    bool pushString(const char *string) override;
+    bool pushStringEx(char *buffer,
+                      size_t length,
+                      IForward::StringFlags sflags,
+                      bool copyback) override;
+    bool execFunc(cell_t *result) override;
+    void resetParams() override
+    {
+        m_pluginFunc->Cancel();
+    }
+
+    // Forward
+    std::shared_ptr<Plugin> getPluginCore() const override
+    {
+        return m_plugin.lock();
+    }
+
+private:
+
+    /* plugin which the function will be executed in */
+    std::weak_ptr<Plugin> m_plugin;
+
+    /* plugin function which will be executed */
+    SourcePawn::IPluginFunction *m_pluginFunc;
+};
+
 
 class ForwardMngr final : public IForwardMngr
 {

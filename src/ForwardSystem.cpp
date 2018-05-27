@@ -17,7 +17,20 @@
 
 #include "ForwardSystem.hpp"
 
-bool Forward::pushCell(cell_t cell)
+MultiForward::MultiForward(std::string_view name,
+                           size_t id,
+                           std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
+                           size_t params,
+                           ExecType type) : m_execType(type)
+{
+    m_name = name;
+    m_id = id;
+    m_paramTypes = paramstypes;
+    m_currentPos = 0;
+    m_paramsNum = params;
+}
+
+bool MultiForward::pushCell(cell_t cell)
 {
     try
     {
@@ -35,8 +48,8 @@ bool Forward::pushCell(cell_t cell)
     return true;
 }
 
-bool Forward::pushCellPtr(cell_t *cell,
-                          bool copyback)
+bool MultiForward::pushCellPtr(cell_t *cell,
+                               bool copyback)
 {
     try
     {
@@ -55,7 +68,7 @@ bool Forward::pushCellPtr(cell_t *cell,
     return true;
 }
 
-bool Forward::pushFloat(float real)
+bool MultiForward::pushFloat(float real)
 {
     try
     {
@@ -73,8 +86,8 @@ bool Forward::pushFloat(float real)
     return true;
 }
 
-bool Forward::pushFloatPtr(float *real,
-                           bool copyback)
+bool MultiForward::pushFloatPtr(float *real,
+                                bool copyback)
 {
     try
     {
@@ -93,9 +106,9 @@ bool Forward::pushFloatPtr(float *real,
     return true;
 }
 
-bool Forward::pushArray(cell_t *array,
-                        size_t size,
-                        bool copyback)
+bool MultiForward::pushArray(cell_t *array,
+                             size_t size,
+                             bool copyback)
 {
     try
     {
@@ -115,7 +128,7 @@ bool Forward::pushArray(cell_t *array,
     return true;
 }
 
-bool Forward::pushString(const char *string)
+bool MultiForward::pushString(const char *string)
 {
     try
     {
@@ -133,10 +146,10 @@ bool Forward::pushString(const char *string)
     return true;
 }
 
-bool Forward::pushStringEx(char *buffer,
-                           size_t size,
-                           IForward::StringFlags sflags,
-                           bool copyback)
+bool MultiForward::pushStringEx(char *buffer,
+                                size_t size,
+                                IForward::StringFlags sflags,
+                                bool copyback)
 {
     try
     {
@@ -157,77 +170,53 @@ bool Forward::pushStringEx(char *buffer,
     return true;
 }
 
-bool Forward::execFunc(cell_t *result)
+bool MultiForward::execFunc(cell_t *result)
 {
     // If passed number of passed arguments is lower then required one fail now
     // May be pushed more, but they won't be passed either way
     if (m_paramsNum > m_currentPos)
         return false;
 
-    // Forward for one plugin
-    if (std::shared_ptr<Plugin> plugin = m_plugin.lock(); plugin)
+    cell_t tempResult = 0, returnValue = 0;
+    for (const auto &pair : gSPGlobal->getPluginManagerCore()->getPluginsList())
     {
-        SourcePawn::IPluginRuntime *pluginRuntime = plugin->getRuntime();
-        SourcePawn::IPluginFunction *funcToExecute = pluginRuntime->GetFunctionByName(m_name.c_str());
+        std::shared_ptr<Plugin> plugin = pair.second;
+        SourcePawn::IPluginFunction *funcToExecute = plugin->getRuntime()->GetFunctionByName(m_name.c_str());
 
         if (!funcToExecute)
-            return false;
+            continue;
 
         // Pass params if there are any
         if (m_paramsNum)
             pushParamsToFunction(funcToExecute);
 
-        if (funcToExecute->Execute(result) != SP_ERROR_NONE)
-            return false;
-    }
-    // Forward for all plugins
-    else
-    {
-        cell_t tempResult = 0, returnValue = 0;
-        for (const auto &pair : gSPGlobal->getPluginManagerCore()->getPluginsList())
+        funcToExecute->Execute(&tempResult);
+
+        if (m_execType == ExecType::Ignore)
+            continue;
+
+        if (returnValue < tempResult)
+            returnValue = tempResult;
+
+        if (hasEnumFlag(m_execType, ExecType::Stop) && tempResult == ReturnValue::PluginStop)
         {
-            std::shared_ptr<Plugin> plugin = pair.second;
-            SourcePawn::IPluginFunction *funcToExecute = plugin->getRuntime()->GetFunctionByName(m_name.c_str());
-
-            if (!funcToExecute)
-                continue;
-
-            // Pass params if there are any
-            if (m_paramsNum)
-                pushParamsToFunction(funcToExecute);
-
-            funcToExecute->Execute(&tempResult);
-
-            if (m_execType == ExecType::Ignore)
-                continue;
-
-            if (returnValue < tempResult)
+            if (!hasEnumFlag(m_execType, ExecType::Highest))
                 returnValue = tempResult;
 
-            if (hasEnumFlag(m_execType, ExecType::Stop) && tempResult == ReturnValue::PluginStop)
-            {
-                if (!hasEnumFlag(m_execType, ExecType::Highest))
-                    returnValue = tempResult;
-
-                break;
-            }
-
+            break;
         }
-        if (m_execType != ExecType::Ignore)
-            *result = returnValue;
+
     }
+    if (m_execType != ExecType::Ignore)
+        *result = returnValue;
 
     m_currentPos = 0;
     return true;
 }
 
-void Forward::resetParams()
+void MultiForward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
 {
-    m_currentPos = 0;
-}
-
-void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
-{
+    using sflags = IForward::StringFlags;
     std::variant<cell_t, cell_t *, float, float *, const char *, char *> paramVar;
     ForwardParam paramObj;
 
@@ -274,18 +263,7 @@ void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
             case ParamType::StringEx:
             {
                 int spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
-                int spStringFlags = 0;
-                if (paramObj.m_stringFlags != StringFlags::None)
-                {
-                    if (hasEnumFlag(paramObj.m_stringFlags, StringFlags::Utf8))
-                        spStringFlags |= SM_PARAM_STRING_UTF8;
-
-                    if (hasEnumFlag(paramObj.m_stringFlags, StringFlags::Copy))
-                        spStringFlags |= SM_PARAM_STRING_COPY;
-
-                    if (hasEnumFlag(paramObj.m_stringFlags, StringFlags::Binary))
-                        spStringFlags |= SM_PARAM_STRING_BINARY;
-                }
+                auto spStringFlags = static_cast<std::underlying_type_t<sflags>>(paramObj.m_stringFlags);
 
                 func->PushStringEx(std::get<char *>(paramVar), paramObj.m_size, spStringFlags, spFlags);
             }
@@ -293,6 +271,148 @@ void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
                 break;
         }
     }
+}
+
+SingleForward::SingleForward(std::string_view name,
+                             size_t id,
+                             std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
+                             size_t params,
+                             std::shared_ptr<Plugin> plugin) : m_plugin(plugin)
+{
+    m_name = name;
+    m_id = id;
+    m_paramTypes = paramstypes;
+    m_currentPos = 0;
+    m_paramsNum = params;
+
+    m_pluginFunc = plugin->getRuntime()->GetFunctionByName(name.data());
+    if (!m_pluginFunc)
+        throw std::runtime_error("Function not found!");
+}
+
+bool SingleForward::pushCell(cell_t cell)
+{
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::Cell)
+            return false;
+
+        return m_pluginFunc->PushCell(cell) == SP_ERROR_NONE;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
+        return false;
+    }
+}
+
+bool SingleForward::pushCellPtr(cell_t *cell,
+                                bool copyback)
+{
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::CellRef)
+            return false;
+
+        return m_pluginFunc->PushCellByRef(cell, copyback ? SM_PARAM_COPYBACK : 0) == SP_ERROR_NONE;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
+        return false;
+    }
+}
+
+bool SingleForward::pushFloat(float real)
+{
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::Float)
+            return false;
+
+        return m_pluginFunc->PushFloat(real) == SP_ERROR_NONE;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
+        return false;
+    }
+}
+
+bool SingleForward::pushFloatPtr(float *real,
+                                 bool copyback)
+{
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::FloatRef)
+            return false;
+
+        return m_pluginFunc->PushFloatByRef(real, copyback ? SM_PARAM_COPYBACK : 0) == SP_ERROR_NONE;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
+        return false;
+    }
+}
+
+bool SingleForward::pushArray(cell_t *array,
+                              size_t size,
+                              bool copyback)
+{
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::Array)
+            return false;
+
+        return m_pluginFunc->PushArray(array, size, copyback ? SM_PARAM_COPYBACK : 0) == SP_ERROR_NONE;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
+        return false;
+    }
+}
+
+bool SingleForward::pushString(const char *string)
+{
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::String)
+            return false;
+
+        return m_pluginFunc->PushString(string) == SP_ERROR_NONE;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
+        return false;
+    }
+}
+
+bool SingleForward::pushStringEx(char *buffer,
+                                 size_t size,
+                                 IForward::StringFlags sflags,
+                                 bool copyback)
+{
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::StringEx)
+            return false;
+
+        auto szflags = static_cast<std::underlying_type_t<IForward::StringFlags>>(sflags);
+        return m_pluginFunc->PushStringEx(buffer, size, szflags, copyback ? SM_PARAM_COPYBACK : 0) == SP_ERROR_NONE;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool SingleForward::execFunc(cell_t *result)
+{
+    // If passed number of passed arguments is lower then required one fail now
+    // May be pushed more, but they won't be passed either way
+    if (m_paramsNum > m_currentPos)
+        return false;
+
+    return m_pluginFunc->Execute(result) == SP_ERROR_NONE;
 }
 
 const ForwardList *ForwardMngr::getForwardsList() const
@@ -458,13 +578,25 @@ std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
 
     // Global forward
     if (!plugin)
-        forward = std::make_shared<Forward>(name, id++, params, paramsnum, exec);
+        forward = std::make_shared<MultiForward>(name, id, params, paramsnum, exec);
     // Forward for one plugin
     else
-        forward = std::make_shared<Forward>(name, id++, params, paramsnum, plugin);
+    {
+        // Forward may be not found in plugin
+        try
+        {
+            forward = std::make_shared<SingleForward>(name, id, params, paramsnum, plugin);
+        }
+        catch (const std::runtime_error &e [[maybe_unused]])
+        {
+            return nullptr;
+        }
+    }
 
     if (!m_forwards.try_emplace(name.data(), forward).second)
         return nullptr;
+
+    id++;
 
     return forward;
 }
