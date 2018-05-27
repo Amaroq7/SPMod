@@ -122,19 +122,6 @@ public:
         return m_runtime;
     }
 
-    /**
-     * @brief Creates forward for plugin.
-     *
-     * @param name    Forward name.
-     * @param params  Number of paramaters in forward.
-     * @param ...     Type of parameters.
-     *
-     * @return        Forward pointer, nullptr if creation failed.
-     */
-    IForward *createForward(const char *name,
-                            size_t params,
-                            ...) const override;
-
     // Plugin
     std::string_view getNameCore() const
     {
@@ -160,17 +147,8 @@ public:
     {
         return m_filename;
     }
-    std::shared_ptr<Forward> createForwardCore(std::string_view name,
-                                               std::initializer_list<IForward::ParamType> params) const;
 
 private:
-    std::shared_ptr<Forward> _createForwardVa(std::string_view name,
-                                              std::va_list paramsList,
-                                              size_t paramsnum) const;
-    std::shared_ptr<Forward> _createForward(std::string_view name,
-                                            std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramlist,
-                                            size_t paramsnum) const;
-
     SourcePawn::IPluginRuntime *m_runtime;
     std::string m_identity;
     std::string m_filename;

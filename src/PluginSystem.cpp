@@ -81,61 +81,6 @@ Plugin::Plugin(size_t id,
     }
 }
 
-IForward *Plugin::createForward(const char *name,
-                                size_t params,
-                                ...) const
-{
-    if (params > SP_MAX_EXEC_PARAMS)
-        return nullptr;
-
-    // Get passed params types
-    std::va_list paramsList;
-    va_start(paramsList, params);
-    auto createdForward = _createForwardVa(name, paramsList, params);
-    va_end(paramsList);
-
-    return createdForward.get();
-}
-
-std::shared_ptr<Forward> Plugin::_createForwardVa(std::string_view name,
-                                                  std::va_list paramsList,
-                                                  size_t paramsnum) const
-{
-    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
-
-    for (size_t i = 0; i < paramsnum; ++i)
-        forwardParams.at(i) = static_cast<Forward::ParamType>(va_arg(paramsList, int));
-
-    return _createForward(name, forwardParams, paramsnum);
-}
-
-std::shared_ptr<Forward> Plugin::createForwardCore(std::string_view name,
-                                                   std::initializer_list<IForward::ParamType> params) const
-{
-    size_t paramsNum = params.size();
-
-    if (paramsNum > SP_MAX_EXEC_PARAMS)
-        return nullptr;
-
-    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
-    std::copy(params.begin(), params.end(), forwardParams.begin());
-
-    return _createForward(name, forwardParams, paramsNum);
-}
-
-std::shared_ptr<Forward> Plugin::_createForward(std::string_view name,
-                                                std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramlist,
-                                                size_t paramsnum) const
-{
-    std::shared_ptr<Plugin> plugin = gSPGlobal->getPluginManagerCore()->getPluginCore(m_identity);
-    auto forward = std::make_shared<Forward>(name, paramlist, paramsnum, plugin);
-
-    if (!gSPGlobal->getForwardManagerCore()->addForward(forward))
-        return nullptr;
-
-    return forward;
-}
-
 std::shared_ptr<Plugin> PluginMngr::getPluginCore(std::string_view name)
 {
     auto result = m_plugins.find(name.data());

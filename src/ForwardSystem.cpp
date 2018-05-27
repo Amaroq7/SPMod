@@ -184,9 +184,9 @@ bool Forward::execFunc(cell_t *result)
     else
     {
         cell_t tempResult = 0, returnValue = 0;
-        for (const auto &entry : gSPGlobal->getPluginManagerCore()->getPluginsList())
+        for (const auto &pair : gSPGlobal->getPluginManagerCore()->getPluginsList())
         {
-            std::shared_ptr<Plugin> plugin = entry.second;
+            std::shared_ptr<Plugin> plugin = pair.second;
             SourcePawn::IPluginFunction *funcToExecute = plugin->getRuntime()->GetFunctionByName(m_name.c_str());
 
             if (!funcToExecute)
@@ -289,6 +289,8 @@ void Forward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
 
                 func->PushStringEx(std::get<char *>(paramVar), paramObj.m_size, spStringFlags, spFlags);
             }
+            default:
+                break;
         }
     }
 }
@@ -310,142 +312,115 @@ IForward *ForwardMngr::createForward(const char *name,
     return createdForward.get();
 }
 
+IForward *ForwardMngr::createForward(const char *name,
+                                     IPlugin *plugin,
+                                     size_t params,
+                                     ...)
+{
+    using et = IForward::ExecType;
+
+    if (params > SP_MAX_EXEC_PARAMS)
+        return nullptr;
+
+    // Get passed params types
+    std::va_list paramsList;
+    va_start(paramsList, params);
+    std::shared_ptr<Forward> createdForward = _createForwardVa(name, et::Ignore, paramsList, params, plugin);
+    va_end(paramsList);
+
+    return createdForward.get();
+}
+
 IForward *ForwardMngr::findForward(const char *name) const
 {
     return findForwardCore(name).get();
 }
 
+IForward *ForwardMngr::findForward(size_t id) const
+{
+    return findForwardCore(id).get();
+}
+
 std::shared_ptr<Forward> ForwardMngr::findForwardCore(std::string_view name) const
 {
-    auto iter = m_forwards.find(name.data());
+    auto pair = m_forwards.find(name.data());
 
-    if (iter != m_forwards.end())
-        return iter->second;
+    if (pair != m_forwards.end())
+        return pair->second;
 
     return nullptr;
 }
 
-std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
-                                                        IForward::ExecType exec,
-                                                        std::initializer_list<IForward::ParamType> params)
+std::shared_ptr<Forward> ForwardMngr::findForwardCore(size_t id) const
 {
-    size_t paramsNum = params.size();
-
-    if (paramsNum > SP_MAX_EXEC_PARAMS)
-        return nullptr;
-
-    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
-    std::copy(params.begin(), params.end(), forwardParams.begin());
-
-    return _createForward(name, exec, forwardParams, paramsNum);
-}
-
-size_t ForwardMngr::getParamSize(size_t id)
-{
-    try
+    for (auto pair = m_forwards.begin(); pair != m_forwards.end(); pair++)
     {
-        return m_preparedParams.at(id).m_size;
-    }
-    catch (const std::out_of_range &e [[maybe_unused]])
-    {
-        return 0;
-    }
-}
-
-bool ForwardMngr::getParamCb(size_t id)
-{
-    try
-    {
-        return m_preparedParams.at(id).m_copyback;
-    }
-    catch (const std::out_of_range &e [[maybe_unused]])
-    {
-        return false;
-    }
-}
-
-IForward::StringFlags ForwardMngr::getParamSf(size_t id)
-{
-    try
-    {
-        return m_preparedParams.at(id).m_sflags;
-    }
-    catch (const std::out_of_range &e [[maybe_unused]])
-    {
-        return IForward::StringFlags::None;
-    }
-}
-
-std::optional<size_t> ForwardMngr::addParam(std::any param,
-                                            size_t size,
-                                            bool copyback,
-                                            IForward::StringFlags sflags)
-{
-    if (!param.has_value() || m_preparedParamsNum >= SP_MAX_EXEC_PARAMS)
-        return std::nullopt;
-
-    PreparedParam preparedParam;
-    // Check for cell_t array first
-    try
-    {
-        preparedParam.m_param = std::any_cast<cell_t *>(param);
-    }
-    catch (const std::bad_any_cast &e [[maybe_unused]])
-    {
-        // If fails get string array
-        preparedParam.m_param = std::any_cast<char *>(param);
+        if (pair->second->getId() == id)
+            return pair->second;
     }
 
-    preparedParam.m_size = size;
-    preparedParam.m_copyback = copyback;
-    preparedParam.m_sflags = sflags;
-
-    m_preparedParams.at(m_preparedParamsNum++) = preparedParam;
-
-    return m_preparedParamsNum - 1;
+    return nullptr;
 }
 
 void ForwardMngr::addDefaultsForwards()
 {
     using et = IForward::ExecType;
     using param = IForward::ParamType;
-    std::initializer_list<IForward::ParamType> paramsList;
+    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramsList;
 
     paramsList = { param::Cell, param::String, param::String, param::StringEx };
-    createForwardCore("OnClientConnect", et::Stop, paramsList);
+    createForwardCore("OnClientConnect", et::Stop, paramsList, 4);
 
     paramsList = { param::Cell, param::Cell, param::String };
-    createForwardCore("OnClientDisconnect", et::Ignore, paramsList);
+    createForwardCore("OnClientDisconnect", et::Ignore, paramsList, 3);
 
     paramsList = { param::String, param::String, param::String, param::Float };
-    createForwardCore("OnCvarChange", et::Ignore, paramsList);
+    createForwardCore("OnCvarChange", et::Ignore, paramsList, 4);
 
     paramsList = { };
-    createForwardCore("OnPluginsLoaded", et::Ignore, paramsList);
-    createForwardCore("OnPluginInit", et::Ignore, paramsList);
-    createForwardCore("OnPluginEnd", et::Ignore, paramsList);
-    createForwardCore("OnPluginNatives", et::Ignore, paramsList);
+    createForwardCore("OnPluginsLoaded", et::Ignore, paramsList, 0);
+    createForwardCore("OnPluginInit", et::Ignore, paramsList, 0);
+    createForwardCore("OnPluginEnd", et::Ignore, paramsList, 0);
+    createForwardCore("OnPluginNatives", et::Ignore, paramsList, 0);
 }
 
 std::shared_ptr<Forward> ForwardMngr::_createForwardVa(std::string_view name,
                                                        IForward::ExecType exec,
                                                        std::va_list params,
-                                                       size_t paramsnum)
+                                                       size_t paramsnum,
+                                                       IPlugin *plugin)
 {
     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
 
     for (size_t i = 0; i < paramsnum; ++i)
         forwardParams.at(i) = static_cast<IForward::ParamType>(va_arg(params, int));
 
-    return _createForward(name, exec, forwardParams, paramsnum);
+    // Find shared_ptr
+    std::shared_ptr<Plugin> sharedPlugin;
+    if (plugin)
+    {
+        const std::unique_ptr<PluginMngr> &plMngr = gSPGlobal->getPluginManagerCore();
+        sharedPlugin = plMngr->getPluginCore(plugin->getIndentity());
+    }
+
+    return createForwardCore(name, exec, forwardParams, paramsnum, sharedPlugin);
 }
 
-std::shared_ptr<Forward> ForwardMngr::_createForward(std::string_view name,
-                                                     IForward::ExecType exec,
-                                                     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> params,
-                                                     size_t paramsnum)
+std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
+                                                        IForward::ExecType exec,
+                                                        std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> params,
+                                                        size_t paramsnum,
+                                                        std::shared_ptr<Plugin> plugin)
 {
-    auto forward = std::make_shared<Forward>(name, params, paramsnum, exec);
+    static size_t id = 0;
+    std::shared_ptr<Forward> forward;
+
+    // Global forward
+    if (!plugin)
+        forward = std::make_shared<Forward>(name, id++, params, paramsnum, exec);
+    // Forward for one plugin
+    else
+        forward = std::make_shared<Forward>(name, id++, params, paramsnum, plugin);
 
     if (!m_forwards.try_emplace(name.data(), forward).second)
         return nullptr;

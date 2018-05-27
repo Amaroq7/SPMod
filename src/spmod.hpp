@@ -59,8 +59,6 @@
 #include <variant>
 #include <string_view>
 #include <fstream>
-#include <any>
-#include <optional>
 
 // As of GCC 8.1 filesystem is no longer part of experimental
 #if __has_include(<filesystem>)

@@ -19,6 +19,7 @@
 
 namespace SPMod
 {
+    class IModuleInterface;
     class INative
     {
     public:

@@ -118,17 +118,21 @@ static cell_t core_copyString(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-// native bool createForward(const char[] name, ExecType exectype, ...)
+// native int createForward(const char[] name, ExecType exectype, ForwardParams ...)
 static cell_t core_createForward(SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
+                                 const cell_t *params)
 {
     char *fwdName;
     auto execType = static_cast<IForward::ExecType>(params[2]);
-    auto &fwdManager = gSPGlobal->getForwardManagerCore();
+    const std::unique_ptr<ForwardMngr> &fwdManager = gSPGlobal->getForwardManagerCore();
 
     ctx->LocalToString(params[1], &fwdName);
 
     size_t fwdParamsNum = params[0] - 2;
+
+    if (fwdParamsNum >= SP_MAX_EXEC_PARAMS)
+        return -1;
+
     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> fwdParamsList;
 
     for (size_t i = 0; i < fwdParamsNum; ++i)
@@ -138,164 +142,186 @@ static cell_t core_createForward(SourcePawn::IPluginContext *ctx,
         fwdParamsList.at(i) = static_cast<IForward::ParamType>(*paramType);
     }
 
-    auto plForward = std::make_shared<Forward>(fwdName,
-                                               fwdParamsList,
-                                               fwdParamsNum,
-                                               execType);
+    std::shared_ptr<Forward> plForward = fwdManager->createForwardCore(fwdName, execType, fwdParamsList, fwdParamsNum);
 
     if (!plForward)
-    {
-        ctx->ReportErrorNumber(SP_ERROR_OUT_OF_MEMORY);
         return 0;
-    }
 
-    return fwdManager->addForward(plForward);
+    return plForward->getId();
 }
 
-struct FloatFromNative
+// native bool core_pushStart(int forward_id)
+static cell_t core_pushStart(SourcePawn::IPluginContext *ctx,
+                             const cell_t *params)
 {
-    FloatFromNative(float val, size_t param) : m_realVal(val), m_param(param) { }
-    float m_realVal;
-    size_t m_param;
-};
+    if (ForwardMngr::m_currentForward)
+    {
+        ctx->ReportError("Cannot start another call!");
+        return 0;
+    }
 
-// native bool executeForward(const char[] name, int &result = 0, ...)
-static cell_t core_executeForward(SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
+    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->findForwardCore(params[1]);
+
+    if (!forward)
+        return 0;
+
+    ForwardMngr::m_currentForward = forward;
+    return 1;
+}
+
+// native bool pushCell(any value)
+static cell_t core_pushCell(SourcePawn::IPluginContext *ctx,
+                            const cell_t *params)
 {
-    using ptype = IForward::ParamType;
-    char *fwdName;
+    if (!ForwardMngr::m_currentForward)
+    {
+        ctx->ReportError("Function calling was not started!");
+        return 0;
+    }
+
+    return ForwardMngr::m_currentForward->pushCell(params[1]);
+}
+
+// native bool pushCellRef(any &cell)
+static cell_t core_pushCellRef(SourcePawn::IPluginContext *ctx,
+                               const cell_t *params)
+{
+    if (!ForwardMngr::m_currentForward)
+    {
+        ctx->ReportError("Function calling was not started!");
+        return 0;
+    }
+
+    cell_t *value;
+    ctx->LocalToPhysAddr(params[1], &value);
+    return ForwardMngr::m_currentForward->pushCellPtr(value, true);
+}
+
+// native bool pushFloat(float real)
+static cell_t core_pushFloat(SourcePawn::IPluginContext *ctx,
+                             const cell_t *params)
+{
+    if (!ForwardMngr::m_currentForward)
+    {
+        ctx->ReportError("Function calling was not started!");
+        return 0;
+    }
+
+    return ForwardMngr::m_currentForward->pushFloat(sp_ctof(params[1]));
+}
+
+// native bool pushFloatRef(float &real)
+static cell_t core_pushFloatRef(SourcePawn::IPluginContext *ctx,
+                                const cell_t *params)
+{
+    if (!ForwardMngr::m_currentForward)
+    {
+        ctx->ReportError("Function calling was not started!");
+        return 0;
+    }
+
+    cell_t *real;
+    ctx->LocalToPhysAddr(params[1], &real);
+    return ForwardMngr::m_currentForward->pushFloatPtr(*reinterpret_cast<float **>(&real), true);
+}
+
+// native bool pushString(const char[] string)
+static cell_t core_pushString(SourcePawn::IPluginContext *ctx,
+                              const cell_t *params)
+{
+    if (!ForwardMngr::m_currentForward)
+    {
+        ctx->ReportError("Function calling was not started!");
+        return 0;
+    }
+
+    char *string;
+    ctx->LocalToString(params[1], &string);
+    return ForwardMngr::m_currentForward->pushString(string);
+}
+
+// native bool pushArray(const any[] array, int size)
+static cell_t core_pushArray(SourcePawn::IPluginContext *ctx,
+                             const cell_t *params)
+{
+    if (!ForwardMngr::m_currentForward)
+    {
+        ctx->ReportError("Function calling was not started!");
+        return 0;
+    }
+
+    cell_t *array;
+    ctx->LocalToPhysAddr(params[1], &array);
+    return ForwardMngr::m_currentForward->pushArray(array, params[2], false);
+}
+
+// native bool pushStringEx(char[] string, int size, int sflags, int cpflags)
+static cell_t core_pushStringEx(SourcePawn::IPluginContext *ctx,
+                                const cell_t *params)
+{
+    if (!ForwardMngr::m_currentForward)
+    {
+        ctx->ReportError("Function calling was not started!");
+        return 0;
+    }
+
+    char *string;
+    ctx->LocalToString(params[1], &string);
+    auto sflags = static_cast<IForward::StringFlags>(params[3]);
+    return ForwardMngr::m_currentForward->pushStringEx(string, params[2], sflags, params[4]);
+}
+
+// native bool pushArrayEx(any[] array, int size, int cpflags)
+static cell_t core_pushArrayEx(SourcePawn::IPluginContext *ctx,
+                               const cell_t *params)
+{
+    if (!ForwardMngr::m_currentForward)
+    {
+        ctx->ReportError("Function calling was not started!");
+        return 0;
+    }
+
+    cell_t *array;
+    ctx->LocalToPhysAddr(params[1], &array);
+    return ForwardMngr::m_currentForward->pushArray(array, params[2], params[3]);
+}
+
+// native bool pushFinish(any &result = 0)
+static cell_t core_pushFinish(SourcePawn::IPluginContext *ctx,
+                              const cell_t *params)
+{
+    if (!ForwardMngr::m_currentForward)
+    {
+        ctx->ReportError("Function calling was not started!");
+        return 0;
+    }
+
     cell_t *retResult;
-    const std::unique_ptr<ForwardMngr> &fwdManager = gSPGlobal->getForwardManagerCore();
+    ctx->LocalToPhysAddr(params[1], &retResult);
 
-    ctx->LocalToString(params[1], &fwdName);
-    ctx->LocalToPhysAddr(params[2], &retResult);
+    bool result = ForwardMngr::m_currentForward->execFunc(retResult);
 
-    std::shared_ptr<Forward> fwdToExecute = fwdManager->findForwardCore(fwdName);
-    if (!fwdToExecute)
-    {
-        fwdManager->resetPreparedParams();
-        return 0;
-    }
-
-    size_t fwdParamsPassed = params[0] - 2;
-    if (fwdParamsPassed < fwdToExecute->getParamsNum())
-    {
-        fwdManager->resetPreparedParams();
-        return 0;
-    }
-
-    size_t floatValues = 0;
-    std::array<std::shared_ptr<FloatFromNative>, SP_MAX_EXEC_PARAMS> floatsToCopyBack;
-
-    size_t fwdParamsNum = fwdToExecute->getParamsNum();
-    cell_t *paramToPass;
-    for (size_t i = 3; i < fwdParamsNum + 3; ++i)
-    {
-        ptype paramType = fwdToExecute->getParamType(i);
-        if (paramType == ptype::Cell)
-        {
-            ctx->LocalToPhysAddr(params[i], &paramToPass);
-            fwdToExecute->pushCell(*paramToPass);
-        }
-        else if (paramType == ptype::CellRef)
-        {
-            ctx->LocalToPhysAddr(params[i], &paramToPass);
-            fwdToExecute->pushCellPtr(paramToPass, true);
-        }
-        else if (paramType == ptype::Float)
-        {
-            ctx->LocalToPhysAddr(params[i], &paramToPass);
-            fwdToExecute->pushFloat(sp_ctof(*paramToPass));
-        }
-        else if (paramType == ptype::FloatRef)
-        {
-            ctx->LocalToPhysAddr(params[i], &paramToPass);
-            auto floatStr = std::make_shared<FloatFromNative>(sp_ctof(*paramToPass), i);
-
-            fwdToExecute->pushFloatPtr(&floatStr->m_realVal, true);
-
-            floatsToCopyBack.at(floatValues++) = floatStr;
-        }
-        else if (paramType == ptype::Array)
-        {
-            ctx->LocalToPhysAddr(params[i], &paramToPass);
-            auto param = fwdManager->getParam<cell_t *>(*paramToPass);
-            if (!param.has_value())
-            {
-                fwdManager->resetPreparedParams();
-                fwdToExecute->resetParams();
-                ctx->ReportError("Passed argument is not prepared array! %d", i);
-                return 0;
-            }
-
-            fwdToExecute->pushArray(*param, fwdManager->getParamSize(*paramToPass),
-                                            fwdManager->getParamCb(*paramToPass));
-
-        }
-        else if (paramType == ptype::String)
-        {
-            char *strToPass;
-            ctx->LocalToString(params[i], &strToPass);
-            fwdToExecute->pushString(strToPass);
-        }
-        else if (paramType == ptype::StringEx)
-        {
-            ctx->LocalToPhysAddr(params[i], &paramToPass);
-            auto param = fwdManager->getParam<char *>(*paramToPass);
-            if (!param.has_value())
-            {
-                fwdManager->resetPreparedParams();
-                fwdToExecute->resetParams();
-                ctx->ReportError("Passed argument is not prepared string! %d", i);
-                return 0;
-            }
-
-            fwdToExecute->pushStringEx(*param,
-                                        fwdManager->getParamSize(*paramToPass),
-                                        fwdManager->getParamSf(*paramToPass),
-                                        fwdManager->getParamCb(*paramToPass));
-        }
-    }
-
-    fwdManager->resetPreparedParams();
-    bool result = fwdToExecute->execFunc(retResult);
-
-    // Copyback float values
-    for (size_t i = 0; i < floatValues; ++i)
-    {
-        std::shared_ptr<FloatFromNative> floatStr = floatsToCopyBack.at(i);
-        ctx->LocalToPhysAddr(params[floatStr->m_param], &paramToPass);
-        *paramToPass = sp_ftoc(floatStr->m_realVal);
-    }
+    // Only set to null if call succeed
+    if (result)
+        ForwardMngr::m_currentForward = nullptr;
 
     return result;
 }
 
-// native int prepareFwdArray(int[] array, int size, bool copyback)
-static cell_t core_prepareFwdArray(SourcePawn::IPluginContext *ctx,
-                                        const cell_t *params)
+// native void pushCancel()
+static cell_t core_pushCancel(SourcePawn::IPluginContext *ctx,
+                              const cell_t *params)
 {
-    cell_t *arrayForFwd;
-    auto &fwdManager = gSPGlobal->getForwardManagerCore();
+    if (!ForwardMngr::m_currentForward)
+    {
+        ctx->ReportError("Function calling was not started!");
+        return 0;
+    }
 
-    ctx->LocalToPhysAddr(params[1], &arrayForFwd);
-    auto id = fwdManager->addParam(arrayForFwd, params[2], params[3], IForward::StringFlags::None);
+    ForwardMngr::m_currentForward->resetParams();
+    ForwardMngr::m_currentForward = nullptr;
 
-    return id.has_value() ? *id : -1;
-}
-
-// native int prepareFwdString(char[] array, int size, bool copyback, int stringflags)
-static cell_t core_prepareFwdString(SourcePawn::IPluginContext *ctx,
-                                        const cell_t *params)
-{
-    char *arrayForFwd;
-    auto &fwdManager = gSPGlobal->getForwardManagerCore();
-
-    ctx->LocalToString(params[1], &arrayForFwd);
-    auto id = fwdManager->addParam(arrayForFwd, params[2], params[3], static_cast<IForward::StringFlags>(params[4]));
-
-    return id.has_value() ? *id : -1;
+    return 1;
 }
 
 // native bool nativeRegister(const char[] name, PluginNative func)
@@ -487,9 +513,17 @@ sp_nativeinfo_t gCoreNatives[] =
     { "realToString",       core_realToString       },
     { "copyString",         core_copyString         },
     { "createForward",      core_createForward      },
-    { "executeForward",     core_executeForward     },
-    { "prepareFwdArray",    core_prepareFwdArray    },
-    { "prepareFwdString",   core_prepareFwdString   },
+    { "pushStart",          core_pushStart          },
+    { "pushCell",           core_pushCell           },
+    { "pushCellRef",        core_pushCellRef        },
+    { "pushFloat",          core_pushFloat          },
+    { "pushFloatRef",       core_pushFloatRef       },
+    { "pushString",         core_pushString         },
+    { "pushArray",          core_pushArray          },
+    { "pushStringEx",       core_pushStringEx       },
+    { "pushArrayEx",        core_pushArrayEx        },
+    { "pushFinish",         core_pushFinish         },
+    { "pushCancel",         core_pushCancel         },
     { "nativeRegister",     core_nativeRegister     },
     { "nativeGetCell",      core_nativeGetCell      },
     { "nativeGetCellRef",   core_nativeGetCellRef   },

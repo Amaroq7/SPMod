@@ -25,9 +25,11 @@ class Forward final : public IForward
 {
 public:
     Forward(std::string_view name,
+            size_t id,
             std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
             size_t params,
             ExecType type) : m_name(name),
+                             m_id(id),
                              m_execType(type),
                              m_paramTypes(paramstypes),
                              m_plugin(std::shared_ptr<Plugin>(nullptr)),
@@ -36,9 +38,11 @@ public:
     {}
 
     Forward(std::string_view name,
+            size_t id,
             std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
             size_t params,
             std::shared_ptr<Plugin> plugin) : m_name(name),
+                                              m_id(id),
                                               m_execType(ExecType::Highest),
                                               m_paramTypes(paramstypes),
                                               m_plugin(plugin),
@@ -60,29 +64,40 @@ public:
     }
     ParamType getParamType(size_t id) const override
     {
-        return m_paramTypes.at(id);
+        try
+        {
+            return m_paramTypes.at(id);
+        }
+        catch (const std::out_of_range &e [[maybe_unused]])
+        {
+            return ParamType::None;
+        }
     }
     size_t getParamsNum() const override
     {
         return m_paramsNum;
     }
+    size_t getId() const override
+    {
+        return m_id;
+    }
     bool pushCell(cell_t cell) override;
     bool pushCellPtr(cell_t *cell,
-                        bool copyback) override;
+                     bool copyback) override;
 
     bool pushFloat(float real) override;
     bool pushFloatPtr(float *real,
-                        bool copyback) override;
+                      bool copyback) override;
 
     bool pushArray(cell_t *array,
-                        size_t size,
-                        bool copyback) override;
+                   size_t size,
+                   bool copyback) override;
 
     bool pushString(const char *string) override;
     bool pushStringEx(char *buffer,
-                        size_t length,
-                        IForward::StringFlags sflags,
-                        bool copyback) override;
+                      size_t length,
+                      IForward::StringFlags sflags,
+                      bool copyback) override;
     bool execFunc(cell_t *result) override;
     void resetParams() override;
 
@@ -95,7 +110,6 @@ public:
     {
         return m_plugin.lock();
     }
-    std::shared_ptr<Plugin> getOwnerPluginCore() const;
 
 private:
     void pushParamsToFunction(SourcePawn::IPluginFunction *func);
@@ -109,6 +123,7 @@ private:
     };
 
     std::string m_name;
+    size_t m_id;
     ExecType m_execType;
     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> m_paramTypes;
     std::array<ForwardParam, SP_MAX_EXEC_PARAMS> m_params;
@@ -120,8 +135,7 @@ private:
 class ForwardMngr final : public IForwardMngr
 {
 public:
-    ForwardMngr() : m_preparedParamsNum(0)
-    {}
+    ForwardMngr() = default;
     ~ForwardMngr() = default;
 
     // IForwardMngr
@@ -130,35 +144,19 @@ public:
                             size_t params,
                             ...) override;
 
+    IForward *createForward(const char *name,
+                            IPlugin *plugin,
+                            size_t params,
+                            ...) override;
+
     IForward *findForward(const char *name) const override;
+    IForward *findForward(size_t id) const override;
+    void deleteForward(IForward *forward) override
+    {
+        m_forwards.erase(forward->getName());
+    }
 
     // ForwardMngr
-
-    bool addForward(std::shared_ptr<Forward> forward)
-    {
-        return m_forwards.try_emplace(forward->getNameCore().data(), forward).second;
-    }
-
-    void resetPreparedParams()
-    {
-        m_preparedParamsNum = 0;
-    }
-
-    template<typename T>
-    std::optional<T> getParam(size_t id)
-    {
-        T result;
-        try
-        {
-            result = std::get<T>(m_preparedParams.at(id).m_param);
-        }
-        catch(const std::exception &e [[maybe_unused]])
-        {
-            return std::nullopt;
-        }
-        return result;
-    }
-
     void clearForwards()
     {
         m_forwards.clear();
@@ -166,45 +164,25 @@ public:
 
     void addDefaultsForwards();
 
-    size_t getParamSize(size_t id);
-
-    bool getParamCb(size_t id);
-
-    IForward::StringFlags getParamSf(size_t id);
-
-    std::optional<size_t> addParam(std::any param,
-                                   size_t size,
-                                   bool copyback,
-                                   IForward::StringFlags sflags);
-
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
                                                IForward::ExecType exec,
-                                               std::initializer_list<IForward::ParamType> params);
+                                               std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> params,
+                                               size_t paramsnum,
+                                               std::shared_ptr<Plugin> plugin = nullptr);
 
     std::shared_ptr<Forward> findForwardCore(std::string_view name) const;
+    std::shared_ptr<Forward> findForwardCore(size_t id) const;
+
+    // Plugin only
+    // Current forward which parameters are being pushed to
+    static inline std::shared_ptr<Forward> m_currentForward;
 
 private:
-    // Plugin use-only
-    // Struct for stringex and arrays
-    struct PreparedParam
-    {
-        std::variant<cell_t *, char *> m_param;
-        size_t m_size;
-        bool m_copyback;
-        IForward::StringFlags m_sflags;
-    };
-
     std::shared_ptr<Forward> _createForwardVa(std::string_view name,
                                               IForward::ExecType exec,
-                                              va_list params,
-                                              size_t paramsnum);
+                                              std::va_list params,
+                                              size_t paramsnum,
+                                              IPlugin *plugin = nullptr);
 
-    std::shared_ptr<Forward> _createForward(std::string_view name,
-                                            IForward::ExecType exec,
-                                            std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> params,
-                                            size_t paramsnum);
-
-    size_t m_preparedParamsNum;
-    std::array<PreparedParam, SP_MAX_EXEC_PARAMS> m_preparedParams;
     std::unordered_map<std::string, std::shared_ptr<Forward>> m_forwards;
 };

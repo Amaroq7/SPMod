@@ -82,19 +82,6 @@ namespace SPMod
          */
         virtual SourcePawn::IPluginRuntime *getRuntime() const = 0;
 
-        /**
-         * @brief Creates forward for plugin.
-         *
-         * @param name    Forward name.
-         * @param params  Number of paramaters in forward.
-         * @param ...     Type of parameters.
-         *
-         * @return        Forward pointer, nullptr if creation failed.
-         */
-        virtual IForward *createForward(const char *name,
-                                        size_t params,
-                                        ...) const = 0;
-
     protected:
         virtual ~IPlugin() {};
     };
