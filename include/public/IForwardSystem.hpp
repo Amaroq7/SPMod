@@ -296,7 +296,7 @@ namespace SPMod
          *
          * @return          Number of created forwards.
          */
-        virtual size_t getForwardsNum() = 0;
+        virtual size_t getForwardsNum() const = 0;
 
     protected:
         virtual ~IForwardMngr() {}

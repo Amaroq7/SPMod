@@ -155,7 +155,7 @@ public:
     {
         m_forwards.erase(forward->getName());
     }
-    size_t getForwardsNum() override
+    size_t getForwardsNum() const override
     {
         return m_forwards.size();
     }
