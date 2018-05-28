@@ -45,22 +45,21 @@ std::shared_ptr<Native> NativeMngr::getNativeCore(std::string_view name) const
     return nullptr;
 }
 
-bool NativeMngr::addNatives(IModuleInterface *interface)
+bool NativeMngr::addNatives(IModuleInterface *interface, const sp_nativeinfo_t *nativeslist)
 {
     //TODO: Error reporting?
     if (interface->getInterfaceVersion() > SPMOD_API_VERSION)
         return false;
 
     const char *moduleName = interface->getName();
-    const sp_nativeinfo_t *nativelist = interface->getNatives();
-    while (nativelist->name && nativelist->func)
+    while (nativeslist->name && nativeslist->func)
     {
-        auto nativeData = std::make_shared<Native>(moduleName, nativelist);
+        auto nativeData = std::make_shared<Native>(moduleName, nativeslist);
 
-        if (!m_natives.try_emplace(nativelist->name, std::move(nativeData)).second)
+        if (!m_natives.try_emplace(nativeslist->name, std::move(nativeData)).second)
             return false;
 
-        nativelist++;
+        nativeslist++;
     }
 
     return true;

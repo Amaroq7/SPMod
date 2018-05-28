@@ -35,8 +35,9 @@ SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_p
     // Initialize SourcePawn library
     _initSourcePawn();
 
-    // Add definition of core module
-    m_nativeManager->addNatives(gSPModModuleDef.get());
+    // Add definition spmod natives
+    m_nativeManager->addNatives(gSPModModuleDef.get(), gCoreNatives);
+    m_nativeManager->addNatives(gSPModModuleDef.get(), gCvarsNatives);
 
     // Sets up listener for debbugging
     getSPEnvironment()->APIv2()->SetDebugListener(m_loggingSystem.get());

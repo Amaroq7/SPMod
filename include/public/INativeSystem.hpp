@@ -1,5 +1,7 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018 SPMod Development Team
+ *
+ *  This file is part of SPMod.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -59,11 +61,12 @@ namespace SPMod
          * @note               If native in list is already registered further natives will not be registered
          *                     and function returns false.
          *
-         * @param interface    Pointer to module interface
+         * @param interface    Pointer to module interface.
+         * @param nativeslist  Natives list to add.
          *
          * @return             True if all natives has been registered successfully, false otherwise.
          */
-        virtual bool addNatives(IModuleInterface *interface) = 0;
+        virtual bool addNatives(IModuleInterface *interface, const sp_nativeinfo_t *nativeslist) = 0;
 
         /**
          * @brief Returns native.

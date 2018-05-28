@@ -146,16 +146,6 @@ namespace SPMod
         }
 
         /**
-         * @brief Returns list of module natives.
-         *
-         * @return        List of natives.
-         */
-        virtual const sp_nativeinfo_t *getNatives() const
-        {
-            return m_natives;
-        }
-
-        /**
          * @brief Returns name of the module.
          *
          * @note        Must be implemented.
@@ -165,8 +155,6 @@ namespace SPMod
         virtual const char *getName() const = 0;
 
     protected:
-        virtual ~IModuleInterface() { }
-
-        sp_nativeinfo_t *m_natives;
+        virtual ~IModuleInterface() {}
     };
 }

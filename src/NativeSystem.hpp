@@ -69,7 +69,7 @@ public:
      *
      * @note          If nullptr then native was added by module.
      *
-     * @return        Owner identity.
+     * @return        Function pointer.
      */
     SourcePawn::IPluginFunction *getFunc() const override
     {
@@ -108,7 +108,7 @@ public:
 
     // INativeMngr
 
-    bool addNatives(IModuleInterface *interface) override;
+    bool addNatives(IModuleInterface *interface, const sp_nativeinfo_t *nativeslist) override;
     INative *getNative(const char *name) const override
     {
         return getNativeCore(name).get();

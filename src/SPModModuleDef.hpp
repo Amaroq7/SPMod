@@ -22,13 +22,8 @@
 class SPModModule final : public IModuleInterface
 {
 public:
-    SPModModule() = delete;
+    SPModModule() = default;
     ~SPModModule() = default;
-
-    SPModModule(sp_nativeinfo_t *natives)
-    {
-        this->m_natives = natives;
-    }
 
     const char *getName() const override
     {

@@ -69,7 +69,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
     gpGamedllFuncs = pGamedllFuncs;
 
     // Has to be created before global object
-    gSPModModuleDef = std::make_unique<SPModModule>(gCoreNatives);
+    gSPModModuleDef = std::make_unique<SPModModule>();
 
     try
     {
