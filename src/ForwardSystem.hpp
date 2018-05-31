@@ -275,10 +275,6 @@ public:
     std::shared_ptr<Forward> findForwardCore(std::string_view name) const;
     std::shared_ptr<Forward> findForwardCore(size_t id) const;
 
-    // Plugin only
-    // Current forward which parameters are being pushed to
-    static inline std::shared_ptr<Forward> m_currentForward;
-
 private:
     std::shared_ptr<Forward> _createForwardVa(std::string_view name,
                                               IForward::ExecType exec,
