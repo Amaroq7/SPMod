@@ -39,6 +39,7 @@ SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_p
     m_nativeManager->addNatives(gSPModModuleDef.get(), gCoreNatives);
     m_nativeManager->addNatives(gSPModModuleDef.get(), gCvarsNatives);
     m_nativeManager->addNatives(gSPModModuleDef.get(), gForwardsNatives);
+    m_nativeManager->addNatives(gSPModModuleDef.get(), gStringNatives);
 
     // Sets up listener for debbugging
     getSPEnvironment()->APIv2()->SetDebugListener(m_loggingSystem.get());

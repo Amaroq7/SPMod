@@ -80,44 +80,6 @@ static cell_t precacheGeneric(SourcePawn::IPluginContext *ctx,
     return PRECACHE_GENERIC(genericToPrecache);
 }
 
-// native int numToString(int num, char[] buffer, int size)
-static cell_t numToString(SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
-{
-    auto numToConvert = params[1];
-    auto numConverted = std::to_string(numToConvert);
-    ctx->StringToLocal(params[2], params[3], numConverted.c_str());
-
-    return numConverted.length();
-}
-
-// native int realToString(float real, char[] buffer, int size)
-static cell_t realToString(SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
-{
-    auto realToConvert = sp_ctof(params[1]);
-    auto realConverted = std::to_string(realToConvert);
-    ctx->StringToLocal(params[2], params[3], realConverted.c_str());
-
-    return realConverted.length();
-}
-
-static cell_t copyString(SourcePawn::IPluginContext *ctx,
-                              const cell_t *params)
-{
-    char *destArray, *stringToCopy;
-    size_t arraySize = params[2];
-
-    ctx->LocalToString(params[1], &destArray);
-    ctx->LocalToString(params[3], &stringToCopy);
-
-    std::strncpy(destArray, stringToCopy, arraySize);
-
-    destArray[arraySize - 1] = '\0';
-
-    return 1;
-}
-
 // native bool nativeRegister(const char[] name, PluginNative func)
 static cell_t nativeRegister(SourcePawn::IPluginContext *ctx,
                                   const cell_t *params)
@@ -303,9 +265,6 @@ sp_nativeinfo_t gCoreNatives[] =
     {  "precacheModel",          precacheModel       },
     {  "precacheSound",          precacheSound       },
     {  "precacheGeneric",        precacheGeneric     },
-    {  "numToString",            numToString         },
-    {  "realToString",           realToString        },
-    {  "copyString",             copyString          },
     {  "nativeRegister",         nativeRegister      },
     {  "nativeGetCell",          nativeGetCell       },
     {  "nativeGetCellRef",       nativeGetCellRef    },

@@ -104,6 +104,7 @@ constexpr auto gSPModVersion = "0.0.1";
 extern sp_nativeinfo_t gCoreNatives[];
 extern sp_nativeinfo_t gCvarsNatives[];
 extern sp_nativeinfo_t gForwardsNatives[];
+extern sp_nativeinfo_t gStringNatives[];
 
 // Server command function (SrvCommand.cpp)
 void SPModInfoCommand();
