@@ -190,7 +190,8 @@ bool MultiForward::execFunc(cell_t *result)
         if (m_paramsNum)
             pushParamsToFunction(funcToExecute);
 
-        funcToExecute->Execute(&tempResult);
+        if (funcToExecute->Execute(&tempResult) != SP_ERROR_NONE)
+            return false;
 
         if (m_execType == ExecType::Ignore)
             continue;

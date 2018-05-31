@@ -48,8 +48,7 @@ enum ParamType
     Float,
     FloatRef,
     Array,
-    String,
-    StringEx
+    String
 };
 
 /*
