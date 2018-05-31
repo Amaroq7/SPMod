@@ -153,7 +153,7 @@ bool MultiForward::pushStringEx(char *buffer,
 {
     try
     {
-        if (m_paramTypes.at(m_currentPos) != ParamType::StringEx)
+        if (m_paramTypes.at(m_currentPos) != ParamType::String)
             return false;
 
         ForwardParam &param = m_params.at(m_currentPos++);
@@ -257,15 +257,16 @@ void MultiForward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
             }
             case ParamType::String:
             {
-                func->PushString(std::get<const char *>(paramVar));
-                break;
-            }
-            case ParamType::StringEx:
-            {
-                int spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
-                auto spStringFlags = static_cast<std::underlying_type_t<sflags>>(paramObj.m_stringFlags);
-
-                func->PushStringEx(std::get<char *>(paramVar), paramObj.m_size, spStringFlags, spFlags);
+                try
+                {
+                    func->PushString(std::get<const char *>(paramVar));
+                }
+                catch (const std::bad_variant_access &e [[maybe_unused]])
+                {
+                    int spFlags = (paramObj.m_copyback) ? SM_PARAM_COPYBACK : 0;
+                    auto spStringFlags = static_cast<std::underlying_type_t<sflags>>(paramObj.m_stringFlags);
+                    func->PushStringEx(std::get<char *>(paramVar), paramObj.m_size, spStringFlags, spFlags);
+                }
             }
             default:
                 break;
@@ -391,7 +392,7 @@ bool SingleForward::pushStringEx(char *buffer,
 {
     try
     {
-        if (m_paramTypes.at(m_currentPos) != ParamType::StringEx)
+        if (m_paramTypes.at(m_currentPos) != ParamType::String)
             return false;
 
         auto szflags = static_cast<std::underlying_type_t<IForward::StringFlags>>(sflags);
@@ -529,7 +530,7 @@ void ForwardMngr::addDefaultsForwards()
     using param = IForward::ParamType;
     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramsList;
 
-    paramsList = { param::Cell, param::String, param::String, param::StringEx };
+    paramsList = { param::Cell, param::String, param::String, param::String };
     createForwardCore("OnClientConnect", et::Stop, paramsList, 4);
 
     paramsList = { param::Cell, param::Cell, param::String };

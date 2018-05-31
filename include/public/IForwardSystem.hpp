@@ -52,8 +52,7 @@ namespace SPMod
             Float,
             FloatRef,
             Array,
-            String,
-            StringEx
+            String
         };
 
         /*
