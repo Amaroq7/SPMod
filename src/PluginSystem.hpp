@@ -19,8 +19,6 @@
 
 #include "spmod.hpp"
 
-class Forward;
-
 class Plugin final : public IPlugin
 {
 public:
