@@ -43,7 +43,7 @@ public void pluginInit()
 ```
 
 ## Requirements
-- ReHLDS (API v3.4)
+- [ReHLDS](https://github.com/dreamstalker/rehlds) (API v3.4)
 - Metamod
   - [Metamod-r](https://github.com/theAsmodai/metamod-r) (recommended)
   - [Metamod-P](http://metamod-p.sourceforge.net)
