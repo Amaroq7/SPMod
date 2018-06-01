@@ -23,7 +23,7 @@ static cell_t forwardCtor(SourcePawn::IPluginContext *ctx,
 {
     char *fwdName;
     auto execType = static_cast<IForward::ExecType>(params[2]);
-    size_t pluginId = params[3];
+    cell_t pluginId = params[3];
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
 
     ctx->LocalToString(params[1], &fwdName);
