@@ -262,6 +262,7 @@ public:
     void clearForwards()
     {
         m_forwards.clear();
+        m_id = 0;
     }
 
     void addDefaultsForwards();
@@ -283,4 +284,7 @@ private:
                                               IPlugin *plugin = nullptr);
 
     std::unordered_map<std::string, std::shared_ptr<Forward>> m_forwards;
+
+    /* keeps track of forwards ids */ 
+    size_t m_id;
 };
