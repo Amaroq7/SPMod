@@ -300,6 +300,22 @@ static cell_t pushCancel(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
+// native Forward findForward(const char[] name)
+static cell_t findForward(SourcePawn::IPluginContext *ctx,
+                          const cell_t *params)
+{
+    char *fwdName;
+    ctx->LocalToString(params[1], &fwdName);
+
+    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
+    std::shared_ptr<Forward> forward = fwdMngr->findForwardCore(fwdName);
+
+    if (!forward)
+        return -1;
+
+    return forward->getId();
+}
+
 sp_nativeinfo_t gForwardsNatives[] =
 {
     {  "Forward.Forward",        forwardCtor         },
@@ -313,5 +329,6 @@ sp_nativeinfo_t gForwardsNatives[] =
     {  "Forward.pushArrayEx",    pushArrayEx         },
     {  "Forward.pushExec",       pushExec            },
     {  "Forward.pushCancel",     pushCancel          },
+    {  "findForward",            findForward         },
     {  nullptr,                  nullptr             }
 };

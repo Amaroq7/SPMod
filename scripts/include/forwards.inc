@@ -184,3 +184,12 @@ methodmap Forward
      */
     public native bool pushCancel();
 };
+
+/*
+ * @brief Finds the forward by name.
+ * 
+ * @param name      Forward name to look for.
+ * 
+ * @return          Forward or INVALID_FORWARD if not found.
+ */
+native Forward findForward(const char[] name);
