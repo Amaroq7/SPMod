@@ -173,10 +173,10 @@ bool MultiForward::pushStringEx(char *buffer,
 bool MultiForward::execFunc(cell_t *result)
 {
     // If passed number of passed arguments is lower then required one fail now
-    // May be pushed more, but they won't be passed either way
     if (m_paramsNum > m_currentPos)
         return false;
 
+    m_exec = true;
     cell_t tempResult = 0, returnValue = 0;
     for (const auto &pair : gSPGlobal->getPluginManagerCore()->getPluginsList())
     {
@@ -191,7 +191,10 @@ bool MultiForward::execFunc(cell_t *result)
             pushParamsToFunction(funcToExecute);
 
         if (funcToExecute->Execute(&tempResult) != SP_ERROR_NONE)
+        {
+            m_exec = false;
             return false;
+        }
 
         if (m_execType == ExecType::Ignore)
             continue;
@@ -211,6 +214,7 @@ bool MultiForward::execFunc(cell_t *result)
     if (m_execType != ExecType::Ignore)
         *result = returnValue;
 
+    m_exec = false;
     m_currentPos = 0;
     return true;
 }
@@ -410,11 +414,14 @@ bool SingleForward::pushStringEx(char *buffer,
 bool SingleForward::execFunc(cell_t *result)
 {
     // If passed number of passed arguments is lower then required one fail now
-    // May be pushed more, but they won't be passed either way
     if (m_paramsNum > m_currentPos)
         return false;
 
-    return m_pluginFunc->Execute(result) == SP_ERROR_NONE;
+    m_exec = true;
+    bool succeed = m_pluginFunc->Execute(result) == SP_ERROR_NONE;
+    m_exec = false;
+
+    return succeed;
 }
 
 const ForwardList *ForwardMngr::getForwardsList() const

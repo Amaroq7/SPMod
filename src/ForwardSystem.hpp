@@ -68,6 +68,10 @@ public:
     {
         return m_name;
     }
+    bool isExecuted() const
+    {
+        return m_exec;
+    }
 
     /* plugin which the function will be executed in */
     virtual std::shared_ptr<Plugin> getPluginCore() const = 0;
@@ -88,6 +92,9 @@ protected:
 
     /* number of parameters in forward */
     size_t m_paramsNum;
+
+    /* true if forward is being executed */
+    bool m_exec;
 };
 
 /*
