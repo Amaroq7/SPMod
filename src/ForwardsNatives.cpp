@@ -300,6 +300,30 @@ static cell_t pushCancel(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
+// native bool remove()
+static cell_t forwardRemove(SourcePawn::IPluginContext *ctx,
+                            const cell_t *params)
+{
+    cell_t fwdId = params[1];
+    if (fwdId == -1)
+    {
+        ctx->ReportError("Invalid forward!");
+        return 0;
+    }
+
+    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
+    std::shared_ptr<Forward> forward = fwdMngr->findForwardCore(fwdId);
+
+    if (!forward)
+        return 0;
+
+    if (forward->isExecuted())
+        return 0;
+
+    fwdMngr->deleteForwardCore(forward);
+    return 1;
+}
+
 // native Forward findForward(const char[] name)
 static cell_t findForward(SourcePawn::IPluginContext *ctx,
                           const cell_t *params)
@@ -329,6 +353,7 @@ sp_nativeinfo_t gForwardsNatives[] =
     {  "Forward.pushArrayEx",    pushArrayEx         },
     {  "Forward.pushExec",       pushExec            },
     {  "Forward.pushCancel",     pushCancel          },
+    {  "Forward.remove",         forwardRemove       },
     {  "findForward",            findForward         },
     {  nullptr,                  nullptr             }
 };

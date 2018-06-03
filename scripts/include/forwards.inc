@@ -183,6 +183,15 @@ methodmap Forward
      * @return          True if succeed, false otherwise.
      */
     public native bool pushCancel();
+
+    /*
+     * @brief Deletes forward.
+     * 
+     * @note Cannot be deleted while being executed.
+     * 
+     * @return          True if succeed, false otherwise.
+     */
+    public native bool remove();
 };
 
 /*
