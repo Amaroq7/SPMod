@@ -273,7 +273,7 @@ public:
     }
     void deleteForwardCore(std::shared_ptr<Forward> fwd)
     {
-        m_forwards.erase(forward->getNameCore());
+        m_forwards.erase(fwd->getNameCore().data());
     }
 
     void addDefaultsForwards();
