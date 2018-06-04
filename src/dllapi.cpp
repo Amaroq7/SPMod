@@ -18,20 +18,21 @@
 #include "spmod.hpp"
 
 static qboolean ClientConnect(edict_t *pEntity,
-                                const char *pszName,
-                                const char *pszAddress,
-                                char szRejectReason[128])
+                              const char *pszName,
+                              const char *pszAddress,
+                              char szRejectReason[128])
 {
-    auto fwdPlayerConnect = gSPGlobal->getForwardManagerCore()->findForwardCore("OnClientConnect");
     using sflags = IForward::StringFlags;
+    using def = ForwardMngr::FwdDefault;
+    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnect);
 
     cell_t result;
 
-    fwdPlayerConnect->pushCell(ENTINDEX(pEntity));
-    fwdPlayerConnect->pushString(pszName);
-    fwdPlayerConnect->pushString(pszAddress);
-    fwdPlayerConnect->pushStringEx(szRejectReason, 128, sflags::Utf8 | sflags::Copy, true);
-    fwdPlayerConnect->execFunc(&result);
+    forward->pushCell(ENTINDEX(pEntity));
+    forward->pushString(pszName);
+    forward->pushString(pszAddress);
+    forward->pushStringEx(szRejectReason, 128, sflags::Utf8 | sflags::Copy, true);
+    forward->execFunc(&result);
 
     if (result == IForward::ReturnValue::PluginStop)
         RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
@@ -94,8 +95,8 @@ DLL_FUNCTIONS gDllFunctionTable =
 };
 
 static void ServerActivatePost(edict_t *pEdictList [[maybe_unused]],
-                                int edictCount [[maybe_unused]],
-                                int clientMax [[maybe_unused]])
+                               int edictCount [[maybe_unused]],
+                               int clientMax [[maybe_unused]])
 {
     gSPGlobal->getForwardManagerCore()->addDefaultsForwards();
 
@@ -108,11 +109,14 @@ static void ServerActivatePost(edict_t *pEdictList [[maybe_unused]],
 
 static void ServerDeactivatePost()
 {
-    const std::unique_ptr<ForwardMngr> &fwdManager = gSPGlobal->getForwardManagerCore();
-    fwdManager->findForwardCore("OnPluginEnd")->execFunc(nullptr);
+    using def = ForwardMngr::FwdDefault;
+
+    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
+
+    fwdMngr->getDefaultForward(def::PluginEnd)->execFunc(nullptr);
 
     gSPGlobal->getPluginManagerCore()->clearPlugins();
-    fwdManager->clearForwards();
+    fwdMngr->clearForwards();
     gSPGlobal->getLoggerCore()->resetErrorState();
     gSPGlobal->getNativeManagerCore()->freeFakeNatives();
 }
@@ -124,7 +128,9 @@ static void GameInitPost()
 
 static void ClientPutInServerPost(edict_t *pEntity)
 {
-    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->findForwardCore("OnClientPutInServer");
+    using def = ForwardMngr::FwdDefault;
+
+    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServer);
     forward->pushCell(ENTINDEX(pEntity));
     forward->execFunc(nullptr);
 }

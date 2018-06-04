@@ -104,8 +104,10 @@ SPMod ", gSPModVersion, ", API ", SPMOD_API_VERSION, \
 C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now [[maybe_unused]],
                             PL_UNLOAD_REASON reason [[maybe_unused]])
 {
+    using def = ForwardMngr::FwdDefault;
+
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    fwdMngr->findForwardCore("OnPluginEnd")->execFunc(nullptr);
+    fwdMngr->getDefaultForward(def::PluginEnd)->execFunc(nullptr);
 
     gSPGlobal->getPluginManagerCore()->clearPlugins();
     fwdMngr->clearForwards();

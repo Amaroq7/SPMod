@@ -162,6 +162,8 @@ std::shared_ptr<Plugin> PluginMngr::_loadPlugin(const fs::path &path,
 
 size_t PluginMngr::loadPlugins()
 {
+    using def = ForwardMngr::FwdDefault;
+
     std::error_code errCode;
     auto directoryIter = fs::directory_iterator(gSPGlobal->getScriptsDirCore(), errCode);
     auto &loggingSystem = gSPGlobal->getLoggerCore();
@@ -184,7 +186,9 @@ size_t PluginMngr::loadPlugins()
     }
 
     // After first binding let plugins add their natives
-    gSPGlobal->getForwardManagerCore()->findForward("OnPluginNatives")->execFunc(nullptr);
+    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
+
+    fwdMngr->getDefaultForward(def::PluginNatives)->execFunc(nullptr);
 
     // Try to bind unbound natives
     const std::unique_ptr<NativeMngr> &nativeManager = gSPGlobal->getNativeManagerCore();
@@ -207,7 +211,7 @@ size_t PluginMngr::loadPlugins()
         }
     }
 
-    gSPGlobal->getForwardManagerCore()->findForward("OnPluginInit")->execFunc(nullptr);
-    gSPGlobal->getForwardManagerCore()->findForward("OnPluginsLoaded")->execFunc(nullptr);
+    fwdMngr->getDefaultForward(def::PluginInit)->execFunc(nullptr);
+    fwdMngr->getDefaultForward(def::PluginsLoaded)->execFunc(nullptr);
     return m_plugins.size();
 }

@@ -538,23 +538,40 @@ void ForwardMngr::addDefaultsForwards()
     using param = IForward::ParamType;
     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramsList;
 
+    auto defToId = [](FwdDefault forwardId)
+    {
+        return static_cast<size_t>(forwardId);
+    };
+
+    auto posId = defToId(FwdDefault::ClientConnect);
     paramsList = { param::Cell, param::String, param::String, param::String };
-    createForwardCore("OnClientConnect", et::Stop, paramsList, 4);
+    m_defaultForwards.at(posId) = createForwardCore("OnClientConnect", et::Stop, paramsList, 4);
 
+    posId = defToId(FwdDefault::ClientDisconnect);
     paramsList = { param::Cell, param::Cell, param::String };
-    createForwardCore("OnClientDisconnect", et::Ignore, paramsList, 3);
+    m_defaultForwards.at(posId) = createForwardCore("OnClientDisconnect", et::Ignore, paramsList, 3);
 
+    posId = defToId(FwdDefault::CvarChange);
     paramsList = { param::String, param::String, param::String, param::Float };
-    createForwardCore("OnCvarChange", et::Ignore, paramsList, 4);
+    m_defaultForwards.at(posId) = createForwardCore("OnCvarChange", et::Ignore, paramsList, 4);
 
+    posId = defToId(FwdDefault::ClientPutInServer);
     paramsList = { param::Cell };
-    createForwardCore("OnClientPutInServer", et::Ignore, paramsList, 1);
+    m_defaultForwards.at(posId) = createForwardCore("OnClientPutInServer", et::Ignore, paramsList, 1);
 
     paramsList = { };
-    createForwardCore("OnPluginsLoaded", et::Ignore, paramsList, 0);
-    createForwardCore("OnPluginInit", et::Ignore, paramsList, 0);
-    createForwardCore("OnPluginEnd", et::Ignore, paramsList, 0);
-    createForwardCore("OnPluginNatives", et::Ignore, paramsList, 0);
+
+    posId = defToId(FwdDefault::PluginsLoaded);
+    m_defaultForwards.at(posId) = createForwardCore("OnPluginsLoaded", et::Ignore, paramsList, 0);
+
+    posId = defToId(FwdDefault::PluginInit);
+    m_defaultForwards.at(posId) = createForwardCore("OnPluginInit", et::Ignore, paramsList, 0);
+
+    posId = defToId(FwdDefault::PluginEnd);
+    m_defaultForwards.at(posId) = createForwardCore("OnPluginEnd", et::Ignore, paramsList, 0);
+
+    posId = defToId(FwdDefault::PluginNatives);
+    m_defaultForwards.at(posId) = createForwardCore("OnPluginNatives", et::Ignore, paramsList, 0);
 }
 
 std::shared_ptr<Forward> ForwardMngr::_createForwardVa(std::string_view name,

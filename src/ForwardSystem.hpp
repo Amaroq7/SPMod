@@ -238,6 +238,23 @@ private:
 class ForwardMngr final : public IForwardMngr
 {
 public:
+
+    enum class FwdDefault : uint8_t
+    {
+        ClientConnect = 0,
+        ClientDisconnect,
+        CvarChange,
+        ClientPutInServer,
+        PluginsLoaded,
+        PluginInit,
+        PluginEnd,
+        PluginNatives,
+
+        /* number of defaults forwards */
+        ForwardsNum,
+    };
+    static constexpr size_t defaultForwardsNum = static_cast<size_t>(FwdDefault::ForwardsNum);
+
     ForwardMngr() = default;
     ~ForwardMngr() = default;
 
@@ -275,6 +292,10 @@ public:
     {
         m_forwards.erase(fwd->getNameCore().data());
     }
+    std::shared_ptr<Forward> getDefaultForward(ForwardMngr::FwdDefault fwd) const
+    {
+        return m_defaultForwards.at(static_cast<size_t>(fwd)).lock();
+    }
 
     void addDefaultsForwards();
 
@@ -298,4 +319,7 @@ private:
 
     /* keeps track of forwards ids */ 
     size_t m_id;
+
+    /* cache for defaults forwards */
+    std::array<std::weak_ptr<Forward>, defaultForwardsNum> m_defaultForwards;
 };

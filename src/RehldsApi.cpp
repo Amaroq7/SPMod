@@ -25,16 +25,17 @@ IRehldsServerStatic *gRehldsServerStatic;
 IRehldsServerData *gRehldsServerData;
 
 static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain,
-                            IGameClient *client,
-                            bool crash,
-                            const char *string)
+                              IGameClient *client,
+                              bool crash,
+                              const char *string)
 {
-    std::shared_ptr<Forward> fwdDisconnect = gSPGlobal->getForwardManagerCore()->findForwardCore("OnClientDisconnect");
+    using def = ForwardMngr::FwdDefault;
+    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientDisconnect);
 
-    fwdDisconnect->pushCell(ENTINDEX(client->GetEdict()));
-    fwdDisconnect->pushCell(crash);
-    fwdDisconnect->pushString(string);
-    fwdDisconnect->execFunc(nullptr);
+    forward->pushCell(ENTINDEX(client->GetEdict()));
+    forward->pushCell(crash);
+    forward->pushString(string);
+    forward->execFunc(nullptr);
 
     chain->callNext(client, crash, string);
 }
@@ -43,6 +44,8 @@ static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain,
                                cvar_t *cvar,
                                const char *value)
 {
+    using def = ForwardMngr::FwdDefault;
+
     // If value of cvar is the same, do not execute forward
     if (!strcmp(cvar->string, value))
     {
@@ -50,16 +53,16 @@ static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain,
         return;
     }
 
-    std::shared_ptr<Forward> fwdCvarChange = gSPGlobal->getForwardManagerCore()->findForwardCore("OnCvarChange");
-    if (!fwdCvarChange)
+    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::CvarChange);
+    if (!forward)
     {
         chain->callNext(cvar, value);
         return;
     }
 
-    fwdCvarChange->pushString(cvar->name);
-    fwdCvarChange->pushString(cvar->string);
-    fwdCvarChange->pushString(value);
+    forward->pushString(cvar->name);
+    forward->pushString(cvar->string);
+    forward->pushString(value);
 
     float valueFl;
     try
@@ -71,8 +74,8 @@ static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain,
         valueFl = 0.0f;
     }
 
-    fwdCvarChange->pushFloat(valueFl);
-    fwdCvarChange->execFunc(nullptr);
+    forward->pushFloat(valueFl);
+    forward->execFunc(nullptr);
 
     chain->callNext(cvar, value);
 }
