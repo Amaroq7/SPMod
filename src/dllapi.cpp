@@ -122,6 +122,13 @@ static void GameInitPost()
     REG_SVR_COMMAND("spmod", SPModInfoCommand);
 }
 
+static void ClientPutInServerPost(edict_t *pEntity)
+{
+    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->findForwardCore("OnClientPutInServer");
+    forward->pushCell(ENTINDEX(pEntity));
+    forward->execFunc(nullptr);
+}
+
 DLL_FUNCTIONS gDllFunctionTablePost =
 {
 	GameInitPost,				// pfnGameInit
@@ -142,7 +149,7 @@ DLL_FUNCTIONS gDllFunctionTablePost =
 	nullptr,					// pfnClientConnect
 	nullptr,					// pfnClientDisconnect
 	nullptr,					// pfnClientKill
-	nullptr,					// pfnClientPutInServer
+	ClientPutInServerPost,      // pfnClientPutInServer
 	nullptr,					// pfnClientCommand
 	nullptr,					// pfnClientUserInfoChanged
 	ServerActivatePost,			// pfnServerActivate

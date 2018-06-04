@@ -44,3 +44,12 @@ forward PluginReturn OnClientConnect(int client, const char[] name, const char[]
  * @noreturn
  */
 forward void OnClientDisconnect(int client, bool crash, const char[] reason);
+
+/*
+ * @brief Called when a client enters the game.
+ * 
+ * @param client        Client id.
+ * 
+ * @noreturn
+ */
+forward void OnClientPutInServer(int client);

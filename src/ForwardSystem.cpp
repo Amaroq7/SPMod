@@ -547,6 +547,9 @@ void ForwardMngr::addDefaultsForwards()
     paramsList = { param::String, param::String, param::String, param::Float };
     createForwardCore("OnCvarChange", et::Ignore, paramsList, 4);
 
+    paramsList = { param::Cell };
+    createForwardCore("OnClientPutInServer", et::Ignore, paramsList, 1);
+
     paramsList = { };
     createForwardCore("OnPluginsLoaded", et::Ignore, paramsList, 0);
     createForwardCore("OnPluginInit", et::Ignore, paramsList, 0);
