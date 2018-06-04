@@ -45,10 +45,11 @@ static cell_t copyString(SourcePawn::IPluginContext *ctx,
 {
     char *destArray, *stringToCopy;
     size_t arraySize = params[2];
-    size_t stringSize = strlen(stringToCopy);
 
     ctx->LocalToString(params[1], &destArray);
     ctx->LocalToString(params[3], &stringToCopy);
+
+    size_t stringSize = strlen(stringToCopy);
 
     std::strncpy(destArray, stringToCopy, arraySize);
 
