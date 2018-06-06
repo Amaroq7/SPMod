@@ -407,8 +407,6 @@ bool SingleForward::pushStringEx(char *buffer,
     {
         return false;
     }
-
-    return true;
 }
 
 bool SingleForward::execFunc(cell_t *result)
