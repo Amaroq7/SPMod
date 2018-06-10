@@ -36,15 +36,36 @@ void SPModInfoCommand()
     else
     {
         std::string arg(CMD_ARGV(1));
+
+        static constexpr size_t nameWidth = 25;
+        static constexpr size_t verWidth = 15;
+        static constexpr size_t authWidth = 20;
+        static constexpr size_t fileWidth = 15;
+        
         if (arg == "plugins")
         {
+            logSystem->LogConsoleCore(std::left,
+                                      std::setw(7),
+                                      "\n",
+                                      std::setw(nameWidth),
+                                      "name",
+                                      std::setw(verWidth),
+                                      "version",
+                                       std::setw(authWidth),
+                                      "author",
+                                      "filename");
+            size_t pos = 1;
             for (auto entry : gSPGlobal->getPluginManagerCore()->getPluginsList())
             {
-                logSystem->LogConsoleCore("[", std::setw(3), entry.second->getId(), "] ",
-                                        std::setw(-15), entry.second->getName(), " ",
-                                        std::setw(-11), entry.second->getVersion(), " ",
-                                        std::setw(-11), entry.second->getAuthor(), " ",
-                                        std::setw(-11), entry.second->getFilename());
+                logSystem->LogConsoleCore("[", std::right, std::setw(3), pos++, "] ", // right align for ordinal number
+                                        std::left, // left align for the rest
+                                        std::setw(nameWidth), // format rules for name
+                                        entry.second->getNameCore().substr(0, nameWidth - 1),
+                                        std::setw(verWidth), // format rules for version
+                                        entry.second->getVersionCore().substr(0, verWidth - 1),
+                                        std::setw(authWidth), // format rules for author
+                                        entry.second->getAuthorCore().substr(0, authWidth - 1),
+                                        entry.second->getFileNameCore().substr(0, fileWidth));
             }
         }
         else if (arg == "gpl")
