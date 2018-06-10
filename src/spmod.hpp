@@ -60,18 +60,19 @@
 #include <string_view>
 #include <fstream>
 
-// As of GCC 8.1 filesystem is no longer part of experimental
 #if __has_include(<filesystem>)
     #include <filesystem>
-    // MSVC filesystem is still experimental
-    #ifndef SP_MSVC
+    // As of GCC 8.1 filesystem is no longer part of experimental
+    #if defined SP_GCC && __GNUC__ >= 8
         namespace fs = std::filesystem;
-    #else
+    #else // Some compilers still have filesystem within experimental namespace like MSVC
         namespace fs = std::experimental::filesystem;
     #endif
 #elif __has_include(<experimental/filesystem>)
     #include <experimental/filesystem>
     namespace fs = std::experimental::filesystem;
+#else
+    #error Filesystem header missing
 #endif
 
 // C
