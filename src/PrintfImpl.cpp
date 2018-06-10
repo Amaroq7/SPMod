@@ -305,7 +305,7 @@ unsigned int SPGlobal::formatString(char *buffer,
 
     // check if buffer is valid
     if (!buffer)
-        return -1;
+        return 0;
 
     // Check for bounds
     auto checkArgs = [ctx, params](size_t paramCheck)
