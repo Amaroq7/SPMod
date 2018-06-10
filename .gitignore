@@ -44,3 +44,6 @@ include/llvm/*
 # Anjuta configure files
 .anjuta*
 *.anjuta
+
+# Visual Studio Code
+.vscode/
