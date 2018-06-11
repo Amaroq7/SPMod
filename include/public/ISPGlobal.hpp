@@ -27,6 +27,7 @@
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
     #pragma GCC diagnostic ignored "-Wunused-parameter"
+    #pragma GCC diagnostic ignored "-Wpedantic"
 #elif defined SP_MSVC
     #pragma warning(push)
     // Unreferenced formal parameter

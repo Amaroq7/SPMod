@@ -16,7 +16,6 @@
 */
 
 #include "spmod.hpp"
-#include <interface.cpp>
 
 IRehldsApi *gRehldsApi;
 const RehldsFuncs_t *gRehldsFuncs;
@@ -69,7 +68,7 @@ static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain,
     {
         valueFl = std::stof(value);
     }
-    catch (const std::exception &e)
+    catch (const std::exception &e [[maybe_unused]])
     {
         valueFl = 0.0f;
     }

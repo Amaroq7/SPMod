@@ -32,6 +32,7 @@
 #elif defined SP_GCC
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+    #pragma GCC diagnostic ignored "-Wpedantic"
 #endif
 
 #include <osconfig.h>
@@ -76,6 +77,7 @@
 #endif
 
 // C
+#define __STDC_WANT_LIB_EXT1__
 #include <cstring>
 #include <cstdarg>
 

@@ -100,7 +100,12 @@ void Logger::_writeErrorToFile(std::string_view errormsg)
 
     time_t currentTime;
     time(&currentTime);
+
+#if defined __STDC_LIB_EXT1__
+    tm *convertedTime = localtime_s(&currentTime);
+#else
     tm *convertedTime = std::localtime(&currentTime);
+#endif
 
     char logDateTime[64], fileName[256];
     std::strftime(logDateTime, sizeof(logDateTime), "%Y/%m/%d - %H:%M:%S: ", convertedTime);

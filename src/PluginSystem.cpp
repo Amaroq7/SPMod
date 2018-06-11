@@ -115,8 +115,16 @@ IPlugin *PluginMngr::loadPlugin(const char *name,
 
     if (!plugin)
     {
+#if defined __STDC_LIB_EXT1__
+    #if defined SP_WINDOWS
+        strncpy_s(error, sizeof(error), errorMsg.c_str(), _TRUNCATE);
+    #else
+        strncpy_s(error, sizeof(error), errorMsg.c_str(), sizeof(error) - 1);
+    #endif
+#else
         std::strncpy(error, errorMsg.c_str(), size);
         error[size - 1] = '\0';
+#endif
         return nullptr;
     }
 

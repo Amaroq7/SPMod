@@ -578,7 +578,7 @@ std::shared_ptr<Forward> ForwardMngr::_createForwardVa(std::string_view name,
                                                        size_t paramsnum,
                                                        IPlugin *plugin)
 {
-    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams;
+    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams = {};
 
     for (size_t i = 0; i < paramsnum; ++i)
         forwardParams.at(i) = static_cast<IForward::ParamType>(va_arg(params, int));

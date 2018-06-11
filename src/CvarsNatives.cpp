@@ -41,9 +41,16 @@ static cell_t core_cvarGetString(SourcePawn::IPluginContext *ctx,
 
     const char *value = CVAR_GET_STRING(cvarName);
 
+#if defined __STDC_LIB_EXT1__
+    #if defined SP_WINDOWS
+    strncpy_s(destBuffer, bufferSize, value, _TRUNCATE);
+    #else
+    strncpy_s(destBuffer, bufferSize, value, bufferSize - 1);
+    #endif
+#else
     std::strncpy(destBuffer, value, bufferSize);
-
     destBuffer[bufferSize - 1] = '\0';
+#endif
 
     return 1;
 }

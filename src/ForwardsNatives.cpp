@@ -32,7 +32,7 @@ static cell_t forwardCtor(SourcePawn::IPluginContext *ctx,
     if (fwdParamsNum > SP_MAX_EXEC_PARAMS)
         return -1;
 
-    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> fwdParamsList;
+    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> fwdParamsList = {};
     for (size_t i = 0; i < fwdParamsNum; ++i)
     {
         cell_t *paramType;
