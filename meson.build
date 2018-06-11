@@ -47,7 +47,8 @@ if build_machine.system() == 'linux'
     #-Wall and -Wextra are set by warning_level option
     gCppArgs += [
         '-Wno-unknown-pragmas',
-        '-fvisibility=hidden'
+        '-fvisibility=hidden',
+        '-Werror'
     ]
 
     if cppCompiler.get_id() == 'clang'
@@ -89,7 +90,8 @@ elif build_machine.system() == 'windows'
 
     gCppArgs += [
         '/W4',  # Warning level 4
-        '/TP'   # Treat files as c++ sources
+        '/TP',  # Treat files as c++ sources
+        '/WX'   # Treat warnings as errors
     ]
     gLinkArgs += [
         '/EXPORT:GiveFnptrsToDll=_GiveFnptrsToDll@8',
