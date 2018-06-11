@@ -115,8 +115,8 @@ IPlugin *PluginMngr::loadPlugin(const char *name,
 
     if (!plugin)
     {
-#if defined __STDC_LIB_EXT1__
-    #if defined SP_WINDOWS
+#if defined __STDC_LIB_EXT1__ || defined SP_MSVC
+    #if defined SP_MSVC
         strncpy_s(error, sizeof(error), errorMsg.c_str(), _TRUNCATE);
     #else
         strncpy_s(error, sizeof(error), errorMsg.c_str(), sizeof(error) - 1);

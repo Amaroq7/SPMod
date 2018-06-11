@@ -53,8 +53,8 @@ static cell_t copyString(SourcePawn::IPluginContext *ctx,
 
     bool isStringBigger = stringSize >= arraySize;
 
-#if defined __STDC_LIB_EXT1__
-    #if defined SP_WINDOWS
+#if defined __STDC_LIB_EXT1__ || defined SP_MSVC
+    #if defined SP_MSVC
     strncpy_s(destArray, arraySize, stringToCopy, _TRUNCATE);
     #else
     strncpy_s(destArray, arraySize, stringToCopy, arraySize - 1);

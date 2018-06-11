@@ -101,7 +101,7 @@ void Logger::_writeErrorToFile(std::string_view errormsg)
     time_t currentTime;
     time(&currentTime);
 
-#if defined __STDC_LIB_EXT1__
+#if defined __STDC_LIB_EXT1__ || defined SP_MSVC
     tm *convertedTime = localtime_s(&currentTime);
 #else
     tm *convertedTime = std::localtime(&currentTime);

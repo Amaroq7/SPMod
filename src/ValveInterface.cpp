@@ -152,7 +152,7 @@ CSysModule *Sys_LoadModule(const char *pModuleName)
 	{
 		char str[512];
 
-#if defined SP_WINDOWS
+#if defined SP_MSVC
 		_snprintf_s(str, sizeof(str), _TRUNCATE, "%s.dll", pModuleName);
 		hDLL = LoadLibrary(str);
 #else

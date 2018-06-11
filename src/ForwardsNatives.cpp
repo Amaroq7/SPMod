@@ -150,9 +150,15 @@ static cell_t pushFloatRef(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    cell_t *real;
-    ctx->LocalToPhysAddr(params[2], &real);
-    return forward->pushFloatPtr(*reinterpret_cast<float **>(&real), true);
+    union
+    {
+        cell_t *cellptr;
+        float *floatptr;
+    } floatholder;
+
+    ctx->LocalToPhysAddr(params[2], &floatholder.cellptr);
+
+    return forward->pushFloatPtr(floatholder.floatptr, true);
 }
 
 // native bool pushString(const char[] string)
