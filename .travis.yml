@@ -5,8 +5,7 @@ branches:
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 sudo: required
 os: linux
-dist: trusty
-group: stable
+group: travis_latest
 
 matrix:
   include:
