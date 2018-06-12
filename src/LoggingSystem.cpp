@@ -100,16 +100,21 @@ void Logger::_writeErrorToFile(std::string_view errormsg)
 
     time_t currentTime;
     time(&currentTime);
+    tm convertedTime;
 
 #if defined __STDC_LIB_EXT1__ || defined SP_MSVC
-    tm *convertedTime = localtime_s(&currentTime);
+    #if defined SP_MSVC
+    localtime_s(&convertedTime, &currentTime);
+    #else
+    localtime_s(&currentTime, &convertedTime);
+    #endif
 #else
-    tm *convertedTime = std::localtime(&currentTime);
+    convertedTime = *std::localtime(&currentTime);
 #endif
 
     char logDateTime[64], fileName[256];
-    std::strftime(logDateTime, sizeof(logDateTime), "%Y/%m/%d - %H:%M:%S: ", convertedTime);
-    std::strftime(fileName, sizeof(fileName), "error_%Y%m%d.log", convertedTime);
+    std::strftime(logDateTime, sizeof(logDateTime), "%Y/%m/%d - %H:%M:%S: ", &convertedTime);
+    std::strftime(fileName, sizeof(fileName), "error_%Y%m%d.log", &convertedTime);
 
     std::fstream errorFile(gSPGlobal->getLogsDirCore() / fileName, fFlags::out | fFlags::app);
 

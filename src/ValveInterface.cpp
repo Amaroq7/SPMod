@@ -133,12 +133,7 @@ CSysModule *Sys_LoadModule(const char *pModuleName)
 	char szAbsoluteModuleName[1024];
 	if (pModuleName[0] != '/')
 	{
-		char szCwd[1024];
-		getcwd(szCwd, sizeof(szCwd));
-		if (szCwd[strlen(szCwd) - 1] == '/')
-			szCwd[strlen(szCwd) - 1] = '\0';
-
-		snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s", szCwd, pModuleName);
+		snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s", fs::current_path().c_str(), pModuleName);
 		hDLL = dlopen(szAbsoluteModuleName, RTLD_NOW);
 	}
 	else
