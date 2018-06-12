@@ -17,13 +17,7 @@ For unsupported mods and games, check [here](https://github.com/Amaroq7/SPMod/wi
 ### Example plugin
 
 ```sourcepawn
-struct PluginInfo
-{
-   public const char[] name;
-   public const char[] version;
-   public const char[] author;
-   public const char[] url;
-};
+#include <spmod>
 
 public PluginInfo pluginInfo =
 {
@@ -33,12 +27,9 @@ public PluginInfo pluginInfo =
 	url = "https://github.com/Amaroq7/SPMod"
 };
 
-native printToConsole(const char[] text);
-forward void pluginInit();
-
-public void pluginInit()
+public void OnPluginInit()
 {
-    printToConsole("Test output\n");
+    printToServer("Test output\n");
 }
 ```
 
