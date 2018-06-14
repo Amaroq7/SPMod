@@ -104,6 +104,10 @@ using namespace SPMod;
 constexpr auto gSPModAuthor = "SPMod Development Team";
 constexpr auto gSPModVersion = "0.0.1";
 
+// TODO: Add info from builder like %var%
+#define APP_COMMIT_URL "https://github.com/Amaroq7/SPMod/commits/" 
+#define APP_COMMIT_SHA "000000"
+
 extern sp_nativeinfo_t gCoreNatives[];
 extern sp_nativeinfo_t gCvarsNatives[];
 extern sp_nativeinfo_t gForwardsNatives[];

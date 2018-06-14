@@ -83,12 +83,13 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
     }
 
     const std::unique_ptr<Logger> &logSystem = gSPGlobal->getLoggerCore();
-    logSystem->LogConsoleCore("\n   SPMod Copyright (c) 2018 ", gSPModAuthor, \
+    logSystem->LogConsoleCore("\n   SPMod version ", gSPModVersion, " Copyright (c) 2018 ", gSPModAuthor, \
 "\n   This program comes with ABSOLUTELY NO WARRANTY; for details type `spmod gpl' \
-\n   This is free software, and you are welcome to redistribute it\n\
-   under certain conditions; type `spmod gpl' for details.\n\n\
-SPMod ", gSPModVersion, ", API ", SPMOD_API_VERSION, \
-"\nSPMod build: ", __TIME__, " ", __DATE__);
+\n   This is free software, and you are welcome to redistribute it\
+\n   under certain conditions; type `spmod gpl' for details.\n\
+    \nSPMod ", gSPModVersion, ", API ", SPMOD_API_VERSION, \
+    "\nSPMod build: ", __TIME__, " ", __DATE__ \
+    "\nSPMod from: ", APP_COMMIT_URL, APP_COMMIT_SHA, "\n");
 
     if (!initRehldsApi())
     {
