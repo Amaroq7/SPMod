@@ -38,7 +38,7 @@
 
 native int GetUserMsgId(const char[] msg_name);
 
-native void GetUserMsgName(int msgid, char[] str, int len);
+native int GetUserMsgName(int msgid, char[] str, int len);
 
 native void MessageBegin(int dest, int msgid, const int origin[3] = {0,0,0}, int player = 0);
 

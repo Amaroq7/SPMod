@@ -29,7 +29,7 @@ static cell_t GetUserMsgId(SourcePawn::IPluginContext *ctx,
     return GET_USER_MSG_ID(PLID, string, nullptr);
 }
 
-// void GetUserMsgName(int msgid, char[] str, int len) = 3 params
+// int GetUserMsgName(int msgid, char[] str, int len) = 3 params
 static cell_t GetUserMsgName(SourcePawn::IPluginContext *ctx,
                              const cell_t *params)
 {
