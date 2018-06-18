@@ -30,8 +30,9 @@
  */
 enum PluginReturn
 {
-     PluginContinue = 0,
-     PluginStop
+    PluginContinue = 0,
+    PluginStop,
+    PluginHandled
 }
 
 #include <clients>

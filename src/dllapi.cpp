@@ -66,10 +66,12 @@ static void ClientCommand(edict_t *pEntity)
                 func->PushCell(cmd->getId());
                 func->Execute(&result);
 
-                if (result == IForward::ReturnValue::PluginStop)
+                if (result == IForward::ReturnValue::PluginStop || result == IForward::ReturnValue::PluginHandled)
+                {
                     res = MRES_SUPERCEDE;
-
-                break;
+                    if (result == IForward::ReturnValue::PluginStop)
+                        break;
+                }
             }
         }
     }

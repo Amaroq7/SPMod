@@ -62,6 +62,7 @@ namespace SPMod
         {
             PluginIgnored = 0,
             PluginStop,
+            PluginHandled
         };
 
         /*
