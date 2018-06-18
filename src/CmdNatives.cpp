@@ -77,7 +77,7 @@ static cell_t GetInfo(SourcePawn::IPluginContext *ctx,
     return writtenChars;
 }
 
-// int GetAccess()
+// property int Access.get()
 static cell_t GetAccess(SourcePawn::IPluginContext *ctx,
                         const cell_t *params)
 {
@@ -170,7 +170,7 @@ sp_nativeinfo_t gCmdsNatives[] =
 {
     { "Command.Command",    CommandCtor   },
     { "Command.GetInfo",    GetInfo       },
-    { "Command.GetAccess",  GetAccess     },
+    { "Command.Access.get", GetAccess     },
     { "CmdGetArgv",         CmdGetArgv    },
     { "CmdGetArgs",         CmdGetArgs    },
     { "CmdGetArgsNum",      CmdGetArgsNum },

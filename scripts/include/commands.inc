@@ -35,7 +35,10 @@ methodmap Command
 {
     public native Command(const char[] cmd, CmdCallback func, const char[] info = "", bool server = false, int flags = 0);
     public native int GetInfo(char[] buffer, int size);
-    public native int GetAccess();
+
+    property int Access {
+		public native get();
+    }
 };
 
 native int CmdGetArgv(int arg, char[] buffer, int size);
