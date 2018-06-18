@@ -40,6 +40,7 @@ enum PluginReturn
 #include <forwards>
 #include <string>
 #include <messages>
+#include <commands>
 
 /*
  * @brief Provides info about plugin.
