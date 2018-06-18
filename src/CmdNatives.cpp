@@ -78,7 +78,7 @@ static cell_t GetInfo(SourcePawn::IPluginContext *ctx,
 }
 
 // property int Access.get()
-static cell_t GetAccess(SourcePawn::IPluginContext *ctx,
+static cell_t GetAccess(SourcePawn::IPluginContext *ctx [[maybe_unused]],
                         const cell_t *params)
 {
     enum { arg_id = 1 };
