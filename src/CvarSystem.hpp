@@ -94,7 +94,8 @@ public:
         m_plugin_callbacks.push_back(callback);
     }
 
-    void runCallbacks(std::string old_value, std::string new_value)
+    void runCallbacks(  std::string old_value, 
+                        std::string new_value)
     {
         for (auto callback : m_callbacks)
         {

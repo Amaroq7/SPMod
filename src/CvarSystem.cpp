@@ -17,7 +17,11 @@
 
 #include "CvarSystem.hpp"
 
-Cvar::Cvar(std::string_view name, size_t id, std::string_view value, ICvar::Flags flags, cvar_t* pcvar)
+Cvar::Cvar( std::string_view name, 
+            size_t id, 
+            std::string_view value, 
+            ICvar::Flags flags, 
+            cvar_t* pcvar)
 {
     m_name = name;
     m_id = id;
@@ -26,7 +30,10 @@ Cvar::Cvar(std::string_view name, size_t id, std::string_view value, ICvar::Flag
     m_cvar = pcvar;
 }
 
-ICvar *CvarMngr::registerOrFindCvar(const char *name, char* value, ICvar::Flags flags, bool force_register)
+ICvar *CvarMngr::registerOrFindCvar(    const char *name, 
+                                        char* value, 
+                                        ICvar::Flags flags, 
+                                        bool force_register)
 {
     if (auto found = findCvar(name))
     {
@@ -93,7 +100,8 @@ ICvar *CvarMngr::findCvar(size_t id)
     return nullptr;
 }
 
-bool CvarMngr::setCvarCallback(ICvar * cvar, ICvar::cvarCallback_t* callback)
+bool CvarMngr::setCvarCallback( ICvar * cvar, 
+                                ICvar::cvarCallback_t* callback)
 {
     if (!cvar || !callback)
     {
@@ -103,7 +111,8 @@ bool CvarMngr::setCvarCallback(ICvar * cvar, ICvar::cvarCallback_t* callback)
     return true;
 }
 
-bool CvarMngr::setCvarCallback(ICvar * cvar, SourcePawn::IPluginFunction* callback)
+bool CvarMngr::setCvarCallback( ICvar * cvar,
+                                SourcePawn::IPluginFunction* callback)
 {
     if (!cvar || !callback)
     {
