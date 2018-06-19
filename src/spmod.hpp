@@ -99,6 +99,7 @@ using namespace SPMod;
 #include "PluginSystem.hpp"
 #include "ForwardSystem.hpp"
 #include "NativeSystem.hpp"
+#include "CvarSystem.hpp"
 #include "SPGlobal.hpp"
 
 constexpr auto gSPModAuthor = "SPMod Development Team";

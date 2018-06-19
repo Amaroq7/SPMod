@@ -19,147 +19,296 @@
 
 #include "spmod.hpp"
 
-// native float cvarGetFloat(const char[] name)
+static cell_t core_cvarRegister(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{	
+	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
+	char *cvarName, *cvarValue;
+	ctx->LocalToString(params[1], &cvarName);
+	ctx->LocalToString(params[2], &cvarValue);
+	
+
+	auto plCvar = cvarMngr->registerOrFindCvar(cvarName, cvarValue, (ICvar::Flags)params[3], true);
+	if (!plCvar)
+		return -1;
+	
+	return plCvar->getId();
+}
+
+static cell_t core_cvarGetName(SourcePawn::IPluginContext *ctx,
+	const cell_t *params)
+{
+	char *destBuffer;
+	size_t bufferSize = params[3];
+
+	cell_t cvarId = params[1];
+	if (cvarId  < 0)
+	{
+		ctx->ReportError("Invalid cvar pointer!");
+		return 0;
+	}
+	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
+	auto cvar = cvarMngr->findCvar(cvarId);
+	if (!cvar)
+	{
+		ctx->ReportError("Cvar not found!");
+		return 0;
+	}
+
+	ctx->LocalToString(params[2], &destBuffer);
+
+#if defined __STDC_LIB_EXT1__ || defined SP_MSVC
+#if defined SP_MSVC
+	strncpy_s(destBuffer, bufferSize, cvar->getName(), _TRUNCATE);
+#else
+	strncpy_s(destBuffer, bufferSize, cvar->asString().c_str(), bufferSize - 1);
+#endif
+#else
+	std::strncpy(destBuffer, cvar->asString().c_str(), bufferSize);
+	destBuffer[bufferSize - 1] = '\0';
+#endif
+
+	return 1;
+}
+
+
 static cell_t core_cvarGetFloat(SourcePawn::IPluginContext *ctx,
                                 const cell_t *params)
 {
-    char *cvarName;
-    ctx->LocalToString(params[1], &cvarName);
-
-    return sp_ftoc(CVAR_GET_FLOAT(cvarName));
+	cell_t cvarId = params[1];
+	if (cvarId < 0)
+	{
+		ctx->ReportError("Invalid cvar pointer!");
+		return 0;
+	}
+	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
+	auto cvar = cvarMngr->findCvar(cvarId);
+	if (!cvar)
+	{
+		ctx->ReportError("Cvar not found!");
+		return 0;
+	}
+	
+	return sp_ftoc(cvar->asFloat());
 }
 
-// native void cvarGetString(const char[] name, char[] value, int size)
 static cell_t core_cvarGetString(SourcePawn::IPluginContext *ctx,
                                  const cell_t *params)
 {
-    char *cvarName, *destBuffer;
+    char *destBuffer;
     size_t bufferSize = params[3];
 
-    ctx->LocalToString(params[1], &cvarName);
+	cell_t cvarId = params[1];
+	if (cvarId  < 0)
+	{
+		ctx->ReportError("Invalid cvar pointer!");
+		return 0;
+	}
+	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
+	auto cvar = cvarMngr->findCvar(cvarId);
+	if (!cvar)
+	{
+		ctx->ReportError("Cvar not found!");
+		return 0;
+	}
+
     ctx->LocalToString(params[2], &destBuffer);
-
-    const char *value = CVAR_GET_STRING(cvarName);
-
+	
 #if defined __STDC_LIB_EXT1__ || defined SP_MSVC
     #if defined SP_MSVC
-    strncpy_s(destBuffer, bufferSize, value, _TRUNCATE);
+    strncpy_s(destBuffer, bufferSize, cvar->asString().c_str(), _TRUNCATE);
     #else
-    strncpy_s(destBuffer, bufferSize, value, bufferSize - 1);
+    strncpy_s(destBuffer, bufferSize, cvar->asString().c_str(), bufferSize - 1);
     #endif
 #else
-    std::strncpy(destBuffer, value, bufferSize);
+    std::strncpy(destBuffer, cvar->asString().c_str(), bufferSize);
     destBuffer[bufferSize - 1] = '\0';
 #endif
 
     return 1;
 }
 
-// native int cvarGetInt(const char[] name)
 static cell_t core_cvarGetInt(SourcePawn::IPluginContext *ctx,
                               const cell_t *params)
 {
-    char *cvarName;
-    ctx->LocalToString(params[1], &cvarName);
+	cell_t cvarId = params[1];
+	if (cvarId < 0)
+	{
+		ctx->ReportError("Invalid cvar pointer!");
+		return 0;
+	}
+	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
+	auto cvar = cvarMngr->findCvar(cvarId);
+	if (!cvar)
+	{
+		ctx->ReportError("Cvar not found!");
+		return 0;
+	}
 
-    return CVAR_GET_FLOAT(cvarName);
+	return cvar->asInt();
 }
 
-// native CvarFlags cvarGetFlags(const char[] name)
 static cell_t core_cvarGetFlags(SourcePawn::IPluginContext *ctx,
                                 const cell_t *params)
 {
-    char *cvarName;
-    ctx->LocalToString(params[1], &cvarName);
+	cell_t cvarId = params[1];
+	if (cvarId  < 0)
+	{
+		ctx->ReportError("Invalid cvar pointer!");
+		return 0;
+	}
+	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
+	auto cvar = cvarMngr->findCvar(cvarId);
+	if (!cvar)
+	{
+		ctx->ReportError("Cvar not found!");
+		return 0;
+	}
 
-    cvar_t *cvar = CVAR_GET_POINTER(cvarName);
-    if (!cvar)
-        return 0;
-
-    return cvar->flags;
+	return cvar->getFlags();
 }
 
-// native void cvarSetFloat(const char[] name, float value)
 static cell_t core_cvarSetFloat(SourcePawn::IPluginContext *ctx,
                                 const cell_t *params)
 {
-    char *cvarName;
-    ctx->LocalToString(params[1], &cvarName);
+	cell_t cvarId = params[1];
+	if (cvarId < 0)
+	{
+		ctx->ReportError("Invalid cvar pointer!");
+		return 0;
+	}
+	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
+	auto cvar = cvarMngr->findCvar(cvarId);
+	if (!cvar)
+	{
+		ctx->ReportError("Cvar not found!");
+		return 0;
+	}
+	cvar->setValue(sp_ctof(params[2]));
 
-    CVAR_SET_FLOAT(cvarName, sp_ctof(params[2]));
-
-    return 1;
+	return 1;
 }
 
 // native void cvarSetString(const char[] name, const char[] value)
 static cell_t core_cvarSetString(SourcePawn::IPluginContext *ctx,
                                  const cell_t *params)
 {
-    char *cvarName, *cvarValue;
-    ctx->LocalToString(params[1], &cvarName);
+    char *cvarValue;
     ctx->LocalToString(params[2], &cvarValue);
-
-    CVAR_SET_STRING(cvarName, cvarValue);
+	
+	cell_t cvarId = params[1];
+	if (cvarId < 0)
+	{
+		ctx->ReportError("Invalid cvar pointer!");
+		return 0;
+	}
+	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
+	auto cvar = cvarMngr->findCvar(cvarId);
+	if (!cvar)
+	{
+		ctx->ReportError("Cvar not found!");
+		return 0;
+	}
+	cvar->setValue(cvarValue);
 
     return 1;
 }
 
-// native void cvarSetInt(const char[] name, int value)
 static cell_t core_cvarSetInt(SourcePawn::IPluginContext *ctx,
                               const cell_t *params)
 {
-    char *cvarName;
-    ctx->LocalToString(params[1], &cvarName);
+	cell_t cvarId = params[1];
+	if (cvarId  < 0)
+	{
+		ctx->ReportError("Invalid cvar pointer!");
+		return 0;
+	}
+	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
+	auto cvar = cvarMngr->findCvar(cvarId);
+	if (!cvar)
+	{
+		ctx->ReportError("Cvar not found!");
+		return 0;
+	}
+	cvar->setValue(params[2]);
 
-    CVAR_SET_FLOAT(cvarName, params[2]);
-
-    return 1;
+	return 1;
 }
 
-// native void cvarSetFlags(const char[] name, CvarFlags flags)
+static cell_t core_cvarAddCallback(SourcePawn::IPluginContext *ctx,
+	const cell_t *params)
+{
+	cell_t cvarId = params[1];
+	if (cvarId  < 0)
+	{
+		ctx->ReportError("Invalid cvar pointer!");
+		return 0;
+	}
+	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
+	auto cvar = cvarMngr->findCvar(cvarId);
+	if (!cvar)
+	{
+		ctx->ReportError("Cvar not found!");
+		return 0;
+	}
+	auto ptr = ctx->GetFunctionById(params[2]);
+	if (ptr)
+	{
+		cvar->addPluginCallback(ptr);
+	}
+
+	return 1;
+}
+
 static cell_t core_cvarSetFlags(SourcePawn::IPluginContext *ctx,
                                 const cell_t *params)
 {
-    char *cvarName;
-    ctx->LocalToString(params[1], &cvarName);
+	cell_t cvarId = params[1];
+	if (cvarId  < 0)
+	{
+		ctx->ReportError("Invalid cvar pointer!");
+		return 0;
+	}
+	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
+	auto cvar = cvarMngr->findCvar(cvarId);
+	if (!cvar)
+	{
+		ctx->ReportError("Cvar not found!");
+		return 0;
+	}
+	cvar->setFlags((ICvar::Flags)params[2]);
 
-    cvar_t *cvar = CVAR_GET_POINTER(cvarName);
-    if (!cvar)
-        return 0;
-
-    cvar->flags = params[2];
-
-    return 1;
+	return 1;
 }
 
-// native void cvarRegister(const char[] name, const char[] value, CvarFlags flags = None)
-static cell_t core_cvarRegister(SourcePawn::IPluginContext *ctx,
+static cell_t core_cvarFindCvar(SourcePawn::IPluginContext *ctx,
                                 const cell_t *params)
 {
-    char *cvarName, *cvarValue;
-    ctx->LocalToString(params[1], &cvarName);
-    ctx->LocalToString(params[2], &cvarValue);
+	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
+	char *cvarName, *cvarValue;
+	ctx->LocalToString(params[1], &cvarName);
+	ctx->LocalToString(params[2], &cvarValue);
 
-    static cvar_t cvarToRegister;
-    cvarToRegister.name = cvarName;
-    cvarToRegister.string = cvarValue;
-    cvarToRegister.flags = params[3];
+	auto plCvar = cvarMngr->registerOrFindCvar(cvarName, cvarValue, (ICvar::Flags)params[3], false);
 
-    CVAR_REGISTER(&cvarToRegister);
+	if (!plCvar)
+		return -1;
 
-    return 1;
+	return plCvar->getId();
 }
 
 sp_nativeinfo_t gCvarsNatives[] =
 {
-    { "cvarGetFloat",       core_cvarGetFloat       },
-    { "cvarGetString",      core_cvarGetString      },
-    { "cvarGetInt",         core_cvarGetInt         },
-    { "cvarGetFlags",       core_cvarGetFlags       },
-    { "cvarSetFloat",       core_cvarSetFloat       },
-    { "cvarSetString",      core_cvarSetString      },
-    { "cvarSetInt",         core_cvarSetInt         },
-    { "cvarSetFlags",       core_cvarSetFlags       },
-    { "cvarRegister",       core_cvarRegister       },
-    { nullptr,              nullptr                 }
+	{ "Cvar.Cvar",				core_cvarRegister },
+	{ "Cvar.GetName",			core_cvarGetName },
+	{ "Cvar.GetFloat",      	core_cvarGetFloat },
+	{ "Cvar.GetString",			core_cvarGetString },
+	{ "Cvar.GetInt",			core_cvarGetInt },
+	{ "Cvar.GetFlags",			core_cvarGetFlags },
+	{ "Cvar.SetFloat",			core_cvarSetFloat },
+	{ "Cvar.SetString",     	core_cvarSetString },
+	{ "Cvar.SetInt",			core_cvarSetInt },
+	{ "Cvar.SetFlags",			core_cvarSetFlags },
+	{ "Cvar.AddHookOnChange",	core_cvarAddCallback },
+	{ "FindCvar",           	core_cvarFindCvar },
+	{ nullptr, nullptr }
 };

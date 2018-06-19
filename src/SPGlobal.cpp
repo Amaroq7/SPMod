@@ -23,6 +23,7 @@ SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_p
                                         m_nativeManager(std::make_unique<NativeMngr>()),
                                         m_pluginManager(std::make_unique<PluginMngr>()),
                                         m_forwardManager(std::make_unique<ForwardMngr>()),
+                                        m_cvarManager(std::make_unique<CvarMngr>()),
                                         m_loggingSystem(std::make_unique<Logger>()),
                                         m_modName(GET_GAME_INFO(PLID, GINFO_NAME)),
                                         m_spFactory(nullptr)

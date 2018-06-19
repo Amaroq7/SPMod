@@ -62,107 +62,31 @@ enum CvarFlags
     NoExtraWhitepace = (1<<9)
 }
 
-/*
- * @brief Called on every cvar change.
- * 
- * @param cvar      Cvar name.
- * @param oldval    Old value.
- * @param newval    New value.
- * @param newnum    New value as float if newvalue is number, otherwise it is 0.0.
- * 
- * @noreturn
- */
-forward void OnCvarChange(const char[] cvar, const char[] oldval, const char[] newval, float newnum);
+enum Cvar
+{
+    INVALID_CVAR = -1
+};
 
-/**
- * @brief Returns cvar value as real number.
- *
- * @param name      Cvar name.
- *
- * @return          Cvar real value.
- */
-native float cvarGetFloat(const char[] name);
+// Called when a console variable's value is changed.
+// 
+// @param convar		Handle to the convar that was changed.
+// @param oldValue		String containing the value of the convar before it was changed.
+// @param newValue		String containing the new value of the convar.
+typedef ConVarChanged = function void (Cvar convar, const char[] oldValue, const char[] newValue);
 
-/**
- * @brief Gets cvar value as string.
- *
- * @param name      Cvar name.
- * @param value     Buffer to copy the cvar value to.
- * @param size      Size of the buffer.
- *
- * @noreturn
- */
-native void cvarGetString(const char[] name, char[] value, int size);
-
-/**
- * @brief Returns cvar value as integer.
- *
- * @param name      Cvar name.
- *
- * @return          Cvar integer value.
- */
-native int cvarGetInt(const char[] name);
-
-/**
- * @brief Returns flags of a cvar.
- *
- * @param name      Cvar name.
- *
- * @return          Bitsum of cvar flags.
- */
-native CvarFlags cvarGetFlags(const char[] name);
-
-/**
- * @brief Sets a real value for a cvar.
- *
- * @param name      Cvar name.
- * @param value     Value to set.
- *
- * @noreturn
- */
-native void cvarSetFloat(const char[] name, float value);
-
-/**
- * @brief Sets a string value for a cvar.
- *
- * @param name      Cvar name.
- * @param value     Value to set.
- *
- * @noreturn
- */
-native void cvarSetString(const char[] name, const char[] value);
-
-/**
- * @brief Sets a integer value for a cvar.
- *
- * @param name      Cvar name.
- * @param value     Value to set.
- *
- * @noreturn
- */
-native void cvarSetInt(const char[] name, int value);
-
-/**
- * @brief Sets specified flags for a cvar.
- *
- * @note For available flags see the top of this file.
- *
- * @param name      Cvar name.
- * @param flags     Bitsum of flags to set.
- *
- * @noreturn
- */
-native void cvarSetFlags(const char[] name, CvarFlags flags);
-
-/**
- * @brief Registers a new cvar.
- *
- * @note For available flags see the top of this file.
- *
- * @param name      Cvar name.
- * @param value     Value to set.
- * @param flags     Bitsum of flags to set.
- *
- * @noreturn
- */
-native void cvarRegister(const char[] name, const char[] value, CvarFlags flags = None);
+methodmap Cvar
+{
+    /* this constructor would register cvar */
+    public native Cvar(const char[] name, const char[] value, CvarFlags flags=None);
+    public native void GetName(char[] name, int size);
+    public native float GetFloat();
+    public native void GetString(char[] value, int size);
+    public native int GetInt();
+    public native CvarFlags GetFlags();
+    public native void SetFloat(float value);
+    public native void SetString(const char[] value);
+    public native void SetInt(int value);
+    public native void SetFlags(CvarFlags flags);
+    public native void AddHookOnChange(ConVarChanged callback);
+};
+native Cvar FindCvar(const char[] name);

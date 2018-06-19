@@ -45,6 +45,7 @@
 #include <IForwardSystem.hpp>
 #include <IPluginSystem.hpp>
 #include <INativeSystem.hpp>
+#include <ICvarSystem.hpp>
 
 namespace SPMod
 {
@@ -91,7 +92,12 @@ namespace SPMod
          * @return        Forward manager.
          */
         virtual IForwardMngr *getForwardManager() const = 0;
-
+        /**
+        * @brief Returns SPMod cvar manager.
+        *
+        * @return                cvar manager.
+        */
+        virtual ICvarMngr *getCvarManager() const = 0;
         /**
          * @brief Returns current SourcePawn environment.
          *

@@ -19,6 +19,7 @@ sourceFiles = files('coreNatives.cpp',
                     'PluginSystem.cpp',
                     'LoggingSystem.cpp',
                     'NativeSystem.cpp',
+                    'CvarSystem.cpp',
                     'SrvCommand.cpp',
                     'PrintfImpl.cpp',
                     'ValveInterface.cpp')
