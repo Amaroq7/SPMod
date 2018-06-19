@@ -300,7 +300,7 @@ static cell_t core_cvarFindCvar( SourcePawn::IPluginContext *ctx,
 	char *cvarName;
 	ctx->LocalToString(params[cvar_name], &cvarName);
 
-	auto plCvar = cvarMngr->registerOrFindCvar(cvarName, "0", (ICvar::Flags)params[3], false);
+	auto plCvar = cvarMngr->registerOrFindCvar(cvarName, const_cast<char *>("0"), ICvar::Flags::None, false);
 
 	if (!plCvar)
 		return -1;

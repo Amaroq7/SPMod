@@ -205,5 +205,8 @@ namespace SPMod {
         * @return          CvarList , nullptr if failed.
         */
         virtual bool setCvarCallback(ICvar *cvar, SourcePawn::IPluginFunction *callback) = 0;
+
+    protected:
+        virtual ~ICvarMngr() {};
     };
 };
