@@ -209,4 +209,4 @@ namespace SPMod {
     protected:
         virtual ~ICvarMngr() {};
     };
-};
+}
