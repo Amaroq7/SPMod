@@ -41,6 +41,8 @@ methodmap Command
     }
 };
 
+forward PluginReturn OnClientCommand(int client);
+
 native int CmdGetArgv(int arg, char[] buffer, int size);
 native int CmdGetArgs(char[] buffer, int size);
 native int CmdGetArgsNum();

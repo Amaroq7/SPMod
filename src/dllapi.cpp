@@ -42,8 +42,23 @@ static qboolean ClientConnect(edict_t *pEntity,
 
 static void ClientCommand(edict_t *pEntity)
 {
-    META_RES res = MRES_IGNORED;
+    using def = ForwardMngr::FwdDefault;
 
+    {
+        cell_t result;
+        std::shared_ptr<Forward> fwdCmd = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientCommmand);
+
+        if (!fwdCmd)
+            RETURN_META(MRES_IGNORED);
+
+        fwdCmd->pushCell(ENTINDEX(pEntity));
+        fwdCmd->execFunc(&result);
+
+        if (result == IForward::ReturnValue::PluginStop)
+            RETURN_META(MRES_SUPERCEDE);
+    }
+
+    META_RES res = MRES_IGNORED;
     const std::unique_ptr<CommandMngr> &cmdMngr = gSPGlobal->getCommandManagerCore();
     if (cmdMngr->getCommandsNum(CmdType::Client))
     {
