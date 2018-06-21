@@ -46,7 +46,7 @@
 native int GetUserMsgId(const char[] msg_name);
 
 /**
- * @brief Sets an array in a native parameter.
+ * @brief Retrieves the client message name from a message id.
  *
  * @param msgid        Message index.
  * @param str          Buffer to store the name of the message.
@@ -134,7 +134,7 @@ native void WriteShort(int value);
 native void WriteLong(int value);
 
 /**
- * @brief Writes a entity to a message buffer.
+ * @brief Writes an entity to a message buffer.
  *
  * @note Use after MessageBegin().
  *
@@ -145,7 +145,7 @@ native void WriteLong(int value);
 native void WriteEntity(int value);
 
 /**
- * @brief Writes a angle to a message buffer.
+ * @brief Writes an angle to a message buffer.
  *
  * @note Use after MessageBegin().
  *
