@@ -35,7 +35,7 @@ ICvar *CvarMngr::registerCvar(  const char *name,
                                 ICvar::Flags flags)
 {
     auto &loggingSystem = gSPGlobal->getLoggerCore();
-    if (auto found = findCvarCore(name))
+    if (findCvarCore(name))
     {
         // Dont allow same cvar name
         loggingSystem->LogMessageCore("Error! Cvar: %s already registered! Use find FindCvar to get this cvar or use another name.", name);
