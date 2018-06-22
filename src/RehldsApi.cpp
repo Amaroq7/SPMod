@@ -51,9 +51,9 @@ static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain,
         chain->callNext(cvar, value);
         return;
     }
-    auto cachedCvar = gSPGlobal->getCvarManager()->registerOrFindCvar(cvar->name, cvar->string, (ICvar::Flags)cvar->flags, true);
+    auto cachedCvar = gSPGlobal->getCvarManager()->findCvar(cvar->name);
     // If cached cvar is the same, do not update cached value
-    if (strcmp(cachedCvar->asString().c_str(), value))
+    if (strcmp(cachedCvar->asString(), value))
     {
         cachedCvar->setValue(value);
     }

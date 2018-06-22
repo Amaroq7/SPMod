@@ -29,7 +29,7 @@ static cell_t core_cvarRegister(    SourcePawn::IPluginContext *ctx,
 	ctx->LocalToString(params[cvar_value], &cvarValue);
 	
 
-	auto plCvar = cvarMngr->registerOrFindCvar(cvarName, cvarValue, (ICvar::Flags)params[cvar_flags], true);
+	auto plCvar = cvarMngr->registerCvar(cvarName, cvarValue, (ICvar::Flags)params[cvar_flags]);
 	if (!plCvar)
 		return -1;
 	
@@ -50,7 +50,7 @@ static cell_t core_cvarGetName( SourcePawn::IPluginContext *ctx,
 		return 0;
 	}
 	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
-	auto cvar = cvarMngr->findCvar(cvarId);
+	auto cvar = cvarMngr->findCvarCore(cvarId);
 	if (!cvar)
 	{
 		ctx->ReportError("Cvar not found!");
@@ -74,8 +74,8 @@ static cell_t core_cvarGetName( SourcePawn::IPluginContext *ctx,
 }
 
 
-static cell_t core_cvarGetFloat(SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
+static cell_t core_cvarGetFloat(    SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params)
 {
     enum { cvar_id = 1 };
 	cell_t cvarId = params[cvar_id];
@@ -85,7 +85,7 @@ static cell_t core_cvarGetFloat(SourcePawn::IPluginContext *ctx,
 		return 0;
 	}
 	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
-	auto cvar = cvarMngr->findCvar(cvarId);
+	auto cvar = cvarMngr->findCvarCore(cvarId);
 	if (!cvar)
 	{
 		ctx->ReportError("Cvar not found!");
@@ -95,8 +95,8 @@ static cell_t core_cvarGetFloat(SourcePawn::IPluginContext *ctx,
 	return sp_ftoc(cvar->asFloat());
 }
 
-static cell_t core_cvarGetString(SourcePawn::IPluginContext *ctx,
-                                 const cell_t *params)
+static cell_t core_cvarGetString(   SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params)
 {    
     enum { cvar_id = 1, buffer, buffer_size };
     char *destBuffer;
@@ -109,7 +109,7 @@ static cell_t core_cvarGetString(SourcePawn::IPluginContext *ctx,
 		return 0;
 	}
 	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
-	auto cvar = cvarMngr->findCvar(cvarId);
+	auto cvar = cvarMngr->findCvarCore(cvarId);
 	if (!cvar)
 	{
 		ctx->ReportError("Cvar not found!");
@@ -120,20 +120,20 @@ static cell_t core_cvarGetString(SourcePawn::IPluginContext *ctx,
 	
 #if defined __STDC_LIB_EXT1__ || defined SP_MSVC
     #if defined SP_MSVC
-    strncpy_s(destBuffer, bufferSize, cvar->asString().c_str(), _TRUNCATE);
+    strncpy_s(destBuffer, bufferSize, cvar->asString(), _TRUNCATE);
     #else
-    strncpy_s(destBuffer, bufferSize, cvar->asString().c_str(), bufferSize - 1);
+    strncpy_s(destBuffer, bufferSize, cvar->asString(), bufferSize - 1);
     #endif
 #else
-    std::strncpy(destBuffer, cvar->asString().c_str(), bufferSize);
+    std::strncpy(destBuffer, cvar->asString(), bufferSize);
     destBuffer[bufferSize - 1] = '\0';
 #endif
 
     return 1;
 }
 
-static cell_t core_cvarGetInt(SourcePawn::IPluginContext *ctx,
-                              const cell_t *params)
+static cell_t core_cvarGetInt(  SourcePawn::IPluginContext *ctx,
+                                const cell_t *params)
 {
     enum { cvar_id = 1 };
 	cell_t cvarId = params[cvar_id];
@@ -143,7 +143,7 @@ static cell_t core_cvarGetInt(SourcePawn::IPluginContext *ctx,
 		return 0;
 	}
 	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
-	auto cvar = cvarMngr->findCvar(cvarId);
+	auto cvar = cvarMngr->findCvarCore(cvarId);
 	if (!cvar)
 	{
 		ctx->ReportError("Cvar not found!");
@@ -153,8 +153,8 @@ static cell_t core_cvarGetInt(SourcePawn::IPluginContext *ctx,
 	return cvar->asInt();
 }
 
-static cell_t core_cvarGetFlags(SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
+static cell_t core_cvarGetFlags(    SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params)
 {
     enum { cvar_id = 1 };
 	cell_t cvarId = params[cvar_id];
@@ -164,18 +164,18 @@ static cell_t core_cvarGetFlags(SourcePawn::IPluginContext *ctx,
 		return 0;
 	}
 	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
-	auto cvar = cvarMngr->findCvar(cvarId);
+	auto cvar = cvarMngr->findCvarCore(cvarId);
 	if (!cvar)
 	{
 		ctx->ReportError("Cvar not found!");
 		return 0;
 	}
 
-	return cvar->getFlags();
+	return (cell_t)cvar->getFlags();
 }
 
-static cell_t core_cvarSetFloat(SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
+static cell_t core_cvarSetFloat(    SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params)
 {
     enum { cvar_id = 1, cvar_value };
 	cell_t cvarId = params[cvar_id];
@@ -185,7 +185,7 @@ static cell_t core_cvarSetFloat(SourcePawn::IPluginContext *ctx,
 		return 0;
 	}
 	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
-	auto cvar = cvarMngr->findCvar(cvarId);
+	auto cvar = cvarMngr->findCvarCore(cvarId);
 	if (!cvar)
 	{
 		ctx->ReportError("Cvar not found!");
@@ -196,9 +196,8 @@ static cell_t core_cvarSetFloat(SourcePawn::IPluginContext *ctx,
 	return 1;
 }
 
-// native void cvarSetString(const char[] name, const char[] value)
-static cell_t core_cvarSetString(SourcePawn::IPluginContext *ctx,
-                                 const cell_t *params)
+static cell_t core_cvarSetString(   SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params)
 {
     enum { cvar_id = 1, cvar_value };
     char *cvarValue;
@@ -211,7 +210,7 @@ static cell_t core_cvarSetString(SourcePawn::IPluginContext *ctx,
 		return 0;
 	}
 	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
-	auto cvar = cvarMngr->findCvar(cvarId);
+	auto cvar = cvarMngr->findCvarCore(cvarId);
 	if (!cvar)
 	{
 		ctx->ReportError("Cvar not found!");
@@ -222,8 +221,8 @@ static cell_t core_cvarSetString(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t core_cvarSetInt(SourcePawn::IPluginContext *ctx,
-                              const cell_t *params)
+static cell_t core_cvarSetInt(  SourcePawn::IPluginContext *ctx,
+                                const cell_t *params)
 {
     enum { cvar_id = 1, cvar_value };
 	cell_t cvarId = params[cvar_id];
@@ -233,7 +232,7 @@ static cell_t core_cvarSetInt(SourcePawn::IPluginContext *ctx,
 		return 0;
 	}
 	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
-	auto cvar = cvarMngr->findCvar(cvarId);
+	auto cvar = cvarMngr->findCvarCore(cvarId);
 	if (!cvar)
 	{
 		ctx->ReportError("Cvar not found!");
@@ -255,7 +254,7 @@ static cell_t core_cvarAddCallback( SourcePawn::IPluginContext *ctx,
 		return 0;
 	}
 	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
-	auto cvar = cvarMngr->findCvar(cvarId);
+	auto cvar = cvarMngr->findCvarCore(cvarId);
 	if (!cvar)
 	{
 		ctx->ReportError("Cvar not found!");
@@ -281,7 +280,7 @@ static cell_t core_cvarSetFlags( SourcePawn::IPluginContext *ctx,
 		return 0;
 	}
 	const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
-	auto cvar = cvarMngr->findCvar(cvarId);
+	auto cvar = cvarMngr->findCvarCore(cvarId);
 	if (!cvar)
 	{
 		ctx->ReportError("Cvar not found!");
@@ -300,7 +299,7 @@ static cell_t core_cvarFindCvar( SourcePawn::IPluginContext *ctx,
 	char *cvarName;
 	ctx->LocalToString(params[cvar_name], &cvarName);
 
-	auto plCvar = cvarMngr->registerOrFindCvar(cvarName, const_cast<char *>("0"), ICvar::Flags::None, false);
+	auto plCvar = cvarMngr->findCvar(cvarName);
 
 	if (!plCvar)
 		return -1;

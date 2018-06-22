@@ -7,8 +7,8 @@ class Plugin;
 class Cvar : public ICvar
 {
 public:
-    Cvar(std::string_view name, size_t m_id,
-            std::string_view value,
+    Cvar(   const char *name, size_t m_id,
+            const char *value,
             Flags flags,
             cvar_t *pcvar);
 
@@ -33,7 +33,7 @@ public:
     void setValue(float val) override
     {
         std::string newval(std::to_string(val));
-        runCallbacks(m_value, newval);
+        runCallbacks(m_value.c_str(), newval.c_str());
         m_value.assign(newval);
         g_engfuncs.pfnCvar_DirectSet(m_cvar, newval.c_str());
     }
@@ -41,15 +41,15 @@ public:
     void setValue(int val) override
     {
         std::string newval(std::to_string(val));
-        runCallbacks(m_value, newval);
+        runCallbacks(m_value.c_str(), newval.c_str());
         m_value.assign(newval);
         g_engfuncs.pfnCvar_DirectSet(m_cvar, newval.c_str());
     }
 
-    void setValue(std::string_view val) override
+    void setValue(const char *val) override
     {
         std::string newval(val);
-        runCallbacks(m_value, newval);
+        runCallbacks(m_value.c_str(), newval.c_str());
         m_value.assign(newval);
         g_engfuncs.pfnCvar_DirectSet(m_cvar, newval.c_str());
     }
@@ -58,17 +58,7 @@ public:
     {
         m_flags = flags;
     }
-
-    void lockCvar()
-    {
-        m_lock = true;
-    }
-
-    void unlockCvar()
-    {
-        m_lock = false;
-    }
-
+    
     int asInt() const override
     {
         return strtol(m_value.c_str(), nullptr, 0);
@@ -79,9 +69,9 @@ public:
         return strtof(m_value.c_str(), nullptr);
     }
     
-    std::string asString() const override
+    const char *asString() const override
     {
-        return m_value;
+        return m_value.c_str();
     }
 
     void addCallback(cvarCallback_t *callback) override
@@ -94,18 +84,18 @@ public:
         m_plugin_callbacks.push_back(callback);
     }
 
-    void runCallbacks(  std::string old_value, 
-                        std::string new_value)
+    void runCallbacks(  const char *old_value,
+                        const char *new_value)
     {
         for (auto callback : m_callbacks)
         {
-            callback(this, old_value, new_value);
+            (*callback)(this, old_value, new_value);
         }
         for (auto callback : m_plugin_callbacks)
         {            
             callback->PushCell((cell_t)m_id);
-            callback->PushString(old_value.c_str());
-            callback->PushString(new_value.c_str());
+            callback->PushString(old_value);
+            callback->PushString(new_value);
             callback->Execute(NULL);
         }
     }
@@ -115,7 +105,6 @@ protected:
     std::string m_value;
     size_t m_id;
     cvar_t      *m_cvar;
-    bool        m_lock = false;
     std::vector<cvarCallback_t*> m_callbacks;
     std::vector<SourcePawn::IPluginFunction*> m_plugin_callbacks;
 };
@@ -127,11 +116,10 @@ public:
     CvarMngr() = default;
     ~CvarMngr() = default;
 
-    ICvar *registerOrFindCvar(const char *name, char* value, ICvar::Flags flags, bool force_register) override;
-    ICvar *findCvar(const char *name ) override;
-    ICvar *findCvar(size_t id) override;
-    bool setCvarCallback(ICvar *cvar, ICvar::cvarCallback_t* func) override;
-    bool setCvarCallback(ICvar *cvar, SourcePawn::IPluginFunction* callback) override;
+    ICvar *registerCvar(const char *name, const char *value, ICvar::Flags flags) override;
+    ICvar *findCvar(const char *name) override;
+    ICvar *findCvarCore(const char *name );
+    ICvar *findCvarCore(size_t id);
     
 private:
     std::unordered_map<std::string, std::shared_ptr<Cvar>> m_cvars;

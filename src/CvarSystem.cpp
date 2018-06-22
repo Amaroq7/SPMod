@@ -17,9 +17,9 @@
 
 #include "CvarSystem.hpp"
 
-Cvar::Cvar( std::string_view name, 
+Cvar::Cvar( const char * name,
             size_t id, 
-            std::string_view value, 
+            const char *value,
             ICvar::Flags flags, 
             cvar_t* pcvar)
 {
@@ -30,31 +30,34 @@ Cvar::Cvar( std::string_view name,
     m_cvar = pcvar;
 }
 
-ICvar *CvarMngr::registerOrFindCvar(    const char *name, 
-                                        char* value, 
-                                        ICvar::Flags flags, 
-                                        bool force_register)
+ICvar *CvarMngr::registerCvar(  const char *name, 
+                                const char *value,
+                                ICvar::Flags flags)
 {
-    if (auto found = findCvar(name))
+    auto &loggingSystem = gSPGlobal->getLoggerCore();
+    if (auto found = findCvarCore(name))
     {
-        return found;
+        // Dont allow same cvar name
+        loggingSystem->LogMessageCore("Error! Cvar: %s already registered! Use find FindCvar to get this cvar or use another name.", name);
+        return nullptr;
     }
-    // Not found in cache, check if cvar already registered
+    // Not found in cache, check if already registered
     cvar_t *pcvar = nullptr;
     std::shared_ptr<Cvar> cvar;
     pcvar = CVAR_GET_POINTER(name);
     if(pcvar != nullptr)
     {
-        // Already registered, just add to cache
-        cvar = std::make_shared<Cvar>(pcvar->name, m_id, pcvar->string, (ICvar::Flags)pcvar->flags, pcvar);
+        // Dont allow same cvar name
+        loggingSystem->LogMessageCore("Error! Cvar: %s already registered! Use find FindCvar to get this cvar or use another name.", name);        
+        return nullptr;
     }
-    else if(force_register)
+    else
     {
         // Else create and register
         cvar_t new_cvar;
         new_cvar.name = name;
-        new_cvar.flags = flags;
-        new_cvar.string = value;
+        new_cvar.flags = (int)flags;
+        new_cvar.string = (char*)value;
         CVAR_REGISTER(&new_cvar);
         // Check if really registered
         pcvar = CVAR_GET_POINTER(name);
@@ -68,10 +71,6 @@ ICvar *CvarMngr::registerOrFindCvar(    const char *name,
             return nullptr;
         }
     }
-    else
-    {
-        return nullptr;
-    }
     // Always add to cache
     m_cvars.emplace(name, cvar);
     // Raise cvar num
@@ -81,6 +80,28 @@ ICvar *CvarMngr::registerOrFindCvar(    const char *name,
 
 ICvar *CvarMngr::findCvar(const char *name)
 {
+    if (auto found = findCvarCore(name))
+    {        
+        return found;
+    }
+
+    cvar_t *pcvar = nullptr;
+    pcvar = CVAR_GET_POINTER(name);
+    if (pcvar != nullptr)
+    {
+        std::shared_ptr<Cvar> cvar = std::make_shared<Cvar>(name, m_id, pcvar->string, (ICvar::Flags)pcvar->flags, pcvar);
+        // Always add to cache
+        m_cvars.emplace(name, cvar);
+        // Raise cvar num
+        m_id++;
+        return cvar.get();
+    }
+    // Not found
+    return nullptr;
+}
+
+ICvar *CvarMngr::findCvarCore(const char *name)
+{
     auto pair = m_cvars.find(name);
 
     if (pair != m_cvars.end())
@@ -89,7 +110,7 @@ ICvar *CvarMngr::findCvar(const char *name)
     return nullptr;
 }
 
-ICvar *CvarMngr::findCvar(size_t id)
+ICvar *CvarMngr::findCvarCore(size_t id)
 {
     for (auto pair = m_cvars.begin(); pair != m_cvars.end(); pair++)
     {
@@ -98,26 +119,4 @@ ICvar *CvarMngr::findCvar(size_t id)
     }
 
     return nullptr;
-}
-
-bool CvarMngr::setCvarCallback( ICvar * cvar, 
-                                ICvar::cvarCallback_t* callback)
-{
-    if (!cvar || !callback)
-    {
-        return false;
-    }
-    cvar->addCallback(callback);
-    return true;
-}
-
-bool CvarMngr::setCvarCallback( ICvar * cvar,
-                                SourcePawn::IPluginFunction* callback)
-{
-    if (!cvar || !callback)
-    {
-        return false;
-    }
-    cvar->addPluginCallback(callback);
-    return true;
 }
