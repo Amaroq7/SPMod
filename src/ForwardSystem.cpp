@@ -557,6 +557,10 @@ void ForwardMngr::addDefaultsForwards()
     paramsList = {{ param::Cell }};
     m_defaultForwards.at(posId) = createForwardCore("OnClientPutInServer", et::Ignore, paramsList, 1);
 
+    posId = defToId(FwdDefault::ClientCommmand);
+    paramsList = {{ param::Cell }};
+    m_defaultForwards.at(posId) = createForwardCore("OnClientCommand", et::Stop, paramsList, 1);
+
     paramsList = { };
 
     posId = defToId(FwdDefault::PluginsLoaded);

@@ -249,6 +249,7 @@ public:
         PluginInit,
         PluginEnd,
         PluginNatives,
+        ClientCommmand,
 
         /* number of defaults forwards */
         ForwardsNum,
