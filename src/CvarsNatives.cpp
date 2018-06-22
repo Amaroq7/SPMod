@@ -63,10 +63,10 @@ static cell_t core_cvarGetName( SourcePawn::IPluginContext *ctx,
 #if defined SP_MSVC
 	strncpy_s(destBuffer, bufferSize, cvar->getName(), _TRUNCATE);
 #else
-	strncpy_s(destBuffer, bufferSize, cvar->asString().c_str(), bufferSize - 1);
+	strncpy_s(destBuffer, bufferSize, cvar->getName(), bufferSize - 1);
 #endif
 #else
-	std::strncpy(destBuffer, cvar->asString().c_str(), bufferSize);
+	std::strncpy(destBuffer, cvar->getName(), bufferSize);
 	destBuffer[bufferSize - 1] = '\0';
 #endif
 
