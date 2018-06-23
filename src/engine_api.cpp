@@ -17,7 +17,8 @@
 
 #include "spmod.hpp"
 
-static void ChangeLevel(const char *s1, const char *s2)
+static void ChangeLevel(const char *s1, 
+                        const char *s2[[maybe_unused]])
 {
 	using def = ForwardMngr::FwdDefault;
 	const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
