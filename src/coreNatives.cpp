@@ -259,6 +259,19 @@ static cell_t nativeSetArray(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
+// int ChangeLevel(const char[] map)
+static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx,
+                          const cell_t *params)
+{
+    enum { arg_map = 1 };
+
+    char *newMap;
+    ctx->LocalToString(params[arg_map], &newMap);
+    gEngTable->pfnChangeLevel(newMap, nullptr);
+
+    return 1;
+}
+
 sp_nativeinfo_t gCoreNatives[] =
 {
     {  "printToServer",          printToServer       },
@@ -273,5 +286,6 @@ sp_nativeinfo_t gCoreNatives[] =
     {  "nativeSetCellRef",       nativeSetCellRef    },
     {  "nativeSetString",        nativeSetString     },
     {  "nativeSetArray",         nativeSetArray      },
+    {  "ChangeLevel",            ChangeLevel         },
     {  nullptr,                  nullptr             }
 };
