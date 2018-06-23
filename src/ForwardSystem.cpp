@@ -548,11 +548,7 @@ void ForwardMngr::addDefaultsForwards()
     posId = defToId(FwdDefault::ClientDisconnect);
     paramsList = {{ param::Cell, param::Cell, param::String }};
     m_defaultForwards.at(posId) = createForwardCore("OnClientDisconnect", et::Ignore, paramsList, 3);
-
-    posId = defToId(FwdDefault::CvarChange);
-    paramsList = {{ param::String, param::String, param::String, param::Float }};
-    m_defaultForwards.at(posId) = createForwardCore("OnCvarChange", et::Ignore, paramsList, 4);
-
+    
     posId = defToId(FwdDefault::ClientPutInServer);
     paramsList = {{ param::Cell }};
     m_defaultForwards.at(posId) = createForwardCore("OnClientPutInServer", et::Ignore, paramsList, 1);

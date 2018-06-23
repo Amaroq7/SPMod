@@ -66,7 +66,7 @@ namespace SPMod {
         *
         * @return        Cvar name.
         */
-        virtual const char* getName() const = 0;
+        virtual const char *getName() const = 0;
 
         /**
         * @brief Returns flags of the cvar
@@ -117,7 +117,7 @@ namespace SPMod {
         *
         * @noreturn
         */        
-        virtual void addCallback(cvarCallback_t *callback) = 0;
+        virtual void addCallback(cvarCallback_t callback) = 0;
         /**
         * @brief Add callback for cvar (for modules)
         *
@@ -145,15 +145,7 @@ namespace SPMod {
     protected:
         virtual ~ICvar() {}
     };
-
-    struct CvarList
-    {
-        /* Current cvar */
-        ICvar *cvar;
-        /* Next cvar in the list, nullptr if there is no more cvars */
-        CvarList *next;
-    };
-
+    
     class ICvarMngr SPMOD_FINAL
     {
     public:

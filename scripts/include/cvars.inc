@@ -76,6 +76,18 @@ typedef ConVarChanged = function void (Cvar convar, const char[] oldValue, const
 
 methodmap Cvar
 {
+	property int IntValue {
+		public native get();
+		public native set(int value);
+	}
+	property float FloatValue {
+		public native get();
+		public native set(float value);
+	}
+	property int Flags {
+		public native get();
+		public native set(int flags);
+    }
     /* this constructor would register cvar */
     public native Cvar(const char[] name, const char[] value, CvarFlags flags=None);
     public native void GetName(char[] name, int size);

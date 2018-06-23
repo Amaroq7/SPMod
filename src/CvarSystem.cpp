@@ -34,12 +34,9 @@ ICvar *CvarMngr::registerCvar(  const char *name,
                                 const char *value,
                                 ICvar::Flags flags)
 {
-    auto &loggingSystem = gSPGlobal->getLoggerCore();
-    if (findCvarCore(name))
+    if (auto cvar = findCvarCore(name))
     {
-        // Dont allow same cvar name
-        loggingSystem->LogMessageCore("Error! Cvar: %s already registered! Use find FindCvar to get this cvar or use another name.", name);
-        return nullptr;
+        return cvar;
     }
     // Not found in cache, check if already registered
     cvar_t *pcvar = nullptr;
@@ -47,9 +44,7 @@ ICvar *CvarMngr::registerCvar(  const char *name,
     pcvar = CVAR_GET_POINTER(name);
     if(pcvar != nullptr)
     {
-        // Dont allow same cvar name
-        loggingSystem->LogMessageCore("Error! Cvar: %s already registered! Use find FindCvar to get this cvar or use another name.", name);        
-        return nullptr;
+        cvar = std::make_shared<Cvar>(name, m_id, pcvar->string, (ICvar::Flags)pcvar->flags, pcvar);
     }
     else
     {

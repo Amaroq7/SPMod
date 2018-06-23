@@ -57,31 +57,7 @@ static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain,
     {
         cachedCvar->setValue(value);
     }
-
-    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::CvarChange);
-    if (!forward)
-    {
-        chain->callNext(cvar, value);
-        return;
-    }
-
-    forward->pushString(cvar->name);
-    forward->pushString(cvar->string);
-    forward->pushString(value);
-
-    float valueFl;
-    try
-    {
-        valueFl = std::stof(value);
-    }
-    catch (const std::exception &e [[maybe_unused]])
-    {
-        valueFl = 0.0f;
-    }
-
-    forward->pushFloat(valueFl);
-    forward->execFunc(nullptr);
-
+    
     chain->callNext(cvar, value);
 }
 

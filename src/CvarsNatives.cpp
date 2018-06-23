@@ -309,17 +309,26 @@ static cell_t core_cvarFindCvar( SourcePawn::IPluginContext *ctx,
 
 sp_nativeinfo_t gCvarsNatives[] =
 {
-	{ "Cvar.Cvar",				core_cvarRegister },
-	{ "Cvar.GetName",			core_cvarGetName },
-	{ "Cvar.GetFloat",      	core_cvarGetFloat },
-	{ "Cvar.GetString",			core_cvarGetString },
-	{ "Cvar.GetInt",			core_cvarGetInt },
-	{ "Cvar.GetFlags",			core_cvarGetFlags },
-	{ "Cvar.SetFloat",			core_cvarSetFloat },
-	{ "Cvar.SetString",     	core_cvarSetString },
-	{ "Cvar.SetInt",			core_cvarSetInt },
-	{ "Cvar.SetFlags",			core_cvarSetFlags },
-	{ "Cvar.AddHookOnChange",	core_cvarAddCallback },
-	{ "FindCvar",           	core_cvarFindCvar },
+	{ "Cvar.Cvar",              core_cvarRegister },
+	{ "Cvar.GetName",           core_cvarGetName },
+	{ "Cvar.GetFloat",          core_cvarGetFloat },
+	{ "Cvar.GetString",         core_cvarGetString },
+	{ "Cvar.GetInt",            core_cvarGetInt },
+	{ "Cvar.GetFlags",          core_cvarGetFlags },
+	{ "Cvar.SetFloat",          core_cvarSetFloat },
+	{ "Cvar.SetString",         core_cvarSetString },
+	{ "Cvar.SetInt",            core_cvarSetInt },
+	{ "Cvar.SetFlags",          core_cvarSetFlags },
+
+    { "Cvar.FloatValue.get",    core_cvarGetFloat },
+    { "Cvar.FloatValue.set",    core_cvarSetFloat },
+    { "Cvar.IntValue.get",      core_cvarGetInt },
+    { "Cvar.IntValue.set",      core_cvarSetInt },
+    { "Cvar.Flags.get",         core_cvarGetFlags },
+    { "Cvar.Flags.set",         core_cvarSetFlags },
+
+	{ "Cvar.AddHookOnChange",   core_cvarAddCallback },
+
+	{ "FindCvar",               core_cvarFindCvar },
 	{ nullptr, nullptr }
 };
