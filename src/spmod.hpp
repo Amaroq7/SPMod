@@ -60,6 +60,7 @@
 #include <variant>
 #include <string_view>
 #include <fstream>
+#include <regex>
 
 #if __has_include(<filesystem>)
     #include <filesystem>
@@ -100,6 +101,7 @@ using namespace SPMod;
 #include "ForwardSystem.hpp"
 #include "NativeSystem.hpp"
 #include "CvarSystem.hpp"
+#include "CmdSystem.hpp"
 #include "SPGlobal.hpp"
 
 constexpr auto gSPModAuthor = "SPMod Development Team";
@@ -114,6 +116,8 @@ extern sp_nativeinfo_t gCvarsNatives[];
 extern sp_nativeinfo_t gForwardsNatives[];
 extern sp_nativeinfo_t gStringNatives[];
 extern sp_nativeinfo_t gMessageNatives[];
+extern sp_nativeinfo_t gCmdsNatives[];
 
 // Server command function (SrvCommand.cpp)
 void SPModInfoCommand();
+void PluginSrvCmd();

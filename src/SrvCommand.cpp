@@ -95,3 +95,20 @@ You should have received a copy of the GNU General Public License\n \
         }
     }
 }
+
+void PluginSrvCmd()
+{
+    const char *argv = CMD_ARGV(0);
+
+    for (const auto &cmd : gSPGlobal->getCommandManagerCore()->getCommandList(CmdType::Server))
+    {
+        if (!cmd->getCmd().compare(argv))
+        {
+            cell_t result;
+            SourcePawn::IPluginFunction *func = cmd->getFunc();
+            func->PushCell(cmd->getId());
+            func->Execute(&result);
+            break;
+        }
+    }
+}
