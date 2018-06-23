@@ -42,15 +42,7 @@ static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain,
 static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain,
                                cvar_t *cvar,
                                const char *value)
-{
-    using def = ForwardMngr::FwdDefault;
-
-    // If value of cvar is the same, do not execute forward
-    if (!strcmp(cvar->string, value))
-    {
-        chain->callNext(cvar, value);
-        return;
-    }
+{   
     auto cachedCvar = gSPGlobal->getCvarManager()->findCvar(cvar->name);
     // If cached cvar is the same, do not update cached value
     if (strcmp(cachedCvar->asString(), value))
