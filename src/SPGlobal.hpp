@@ -155,6 +155,10 @@ public:
     {
         return m_nativeManager;
     }
+    const std::unique_ptr<CommandMngr> &getCommandManagerCore() const
+    {
+        return m_cmdManager;
+    }
     const auto &getScriptsDirCore()
     {
         return m_SPModScriptsDir;
@@ -184,6 +188,7 @@ private:
     std::unique_ptr<ForwardMngr> m_forwardManager;
     std::unique_ptr<CvarMngr> m_cvarManager;
     std::unique_ptr<Logger> m_loggingSystem;
+    std::unique_ptr<CommandMngr> m_cmdManager;
     std::string m_modName;
     SourcePawn::ISourcePawnFactory *m_spFactory;
 
