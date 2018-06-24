@@ -82,9 +82,9 @@ forward void OnPluginsLoaded();
 forward void OnPluginEnd();
 
 /*
- * @brief Called when map has been changed.
+ * @brief Called when map is going to change.
  */
-forward onMapChange();
+forward PluginReturn OnMapChange(const char[] map);
 
 /*
  * @brief Prints text to the server's console.
@@ -141,4 +141,4 @@ native int precacheGeneric(const char[] generic);
  *
  * @noreturn
 */
-native int ChangeLevel(const char[] map);
+native void ChangeLevel(const char[] map);
