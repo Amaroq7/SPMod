@@ -88,7 +88,7 @@ extern IRehldsHookchains *gRehldsHookchains;
 extern IRehldsServerStatic *gRehldsServerStatic;
 extern IRehldsServerData *gRehldsServerData;
 
-extern enginefuncs_t *gEngTable;
+extern enginefuncs_t *gpEngineFuncs;
 
 bool initRehldsApi();
 void unintRehldsApi();

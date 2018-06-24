@@ -267,7 +267,7 @@ static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx,
 
     char *newMap;
     ctx->LocalToString(params[arg_map], &newMap);
-    gEngTable->pfnChangeLevel(newMap, nullptr);
+    gpEngineFuncs->pfnChangeLevel(newMap, nullptr);
 
     return 1;
 }
