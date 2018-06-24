@@ -259,7 +259,7 @@ static cell_t nativeSetArray(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-// int ChangeLevel(const char[] map)
+// void ChangeLevel(const char[] map)
 static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx,
                           const cell_t *params)
 {
