@@ -66,5 +66,6 @@ SPMod is licensed under the General Public License version 3 - see the [LICENSE]
 
 ## Acknowledgments
 
-The SPMod uses code from the following libraries:
+The SPMod uses code from the following libraries, projects:
 - [Printf Implementation](https://github.com/mpaland/printf), The MIT License (MIT)
+- [AMX Mod X](https://github.com/alliedmodders/amxmodx),  GNU GPLv3

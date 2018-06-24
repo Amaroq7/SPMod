@@ -28,6 +28,7 @@ void SPModInfoCommand()
 
         msg << "\nUsage: spmod [command] [args]\n";
         msg << "Command:\n";
+        msg << "version - displays currently version\n";
         msg << "plugins - displays currently loaded plugins\n";
         msg << "gpl - displays spmod license";
 
@@ -85,6 +86,29 @@ This program is distributed in the hope that it will be useful,\n \
   \
 You should have received a copy of the GNU General Public License\n \
   along with this program.  If not, see <https://www.gnu.org/licenses/>.");
+        }
+        else if(arg == "version")
+        {
+            logSystem->LogConsoleCore("SPMod ", gSPModVersion, ", API ", SPMOD_API_VERSION, \
+                "\nSPMod build: ", __TIME__, " ", __DATE__, \
+                "\nSPMod from: ", APP_COMMIT_URL, APP_COMMIT_SHA);
+        }
+    }
+}
+
+void PluginSrvCmd()
+{
+    const char *argv = CMD_ARGV(0);
+
+    for (const auto &cmd : gSPGlobal->getCommandManagerCore()->getCommandList(CmdType::Server))
+    {
+        if (!cmd->getCmd().compare(argv))
+        {
+            cell_t result;
+            SourcePawn::IPluginFunction *func = cmd->getFunc();
+            func->PushCell(cmd->getId());
+            func->Execute(&result);
+            break;
         }
     }
 }

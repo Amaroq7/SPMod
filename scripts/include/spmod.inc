@@ -30,8 +30,9 @@
  */
 enum PluginReturn
 {
-     PluginContinue = 0,
-     PluginStop
+    PluginContinue = 0,
+    PluginStop,
+    PluginHandled
 }
 
 #include <clients>
@@ -39,6 +40,8 @@ enum PluginReturn
 #include <natives>
 #include <forwards>
 #include <string>
+#include <messages>
+#include <commands>
 
 /*
  * @brief Provides info about plugin.

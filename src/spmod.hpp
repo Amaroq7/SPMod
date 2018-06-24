@@ -60,6 +60,7 @@
 #include <variant>
 #include <string_view>
 #include <fstream>
+#include <regex>
 
 #if __has_include(<filesystem>)
     #include <filesystem>
@@ -99,15 +100,23 @@ using namespace SPMod;
 #include "PluginSystem.hpp"
 #include "ForwardSystem.hpp"
 #include "NativeSystem.hpp"
+#include "CmdSystem.hpp"
 #include "SPGlobal.hpp"
 
 constexpr auto gSPModAuthor = "SPMod Development Team";
 constexpr auto gSPModVersion = "0.0.1";
 
+// TODO: Add info from builder like %var%
+#define APP_COMMIT_URL "https://github.com/Amaroq7/SPMod/commits/" 
+#define APP_COMMIT_SHA "000000"
+
 extern sp_nativeinfo_t gCoreNatives[];
 extern sp_nativeinfo_t gCvarsNatives[];
 extern sp_nativeinfo_t gForwardsNatives[];
 extern sp_nativeinfo_t gStringNatives[];
+extern sp_nativeinfo_t gMessageNatives[];
+extern sp_nativeinfo_t gCmdsNatives[];
 
 // Server command function (SrvCommand.cpp)
 void SPModInfoCommand();
+void PluginSrvCmd();
