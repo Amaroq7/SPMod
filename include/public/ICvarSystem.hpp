@@ -167,7 +167,7 @@ namespace SPMod {
     *
     * @return          Cvar pointer, nullptr if failed.
     */
-    virtual ICvar *findCvar(const char *name ) = 0;
+    virtual ICvar *findCvar(const char *name) = 0;
 
     protected:
         virtual ~ICvarMngr() {};

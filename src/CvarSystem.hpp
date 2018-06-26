@@ -24,10 +24,11 @@ class Plugin;
 class Cvar final : public ICvar
 {
 public:
-    Cvar( const char *name, size_t m_id,
-          const char *value,
-          Flags flags,
-          cvar_t *pcvar);
+    Cvar(std::string_view name,
+         size_t id, 
+         std::string_view value,
+         ICvar::Flags flags, 
+         cvar_t *pcvar);
 
     Cvar() = delete;
     ~Cvar() = default;
@@ -50,7 +51,7 @@ public:
     void setValue(float val) override
     {
         std::string newval(std::to_string(val));
-        runCallbacks(m_value.c_str(), newval.c_str());
+        runCallbacks(m_value, newval);
         m_value.assign(newval);
         g_engfuncs.pfnCvar_DirectSet(m_cvar, newval.c_str());
     }
@@ -58,7 +59,7 @@ public:
     void setValue(int val) override
     {
         std::string newval(std::to_string(val));
-        runCallbacks(m_value.c_str(), newval.c_str());
+        runCallbacks(m_value, newval);
         m_value.assign(newval);
         g_engfuncs.pfnCvar_DirectSet(m_cvar, newval.c_str());
     }
@@ -66,7 +67,7 @@ public:
     void setValue(const char *val) override
     {
         std::string newval(val);
-        runCallbacks(m_value.c_str(), newval.c_str());
+        runCallbacks(m_value, newval);
         m_value.assign(newval);
         g_engfuncs.pfnCvar_DirectSet(m_cvar, newval.c_str());
     }
@@ -74,22 +75,41 @@ public:
     void setFlags( Flags flags) override
     {
         m_flags = flags;
-        m_cvar->flags = (int)flags;
+        m_cvar->flags = static_cast<int>(flags);
     }
     
     int asInt() const override
     {
-        return std::stol(m_value.c_str(), nullptr, 0);
+        try
+        {
+            return std::stoi(m_value, nullptr, 0);
+        }
+        catch (const std::exception &e [[maybe_unused]])
+        {
+            return 0;
+        }
     }
 
     float asFloat() const override
     {
-        return std::stof(m_value.c_str(), nullptr);
+        try
+        {
+            return std::stof(m_value);
+        }
+        catch (const std::exception &e [[maybe_unused]])
+        {
+            return 0.0f;
+        }
     }
     
     const char *asString() const override
     {
         return m_value.c_str();
+    }
+
+    std::string_view asStringCore() const
+    {
+        return m_value;
     }
 
     void addCallback(cvarCallback_t callback) override
@@ -102,26 +122,27 @@ public:
         m_plugin_callbacks.push_back(callback);
     }
 
-    void runCallbacks(  const char *old_value,
-                        const char *new_value)
+    void runCallbacks(std::string_view old_value,
+                      std::string_view new_value)
+
     {
         for (auto callback : m_callbacks)
         {
-            (*callback)(this, old_value, new_value);
+            callback(this, old_value.data(), new_value.data());
         }
         for (auto callback : m_plugin_callbacks)
         {            
-            callback->PushCell((cell_t)m_id);
-            callback->PushString(old_value);
-            callback->PushString(new_value);
-            callback->Execute(NULL);
+            callback->PushCell(static_cast<cell_t>(m_id));
+            callback->PushString(old_value.data());
+            callback->PushString(new_value.data());
+            callback->Execute(nullptr);
         }
     }
-protected:
+private:
     Flags       m_flags;
     std::string m_name;
     std::string m_value;
-    size_t m_id;
+    size_t      m_id;
     cvar_t      *m_cvar;
     std::vector<cvarCallback_t> m_callbacks;
     std::vector<SourcePawn::IPluginFunction*> m_plugin_callbacks;
@@ -138,6 +159,12 @@ public:
     ICvar *findCvar(const char *name) override;
     ICvar *findCvarCore(const char *name );
     ICvar *findCvarCore(size_t id);
+
+    void clearCvars()
+    {
+        m_cvars.clear();
+        m_id = 0;
+    }
     
 private:
     std::unordered_map<std::string, std::shared_ptr<Cvar>> m_cvars;

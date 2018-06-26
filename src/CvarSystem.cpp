@@ -17,18 +17,16 @@
 
 #include "CvarSystem.hpp"
 
-Cvar::Cvar( const char * name,
-            size_t id, 
-            const char *value,
-            ICvar::Flags flags, 
-            cvar_t* pcvar)
-{
-    m_name = name;
-    m_id = id;
-    m_value = value;
-    m_flags = flags;
-    m_cvar = pcvar;
-}
+Cvar::Cvar(std::string_view name,
+           size_t id, 
+           std::string_view value,
+           ICvar::Flags flags, 
+           cvar_t *pcvar) : m_flags(flags),
+                            m_name(name),
+                            m_value(value),
+                            m_id(id),
+                            m_cvar(pcvar)
+{}
 
 ICvar *CvarMngr::registerCvar(  const char *name, 
                                 const char *value,
@@ -42,21 +40,21 @@ ICvar *CvarMngr::registerCvar(  const char *name,
     cvar_t *pcvar = nullptr;
     std::shared_ptr<Cvar> cvar;
     pcvar = CVAR_GET_POINTER(name);
-    if(pcvar != nullptr)
+    if (pcvar)
     {
-        cvar = std::make_shared<Cvar>(name, m_id, pcvar->string, (ICvar::Flags)pcvar->flags, pcvar);
+        cvar = std::make_shared<Cvar>(name, m_id, pcvar->string, static_cast<ICvar::Flags>(pcvar->flags), pcvar);
     }
     else
     {
         // Else create and register
         cvar_t new_cvar;
         new_cvar.name = name;
-        new_cvar.flags = (int)flags;
-        new_cvar.string = (char*)value;
+        new_cvar.flags = static_cast<int>(flags);
+        new_cvar.string = const_cast<char*>(value);
         CVAR_REGISTER(&new_cvar);
         // Check if really registered
         pcvar = CVAR_GET_POINTER(name);
-        if (pcvar != nullptr)
+        if (pcvar)
         {
             cvar = std::make_shared<Cvar>(name, m_id, value, flags, pcvar);
         }
@@ -82,9 +80,9 @@ ICvar *CvarMngr::findCvar(const char *name)
 
     cvar_t *pcvar = nullptr;
     pcvar = CVAR_GET_POINTER(name);
-    if (pcvar != nullptr)
+    if (pcvar)
     {
-        std::shared_ptr<Cvar> cvar = std::make_shared<Cvar>(name, m_id, pcvar->string, (ICvar::Flags)pcvar->flags, pcvar);
+        std::shared_ptr<Cvar> cvar = std::make_shared<Cvar>(name, m_id, pcvar->string, static_cast<ICvar::Flags>(pcvar->flags), pcvar);
         // Always add to cache
         m_cvars.emplace(name, cvar);
         // Raise cvar num

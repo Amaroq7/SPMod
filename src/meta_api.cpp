@@ -114,6 +114,7 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now [[maybe_unused]],
     gSPGlobal->getCommandManagerCore()->clearCommands();
     fwdMngr->clearForwards();
     gSPGlobal->getNativeManagerCore()->clearNatives();
+    gSPGlobal->getCvarManagerCore()->clearCvars();
 
     return 1;
 }
