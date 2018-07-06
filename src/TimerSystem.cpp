@@ -59,7 +59,7 @@ bool Timer::exec(float gltime)
         func->PushCell(std::get<cell_t>(m_data));
         func->Execute(&result);
 
-        return static_cast<bool>(result);
+        return result == IForward::ReturnValue::PluginIgnored;
     }
     catch (const std::bad_variant_access &e [[maybe_unused]])
     {

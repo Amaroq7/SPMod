@@ -22,7 +22,7 @@
 #endif
 #define _timers_included
 
-typedef TimerCallback = function bool (Timer timer, any data) 
+typedef TimerCallback = function PluginReturn (Timer timer, any data);
 
 methmodmap Timer
 {
