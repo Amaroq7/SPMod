@@ -78,8 +78,8 @@ public:
                         m_paused(pause),
                         m_lastExec(gpGlobals->time)
     {
-        if (m_interval < 0.0f)
-            throw std::runtime_error("Negative interval value");
+        if (m_interval <= 0.0f)
+            throw std::runtime_error("Interval lesser or equal to 0");
     }
 
     float getInterval() const override;

@@ -35,8 +35,9 @@ static cell_t TimerCtor(SourcePawn::IPluginContext *ctx,
 
         return timer->getId();
     }
-    catch (const std::runtime_error &e [[maybe_unused]])
+    catch (const std::runtime_error &e)
     {
+        ctx->ReportError(e.what());
         return -1;
     }
 }
@@ -103,7 +104,14 @@ static cell_t IntervalSet(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    timer->setInterval(sp_ctof(params[arg_interval]));
+    float newInterval = sp_ctof(params[arg_interval]);
+    if (newInterval <= 0.0f)
+    {
+        ctx->ReportError("Interval lesser or equal to 0");
+        return 0;
+    }
+
+    timer->setInterval(newInterval);
     return 1;
 }
 
