@@ -128,7 +128,7 @@ static cell_t RoundToCeil(SourcePawn::IPluginContext *ctx [[maybe_unused]],
 {
     enum { arg_float1 = 1 };
 
-    return sp_ftoc(std::ceil(sp_ctof(params[arg_float1])));
+    return static_cast<cell_t>(std::ceil(sp_ctof(params[arg_float1])));
 }
 
 static cell_t RoundToFloor(SourcePawn::IPluginContext *ctx [[maybe_unused]],
@@ -136,7 +136,7 @@ static cell_t RoundToFloor(SourcePawn::IPluginContext *ctx [[maybe_unused]],
 {
     enum { arg_float1 = 1 };
 
-    return sp_ftoc(std::floor(sp_ctof(params[arg_float1])));
+    return static_cast<cell_t>(std::floor(sp_ctof(params[arg_float1])));
 }
 
 static cell_t RoundToNearest(SourcePawn::IPluginContext *ctx [[maybe_unused]],
@@ -159,7 +159,7 @@ static cell_t RoundToZero(SourcePawn::IPluginContext *ctx [[maybe_unused]],
     else
         value = std::ceil(value);
 
-    return sp_ftoc(value);
+    return static_cast<cell_t>(value);
 }
 
 sp_nativeinfo_t gFloatNatives[] =
