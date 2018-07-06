@@ -61,7 +61,7 @@ protected:
 /**
  * @brief Timer callback
  *
- * @return  True to continue executing task, false to remove.
+ * @return  True to continue executing timer, false to remove.
  */
 using TimerCallback = bool (*)(ITimer *const timer, void *data);
 
@@ -88,7 +88,7 @@ public:
      * 
      * @note  Removing timer in the callback should be done by returning false.
      * 
-     * @param timer       Timer id to delete.
+     * @param timer       Timer to delete.
      *
      * @noreturn
      */
@@ -97,10 +97,9 @@ public:
     /**
      * @brief Executes a timer.
      * 
-     * @note If callback returns false, task will be removed.
-     * @note Paused timer will not be executed.
+     * @note If callback returns false, timer will be removed.
      * 
-     * @param timer       Timer id to be executed.
+     * @param timer       Timer to be executed.
      * 
      * @noreturn
      */
