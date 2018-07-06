@@ -52,7 +52,7 @@ static cell_t PauseGet(SourcePawn::IPluginContext *ctx,
 
     if (!timer)
     {
-        ctx->ReportError("Invalid task id (%i)", params[arg_id]);
+        ctx->ReportError("Invalid timer id (%i)", params[arg_id]);
         return 0;
     }
 
@@ -68,7 +68,7 @@ static cell_t IntervalGet(SourcePawn::IPluginContext *ctx,
 
     if (!timer)
     {
-        ctx->ReportError("Invalid task id (%i)", params[arg_id]);
+        ctx->ReportError("Invalid timer id (%i)", params[arg_id]);
         return 0;
     }
 
@@ -84,7 +84,7 @@ static cell_t PauseSet(SourcePawn::IPluginContext *ctx,
 
     if (!timer)
     {
-        ctx->ReportError("Invalid task id (%i)", params[arg_id]);
+        ctx->ReportError("Invalid timer id (%i)", params[arg_id]);
         return 0;
     }
 
@@ -101,7 +101,7 @@ static cell_t IntervalSet(SourcePawn::IPluginContext *ctx,
 
     if (!timer)
     {
-        ctx->ReportError("Invalid task id (%i)", params[arg_id]);
+        ctx->ReportError("Invalid timer id (%i)", params[arg_id]);
         return 0;
     }
 
@@ -125,7 +125,7 @@ static cell_t Trigger(SourcePawn::IPluginContext *ctx,
 
     if (!timer)
     {
-        ctx->ReportError("Invalid task id (%i)", params[arg_id]);
+        ctx->ReportError("Invalid timer id (%i)", params[arg_id]);
         return 0;
     }
 
