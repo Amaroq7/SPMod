@@ -133,7 +133,7 @@ void TimerMngr::execTimers(float gltime)
     {
         std::shared_ptr<Timer> task = *iter;
 
-        if (task->m_lastExec + task->m_interval > gltime)
+        if (task->isPaused() || task->m_lastExec + task->m_interval > gltime)
         {
             ++iter;
             continue;
