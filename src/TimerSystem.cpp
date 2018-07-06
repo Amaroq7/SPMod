@@ -161,9 +161,9 @@ void TimerMngr::execTimerCore(std::shared_ptr<Timer> timer)
         }
 
         if (!task->exec(curTime))
-            iter = m_timers.erase(iter);
-        else
-            ++iter;
+            m_timers.erase(iter);
+
+        break;
     }
 }
 
@@ -182,9 +182,9 @@ void TimerMngr::execTimer(ITimer *timer)
         }
 
         if (!task->exec(curTime))
-            iter = m_timers.erase(iter);
-        else
-            ++iter;
+            m_timers.erase(iter);
+        
+        break;
     }
 }
 
