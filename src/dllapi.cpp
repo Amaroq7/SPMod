@@ -196,7 +196,7 @@ void StartFramePost()
     if (TimerMngr::m_nextExecution > gpGlobals->time)
 		RETURN_META(MRES_IGNORED);
 
-	TimerMngr::m_nextExecution = gpGlobals->time + 0.1f;
+    TimerMngr::m_nextExecution = gpGlobals->time + 0.1f;
     gSPGlobal->getTimerManagerCore()->execTimers(gpGlobals->time);
 
     RETURN_META(MRES_IGNORED);
