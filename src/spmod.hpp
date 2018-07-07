@@ -118,6 +118,7 @@ extern sp_nativeinfo_t gForwardsNatives[];
 extern sp_nativeinfo_t gStringNatives[];
 extern sp_nativeinfo_t gMessageNatives[];
 extern sp_nativeinfo_t gCmdsNatives[];
+extern sp_nativeinfo_t gFloatNatives[];
 
 // Server command function (SrvCommand.cpp)
 void SPModInfoCommand();
