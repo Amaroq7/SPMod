@@ -21,6 +21,8 @@ meta_globals_t *gpMetaGlobals;
 gamedll_funcs_t *gpGamedllFuncs;
 mutil_funcs_t *gpMetaUtilFuncs;
 
+enginefuncs_t *gpEngineFuncs;
+
 // Core module definition
 std::unique_ptr<SPModModule> gSPModModuleDef;
 

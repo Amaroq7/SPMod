@@ -43,6 +43,7 @@ enum PluginReturn
 #include <messages>
 #include <commands>
 #include <timers>
+#include <float>
 
 /*
  * @brief Provides info about plugin.
@@ -81,6 +82,11 @@ forward void OnPluginsLoaded();
  * @brief Called when plugin is about to be unloaded.
  */
 forward void OnPluginEnd();
+
+/*
+ * @brief Called when map is going to change.
+ */
+forward PluginReturn OnMapChange(const char[] map);
 
 /*
  * @brief Prints text to the server's console.
@@ -129,3 +135,12 @@ native int precacheSound(const char[] sound);
  * @error           If called outside of the OnPluginInit() forward.
  */
 native int precacheGeneric(const char[] generic);
+
+/**
+ * @brief Changes a map.
+ *
+ * @param map       Map to change.
+ *
+ * @noreturn
+*/
+native void ChangeLevel(const char[] map);

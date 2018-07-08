@@ -88,6 +88,8 @@ extern IRehldsHookchains *gRehldsHookchains;
 extern IRehldsServerStatic *gRehldsServerStatic;
 extern IRehldsServerData *gRehldsServerData;
 
+extern enginefuncs_t *gpEngineFuncs;
+
 bool initRehldsApi();
 void unintRehldsApi();
 
@@ -118,6 +120,7 @@ extern sp_nativeinfo_t gStringNatives[];
 extern sp_nativeinfo_t gMessageNatives[];
 extern sp_nativeinfo_t gCmdsNatives[];
 extern sp_nativeinfo_t gTimerNatives[];
+extern sp_nativeinfo_t gFloatNatives[];
 
 // Server command function (SrvCommand.cpp)
 void SPModInfoCommand();
