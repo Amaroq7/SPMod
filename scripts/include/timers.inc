@@ -22,6 +22,11 @@
 #endif
 #define _timers_included
 
+enum Timer
+{
+    INVALID_TIMER = -1
+}
+
 typedef TimerCallback = function PluginReturn (Timer timer, any data);
 
 methmodmap Timer
