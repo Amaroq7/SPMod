@@ -19,96 +19,96 @@
 
 #include "spmod.hpp"
 
-static cell_t __float_ctor(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                           const cell_t *params)
+static cell_t FloatCtor(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                        const cell_t *params)
 {
     enum { arg_int = 1 };
 
     return sp_ftoc(static_cast<float>(params[arg_int]));
 }
 
-static cell_t __float_add(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                          const cell_t *params)
+static cell_t FloatAdd(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                       const cell_t *params)
 {
     enum { arg_float1 = 1, arg_float2 };
 
     return sp_ftoc(sp_ctof(params[arg_float1]) + sp_ctof(params[arg_float2]));
 }
 
-static cell_t __float_sub(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                          const cell_t *params)
+static cell_t FloatSub(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                       const cell_t *params)
 {
     enum { arg_float1 = 1, arg_float2 };
 
     return sp_ftoc(sp_ctof(params[arg_float1]) - sp_ctof(params[arg_float2]));
 }
 
-static cell_t __float_mul(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                          const cell_t *params)
+static cell_t FloatMul(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                       const cell_t *params)
 {
     enum { arg_float1 = 1, arg_float2 };
 
     return sp_ftoc(sp_ctof(params[arg_float1]) * sp_ctof(params[arg_float2]));
 }
 
-static cell_t __float_div(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                          const cell_t *params)
+static cell_t FloatDiv(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                       const cell_t *params)
 {
     enum { arg_float1 = 1, arg_float2 };
 
     return sp_ftoc(sp_ctof(params[arg_float1]) / sp_ctof(params[arg_float2]));
 }
 
-static cell_t __float_gt(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                         const cell_t *params)
+static cell_t FloatGt(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                      const cell_t *params)
 {
     enum { arg_float1 = 1, arg_float2 };
 
     return static_cast<cell_t>(sp_ctof(params[arg_float1]) > sp_ctof(params[arg_float2]));
 }
 
-static cell_t __float_ge(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                         const cell_t *params)
+static cell_t FloatGe(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                      const cell_t *params)
 {
     enum { arg_float1 = 1, arg_float2 };
 
     return static_cast<cell_t>(sp_ctof(params[arg_float1]) >= sp_ctof(params[arg_float2]));
 }
 
-static cell_t __float_lt(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                         const cell_t *params)
+static cell_t FloatLt(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                      const cell_t *params)
 {
     enum { arg_float1 = 1, arg_float2 };
 
     return static_cast<cell_t>(sp_ctof(params[arg_float1]) < sp_ctof(params[arg_float2]));
 }
 
-static cell_t __float_le(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                         const cell_t *params)
+static cell_t FloatLe(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                      const cell_t *params)
 {
     enum { arg_float1 = 1, arg_float2 };
 
     return static_cast<cell_t>(sp_ctof(params[arg_float1]) <= sp_ctof(params[arg_float2]));
 }
 
-static cell_t __float_eq(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                         const cell_t *params)
+static cell_t FloatEq(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                      const cell_t *params)
 {
     enum { arg_float1 = 1, arg_float2 };
 
     return static_cast<cell_t>(sp_ctof(params[arg_float1]) == sp_ctof(params[arg_float2]));
 }
 
-static cell_t __float_ne(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                         const cell_t *params)
+static cell_t FloatNe(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                      const cell_t *params)
 {
     enum { arg_float1 = 1, arg_float2 };
 
     return static_cast<cell_t>(sp_ctof(params[arg_float1]) != sp_ctof(params[arg_float2]));
 }
 
-static cell_t __float_not(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                          const cell_t *params)
+static cell_t FloatNot(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                       const cell_t *params)
 {
     enum { arg_float1 = 1 };
 
@@ -164,18 +164,18 @@ static cell_t RoundToZero(SourcePawn::IPluginContext *ctx [[maybe_unused]],
 
 sp_nativeinfo_t gFloatNatives[] =
 {
-    { "__float_ctor",   __float_ctor   },
-    { "__float_add",    __float_add    },
-    { "__float_sub",    __float_sub    },
-    { "__float_mul",    __float_mul    },
-    { "__float_div",    __float_div    },
-    { "__float_gt",     __float_gt     },
-    { "__float_ge",     __float_ge     },
-    { "__float_lt",     __float_lt     },
-    { "__float_le",     __float_le     },
-    { "__float_eq",     __float_eq     },
-    { "__float_ne",     __float_ne     },
-    { "__float_not",    __float_not    },
+    { "__float_ctor",   FloatCtor      },
+    { "__float_add",    FloatAdd       },
+    { "__float_sub",    FloatSub       },
+    { "__float_mul",    FloatMul       },
+    { "__float_div",    FloatDiv       },
+    { "__float_gt",     FloatGt        },
+    { "__float_ge",     FloatGe        },
+    { "__float_lt",     FloatLt        },
+    { "__float_le",     FloatLe        },
+    { "__float_eq",     FloatEq        },
+    { "__float_ne",     FloatNe        },
+    { "__float_not",    FloatNot       },
     { "FloatAbs",       FloatAbs       },
     { "RoundToCeil",    RoundToCeil    },
     { "RoundToFloor",   RoundToFloor   },
