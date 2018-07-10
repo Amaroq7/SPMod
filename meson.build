@@ -8,6 +8,7 @@ gCppArgs = []
 gCArgs = []
 
 find_program('ninja', required : true)
+git = find_program('git', required : false)
 cppCompiler = meson.get_compiler('cpp')
 
 llvmIncludesDir = []
@@ -123,6 +124,19 @@ elif build_machine.system() == 'windows'
     endif
 endif
 
+# Generate SPConfig.hpp
+confData = configuration_data()
+confData.set('version', meson.project_version())
+
+if git.found() == true
+    commitSha = run_command('git', 'rev-parse', '--short', 'HEAD').stdout().strip()
+else
+    commitSha = '<unknown>'
+endif
+
+confData.set('commit', commitSha)
+configure_file(input : 'src/SPConfig.hpp.in', output : 'SPConfig.hpp', configuration : confData)
+
 add_global_arguments(gCArgs, language : 'c')
 add_global_arguments(gCppArgs, language : 'cpp')
 add_global_link_arguments(gLinkArgs, language : [ 'c', 'cpp' ])
@@ -153,6 +167,7 @@ includeDirs = include_directories(publicIncludesDir,
                                   spIncludesDir,
                                   metamodIncludesDir,
                                   rehldsIncludesDir,
-                                  llvmIncludesDir)
+                                  llvmIncludesDir,
+                                  '.') #build directory
 
 subdir('src')
