@@ -29,7 +29,7 @@ enum Timer
 
 typedef TimerCallback = function PluginReturn (Timer timer, any data);
 
-methmodmap Timer
+methodmap Timer
 {
     public native Timer(float interval, TimerCallback func, any data = 0, bool exec = false, bool pause = false);
     public native void Remove();
