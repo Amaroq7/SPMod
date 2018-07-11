@@ -98,8 +98,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
         logSystem->LogErrorCore("SPMod requires to have ReHLDS installed!");
         return 0;
     }
-    
-	GET_HOOK_TABLES(PLID, &gpEngineFuncs, NULL, NULL);
+    GET_HOOK_TABLES(PLID, &gpEngineFuncs, NULL, NULL);
     memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
 
     return 1;
