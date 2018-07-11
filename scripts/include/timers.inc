@@ -27,7 +27,11 @@ enum Timer
     INVALID_TIMER = -1
 }
 
-typedef TimerCallback = function PluginReturn (Timer timer, any data);
+typeset TimerCallback
+{
+    function PluginReturn (Timer timer);
+    function PluginReturn (Timer timer, any data);
+};
 
 methodmap Timer
 {
