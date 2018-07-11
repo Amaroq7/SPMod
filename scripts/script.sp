@@ -10,5 +10,5 @@ public PluginInfo pluginInfo =
 
 public void OnPluginInit()
 {
-    PrintToServer("Test output\n");
+    PrintToServer("Test output");
 }
