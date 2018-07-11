@@ -95,7 +95,7 @@ forward PluginReturn OnMapChange(const char[] map);
  * 
  * @noreturn
  */
-native void printToServer(const char[] text, any ...);
+native void PrintToServer(const char[] text, any ...);
 
 /**
  * @brief Precaches a model file.
@@ -107,7 +107,7 @@ native void printToServer(const char[] text, any ...);
  * @return          Cache id of the model.
  * @error           If called outside of the OnPluginInit() forward.
  */
-native int precacheModel(const char[] model);
+native int PrecacheModel(const char[] model);
 
 /**
  * @brief Precaches a sound file.
@@ -121,7 +121,7 @@ native int precacheModel(const char[] model);
  * @return          Cache id of the sound.
  * @error           If called outside of the OnPluginInit() forward.
  */
-native int precacheSound(const char[] sound);
+native int PrecacheSound(const char[] sound);
 
 /**
  * @brief Precaches a generic file.
@@ -133,7 +133,7 @@ native int precacheSound(const char[] sound);
  * @return          Cache id of the file.
  * @error           If called outside of the OnPluginInit() forward.
  */
-native int precacheGeneric(const char[] generic);
+native int PrecacheGeneric(const char[] generic);
 
 /**
  * @brief Changes a map.
