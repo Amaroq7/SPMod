@@ -17,23 +17,26 @@
 
 #include "spmod.hpp"
 
-// native void printToServer(const char[] text, any ...)
-static cell_t printToServer(SourcePawn::IPluginContext *ctx,
+// native void PrintToServer(const char[] text, any ...)
+static cell_t PrintToServer(SourcePawn::IPluginContext *ctx,
                                  const cell_t *params)
 {
     char *formatString;
     char bufferOutput[1024];
 
     ctx->LocalToString(params[1], &formatString);
-    gSPGlobal->formatString(bufferOutput, sizeof(bufferOutput), formatString, ctx, params, 2);
-
+    size_t res = gSPGlobal->formatString(bufferOutput, sizeof(bufferOutput)-2, formatString, ctx, params, 2);
+  
+    bufferOutput[res++] = '\n';
+    bufferOutput[res] = '\0';
+  
     SERVER_PRINT(bufferOutput);
 
     return 1;
 }
 
-// native int precacheModel(const char[] model)
-static cell_t precacheModel(SourcePawn::IPluginContext *ctx,
+// native int PrecacheModel(const char[] model)
+static cell_t PrecacheModel(SourcePawn::IPluginContext *ctx,
                                     const cell_t *params)
 {
     if (!gSPGlobal->getPluginManagerCore()->canPluginPrecache())
@@ -48,8 +51,8 @@ static cell_t precacheModel(SourcePawn::IPluginContext *ctx,
     return PRECACHE_MODEL(modelToPrecache);
 }
 
-// native int precacheSound(const char[] sound)
-static cell_t precacheSound(SourcePawn::IPluginContext *ctx,
+// native int PrecacheSound(const char[] sound)
+static cell_t PrecacheSound(SourcePawn::IPluginContext *ctx,
                                     const cell_t *params)
 {
     if (!gSPGlobal->getPluginManagerCore()->canPluginPrecache())
@@ -64,8 +67,8 @@ static cell_t precacheSound(SourcePawn::IPluginContext *ctx,
     return PRECACHE_SOUND(soundToPrecache);
 }
 
-// native int precacheGeneric(const char[] generic)
-static cell_t precacheGeneric(SourcePawn::IPluginContext *ctx,
+// native int PrecacheGeneric(const char[] generic)
+static cell_t PrecacheGeneric(SourcePawn::IPluginContext *ctx,
                                     const cell_t *params)
 {
     if (!gSPGlobal->getPluginManagerCore()->canPluginPrecache())
@@ -80,8 +83,8 @@ static cell_t precacheGeneric(SourcePawn::IPluginContext *ctx,
     return PRECACHE_GENERIC(genericToPrecache);
 }
 
-// native bool nativeRegister(const char[] name, PluginNative func)
-static cell_t nativeRegister(SourcePawn::IPluginContext *ctx,
+// native bool NativeRegister(const char[] name, PluginNative func)
+static cell_t NativeRegister(SourcePawn::IPluginContext *ctx,
                                   const cell_t *params)
 {
     char *nativeName, *pluginIdentity;
@@ -93,8 +96,8 @@ static cell_t nativeRegister(SourcePawn::IPluginContext *ctx,
     return gSPGlobal->getNativeManagerCore()->addFakeNative(pluginIdentity, nativeName, fnToExecute);
 }
 
-// native any nativeGetCell(int param)
-static cell_t nativeGetCell(SourcePawn::IPluginContext *ctx,
+// native any NativeGetCell(int param)
+static cell_t NativeGetCell(SourcePawn::IPluginContext *ctx,
                                  const cell_t *params)
 {
     cell_t param = params[1];
@@ -112,8 +115,8 @@ static cell_t nativeGetCell(SourcePawn::IPluginContext *ctx,
     return NativeMngr::m_callerParams[param];
 }
 
-// native any nativeGetCellRef(int param)
-static cell_t nativeGetCellRef(SourcePawn::IPluginContext *ctx,
+// native any NativeGetCellRef(int param)
+static cell_t NativeGetCellRef(SourcePawn::IPluginContext *ctx,
                                     const cell_t *params)
 {
     cell_t param = params[1];
@@ -133,8 +136,8 @@ static cell_t nativeGetCellRef(SourcePawn::IPluginContext *ctx,
     return *paramToGet;
 }
 
-// native int nativeGetString(int param, char[] buffer, int size)
-static cell_t nativeGetString(SourcePawn::IPluginContext *ctx,
+// native int NativeGetString(int param, char[] buffer, int size)
+static cell_t NativeGetString(SourcePawn::IPluginContext *ctx,
                                    const cell_t *params)
 {
     cell_t param = params[1];
@@ -158,8 +161,8 @@ static cell_t nativeGetString(SourcePawn::IPluginContext *ctx,
     return writtenBytes;
 }
 
-// native bool nativeGetArray(int param, any[] buffer, int size)
-static cell_t nativeGetArray(SourcePawn::IPluginContext *ctx,
+// native bool NativeGetArray(int param, any[] buffer, int size)
+static cell_t NativeGetArray(SourcePawn::IPluginContext *ctx,
                                   const cell_t *params)
 {
     cell_t param = params[1];
@@ -183,8 +186,8 @@ static cell_t nativeGetArray(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-// native bool nativeSetCellRef(int param, any value)
-static cell_t nativeSetCellRef(SourcePawn::IPluginContext *ctx,
+// native bool NativeSetCellRef(int param, any value)
+static cell_t NativeSetCellRef(SourcePawn::IPluginContext *ctx,
                                     const cell_t *params)
 {
     cell_t param = params[1];
@@ -206,8 +209,8 @@ static cell_t nativeSetCellRef(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-// native int nativeSetString(int param, const char[] string, int size)
-static cell_t nativeSetString(SourcePawn::IPluginContext *ctx,
+// native int NativeSetString(int param, const char[] string, int size)
+static cell_t NativeSetString(SourcePawn::IPluginContext *ctx,
                                    const cell_t *params)
 {
     cell_t param = params[1];
@@ -234,8 +237,8 @@ static cell_t nativeSetString(SourcePawn::IPluginContext *ctx,
     return writtenBytes;
 }
 
-// native bool nativeSetArray(int param, const any[] buffer, int size)
-static cell_t nativeSetArray(SourcePawn::IPluginContext *ctx,
+// native bool NativeSetArray(int param, const any[] buffer, int size)
+static cell_t NativeSetArray(SourcePawn::IPluginContext *ctx,
                                   const cell_t *params)
 {
     cell_t param = params[1];
@@ -274,18 +277,18 @@ static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx,
 
 sp_nativeinfo_t gCoreNatives[] =
 {
-    {  "printToServer",          printToServer       },
-    {  "precacheModel",          precacheModel       },
-    {  "precacheSound",          precacheSound       },
-    {  "precacheGeneric",        precacheGeneric     },
-    {  "nativeRegister",         nativeRegister      },
-    {  "nativeGetCell",          nativeGetCell       },
-    {  "nativeGetCellRef",       nativeGetCellRef    },
-    {  "nativeGetString",        nativeGetString     },
-    {  "nativeGetArray",         nativeGetArray      },
-    {  "nativeSetCellRef",       nativeSetCellRef    },
-    {  "nativeSetString",        nativeSetString     },
-    {  "nativeSetArray",         nativeSetArray      },
+    {  "PrintToServer",          PrintToServer       },
+    {  "PrecacheModel",          PrecacheModel       },
+    {  "PrecacheSound",          PrecacheSound       },
+    {  "PrecacheGeneric",        PrecacheGeneric     },
+    {  "NativeRegister",         NativeRegister      },
+    {  "NativeGetCell",          NativeGetCell       },
+    {  "NativeGetCellRef",       NativeGetCellRef    },
+    {  "NativeGetString",        NativeGetString     },
+    {  "NativeGetArray",         NativeGetArray      },
+    {  "NativeSetCellRef",       NativeSetCellRef    },
+    {  "NativeSetString",        NativeSetString     },
+    {  "NativeSetArray",         NativeSetArray      },
     {  "ChangeLevel",            ChangeLevel         },
     {  nullptr,                  nullptr             }
 };
