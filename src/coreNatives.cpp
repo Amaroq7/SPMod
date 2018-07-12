@@ -25,7 +25,7 @@ static cell_t PrintToServer(SourcePawn::IPluginContext *ctx,
     char bufferOutput[1024];
 
     ctx->LocalToString(params[1], &formatString);
-    size_t res = gSPGlobal->formatString(bufferOutput, sizeof(bufferOutput), formatString, ctx, params, 2);
+    size_t res = gSPGlobal->formatString(bufferOutput, sizeof(bufferOutput)-2, formatString, ctx, params, 2);
   
     bufferOutput[res++] = '\n';
     bufferOutput[res] = '\0';
