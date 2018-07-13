@@ -21,6 +21,8 @@ meta_globals_t *gpMetaGlobals;
 gamedll_funcs_t *gpGamedllFuncs;
 mutil_funcs_t *gpMetaUtilFuncs;
 
+enginefuncs_t *gpEngineFuncs;
+
 // Core module definition
 std::unique_ptr<SPModModule> gSPModModuleDef;
 
@@ -96,7 +98,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
         logSystem->LogErrorCore("SPMod requires to have ReHLDS installed!");
         return 0;
     }
-
+    GET_HOOK_TABLES(PLID, &gpEngineFuncs, nullptr, nullptr);
     memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
 
     return 1;

@@ -4,10 +4,11 @@ if build_machine.system() == 'linux'
     add_project_link_arguments('-ldl', language : [ 'c', 'cpp'])
 endif
 
-sourceFiles = files('coreNatives.cpp',
+sourceFiles = files('CoreNatives.cpp',
                     'CvarsNatives.cpp',
                     'CmdNatives.cpp',
                     'ForwardsNatives.cpp',
+                    'FloatNatives.cpp',
                     'StringNatives.cpp',
                     'MessageNatives.cpp',
                     'h_export.cpp',

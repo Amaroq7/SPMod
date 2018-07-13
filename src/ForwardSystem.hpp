@@ -250,6 +250,7 @@ public:
         PluginEnd,
         PluginNatives,
         ClientCommmand,
+        MapChange,
 
         /* number of defaults forwards */
         ForwardsNum,
