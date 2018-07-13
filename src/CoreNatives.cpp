@@ -275,6 +275,12 @@ static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
+// int GetGameTime()
+static cell_t GetGameTime(SourcePawn::IPluginContext *ctx, const cell_t *params [[maybe_unused]])
+{
+    return sp_ftoc(gpGlobals->time);
+}
+
 sp_nativeinfo_t gCoreNatives[] =
 {
     {  "PrintToServer",          PrintToServer       },
@@ -290,5 +296,6 @@ sp_nativeinfo_t gCoreNatives[] =
     {  "NativeSetString",        NativeSetString     },
     {  "NativeSetArray",         NativeSetArray      },
     {  "ChangeLevel",            ChangeLevel         },
+    {  "GetGameTime",            GetGameTime         },
     {  nullptr,                  nullptr             }
 };
