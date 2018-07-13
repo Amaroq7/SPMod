@@ -275,7 +275,7 @@ static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-// int GetGameTime()
+// float GetGameTime()
 static cell_t GetGameTime(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params [[maybe_unused]])
 {
     return sp_ftoc(gpGlobals->time);
