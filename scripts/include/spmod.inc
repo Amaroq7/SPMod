@@ -153,4 +153,4 @@ native void ChangeLevel(const char[] map);
  *
  * @return      Game time, in seconds
  */
-native int GetGameTime();
+native float GetGameTime();
