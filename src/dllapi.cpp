@@ -257,7 +257,6 @@ NEW_DLL_FUNCTIONS gNewDllFunctionTable =
 
 void GameShutdownPost()
 {
-    uninstallRehldsHooks();
     gSPGlobal->getSPEnvironment()->Shutdown();
 }
 
