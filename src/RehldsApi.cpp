@@ -173,13 +173,16 @@ bool initRehldsApi()
     }
 #endif
 
-    gRehldsHookchains->SV_DropClient()->registerHook(SV_DropClientHook);
-    gRehldsHookchains->Cvar_DirectSet()->registerHook(Cvar_DirectSetHook);
-
     return true;
 }
 
-void unintRehldsApi()
+void installRehldsHooks()
+{
+    gRehldsHookchains->SV_DropClient()->registerHook(SV_DropClientHook);
+    gRehldsHookchains->Cvar_DirectSet()->registerHook(Cvar_DirectSetHook);
+}
+
+void uninstallRehldsHooks()
 {
     gRehldsHookchains->SV_DropClient()->unregisterHook(SV_DropClientHook);
     gRehldsHookchains->Cvar_DirectSet()->unregisterHook(Cvar_DirectSetHook);
