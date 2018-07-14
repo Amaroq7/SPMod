@@ -54,6 +54,17 @@ matrix:
       env:
         - CLANG_VERSION=6
       compiler: clang
+      before_deploy:
+        - zip -9 build-test build/src/libspmod_mm.so
+      deploy:
+        provider: releases
+        api_key:
+          secure: ZrpQXadU6JjJMoi+PPkQMFRoIWu4ItBiaLQ7Wetuv2UD28cG5XCAEilDP3Ga9USMDjznn1ymILym8I5HaM5WZ7S837b5N3rNAFlGJIOpcmV3IpzC/HbCnfARgFcThyD8shicQhiBw8gPXsIO+bIIyJnY5S25ZDrIZ6KAQYOjRzTutDnbDWG0+QCPpjxzTES3YuIUzhs0I9I2hOVr2wJivpYpQN6mu2KDbiSdLh47xn+W/kHbhLDddUDtesrLbonf+0Cx4b5NMFhPtG1SfXe5RRYxUS+ojx/UpP7QvwU1JpEzHmNTHiDXM7jVFXH/1q9idkeevrIBmzyf72jbsWlxazfWrSFnF2sZxIcKw57HsB4nbbreVp966eefoZNtam3zKFaQZzIp5xJW1fov3QcCiWciZQPRJKqR4jBY7hK/go3VmJYS3NNiQaGJ9kzKywqEe3p1w+IX4P1c5TMB22OaoCFEdSiEoN8fJkNb9d242uwAES3LbRTYrVgMnd+sUiY8KXGo0GHViSUjjDTlDK7TSO0falcAKWiPLdpLARRe0ilNdD1RcpbhwL8LWCq3xsGBNF49IUkFMxjHC3mVDLvnZ/sjBvpS0cGxfu3btxbyr8UWIRavbxcY9cQobDzLjdt7ww6/GxnW92YEAf4x84ok+C0chb2j85yIgSQyxjz5WnU=
+        file: "build-test.zip"
+        skip_cleanup: true
+        draft: true
+        on:
+          tags: true
 
     - addons:
         apt:
