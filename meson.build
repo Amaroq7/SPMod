@@ -8,6 +8,7 @@ gCppArgs = []
 gCArgs = []
 
 find_program('ninja', required : true)
+git = find_program('git', required : false)
 cppCompiler = meson.get_compiler('cpp')
 
 llvmIncludesDir = []
@@ -28,10 +29,36 @@ if build_machine.system() == 'linux'
         if llvmLinker.found() == true
             gLinkArgs += '-fuse-ld=' + llvmLinker.path().split('/')[-1]
         endif
+
+        gCppArgs += '-stdlib=libc++'
+        gLinkArgs += '-L.'
+        if get_option('dynamic_link') == true
+            gLinkArgs += [
+                '-l:libc++.so.1',
+                '-l:libc++abi.so.1'
+            ]
+        else
+            gLinkArgs += [
+                '-l:libc++.a',
+                '-l:libc++abi.a',
+                '-pthread',
+            ]
+        endif
+        gLinkArgs += '-lc++experimental'
+
     elif cppCompiler.get_id() == 'gcc'
         if cppCompiler.version() < '7.0.0'
             warning('GCC v' + cppCompiler.version() + ' doesn\'t fully support C++17.')
         endif
+
+        if get_option('dynamic_link') == false
+        gLinkArgs += [
+            '-static-libgcc',
+            '-static-libstdc++'
+        ]
+        endif
+        gLinkArgs += '-lstdc++fs'
+
     else
         error('Either Clang or GCC is supported.')
     endif
@@ -50,32 +77,6 @@ if build_machine.system() == 'linux'
         '-fvisibility=hidden',
         '-Werror'
     ]
-
-    if cppCompiler.get_id() == 'clang'
-        gCppArgs += '-stdlib=libc++'
-        gLinkArgs += '-L.'
-        if get_option('dynamic_link') == true
-            gLinkArgs += [
-                '-l:libc++.so.1',
-                '-l:libc++abi.so.1'
-            ]
-        else
-            gLinkArgs += [
-                '-l:libc++.a',
-                '-l:libc++abi.a',
-                '-pthread',
-            ]
-        endif
-        gLinkArgs += '-lc++experimental'
-    elif cppCompiler.get_id() == 'gcc'
-        if get_option('dynamic_link') == false
-        gLinkArgs += [
-            '-static-libgcc',
-            '-static-libstdc++'
-        ]
-        endif
-        gLinkArgs += '-lstdc++fs'
-    endif
 elif build_machine.system() == 'windows'
     if cppCompiler.get_id() != 'msvc'
         error('Only MSVC is supported.')
@@ -123,6 +124,19 @@ elif build_machine.system() == 'windows'
     endif
 endif
 
+# Generate SPConfig.hpp
+confData = configuration_data()
+confData.set('version', meson.project_version())
+
+if git.found() == true
+    commitSha = run_command('git', 'rev-parse', '--short', 'HEAD').stdout().strip()
+else
+    commitSha = '<unknown>'
+endif
+
+confData.set('commit', commitSha)
+configure_file(input : 'src/SPConfig.hpp.in', output : 'SPConfig.hpp', configuration : confData)
+
 add_global_arguments(gCArgs, language : 'c')
 add_global_arguments(gCppArgs, language : 'cpp')
 add_global_link_arguments(gLinkArgs, language : [ 'c', 'cpp' ])
@@ -153,6 +167,7 @@ includeDirs = include_directories(publicIncludesDir,
                                   spIncludesDir,
                                   metamodIncludesDir,
                                   rehldsIncludesDir,
-                                  llvmIncludesDir)
+                                  llvmIncludesDir,
+                                  '.') #build directory
 
 subdir('src')

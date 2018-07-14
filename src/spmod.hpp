@@ -97,6 +97,7 @@ void unintRehldsApi();
 using namespace SPMod;
 
 // SPMod specific
+#include <SPConfig.hpp>
 #include "SPModModuleDef.hpp"
 #include "LoggingSystem.hpp"
 #include "PluginSystem.hpp"
@@ -106,11 +107,8 @@ using namespace SPMod;
 #include "SPGlobal.hpp"
 
 constexpr auto gSPModAuthor = "SPMod Development Team";
-constexpr auto gSPModVersion = "0.0.1";
 
-// TODO: Add info from builder like %var%
-#define APP_COMMIT_URL "https://github.com/Amaroq7/SPMod/commits/" 
-#define APP_COMMIT_SHA "000000"
+#define APP_COMMIT_URL "https://github.com/Amaroq7/SPMod/commits/"
 
 extern sp_nativeinfo_t gCoreNatives[];
 extern sp_nativeinfo_t gCvarsNatives[];
