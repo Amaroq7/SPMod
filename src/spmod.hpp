@@ -91,7 +91,8 @@ extern IRehldsServerData *gRehldsServerData;
 extern enginefuncs_t *gpEngineFuncs;
 
 bool initRehldsApi();
-void unintRehldsApi();
+void installRehldsHooks();
+void uninstallRehldsHooks();
 
 // For convenience
 using namespace SPMod;

@@ -159,6 +159,7 @@ static void ServerActivatePost(edict_t *pEdictList [[maybe_unused]],
     pluginManager->setPluginPrecache(true);
     pluginManager->loadPlugins();
     pluginManager->setPluginPrecache(false);
+    installRehldsHooks();
 }
 
 static void ServerDeactivatePost()
@@ -174,6 +175,7 @@ static void ServerDeactivatePost()
     fwdMngr->clearForwards();
     gSPGlobal->getLoggerCore()->resetErrorState();
     gSPGlobal->getNativeManagerCore()->freeFakeNatives();
+    uninstallRehldsHooks();
 }
 
 static void GameInitPost()
@@ -255,7 +257,6 @@ NEW_DLL_FUNCTIONS gNewDllFunctionTable =
 
 void GameShutdownPost()
 {
-    unintRehldsApi();
     gSPGlobal->getSPEnvironment()->Shutdown();
 }
 
