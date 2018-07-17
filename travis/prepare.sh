@@ -1,9 +1,10 @@
 #!/bin/bash
+
+# Save repo dir
+REPDIR="${PWD}"
+
 if [[ ! -z "${CLANG_VERSION}" ]]
 then
-    # Save repo dir
-    REPDIR="${PWD}"
-
     # Overwrite default compiler
     if [ ${CLANG_VERSION} == 5 ]
     then
@@ -62,3 +63,18 @@ then
     sudo update-alternatives --install /usr/bin/gcc gcc ${GCC_COMPILER} 1000
     sudo update-alternatives --install /usr/bin/g++ g++ ${GPP_COMPILER} 1000
 fi
+
+# setup python 3.7 as default
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1000
+
+# Install ambuild
+git clone https://github.com/alliedmodders/ambuild.git ../ambuild
+cd ../ambuild
+sudo python setup.py install
+
+# Build SourcePawn lib
+mkdir $REPDIR/include/sourcepawn/build
+cd $REPDIR/include/sourcepawn/build
+python ../configure.py --enable-optimize --build=core
+ambuild
+cd $REPDIR
