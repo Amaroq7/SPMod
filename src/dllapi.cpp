@@ -171,6 +171,7 @@ static void ServerDeactivatePost()
     fwdMngr->getDefaultForward(def::PluginEnd)->execFunc(nullptr);
 
     gSPGlobal->getPluginManagerCore()->clearPlugins();
+    gSPGlobal->getTimerManagerCore()->clearTimers();
     gSPGlobal->getCommandManagerCore()->clearCommands();
     fwdMngr->clearForwards();
     gSPGlobal->getLoggerCore()->resetErrorState();
@@ -190,6 +191,17 @@ static void ClientPutInServerPost(edict_t *pEntity)
     std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServer);
     forward->pushCell(ENTINDEX(pEntity));
     forward->execFunc(nullptr);
+}
+
+void StartFramePost()
+{
+    if (TimerMngr::m_nextExecution > gpGlobals->time)
+        RETURN_META(MRES_IGNORED);
+
+    TimerMngr::m_nextExecution = gpGlobals->time + 0.1f;
+    gSPGlobal->getTimerManagerCore()->execTimers(gpGlobals->time);
+
+    RETURN_META(MRES_IGNORED);
 }
 
 DLL_FUNCTIONS gDllFunctionTablePost =
@@ -219,7 +231,7 @@ DLL_FUNCTIONS gDllFunctionTablePost =
     ServerDeactivatePost,       // pfnServerDeactivate
     nullptr,					// pfnPlayerPreThink
     nullptr,					// pfnPlayerPostThink
-    nullptr,					// pfnStartFrame
+    StartFramePost,             // pfnStartFrame
     nullptr,					// pfnParmsNewLevel
     nullptr,					// pfnParmsChangeLevel
     nullptr,					// pfnGetGameDescription
