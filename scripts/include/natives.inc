@@ -39,7 +39,7 @@ typedef PluginNative = function int (int plugin_id);
  * 
  * @return          True if native has been successfully added, false otherwise.
  */
-native bool nativeRegister(const char[] name, PluginNative func);
+native bool NativeRegister(const char[] name, PluginNative func);
 
 /**
  * @brief Gets a cell from a native parameter.
@@ -51,7 +51,7 @@ native bool nativeRegister(const char[] name, PluginNative func);
  * @return          Cell value at the parameter number.
  * @error           Invalid parameter number or calling from a non-native function.
  */
-native any nativeGetCell(int param);
+native any NativeGetCell(int param);
 
 /**
  * @brief Gets a cell by reference from a native parameter.
@@ -61,7 +61,7 @@ native any nativeGetCell(int param);
  * @return          Cell value at the parameter number.
  * @error           Invalid parameter number or calling from a non-native function.
  */
-native any nativeGetCellRef(int param);
+native any NativeGetCellRef(int param);
 
 /**
  * @brief Gets a string from a native parameter.
@@ -73,7 +73,7 @@ native any nativeGetCellRef(int param);
  * @return          Number of bytes written to the buffer.
  * @error           Invalid parameter number or calling from a non-native function.
  */
-native int nativeGetString(int param, char[] buffer, int size);
+native int NativeGetString(int param, char[] buffer, int size);
 
 /**
  * @brief Gets an array from a native parameter.
@@ -85,7 +85,7 @@ native int nativeGetString(int param, char[] buffer, int size);
  * @return          True if succeed, false otherwise.
  * @error           Invalid parameter number or calling from a non-native function.
  */
-native bool nativeGetArray(int param, any[] buffer, int size);
+native bool NativeGetArray(int param, any[] buffer, int size);
 
 /**
  * @brief Sets a cell by reference in a native parameter.
@@ -96,7 +96,7 @@ native bool nativeGetArray(int param, any[] buffer, int size);
  * @return          True if succeed, false otherwise.
  * @error           Invalid parameter number or calling from a non-native function.
  */
-native bool nativeSetCellRef(int param, any value);
+native bool NativeSetCellRef(int param, any value);
 
 /**
  * @brief Sets a string in a native parameter.
@@ -108,7 +108,7 @@ native bool nativeSetCellRef(int param, any value);
  * @return          Number of bytes written.
  * @error           Invalid parameter number or calling from a non-native function.
  */
-native int nativeSetString(int param, const char[] string, int size);
+native int NativeSetString(int param, const char[] string, int size);
 
 /**
  * @brief Sets an array in a native parameter.
@@ -120,4 +120,4 @@ native int nativeSetString(int param, const char[] string, int size);
  * @return          True if succeed, false otherwise.
  * @error           Invalid parameter number or calling from a non-native function.
  */
-native bool nativeSetArray(int param, const any[] buffer, int size);
+native bool NativeSetArray(int param, const any[] buffer, int size);
