@@ -47,7 +47,7 @@ std::shared_ptr<Cvar> CvarMngr::registerCvarCore(std::string_view name,
         // Else create and register
         cvar_t new_cvar;
         new_cvar.name = name.data();
-        new_cvar.string = "";
+        new_cvar.string = const_cast<char*>("");
         new_cvar.flags = static_cast<int>(flags);
         
         CVAR_REGISTER(&new_cvar);
