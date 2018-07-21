@@ -143,6 +143,12 @@ public:
             callback->Execute(nullptr);
         }
     }
+
+    void clearCallback()
+    {
+        m_callbacks.clear();
+        m_plugin_callbacks.clear();
+    }
 private:
     Flags       m_flags;
     std::string m_name;
@@ -163,7 +169,7 @@ public:
     ICvar *registerCvar(const char *name, const char *value, ICvar::Flags flags) override;
     ICvar *findCvar(const char *name) override;
     std::shared_ptr<Cvar> registerCvarCore(std::string_view name, std::string_view value, ICvar::Flags flags);
-    std::shared_ptr<Cvar> findCvarCore(std::string_view name);
+    std::shared_ptr<Cvar> findCvarCore(std::string_view name, bool cacheonly);
     std::shared_ptr<Cvar> findCvarCore(size_t id);
 
     void clearCvars()
@@ -171,7 +177,11 @@ public:
         m_cvars.clear();
         m_id = 0;
     }
-    
+    void clearCvarsCallback()
+    {
+        for (auto pair : m_cvars)
+            pair.second->clearCallback();
+    }
 private:
     std::unordered_map<std::string, std::shared_ptr<Cvar>> m_cvars;
     /* keeps track of cvar ids */

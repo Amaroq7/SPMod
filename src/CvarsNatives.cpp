@@ -171,7 +171,7 @@ static cell_t CvarGetFlags(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    return (cell_t)cvar->getFlags();
+    return static_cast<cell_t>(cvar->getFlags());
 }
 
 static cell_t CvarSetFloat(SourcePawn::IPluginContext *ctx,
@@ -299,7 +299,7 @@ static cell_t CvarFind(SourcePawn::IPluginContext *ctx,
     char *cvarName;
     ctx->LocalToString(params[arg_name], &cvarName);
 
-    auto plCvar = cvarMngr->findCvarCore(cvarName);
+    auto plCvar = cvarMngr->findCvarCore(cvarName, false);
 
     if (!plCvar)
         return -1;

@@ -28,7 +28,7 @@ std::shared_ptr<Cvar> CvarMngr::registerCvarCore(std::string_view name,
                                                  std::string_view value,
                                                  ICvar::Flags flags)
 {
-    if (auto cvar = findCvarCore(name))
+    if (auto cvar = findCvarCore(name, true))
     {
         return cvar;
     }
@@ -72,13 +72,20 @@ std::shared_ptr<Cvar> CvarMngr::registerCvarCore(std::string_view name,
 
 ICvar *CvarMngr::findCvar(const char *name)
 {
-    if (auto found = findCvarCore(name))
-    {        
-        return found.get();
-    }
+    return findCvarCore(name, false).get();
+}
+
+std::shared_ptr<Cvar> CvarMngr::findCvarCore(std::string_view name, bool cacheonly)
+{
+    auto pair = m_cvars.find(name.data());
+    if (pair != m_cvars.end())
+        return pair->second;
+
+    if (cacheonly)
+        return nullptr;
 
     cvar_t *pcvar = nullptr;
-    pcvar = CVAR_GET_POINTER(name);
+    pcvar = CVAR_GET_POINTER(name.data());
     if (pcvar)
     {
         std::shared_ptr<Cvar> cvar = std::make_shared<Cvar>(name, m_id, pcvar->string, static_cast<ICvar::Flags>(pcvar->flags), pcvar);
@@ -86,19 +93,9 @@ ICvar *CvarMngr::findCvar(const char *name)
         m_cvars.emplace(name, cvar);
         // Raise cvar num
         m_id++;
-        return cvar.get();
+        return cvar;
     }
     // Not found
-    return nullptr;
-}
-
-std::shared_ptr<Cvar> CvarMngr::findCvarCore(std::string_view name)
-{
-    auto pair = m_cvars.find(name.data());
-
-    if (pair != m_cvars.end())
-        return pair->second;
-
     return nullptr;
 }
 
