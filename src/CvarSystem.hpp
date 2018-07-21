@@ -24,7 +24,7 @@ class Plugin;
 class Cvar final : public ICvar
 {
 public:
-    Cvar::Cvar(std::string_view name,
+    Cvar(std::string_view name,
                size_t id, 
                std::string_view value,
                ICvar::Flags flags, 

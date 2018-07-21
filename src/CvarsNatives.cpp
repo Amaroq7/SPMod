@@ -19,8 +19,8 @@
 
 #include "spmod.hpp"
 
-static cell_t CvarRegister(    SourcePawn::IPluginContext *ctx, 
-                                    const cell_t *params)
+static cell_t CvarRegister(SourcePawn::IPluginContext *ctx, 
+                           const cell_t *params)
 {	
     enum { arg_name = 1, arg_value, arg_flags };
     const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
@@ -36,8 +36,8 @@ static cell_t CvarRegister(    SourcePawn::IPluginContext *ctx,
     return plCvar->getId();
 }
 
-static cell_t CvarGetName( SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
+static cell_t CvarGetName(SourcePawn::IPluginContext *ctx,
+                          const cell_t *params)
 {
     enum { arg_index = 1, arg_buffer, arg_size };
     char *destBuffer;
@@ -74,8 +74,8 @@ static cell_t CvarGetName( SourcePawn::IPluginContext *ctx,
 }
 
 
-static cell_t CvarGetFloat(    SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
+static cell_t CvarGetFloat(SourcePawn::IPluginContext *ctx,
+                           const cell_t *params)
 {
     enum { arg_index = 1 };
     cell_t cvarId = params[arg_index];
@@ -95,8 +95,8 @@ static cell_t CvarGetFloat(    SourcePawn::IPluginContext *ctx,
     return sp_ftoc(cvar->asFloat());
 }
 
-static cell_t CvarGetString(   SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
+static cell_t CvarGetString(SourcePawn::IPluginContext *ctx,
+                            const cell_t *params)
 {    
     enum { arg_index = 1, arg_buffer, arg_size };
     char *destBuffer;
@@ -132,8 +132,8 @@ static cell_t CvarGetString(   SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t CvarGetInt(  SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
+static cell_t CvarGetInt(SourcePawn::IPluginContext *ctx,
+                         const cell_t *params)
 {
     enum { arg_index = 1 };
     cell_t cvarId = params[arg_index];
@@ -153,8 +153,8 @@ static cell_t CvarGetInt(  SourcePawn::IPluginContext *ctx,
     return cvar->asInt();
 }
 
-static cell_t CvarGetFlags(    SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
+static cell_t CvarGetFlags(SourcePawn::IPluginContext *ctx,
+                           const cell_t *params)
 {
     enum { arg_index = 1 };
     cell_t cvarId = params[arg_index];
@@ -174,8 +174,8 @@ static cell_t CvarGetFlags(    SourcePawn::IPluginContext *ctx,
     return (cell_t)cvar->getFlags();
 }
 
-static cell_t CvarSetFloat(    SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
+static cell_t CvarSetFloat(SourcePawn::IPluginContext *ctx,
+                           const cell_t *params)
 {
     enum { arg_index = 1, arg_value };
     cell_t cvarId = params[arg_index];
@@ -196,8 +196,8 @@ static cell_t CvarSetFloat(    SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t CvarSetString(   SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
+static cell_t CvarSetString(SourcePawn::IPluginContext *ctx,
+                            const cell_t *params)
 {
     enum { arg_index = 1, arg_value };
     char *cvarValue;
@@ -221,8 +221,8 @@ static cell_t CvarSetString(   SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t CvarSetInt(  SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
+static cell_t CvarSetInt(SourcePawn::IPluginContext *ctx,
+                         const cell_t *params)
 {
     enum { arg_index = 1, arg_value };
     cell_t cvarId = params[arg_index];
@@ -243,8 +243,8 @@ static cell_t CvarSetInt(  SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t CvarAddCallback( SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
+static cell_t CvarAddCallback(SourcePawn::IPluginContext *ctx,
+                              const cell_t *params)
 {
     enum { arg_index = 1, cvar_callback };
     cell_t cvarId = params[arg_index];
@@ -269,8 +269,8 @@ static cell_t CvarAddCallback( SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t CvarSetFlags( SourcePawn::IPluginContext *ctx,
-                                 const cell_t *params)
+static cell_t CvarSetFlags(SourcePawn::IPluginContext *ctx,
+                           const cell_t *params)
 {
     enum { arg_index = 1, arg_flags };
     cell_t cvarId = params[arg_index];
@@ -291,8 +291,8 @@ static cell_t CvarSetFlags( SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t CvarFind( SourcePawn::IPluginContext *ctx,
-                                 const cell_t *params)
+static cell_t CvarFind(SourcePawn::IPluginContext *ctx,
+                       const cell_t *params)
 {
     enum { arg_name = 1 };
     const std::unique_ptr<CvarMngr> &cvarMngr = gSPGlobal->getCvarManagerCore();
