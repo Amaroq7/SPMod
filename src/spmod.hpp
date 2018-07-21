@@ -91,12 +91,14 @@ extern IRehldsServerData *gRehldsServerData;
 extern enginefuncs_t *gpEngineFuncs;
 
 bool initRehldsApi();
-void unintRehldsApi();
+void installRehldsHooks();
+void uninstallRehldsHooks();
 
 // For convenience
 using namespace SPMod;
 
 // SPMod specific
+#include <SPConfig.hpp>
 #include "SPModModuleDef.hpp"
 #include "LoggingSystem.hpp"
 #include "PluginSystem.hpp"
@@ -104,14 +106,12 @@ using namespace SPMod;
 #include "NativeSystem.hpp"
 #include "CvarSystem.hpp"
 #include "CmdSystem.hpp"
+#include "TimerSystem.hpp"
 #include "SPGlobal.hpp"
 
 constexpr auto gSPModAuthor = "SPMod Development Team";
-constexpr auto gSPModVersion = "0.0.1";
 
-// TODO: Add info from builder like %var%
-#define APP_COMMIT_URL "https://github.com/Amaroq7/SPMod/commits/" 
-#define APP_COMMIT_SHA "000000"
+#define APP_COMMIT_URL "https://github.com/Amaroq7/SPMod/commits/"
 
 extern sp_nativeinfo_t gCoreNatives[];
 extern sp_nativeinfo_t gCvarsNatives[];
@@ -119,6 +119,7 @@ extern sp_nativeinfo_t gForwardsNatives[];
 extern sp_nativeinfo_t gStringNatives[];
 extern sp_nativeinfo_t gMessageNatives[];
 extern sp_nativeinfo_t gCmdsNatives[];
+extern sp_nativeinfo_t gTimerNatives[];
 extern sp_nativeinfo_t gFloatNatives[];
 
 // Server command function (SrvCommand.cpp)

@@ -264,7 +264,7 @@ static cell_t NativeSetArray(SourcePawn::IPluginContext *ctx,
 
 // void ChangeLevel(const char[] map)
 static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx,
-                          const cell_t *params)
+                                  const cell_t *params)
 {
     enum { arg_map = 1 };
 
@@ -273,6 +273,13 @@ static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx,
     gpEngineFuncs->pfnChangeLevel(newMap, nullptr);
 
     return 1;
+}
+
+// float GetGameTime() 
+static cell_t GetGameTime(SourcePawn::IPluginContext *ctx [[maybe_unused]], 
+                                  const cell_t *params [[maybe_unused]])
+{
+    return sp_ftoc(gpGlobals->time);
 }
 
 sp_nativeinfo_t gCoreNatives[] =
@@ -290,5 +297,6 @@ sp_nativeinfo_t gCoreNatives[] =
     {  "NativeSetString",        NativeSetString     },
     {  "NativeSetArray",         NativeSetArray      },
     {  "ChangeLevel",            ChangeLevel         },
+    {  "GetGameTime",            GetGameTime         },
     {  nullptr,                  nullptr             }
 };

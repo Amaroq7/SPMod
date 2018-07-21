@@ -42,6 +42,7 @@ enum PluginReturn
 #include <string>
 #include <messages>
 #include <commands>
+#include <timers>
 #include <float>
 
 /*
@@ -143,3 +144,14 @@ native int PrecacheGeneric(const char[] generic);
  * @noreturn
 */
 native void ChangeLevel(const char[] map);
+
+/**
+ * @brief Returns the game time based on the game tick.
+ *
+ * @note This time is counted up from map start. If the engine is not processing
+ *       this function will return the same value between calls, which makes it
+ *       unusable for profiling purposes.
+ *
+ * @return      Game time, in seconds
+ */
+native float GetGameTime();

@@ -116,6 +116,16 @@ public:
     }
 
     /**
+     * @brief Return SPMod timer manager.
+     * 
+     * @return              Timer manager.
+     */
+    ITimerMngr *getTimerManager() const override
+    {
+        return reinterpret_cast<ITimerMngr *>(m_timerManager.get());
+    }
+
+    /**
      * @brief Formats a string according to the SPMod format rules.
      *
      * @param buffer        Destination buffer.
@@ -159,6 +169,10 @@ public:
     {
         return m_cmdManager;
     }
+    const std::unique_ptr<TimerMngr> &getTimerManagerCore() const
+    {
+        return m_timerManager;
+    }
     const auto &getScriptsDirCore()
     {
         return m_SPModScriptsDir;
@@ -189,6 +203,7 @@ private:
     std::unique_ptr<CvarMngr> m_cvarManager;
     std::unique_ptr<Logger> m_loggingSystem;
     std::unique_ptr<CommandMngr> m_cmdManager;
+    std::unique_ptr<TimerMngr> m_timerManager;
     std::string m_modName;
     SourcePawn::ISourcePawnFactory *m_spFactory;
 

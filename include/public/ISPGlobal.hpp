@@ -46,6 +46,7 @@
 #include <IPluginSystem.hpp>
 #include <INativeSystem.hpp>
 #include <ICvarSystem.hpp>
+#include <ITimerSystem.hpp>
 
 namespace SPMod
 {
@@ -98,6 +99,13 @@ namespace SPMod
         * @return                cvar manager.
         */
         virtual ICvarMngr *getCvarManager() const = 0;
+        /**
+         * @brief Return SPMod timer manager.
+         * 
+         * @return              Timer manager.
+         */
+        virtual ITimerMngr *getTimerManager() const = 0;
+
         /**
          * @brief Returns current SourcePawn environment.
          *
