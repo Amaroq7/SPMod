@@ -24,11 +24,16 @@ class Plugin;
 class Cvar final : public ICvar
 {
 public:
-    Cvar(std::string_view name,
-         size_t id, 
-         std::string_view value,
-         ICvar::Flags flags, 
-         cvar_t *pcvar);
+    Cvar::Cvar(std::string_view name,
+               size_t id, 
+               std::string_view value,
+               ICvar::Flags flags, 
+               cvar_t *pcvar) : m_flags(flags),
+                                m_name(name),
+                                m_value(value),
+                                m_id(id),
+                                m_cvar(pcvar)
+    {}
 
     Cvar() = delete;
     ~Cvar() = default;
@@ -157,8 +162,9 @@ public:
 
     ICvar *registerCvar(const char *name, const char *value, ICvar::Flags flags) override;
     ICvar *findCvar(const char *name) override;
-    ICvar *findCvarCore(const char *name );
-    ICvar *findCvarCore(size_t id);
+    std::shared_ptr<Cvar> registerCvarCore(std::string_view name, std::string_view value, ICvar::Flags flags);
+    std::shared_ptr<Cvar> findCvarCore(std::string_view name);
+    std::shared_ptr<Cvar> findCvarCore(size_t id);
 
     void clearCvars()
     {

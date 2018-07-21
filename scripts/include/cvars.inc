@@ -54,7 +54,7 @@ enum CvarFlags
 
     // This cvar's string cannot contain unprintable characters (e.g., used for player name etc).
     PrintableOnly = (1<<7),
-	
+    
     // If this is a Server (FCVAR_SERVER), don't log changes to the log file / console if we are creating a log
     Unlogged = (1<<8),
 
@@ -76,17 +76,17 @@ typedef ConVarChanged = function void (Cvar convar, const char[] oldValue, const
 
 methodmap Cvar
 {
-	property int IntValue {
-		public native get();
-		public native set(int value);
-	}
-	property float FloatValue {
-		public native get();
-		public native set(float value);
-	}
-	property int Flags {
-		public native get();
-		public native set(int flags);
+    property int IntValue {
+        public native get();
+        public native set(int value);
+    }
+    property float FloatValue {
+        public native get();
+        public native set(float value);
+    }
+    property int Flags {
+        public native get();
+        public native set(int flags);
     }
     /* this constructor would register cvar */
     public native Cvar(const char[] name, const char[] value, CvarFlags flags=None);

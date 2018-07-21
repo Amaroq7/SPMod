@@ -299,7 +299,7 @@ static cell_t CvarFind( SourcePawn::IPluginContext *ctx,
     char *cvarName;
     ctx->LocalToString(params[arg_name], &cvarName);
 
-    auto plCvar = cvarMngr->findCvar(cvarName);
+    auto plCvar = cvarMngr->findCvarCore(cvarName);
 
     if (!plCvar)
         return -1;

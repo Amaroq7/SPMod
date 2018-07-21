@@ -45,7 +45,7 @@ static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain,
 {   
     auto cachedCvar = gSPGlobal->getCvarManagerCore()->findCvarCore(cvar->name);
     // If cached cvar is the same, do not update cached value
-    if (cachedCvar->asStringCore().compare(value))
+    if (cachedCvar && cachedCvar->asStringCore().compare(value))
     {
         cachedCvar->setValue(value);
     }

@@ -17,29 +17,27 @@
 
 #include "CvarSystem.hpp"
 
-Cvar::Cvar(std::string_view name,
-           size_t id, 
-           std::string_view value,
-           ICvar::Flags flags, 
-           cvar_t *pcvar) : m_flags(flags),
-                            m_name(name),
-                            m_value(value),
-                            m_id(id),
-                            m_cvar(pcvar)
-{}
+ICvar *CvarMngr::registerCvar(const char *name, 
+                              const char *value,
+                              ICvar::Flags flags)
+{
+    return registerCvarCore(name, value, flags).get();
+}
 
-ICvar *CvarMngr::registerCvar(  const char *name, 
-                                const char *value,
-                                ICvar::Flags flags)
+std::shared_ptr<Cvar> CvarMngr::registerCvarCore(std::string_view name,
+                                                 std::string_view value,
+                                                 ICvar::Flags flags)
 {
     if (auto cvar = findCvarCore(name))
     {
         return cvar;
     }
+
     // Not found in cache, check if already registered
     cvar_t *pcvar = nullptr;
     std::shared_ptr<Cvar> cvar;
-    pcvar = CVAR_GET_POINTER(name);
+    pcvar = CVAR_GET_POINTER(name.data());
+    
     if (pcvar)
     {
         cvar = std::make_shared<Cvar>(name, m_id, pcvar->string, static_cast<ICvar::Flags>(pcvar->flags), pcvar);
@@ -48,34 +46,35 @@ ICvar *CvarMngr::registerCvar(  const char *name,
     {
         // Else create and register
         cvar_t new_cvar;
-        new_cvar.name = name;
+        new_cvar.name = name.data();
+        new_cvar.string = "";
         new_cvar.flags = static_cast<int>(flags);
-        new_cvar.string = const_cast<char*>(value);
+        
         CVAR_REGISTER(&new_cvar);
+
         // Check if really registered
-        pcvar = CVAR_GET_POINTER(name);
-        if (pcvar)
-        {
-            cvar = std::make_shared<Cvar>(name, m_id, value, flags, pcvar);
-        }
-        else
-        {
-            // failed to register
+        pcvar = CVAR_GET_POINTER(name.data());
+
+        if (!pcvar)
             return nullptr;
-        }
+
+        g_engfuncs.pfnCvar_DirectSet(pcvar, value.data());
+
+        cvar = std::make_shared<Cvar>(name, m_id, value, flags, pcvar);
     }
+
     // Always add to cache
     m_cvars.emplace(name, cvar);
     // Raise cvar num
     m_id++;
-    return cvar.get();
+    return cvar;
 }
 
 ICvar *CvarMngr::findCvar(const char *name)
 {
     if (auto found = findCvarCore(name))
     {        
-        return found;
+        return found.get();
     }
 
     cvar_t *pcvar = nullptr;
@@ -93,22 +92,22 @@ ICvar *CvarMngr::findCvar(const char *name)
     return nullptr;
 }
 
-ICvar *CvarMngr::findCvarCore(const char *name)
+std::shared_ptr<Cvar> CvarMngr::findCvarCore(std::string_view name)
 {
-    auto pair = m_cvars.find(name);
+    auto pair = m_cvars.find(name.data());
 
     if (pair != m_cvars.end())
-        return (pair->second).get();
+        return pair->second;
 
     return nullptr;
 }
 
-ICvar *CvarMngr::findCvarCore(size_t id)
+std::shared_ptr<Cvar> CvarMngr::findCvarCore(size_t id)
 {
     for (auto pair = m_cvars.begin(); pair != m_cvars.end(); pair++)
     {
         if (pair->second->getId() == id)
-            return (pair->second).get();
+            return pair->second;
     }
 
     return nullptr;
