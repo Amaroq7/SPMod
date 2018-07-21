@@ -77,7 +77,7 @@ public:
         g_engfuncs.pfnCvar_DirectSet(m_cvar, newval.c_str());
     }
 
-    void setFlags( Flags flags) override
+    void setFlags(Flags flags) override
     {
         m_flags = flags;
         m_cvar->flags = static_cast<int>(flags);
