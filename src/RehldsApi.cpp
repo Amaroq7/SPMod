@@ -29,14 +29,33 @@ static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain,
                               const char *string)
 {
     using def = ForwardMngr::FwdDefault;
-    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientDisconnect);
 
-    forward->pushCell(ENTINDEX(client->GetEdict()));
+    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
+    std::shared_ptr<Player> plr = plrMngr->getPlayerCore(client->GetEdict());
+
+    // callback for modules
+    for (auto *listener : plrMngr->getListenerList())
+    {
+        listener->OnClientDisconnect(plr.get(), crash, string);
+    }
+
+    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientDisconnect);
+    forward->pushCell(plr->getIndex());
     forward->pushCell(crash);
     forward->pushString(string);
     forward->execFunc(nullptr);
 
     chain->callNext(client, crash, string);
+
+    // callback for modules
+    for (auto *listener : plrMngr->getListenerList())
+    {
+        listener->OnClientDisconnected(plr.get(), crash, string);
+    }
+
+    PlayerMngr::m_playersNum--;
+
+    //TODO: Add OnClientDisconnected(int client, bool crash, const char[] string) for plugins?
 }
 
 static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain,

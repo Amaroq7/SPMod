@@ -24,11 +24,21 @@ static qboolean ClientConnect(edict_t *pEntity,
 {
     using sflags = IForward::StringFlags;
     using def = ForwardMngr::FwdDefault;
-    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnect);
+
+    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
+    std::shared_ptr<Player> plr = plrMngr->getPlayerCore(pEntity);
+
+    // callback for modules
+    for (auto *listener : plrMngr->getListenerList())
+    {
+        if (!listener->OnClientConnect(plr.get(), szRejectReason, 128))
+            RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
+    }
 
     cell_t result;
+    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnect);
 
-    forward->pushCell(ENTINDEX(pEntity));
+    forward->pushCell(plr->getIndex());
     forward->pushString(pszName);
     forward->pushString(pszAddress);
     forward->pushStringEx(szRejectReason, 128, sflags::Utf8 | sflags::Copy, true);
@@ -148,14 +158,17 @@ DLL_FUNCTIONS gDllFunctionTable =
     nullptr,					// pfnAllowLagCompensation
 };
 
-static void ServerActivatePost(edict_t *pEdictList [[maybe_unused]],
+static void ServerActivatePost(edict_t *pEdictList,
                                int edictCount [[maybe_unused]],
-                               int clientMax [[maybe_unused]])
+                               int clientMax)
 {
+    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
+    plrMngr->setMaxClients(clientMax);
+    plrMngr->initPlayers(pEdictList);
+
     gSPGlobal->getForwardManagerCore()->addDefaultsForwards();
 
     const std::unique_ptr<PluginMngr> &pluginManager = gSPGlobal->getPluginManagerCore();
-
     pluginManager->setPluginPrecache(true);
     pluginManager->loadPlugins();
     pluginManager->setPluginPrecache(false);
@@ -185,22 +198,88 @@ static void GameInitPost()
     REG_SVR_COMMAND("spmod", SPModInfoCommand);
 }
 
+static qboolean ClientConnectPost(edict_t *pEntity,
+                                  const char *pszName [[maybe_unused]],
+                                  const char *pszAddress [[maybe_unused]],
+                                  char szRejectReason [[maybe_unused]] [128])
+{
+    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
+    std::shared_ptr<Player> plr = plrMngr->getPlayerCore(pEntity);
+    plr->connect(pszName, pszAddress);
+
+    // callback for modules
+    for (auto *listener : plrMngr->getListenerList())
+    {
+        listener->OnClientConnected(plr.get());
+    }
+
+    PlayerMngr::m_playersNum++;
+
+    std::string_view authid(GETPLAYERAUTHID(pEntity));
+
+    if (authid.empty() || !authid.compare("STEAM_ID_PENDING"))
+        PlayerMngr::m_playersToAuth.push_back(plr);
+    else
+        plr->authorize(authid);
+
+    // TODO: Add OnClientConnected(int client, const char[] name, const char[] ip) for plugins?
+
+    RETURN_META_VALUE(MRES_IGNORED, TRUE);
+}
+
 static void ClientPutInServerPost(edict_t *pEntity)
 {
     using def = ForwardMngr::FwdDefault;
 
+    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
+    std::shared_ptr<Player> player = plrMngr->getPlayerCore(pEntity);
+
+    // callback for modules
+    for (auto *listener : plrMngr->getListenerList())
+    {
+        listener->OnClientPutInServer(player.get());
+    }
+
     std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServer);
-    forward->pushCell(ENTINDEX(pEntity));
+    forward->pushCell(player->getIndex());
     forward->execFunc(nullptr);
 }
 
-void StartFramePost()
+static void ClientUserInfoChangedPost(edict_t *pEntity,
+                                      char *infobuffer)
 {
-    if (TimerMngr::m_nextExecution > gpGlobals->time)
-        RETURN_META(MRES_IGNORED);
+    using def = ForwardMngr::FwdDefault;
 
-    TimerMngr::m_nextExecution = gpGlobals->time + 0.1f;
-    gSPGlobal->getTimerManagerCore()->execTimers(gpGlobals->time);
+    std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(pEntity);
+    plr->setName(INFOKEY_VALUE(infobuffer, "name"));
+}
+
+static void StartFramePost()
+{
+    if (m_nextAuthCheck <= gpGlobals->time && !PlayerMngr::m_playersToAuth.empty())
+    {
+        m_nextAuthCheck = gpGlobals->time + 0.5f;
+
+        auto iter = PlayerMngr::m_playersToAuth.begin();
+        while (iter != PlayerMngr::m_playersToAuth.end())
+        {
+            std::shared_ptr<Player> plr = *iter;
+            std::string_view authid(GETPLAYERAUTHID(plr->getEdict()));
+            if (!authid.empty() && authid.compare("STEAM_ID_PENDING"))
+            {
+                plr->authorize(authid);
+                iter = PlayerMngr::playersToAuth.erase(iter);
+            }
+            else
+                ++iter;
+        }
+    }
+
+    if (TimerMngr::m_nextExecution <= gpGlobals->time)
+    {
+        TimerMngr::m_nextExecution = gpGlobals->time + 0.1f;
+        gSPGlobal->getTimerManagerCore()->execTimers(gpGlobals->time);
+    }
 
     RETURN_META(MRES_IGNORED);
 }
@@ -222,12 +301,12 @@ DLL_FUNCTIONS gDllFunctionTablePost =
     nullptr,					// pfnSaveGlobalState
     nullptr,					// pfnRestoreGlobalState
     nullptr,					// pfnResetGlobalState
-    nullptr,					// pfnClientConnect
+    ClientConnectPost,          // pfnClientConnect
     nullptr,					// pfnClientDisconnect
     nullptr,					// pfnClientKill
     ClientPutInServerPost,      // pfnClientPutInServer
     nullptr,					// pfnClientCommand
-    nullptr,					// pfnClientUserInfoChanged
+    ClientUserInfoChangedPost,  // pfnClientUserInfoChanged
     ServerActivatePost,			// pfnServerActivate
     ServerDeactivatePost,       // pfnServerDeactivate
     nullptr,					// pfnPlayerPreThink
