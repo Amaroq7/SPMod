@@ -42,40 +42,14 @@ static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain,
 static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain,
                                cvar_t *cvar,
                                const char *value)
-{
-    using def = ForwardMngr::FwdDefault;
-
-    // If value of cvar is the same, do not execute forward
-    if (!strcmp(cvar->string, value))
+{   
+    auto cachedCvar = gSPGlobal->getCvarManagerCore()->findCvarCore(cvar->name, true);
+    // If cached cvar is the same, do not update cached value
+    if (cachedCvar && cachedCvar->asStringCore().compare(value))
     {
-        chain->callNext(cvar, value);
-        return;
+        cachedCvar->setValue(value);
     }
-
-    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::CvarChange);
-    if (!forward)
-    {
-        chain->callNext(cvar, value);
-        return;
-    }
-
-    forward->pushString(cvar->name);
-    forward->pushString(cvar->string);
-    forward->pushString(value);
-
-    float valueFl;
-    try
-    {
-        valueFl = std::stof(value);
-    }
-    catch (const std::exception &e [[maybe_unused]])
-    {
-        valueFl = 0.0f;
-    }
-
-    forward->pushFloat(valueFl);
-    forward->execFunc(nullptr);
-
+    
     chain->callNext(cvar, value);
 }
 

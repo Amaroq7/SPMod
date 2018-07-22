@@ -173,6 +173,7 @@ static void ServerDeactivatePost()
     gSPGlobal->getPluginManagerCore()->clearPlugins();
     gSPGlobal->getTimerManagerCore()->clearTimers();
     gSPGlobal->getCommandManagerCore()->clearCommands();
+    gSPGlobal->getCvarManagerCore()->clearCvarsCallback();
     fwdMngr->clearForwards();
     gSPGlobal->getLoggerCore()->resetErrorState();
     gSPGlobal->getNativeManagerCore()->freeFakeNatives();

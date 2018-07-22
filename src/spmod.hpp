@@ -104,6 +104,7 @@ using namespace SPMod;
 #include "PluginSystem.hpp"
 #include "ForwardSystem.hpp"
 #include "NativeSystem.hpp"
+#include "CvarSystem.hpp"
 #include "CmdSystem.hpp"
 #include "TimerSystem.hpp"
 #include "SPGlobal.hpp"

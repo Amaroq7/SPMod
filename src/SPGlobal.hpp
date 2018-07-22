@@ -21,6 +21,7 @@
 
 class PluginMngr;
 class ForwardMngr;
+class CvarMngr;
 class Logger;
 
 class SPGlobal : public ISPGlobal
@@ -78,7 +79,7 @@ public:
     /**
      * @brief Returns SPMod forward manager.
      *
-     * @return				Forward manager.
+     * @return                Forward manager.
      */
     IForwardMngr *getForwardManager() const override
     {
@@ -86,9 +87,18 @@ public:
     }
 
     /**
+    * @brief Returns SPMod cvar manager.
+    *
+    * @return                Cvar manager.
+    */
+    ICvarMngr *getCvarManager() const override
+    {
+        return reinterpret_cast<ICvarMngr *>(m_cvarManager.get());
+    }
+    /**
      * @brief Returns current SourcePawn environment.
      *
-     * @return				SourcePawn environment.
+     * @return                SourcePawn environment.
      */
     SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const override
     {
@@ -118,14 +128,14 @@ public:
     /**
      * @brief Formats a string according to the SPMod format rules.
      *
-     * @param buffer		Destination buffer.
-     * @param length		Length of buffer.
-     * @param format		Formatting string.
+     * @param buffer        Destination buffer.
+     * @param length        Length of buffer.
+     * @param format        Formatting string.
      * @param ctx           Plugin context.
      * @param params        Params list passed by native.
-     * @param param			Index of param which contains first formatting argument.
+     * @param param            Index of param which contains first formatting argument.
      *
-     * @return				Number of characters written.
+     * @return                Number of characters written.
      */
     unsigned int formatString(char *buffer,
                               size_t length,
@@ -142,6 +152,10 @@ public:
     const std::unique_ptr<ForwardMngr> &getForwardManagerCore() const
     {
         return m_forwardManager;
+    }
+    const std::unique_ptr<CvarMngr> &getCvarManagerCore() const
+    {
+        return m_cvarManager;
     }
     const std::unique_ptr<Logger> &getLoggerCore() const
     {
@@ -186,6 +200,7 @@ private:
     std::unique_ptr<NativeMngr> m_nativeManager;
     std::unique_ptr<PluginMngr> m_pluginManager;
     std::unique_ptr<ForwardMngr> m_forwardManager;
+    std::unique_ptr<CvarMngr> m_cvarManager;
     std::unique_ptr<Logger> m_loggingSystem;
     std::unique_ptr<CommandMngr> m_cmdManager;
     std::unique_ptr<TimerMngr> m_timerManager;

@@ -243,7 +243,6 @@ public:
     {
         ClientConnect = 0,
         ClientDisconnect,
-        CvarChange,
         ClientPutInServer,
         PluginsLoaded,
         PluginInit,
