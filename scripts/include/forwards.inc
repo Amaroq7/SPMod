@@ -42,13 +42,13 @@ enum ExecType
  */
 enum ParamType
 {
-    None = 0,
-    Cell,
-    CellRef,
-    Float,
-    FloatRef,
-    Array,
-    String
+    ParamType_None = 0,
+    ParamType_Cell,
+    ParamType_CellRef,
+    ParamType_Float,
+    ParamType_FloatRef,
+    ParamType_Array,
+    ParamType_String
 };
 
 /*
@@ -57,16 +57,16 @@ enum ParamType
 enum StringFlags
 {
     /* No special behavior */
-    None = 0,
+    StringFlags_None = 0,
 
     /* String should be UTF-8 handled */
-    Utf8 = (1 << 0),
+    StringFlags_Utf8 = (1 << 0),
 
     /* String should be copied into the plugin */
-    Copy = (1 << 1),
+    StringFlags_Copy = (1 << 1),
 
     /* String should be handled as binary data */
-    Binary = (1 << 2)
+    StringFlags_Binary = (1 << 2)
 };
 
 enum Forward
