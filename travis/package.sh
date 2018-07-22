@@ -10,8 +10,8 @@ mkdir $TRAVIS_BUILD_DIR/dlls
 mv $TRAVIS_BUILD_DIR/build/src/libspmod_mm.so $TRAVIS_BUILD_DIR/dlls
 
 # Move SourcePawn files
-mv $TRAVIS_BUILD_DIR/include/sourcepawn/build/vm/sourcepawn.jit.x86/sourcepawn.jit.x86.so $REPDIR/dlls
-mv $TRAVIS_BUILD_DIR/include/sourcepawn/build/compiler/spcomp/spcomp $REPDIR/scripts
+mv $TRAVIS_BUILD_DIR/include/sourcepawn/build/vm/sourcepawn.jit.x86/sourcepawn.jit.x86.so $TRAVIS_BUILD_DIR/dlls
+mv $TRAVIS_BUILD_DIR/include/sourcepawn/build/compiler/spcomp/spcomp $TRAVIS_BUILD_DIR/scripts
 
 if [[ $LINK_TYPE == "dynamic" && ! -z $CLANG_VERSION ]]
 then
