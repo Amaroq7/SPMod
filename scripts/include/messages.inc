@@ -67,7 +67,7 @@ native int GetUserMsgName(int msgid, char[] str, int len);
  * @noreturn
  * @error              Invalid message index, invalid number of parameters passed.
  */
-native void MessageBegin(int dest, int msgid, const int origin[3] = {0,0,0}, int player = 0);
+native void MessageBegin(int dest, int msgid, int origin[3] = {0,0,0}, int player = 0);
 
 /**
  * @brief Starts a message.
@@ -80,7 +80,7 @@ native void MessageBegin(int dest, int msgid, const int origin[3] = {0,0,0}, int
  * @noreturn
  * @error              Invalid message index, invalid number of parameters passed.
  */
-native void MessageBeginF(int dest, int msgid, const float origin[3] = {0.0,0.0,0.0}, int player = 0);
+native void MessageBeginF(int dest, int msgid, float origin[3] = {0.0,0.0,0.0}, int player = 0);
 
 /**
  * @brief Ends a message.
