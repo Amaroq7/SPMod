@@ -1,7 +1,7 @@
 project('SPMod', ['c', 'cpp'],
                   license : 'GPLv3',
                   meson_version : '>=0.44.0',
-                  version : '0.0.1')
+                  version : '0.1.0-alpha')
 
 gLinkArgs = []
 gCppArgs = []
