@@ -10,17 +10,53 @@ platform: x64
 build:
   parallel: true
   verbosity: detailed
+environment:
+  matrix:
+    - LINK_TYPE: dynamic
+    - LINK_TYPE: static
+artifacts:
+  - path: spmod-win32-$(APPVEYOR_REPO_TAG_NAME)-msvc*-$(LINK_TYPE).7z
+    name: spmod-build
 install:
-  - git submodule update --init --recursive
-  - cd ..
-  - ps: Start-FileDownload 'https://github.com/mesonbuild/meson/releases/download/0.46.1/meson-0.46.1-64.msi'
-  - start /wait msiexec.exe /i meson-0.46.1-64.msi /quiet /qn /norestart /log install.log
-  - cd SPMod
-build_script:
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
-  - set PATH=C:\Program Files\Meson;%PATH%
+  - set PATH=C:\Python37-x64;C:\Python37-x64\Scripts;C:\Program Files\Meson;%PATH%
+  - git submodule update --init --recursive
+  - mkdir dlls
+  - cd ..
+  - ps: Start-FileDownload 'https://github.com/mesonbuild/meson/releases/download/0.47.1/meson-0.47.1-64.msi'
+  - start /wait msiexec.exe /i meson-0.47.1-64.msi /quiet /qn /norestart /log install.log
+  # Install ambuild
+  - git clone https://github.com/alliedmodders/ambuild.git
+  - cd ambuild
+  - python setup.py install
+  # Build SourcePawn lib
+  - cd ..\SPMod\include\sourcepawn
   - mkdir build
   - cd build
-  - meson .. . --buildtype plain
+  - python ..\configure.py --enable-optimize --build=core
+  - ambuild
+  - move vm\sourcepawn.jit.x86\sourcepawn.jit.x86.dll ..\..\..\dlls
+  - move compiler\spcomp\spcomp.exe ..\..\..\scripts
+  - cd ..\..\..
+build_script:
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
+  - mkdir build
+  - cd build
+  - meson .. . --buildtype plain -D windebug=false -D linktype=%LINK_TYPE%
   - meson configure
   - ninja
+  - cd ..
+  - move build\src\spmod_mm.dll dlls
+  - 7z a -t7z -mm=LZMA:d256m:fb64 -mx9 spmod-win32-%APPVEYOR_REPO_TAG_NAME%-msvc%APPVEYOR_BUILD_WORKER_IMAGE:~-4%-%LINK_TYPE%.7z dlls scripts
+deploy:
+  description: ''
+  provider: GitHub
+  auth_token:
+    secure: OHpFkNuODntvGsZ4TURitsr5WB5EtsLkOBcqpEX2AEEhP3qsYJAePoUW8CtDB86K
+  artifact: spmod-build
+  draft: true
+  prerelease: false
+  tag: $(appveyor_repo_tag_name)
+  on:
+    branch: /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+    appveyor_repo_tag: true

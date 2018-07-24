@@ -1,9 +1,7 @@
 #!/bin/bash
+
 if [[ ! -z "${CLANG_VERSION}" ]]
 then
-    # Save repo dir
-    REPDIR="${PWD}"
-
     # Overwrite default compiler
     if [ ${CLANG_VERSION} == 5 ]
     then
@@ -36,7 +34,7 @@ then
     ninja
 
     # Copy built files to build dir
-    cd ${REPDIR}
+    cd $TRAVIS_BUILD_DIR
     mkdir build
     cp ../libcxxabi_build/lib/* build
     cp ../libcxxabi/include/* include/llvm
@@ -49,16 +47,12 @@ then
     sudo ln -sv /usr/include/asm-generic/ /usr/include/asm
 
     # Overwrite default version of compilers
-    if [ ${GCC_VERSION} == 7 ]
-    then
-        GCC_COMPILER=/usr/bin/gcc-7
-        GPP_COMPILER=/usr/bin/g++-7
-    elif [ ${GCC_VERSION} == 8 ]
-    then
-        GCC_COMPILER=/usr/bin/gcc-8
-        GPP_COMPILER=/usr/bin/g++-8
-    fi
+    GCC_COMPILER=/usr/bin/gcc-$GCC_VERSION
+    GPP_COMPILER=/usr/bin/g++-$GCC_VERSION
 
     sudo update-alternatives --install /usr/bin/gcc gcc ${GCC_COMPILER} 1000
     sudo update-alternatives --install /usr/bin/g++ g++ ${GPP_COMPILER} 1000
 fi
+
+# setup python 3.7 as default
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1000

@@ -1,0 +1,13 @@
+--- gcc.py	2018-07-23 23:42:39.509660285 +0200
++++ gcc-nodbg-clang.py	2018-07-23 23:49:45.743935682 +0200
+@@ -99,10 +99,6 @@
+   def like(self, name):
+     return name == 'gcc' or name == 'clang' or name == self.name
+ 
+-  @property
+-  def debugInfoArgv(self):
+-    return ['-g3']
+-
+ class Emscripten(Clang):
+   def __init__(self, version):
+     # Set this first, since the constructor will need it.

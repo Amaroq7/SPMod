@@ -1,2 +1,2 @@
 option('windebug', type : 'boolean', value : true, description : 'Enable debug build (Windows only)')
-option('dynamic_link', type : 'boolean', value : false, description : 'Enable dynamic linking')
+option('linktype', type : 'combo', choices : [ 'static', 'dynamic' ], value : 'static', description : 'Linking type')

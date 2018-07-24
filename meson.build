@@ -32,7 +32,7 @@ if build_machine.system() == 'linux'
 
         gCppArgs += '-stdlib=libc++'
         gLinkArgs += '-L.'
-        if get_option('dynamic_link') == true
+        if get_option('linktype') == 'dynamic'
             gLinkArgs += [
                 '-l:libc++.so.1',
                 '-l:libc++abi.so.1'
@@ -51,7 +51,7 @@ if build_machine.system() == 'linux'
             warning('GCC v' + cppCompiler.version() + ' doesn\'t fully support C++17.')
         endif
 
-        if get_option('dynamic_link') == false
+        if get_option('linktype') == 'static'
         gLinkArgs += [
             '-static-libgcc',
             '-static-libstdc++'
@@ -104,7 +104,7 @@ elif build_machine.system() == 'windows'
     if get_option('windebug') == true
         gCppArgs += '/RTC1'  # runtime checks
 
-        if get_option('dynamic_link') == true
+        if get_option('linktype') == 'dynamic'
             gCppArgs += '/MDd'
         endif
     else
@@ -113,7 +113,7 @@ elif build_machine.system() == 'windows'
             '/GL'     # whole program optimization
         ]
 
-        if get_option('dynamic_link') == true
+        if get_option('linktype') == 'dynamic'
             gCppArgs += '/MD'
         endif
 

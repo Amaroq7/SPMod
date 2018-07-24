@@ -14,14 +14,14 @@ matrix:
           sources:
             - llvm-toolchain-trusty-5.0
             - ubuntu-toolchain-r-test
-            - deadsnakes #python3.6
+            - deadsnakes #python
             - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
           packages:
             - clang-5.0
             - lld-5.0
             - gcc-multilib
             - g++-multilib
-            - python3.6
+            - python3.7
             - meson
             - ninja-build
             - lib32z1-dev
@@ -29,7 +29,7 @@ matrix:
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - CLANG_VERSION=5
+        - CLANG_VERSION=5 LINK_TYPE=static
       compiler: clang
 
     - addons:
@@ -37,14 +37,14 @@ matrix:
           sources:
             - llvm-toolchain-trusty-6.0
             - ubuntu-toolchain-r-test
-            - deadsnakes #python3.6
+            - deadsnakes #python
             - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
           packages:
             - clang-6.0
             - lld-6.0
             - gcc-multilib
             - g++-multilib
-            - python3.6
+            - python3.7
             - meson
             - ninja-build
             - lib32z1-dev
@@ -52,7 +52,30 @@ matrix:
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - CLANG_VERSION=6
+        - CLANG_VERSION=6 LINK_TYPE=static CC_VERSION=6
+      compiler: clang
+
+    - addons:
+        apt:
+          sources:
+              - llvm-toolchain-trusty-6.0
+              - ubuntu-toolchain-r-test
+              - deadsnakes #python
+              - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
+          packages:
+            - clang-6.0
+            - lld-6.0
+            - gcc-multilib
+            - g++-multilib
+            - python3.7
+            - meson
+            - ninja-build
+            - lib32z1-dev
+            - lib32stdc++6
+            - libc6-dev-i386
+            - linux-libc-dev
+      env:
+        - CLANG_VERSION=6 LINK_TYPE=dynamic CC_VERSION=6
       compiler: clang
 
     - addons:
@@ -66,7 +89,7 @@ matrix:
             - g++-7
             - gcc-7-multilib
             - g++-7-multilib
-            - python3.6
+            - python3.7
             - meson
             - ninja-build
             - lib32z1-dev
@@ -74,7 +97,7 @@ matrix:
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - GCC_VERSION=7
+        - GCC_VERSION=7 LINK_TYPE=static
       compiler: gcc
 
     - addons:
@@ -88,7 +111,7 @@ matrix:
             - g++-8
             - gcc-8-multilib
             - g++-8-multilib
-            - python3.6
+            - python3.7
             - meson
             - ninja-build
             - lib32z1-dev
@@ -96,11 +119,48 @@ matrix:
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - GCC_VERSION=8
+        - GCC_VERSION=8 LINK_TYPE=static CC_VERSION=8
+      compiler: gcc
+
+    - addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - deadsnakes #python3.6
+            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
+          packages:
+            - gcc-8
+            - g++-8
+            - gcc-8-multilib
+            - g++-8-multilib
+            - python3.7
+            - meson
+            - ninja-build
+            - lib32z1-dev
+            - lib32stdc++6
+            - libc6-dev-i386
+            - linux-libc-dev
+      env:
+        - GCC_VERSION=8 LINK_TYPE=dynamic CC_VERSION=8
       compiler: gcc
 
 before_script:
-    - export PATH=/usr/bin:$PATH
-    - travis/prepare.sh
+  - export PATH=/usr/bin:$PATH LD_LIBRARY_PATH=$TRAVIS_BUILD_DIR/build:$LD_LIBRARY_PATH
+  - travis/prepare.sh
 script:
-    - travis/build.sh
+  - travis/build.sh
+
+before_deploy:
+  - travis/package.sh
+deploy:
+  provider: releases
+  api_key:
+    secure: LGXp5xFYtOnWozrsn8OpmRBBQN0M62GFjvYK4BFyjnxhYjBXnazFg9EOjr3EKgPm7iS7SgzLjjXNGIaSObVSCyFM5/WTcgcewhY2YdL8BzqsFKE/90s0x5mKilOLZPOGfMHwrWV5tK9KgZsdh4ddScY8uaoqNirbXvqaCz56reTk3rTnE+csAYhM5vtE+SnlSQJf1xlACtP30v5YEtYUw1msyH2S50j+d8ezztQT6PA5xpPJVXAGA2q4Z5AafvhIp1IY7br6BxRY5osyKGOpM7coN+b5oqaTs2PbxaYyZDZFEqGnW4sCVXwdgl4Ps+OAQCLfoLWqa9ALYCW9YD8SOkE3AMksjK5eewmXQ5W61R5ejGmUa7h1zEGd+judrP6qQKDP3tBlD21EFwiflGFkze1ocbYu7xA5tjuMndQ+JFl55Yz14tQdVtQRVi8u398go7ueTnkghkQSZbTS60wMyetoxajVYCEVlPAhrxawhXu30CAbSGdGSLLAntZKFa7N6cN2TvfTZ9S9LuSQopRV4rnH7ekqAnH0FuOIaPZNEt9EO08pGMjVhUnLOk0EHh7VbPrQ8vqOzVcvLgGrbA4tFIFbDXTYzeFg34oqxePyGJToOGxUHD1l6nVFRndtNiNFD8cV2n61kyMKffoU8GmZIxADIGdISJvFKDVJWoLf+Ps=
+  file: spmod-$TRAVIS_OS_NAME-$TRAVIS_TAG-$CC$CC_VERSION-$LINK_TYPE.tar.xz
+  skip_cleanup: true
+  draft: true
+  tag_name: $TRAVIS_TAG
+  on:
+    tags: true
+    branch: /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+    condition: $CLANG_VERSION = 6 || $GCC_VERSION = 8
