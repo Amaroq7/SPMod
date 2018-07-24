@@ -50,15 +50,8 @@ then
     sudo ln -sv /usr/include/asm-generic/ /usr/include/asm
 
     # Overwrite default version of compilers
-    if [ ${GCC_VERSION} == 7 ]
-    then
-        GCC_COMPILER=/usr/bin/gcc-7
-        GPP_COMPILER=/usr/bin/g++-7
-    elif [ ${GCC_VERSION} == 8 ]
-    then
-        GCC_COMPILER=/usr/bin/gcc-8
-        GPP_COMPILER=/usr/bin/g++-8
-    fi
+    GCC_COMPILER=/usr/bin/gcc-$GCC_VERSION
+    GPP_COMPILER=/usr/bin/g++-$GCC_VERSION
 
     sudo update-alternatives --install /usr/bin/gcc gcc ${GCC_COMPILER} 1000
     sudo update-alternatives --install /usr/bin/g++ g++ ${GPP_COMPILER} 1000
