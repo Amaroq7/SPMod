@@ -60,21 +60,25 @@ fi
 # setup python 3.7 as default
 sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1000
 
-# Install ambuild
-git clone https://github.com/alliedmodders/ambuild.git ../ambuild
-
-# Patch to build sourcepawn lib without -g3 switch (Clang only)
-if [[ $CLANG_VERSION ]]
+# Build SourcePawn on release only
+if [[ $TRAVIS_TAG ]]
 then
-    patch --verbose -d ../ambuild/ambuild2/frontend/v2_1/cpp < patches/gcc-nodbg-clang.patch
+    # Install ambuild
+    git clone https://github.com/alliedmodders/ambuild.git ../ambuild
+
+    # Patch to build sourcepawn lib without -g3 switch (Clang only)
+    if [[ $CLANG_VERSION ]]
+    then
+        patch --verbose -d ../ambuild/ambuild2/frontend/v2_1/cpp < patches/gcc-nodbg-clang.patch
+    fi
+
+    cd ../ambuild
+    sudo python setup.py install
+
+    # Build SourcePawn lib
+    mkdir $REPDIR/include/sourcepawn/build
+    cd $REPDIR/include/sourcepawn/build
+    python ../configure.py --enable-optimize --build=core
+    ambuild
+    cd $REPDIR
 fi
-
-cd ../ambuild
-sudo python setup.py install
-
-# Build SourcePawn lib
-mkdir $REPDIR/include/sourcepawn/build
-cd $REPDIR/include/sourcepawn/build
-python ../configure.py --enable-optimize --build=core
-ambuild
-cd $REPDIR
