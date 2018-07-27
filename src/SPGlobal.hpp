@@ -125,6 +125,11 @@ public:
         return reinterpret_cast<ITimerMngr *>(m_timerManager.get());
     }
 
+    IUtils *getUtils() const override
+    {
+        return reinterpret_cast<IUtils *>(m_utils.get());
+    }
+
     /**
      * @brief Formats a string according to the SPMod format rules.
      *
@@ -173,6 +178,10 @@ public:
     {
         return m_timerManager;
     }
+    const std::unique_ptr<Utils> &getUtilsCore() const
+    {
+        return m_utils;
+    }
     const auto &getScriptsDirCore()
     {
         return m_SPModScriptsDir;
@@ -204,6 +213,7 @@ private:
     std::unique_ptr<Logger> m_loggingSystem;
     std::unique_ptr<CommandMngr> m_cmdManager;
     std::unique_ptr<TimerMngr> m_timerManager;
+    std::unique_ptr<Utils> m_utils;
     std::string m_modName;
     SourcePawn::ISourcePawnFactory *m_spFactory;
 
