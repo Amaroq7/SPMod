@@ -47,9 +47,9 @@ std::shared_ptr<Cvar> CvarMngr::registerCvarCore(std::string_view name,
         // Else create and register
         cvar_t new_cvar;
         new_cvar.name = name.data();
-        new_cvar.string = const_cast<char*>("");
+        new_cvar.string = const_cast<char *>("");
         new_cvar.flags = static_cast<int>(flags);
-        
+
         CVAR_REGISTER(&new_cvar);
 
         // Check if really registered
@@ -75,7 +75,8 @@ ICvar *CvarMngr::findCvar(const char *name)
     return findCvarCore(name, false).get();
 }
 
-std::shared_ptr<Cvar> CvarMngr::findCvarCore(std::string_view name, bool cacheonly)
+std::shared_ptr<Cvar> CvarMngr::findCvarCore(std::string_view name,
+                                             bool cacheonly)
 {
     auto pair = m_cvars.find(name.data());
     if (pair != m_cvars.end())
@@ -115,6 +116,7 @@ void CvarMngr::clearCvars()
     m_cvars.clear();
     m_id = 0;
 }
+
 void CvarMngr::clearCvarsCallback()
 {
     for (auto pair : m_cvars)

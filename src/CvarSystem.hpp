@@ -25,10 +25,10 @@ class Cvar final : public ICvar
 {
 public:
     Cvar(std::string_view name,
-               std::size_t id, 
-               std::string_view value,
-               ICvar::Flags flags, 
-               cvar_t *pcvar);
+         std::size_t id, 
+         std::string_view value,
+         ICvar::Flags flags, 
+         cvar_t *pcvar);
 
     Cvar() = delete;
     ~Cvar() = default;
@@ -47,7 +47,9 @@ public:
     std::string_view getNameCore() const;
     void addCallback(cvarCallback_t callback) override;
     void addPluginCallback(SourcePawn::IPluginFunction *callback) override;
-    void runCallbacks(std::string_view old_value, std::string_view new_value);
+    void runCallbacks(std::string_view old_value,
+                      std::string_view new_value);
+
     void clearCallback();
 
 private:
@@ -67,10 +69,18 @@ public:
     CvarMngr() = default;
     ~CvarMngr() = default;
 
-    ICvar *registerCvar(const char *name, const char *value, ICvar::Flags flags) override;
+    ICvar *registerCvar(const char *name,
+                        const char *value,
+                        ICvar::Flags flags) override;
+
     ICvar *findCvar(const char *name) override;
-    std::shared_ptr<Cvar> registerCvarCore(std::string_view name, std::string_view value, ICvar::Flags flags);
-    std::shared_ptr<Cvar> findCvarCore(std::string_view name, bool cacheonly);
+    std::shared_ptr<Cvar> registerCvarCore(std::string_view name,
+                                           std::string_view value,
+                                           ICvar::Flags flags);
+
+    std::shared_ptr<Cvar> findCvarCore(std::string_view name,
+                                       bool cacheonly);
+
     std::shared_ptr<Cvar> findCvarCore(std::size_t id);
     void clearCvars();
     void clearCvarsCallback();
