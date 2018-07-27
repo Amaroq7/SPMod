@@ -97,7 +97,7 @@ methodmap Forward
      * 
      * @return          True if succeed, false otherwise.
      */
-    public native bool pushCell(any cell);
+    public native bool PushCell(any cell);
 
     /*
      * @brief Pushes cell by reference.
@@ -106,7 +106,7 @@ methodmap Forward
      * 
      * @return          True if succeed, false otherwise.
      */
-    public native bool pushCellRef(any &cell);
+    public native bool PushCellRef(any &cell);
 
     /*
      * @brief Pushes real number.
@@ -115,7 +115,7 @@ methodmap Forward
      * 
      * @return          True if succeed, false otherwise.
      */
-    public native bool pushFloat(float real);
+    public native bool PushFloat(float real);
 
     /*
      * @brief Pushes real number by reference.
@@ -124,7 +124,7 @@ methodmap Forward
      * 
      * @return          True if succeed, false otherwise.
      */
-    public native bool pushFloatRef(float &real);
+    public native bool PushFloatRef(float &real);
 
     /*
      * @brief Pushes string.
@@ -133,7 +133,7 @@ methodmap Forward
      * 
      * @return          True if succeed, false otherwise.
      */
-    public native bool pushString(const char[] string);
+    public native bool PushString(const char[] string);
 
     /*
      * @brief Pushes array.
@@ -143,7 +143,7 @@ methodmap Forward
      * 
      * @return          True if succeed, false otherwise.
      */
-    public native bool pushArray(const any[] array, int size);
+    public native bool PushArray(const any[] array, int size);
 
     /*
      * @brief Pushes string.
@@ -155,7 +155,7 @@ methodmap Forward
      * 
      * @return          True if succeed, false otherwise.
      */
-    public native bool pushStringEx(char[] string, int length, StringFlags sflags, bool copyback);
+    public native bool PushStringEx(char[] string, int length, StringFlags sflags, bool copyback);
 
     /*
      * @brief Pushes array.
@@ -166,7 +166,7 @@ methodmap Forward
      * 
      * @return          True if succeed, false otherwise.
      */
-    public native bool pushArrayEx(any[] array, int size, bool copyback);
+    public native bool PushArrayEx(any[] array, int size, bool copyback);
 
     /*
      * @brief Executes forward.
@@ -175,14 +175,14 @@ methodmap Forward
      * 
      * @return          True if succeed, false otherwise.
      */
-    public native bool pushExec(any &result = 0);
+    public native bool PushExec(any &result = 0);
 
     /*
      * @brief Resets already pushed params.
      * 
      * @return          True if succeed, false otherwise.
      */
-    public native bool pushCancel();
+    public native bool PushCancel();
 
     /*
      * @brief Deletes forward.
@@ -191,14 +191,5 @@ methodmap Forward
      * 
      * @return          True if succeed, false otherwise.
      */
-    public native bool remove();
+    public native bool Remove();
 };
-
-/*
- * @brief Finds the forward by name.
- * 
- * @param name      Forward name to look for.
- * 
- * @return          Forward or INVALID_FORWARD if not found.
- */
-native Forward findForward(const char[] name);

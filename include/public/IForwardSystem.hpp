@@ -274,24 +274,6 @@ namespace SPMod
                                         ...) = 0;
 
         /*
-         * @brief Finds forward by name.
-         *
-         * @param name      Name of the forward to search for.
-         *
-         * @return          Forward pointer, nullptr if not found.
-         */
-        virtual IForward *findForward(const char *name) const = 0;
-
-        /*
-         * @brief Finds forward by id.
-         *
-         * @param name      Id of the forward to search for.
-         *
-         * @return          Forward pointer, nullptr if not found.
-         */
-        virtual IForward *findForward(size_t id) const = 0;
-
-        /*
          * @brief Deletes forward.
          *
          * @param forward   Forward to remove.

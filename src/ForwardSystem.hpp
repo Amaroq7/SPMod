@@ -270,8 +270,6 @@ public:
                             size_t params,
                             ...) override;
 
-    IForward *findForward(const char *name) const override;
-    IForward *findForward(size_t id) const override;
     void deleteForward(IForward *forward) override
     {
         m_forwards.erase(forward->getName());
@@ -306,8 +304,7 @@ public:
                                                size_t paramsnum,
                                                std::shared_ptr<Plugin> plugin = nullptr);
 
-    std::shared_ptr<Forward> findForwardCore(std::string_view name) const;
-    std::shared_ptr<Forward> findForwardCore(size_t id) const;
+    std::shared_ptr<Forward> findForward(size_t id) const;
 
 private:
     std::shared_ptr<Forward> _createForwardVa(std::string_view name,

@@ -499,32 +499,12 @@ IForward *ForwardMngr::createForward(const char *name,
     return createdForward.get();
 }
 
-IForward *ForwardMngr::findForward(const char *name) const
+std::shared_ptr<Forward> ForwardMngr::findForward(size_t id) const
 {
-    return findForwardCore(name).get();
-}
-
-IForward *ForwardMngr::findForward(size_t id) const
-{
-    return findForwardCore(id).get();
-}
-
-std::shared_ptr<Forward> ForwardMngr::findForwardCore(std::string_view name) const
-{
-    auto pair = m_forwards.find(name.data());
-
-    if (pair != m_forwards.end())
-        return pair->second;
-
-    return nullptr;
-}
-
-std::shared_ptr<Forward> ForwardMngr::findForwardCore(size_t id) const
-{
-    for (auto pair = m_forwards.begin(); pair != m_forwards.end(); pair++)
+    for (auto pair : m_forwards)
     {
-        if (pair->second->getId() == id)
-            return pair->second;
+        if (pair.second->getId() == id)
+            return pair.second;
     }
 
     return nullptr;
