@@ -117,6 +117,11 @@ public:
         return m_value;
     }
 
+    std::string_view getNameCore() const
+    {
+        return m_name;
+    }
+
     void addCallback(cvarCallback_t callback) override
     {
         m_callbacks.push_back(callback);

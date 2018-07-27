@@ -27,7 +27,6 @@ static cell_t CvarRegister(SourcePawn::IPluginContext *ctx,
     char *cvarName, *cvarValue;
     ctx->LocalToString(params[arg_name], &cvarName);
     ctx->LocalToString(params[arg_value], &cvarValue);
-    
 
     auto plCvar = cvarMngr->registerCvarCore(cvarName, cvarValue, static_cast<ICvar::Flags>(params[arg_flags]));
     if (!plCvar)
@@ -41,7 +40,6 @@ static cell_t CvarGetName(SourcePawn::IPluginContext *ctx,
 {
     enum { arg_index = 1, arg_buffer, arg_size };
     char *destBuffer;
-    size_t bufferSize = params[arg_size];
 
     cell_t cvarId = params[arg_index];
     if (cvarId  < 0)
@@ -59,18 +57,7 @@ static cell_t CvarGetName(SourcePawn::IPluginContext *ctx,
 
     ctx->LocalToString(params[arg_buffer], &destBuffer);
 
-#if defined __STDC_LIB_EXT1__ || defined SP_MSVC
-#if defined SP_MSVC
-    strncpy_s(destBuffer, bufferSize, cvar->getName(), _TRUNCATE);
-#else
-    strncpy_s(destBuffer, bufferSize, cvar->getName(), bufferSize - 1);
-#endif
-#else
-    std::strncpy(destBuffer, cvar->getName(), bufferSize);
-    destBuffer[bufferSize - 1] = '\0';
-#endif
-
-    return 1;
+    return gSPGlobal->getUtilsCore()->strCopyCore(destBuffer, params[arg_size], cvar->getNameCore());
 }
 
 
@@ -100,7 +87,6 @@ static cell_t CvarGetString(SourcePawn::IPluginContext *ctx,
 {    
     enum { arg_index = 1, arg_buffer, arg_size };
     char *destBuffer;
-    size_t bufferSize = params[arg_size];
 
     cell_t cvarId = params[arg_index];
     if (cvarId  < 0)
@@ -117,19 +103,8 @@ static cell_t CvarGetString(SourcePawn::IPluginContext *ctx,
     }
 
     ctx->LocalToString(params[arg_buffer], &destBuffer);
-    
-#if defined __STDC_LIB_EXT1__ || defined SP_MSVC
-    #if defined SP_MSVC
-    strncpy_s(destBuffer, bufferSize, cvar->asString(), _TRUNCATE);
-    #else
-    strncpy_s(destBuffer, bufferSize, cvar->asString(), bufferSize - 1);
-    #endif
-#else
-    std::strncpy(destBuffer, cvar->asString(), bufferSize);
-    destBuffer[bufferSize - 1] = '\0';
-#endif
 
-    return 1;
+    return gSPGlobal->getUtilsCore()->strCopyCore(destBuffer, params[arg_size], cvar->asStringCore());
 }
 
 static cell_t CvarGetInt(SourcePawn::IPluginContext *ctx,
