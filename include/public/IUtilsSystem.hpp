@@ -35,7 +35,9 @@ namespace SPMod
          *
          * @return          Written chars to buffer.
          */
-        virtual std::size_t strCopy(char *buffer, std::size_t size, const char *src) const = 0;
+        virtual std::size_t strCopy(char *buffer,
+                                    std::size_t size,
+                                    const char *src) const = 0;
 
     protected:
         virtual ~IUtils() {};
