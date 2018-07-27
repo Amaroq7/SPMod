@@ -38,10 +38,10 @@ void SPModInfoCommand()
     {
         std::string arg(CMD_ARGV(1));
 
-        static constexpr size_t nameWidth = 25;
-        static constexpr size_t verWidth = 15;
-        static constexpr size_t authWidth = 20;
-        static constexpr size_t fileWidth = 15;
+        static constexpr std::size_t nameWidth = 25;
+        static constexpr std::size_t verWidth = 15;
+        static constexpr std::size_t authWidth = 20;
+        static constexpr std::size_t fileWidth = 15;
         
         if (arg == "plugins")
         {
@@ -55,7 +55,7 @@ void SPModInfoCommand()
                                        std::setw(authWidth),
                                       "author",
                                       "filename");
-            size_t pos = 1;
+            std::size_t pos = 1;
             for (auto entry : gSPGlobal->getPluginManagerCore()->getPluginsList())
             {
                 logSystem->LogConsoleCore("[", std::right, std::setw(3), pos++, "] ", // right align for ordinal number

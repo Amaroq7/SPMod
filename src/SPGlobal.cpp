@@ -116,3 +116,48 @@ void SPGlobal::_initSourcePawn()
     m_spFactory->NewEnvironment();
     getSPEnvironment()->APIv2()->SetJitEnabled(true);
 }
+
+const char *SPGlobal::getHome() const
+{
+    return m_SPModDir.string().c_str();
+}
+
+const char *SPGlobal::getModName() const
+{
+    return m_modName.c_str();
+}
+
+IPluginMngr *SPGlobal::getPluginManager() const
+{
+    return m_pluginManager.get();
+}
+
+IForwardMngr *SPGlobal::getForwardManager() const
+{
+    return m_forwardManager.get();
+}
+
+ICvarMngr *SPGlobal::getCvarManager() const
+{
+    return m_cvarManager.get();
+}
+
+SourcePawn::ISourcePawnEnvironment *SPGlobal::getSPEnvironment() const
+{
+    return m_spFactory->CurrentEnvironment();
+}
+
+INativeMngr *SPGlobal::getNativeManager() const
+{
+    return m_nativeManager.get();
+}
+
+ITimerMngr *SPGlobal::getTimerManager() const
+{
+    return m_timerManager.get();
+}
+
+IUtils *SPGlobal::getUtils() const
+{
+    return m_utils.get();
+}

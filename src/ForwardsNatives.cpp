@@ -30,12 +30,12 @@ static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx,
 
     ctx->LocalToString(params[arg_name], &fwdName);
 
-    size_t fwdParamsNum = params[0] - 3;
+    std::size_t fwdParamsNum = params[0] - 3;
     if (fwdParamsNum > SP_MAX_EXEC_PARAMS)
         return -1;
 
     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> fwdParamsList = {};
-    for (size_t i = 0; i < fwdParamsNum; ++i)
+    for (std::size_t i = 0; i < fwdParamsNum; ++i)
     {
         cell_t *paramType;
         ctx->LocalToPhysAddr(params[i + arg_paramstypes], &paramType);

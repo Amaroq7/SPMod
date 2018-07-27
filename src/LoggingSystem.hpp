@@ -79,10 +79,7 @@ public:
         SERVER_PRINT(errorToLog.str().c_str());
     }
 
-    void resetErrorState()
-    {
-        m_alreadyReportedError = false;
-    }
+    void resetErrorState();
 
 private:
     void _writeErrorToFile(std::string_view errormsg);

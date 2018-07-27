@@ -27,32 +27,17 @@ class Command
 public:
     virtual ~Command() {};
 
-    std::string_view getCmd() const
-    {
-        return m_cmd;
-    }
-
-    std::string_view getInfo() const
-    {
-        return m_info;
-    }
-
-    size_t getId() const
-    {
-        return m_id;
-    }
-
-    SourcePawn::IPluginFunction *getFunc() const
-    {
-        return m_func;
-    }
+    std::string_view getCmd() const;
+    std::string_view getInfo() const;
+    std::size_t getId() const;
+    SourcePawn::IPluginFunction *getFunc() const;
 
     virtual bool hasAccess(/*SPPlayer *player = nullptr*/) const = 0;
     virtual uint32_t getAccess() const = 0;
 
 protected:
     /* command id */
-    size_t m_id;
+    std::size_t m_id;
 
     /* name of command or regex */
     std::string m_cmd;
@@ -65,28 +50,20 @@ protected:
 };
 
 /* @brief Represents client command */
-class ClientCommand : public Command
+class ClientCommand final : public Command
 {
 public:
     ClientCommand() = delete;
     ~ClientCommand() = default;
 
-    ClientCommand(size_t id,
+    ClientCommand(std::size_t id,
                   std::string_view cmd,
                   std::string_view info,
                   SourcePawn::IPluginFunction *func,
                   uint32_t flags);
 
-    bool hasAccess(/*SPPlayer *player*/) const override
-    {
-        // TODO: Check access
-        return true;
-    }
-
-    uint32_t getAccess() const override
-    {
-        return m_flags;
-    }
+    bool hasAccess(/*SPPlayer *player*/) const override;
+    uint32_t getAccess() const override;
 
 private:
     /* permissions for command */
@@ -94,26 +71,19 @@ private:
 };
 
 /* @brief Represents server command */
-class ServerCommand : public Command
+class ServerCommand final : public Command
 {
 public:
     ServerCommand() = delete;
     ~ServerCommand() = default;
 
-    ServerCommand(size_t id,
+    ServerCommand(std::size_t id,
                   std::string_view cmd,
                   std::string_view info,
                   SourcePawn::IPluginFunction *func);
 
-    bool hasAccess(/*SPPlayer *player [[maybe_unused]]*/) const override
-    {
-        return true;
-    }
-
-    uint32_t getAccess() const override
-    {
-        return 0;
-    }
+    bool hasAccess(/*SPPlayer *player [[maybe_unused]]*/) const override;
+    uint32_t getAccess() const override;
 };
 
 enum class CmdType : uint8_t
@@ -122,7 +92,7 @@ enum class CmdType : uint8_t
     Server = 1
 };
 
-class CommandMngr
+class CommandMngr final
 {
 public:
     CommandMngr() = default;
@@ -131,53 +101,26 @@ public:
     template<typename T, typename ...Args, typename = std::enable_if_t<std::is_base_of_v<Command, T>>>
     std::shared_ptr<Command> registerCommand(Args... args)
     {
-        std::shared_ptr<T> cmd = std::make_shared<T>(m_cid++, std::forward<Args>(args)...);
+        auto cmd = std::make_shared<T>(m_cid++, std::forward<Args>(args)...);
 
         if constexpr (std::is_same_v<ClientCommand, T>)
-            m_clientCommands.push_back(cmd);
+            return m_clientCommands.emplace_back(cmd);
         else
-            m_serverCommands.push_back(cmd);
-
-        return cmd;
+            return m_serverCommands.emplace_back(cmd);
     }
     
     const auto &getCommandList(CmdType type) const
     {
         return (type == CmdType::Client ? m_clientCommands : m_serverCommands);
     }
-    
-    std::shared_ptr<Command> getCommand(size_t id)
-    {
-        for (auto cmd : m_clientCommands)
-        {
-            if (cmd->getId() == id)
-                return cmd;
-        }
 
-        for (auto cmd : m_serverCommands)
-        {
-            if (cmd->getId() == id)
-                return cmd;
-        }
-
-        return nullptr;
-    }
-
-    size_t getCommandsNum(CmdType type)
-    {
-        return (type == CmdType::Client ? m_clientCommands.size() : m_serverCommands.size());
-    }
-
-    void clearCommands()
-    {
-        m_clientCommands.clear();
-        m_serverCommands.clear();
-        m_cid = 0;
-    }
+    std::shared_ptr<Command> getCommand(std::size_t id);
+    std::size_t getCommandsNum(CmdType type);
+    void clearCommands();
 
 private:
     /* keeps track of command ids */
-    size_t m_cid;
+    std::size_t m_cid;
 
     std::vector<std::shared_ptr<Command>> m_clientCommands;
     std::vector<std::shared_ptr<Command>> m_serverCommands;

@@ -17,6 +17,52 @@
 
 #include "spmod.hpp"
 
+Native::Native(std::string_view owner,
+               std::string_view name,
+               SPVM_NATIVE_FUNC router,
+               SourcePawn::IPluginFunction *func) : m_ownerIdentity(owner),
+                                                    m_nativeName(name),
+                                                    m_router(router),
+                                                    m_func(func)
+{}
+
+Native::Native(std::string_view owner,
+               const sp_nativeinfo_t *native) : m_ownerIdentity(owner),
+                                                m_nativeName(native->name),
+                                                m_router(native->func),
+                                                m_func(nullptr)
+{}
+
+const char *Native::getName() const
+{
+    return m_nativeName.c_str();
+}
+
+const char *Native::getOwner() const
+{
+    return m_ownerIdentity.c_str();
+}
+
+SourcePawn::IPluginFunction *Native::getFunc() const
+{
+    return m_func;
+}
+
+SPVM_NATIVE_FUNC Native::getRouter() const
+{
+    return m_router;
+}
+
+std::string_view Native::getNameCore() const
+{
+    return m_nativeName;
+}
+
+std::string_view Native::getOwnerCore() const
+{
+    return m_ownerIdentity;
+}
+
 void NativeMngr::freeFakeNatives()
 {
     SourcePawn::ISourcePawnEngine2 *spAPIv2 = gSPGlobal->getSPEnvironment()->APIv2();
@@ -104,7 +150,7 @@ cell_t NativeMngr::fakeNativeRouter(SourcePawn::IPluginContext *ctx,
     m_callerPlugin = ctx;
     std::shared_ptr<Plugin> caller = gSPGlobal->getPluginManagerCore()->getPluginCore(ctx);
 
-    for (size_t i = 0; i <= static_cast<size_t>(params[0]); i++)
+    for (std::size_t i = 0; i <= static_cast<std::size_t>(params[0]); i++)
         m_callerParams[i] = params[i];
 
     cell_t result = 0;
@@ -116,4 +162,15 @@ cell_t NativeMngr::fakeNativeRouter(SourcePawn::IPluginContext *ctx,
     m_callerPlugin = nullptr;
 
     return result;
+}
+
+INative *NativeMngr::getNative(const char *name) const
+{
+    return getNativeCore(name).get();
+}
+
+void NativeMngr::clearNatives()
+{
+    freeFakeNatives();
+    m_natives.clear();
 }

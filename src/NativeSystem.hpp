@@ -29,66 +29,20 @@ public:
     Native(std::string_view owner,
            std::string_view name,
            SPVM_NATIVE_FUNC router,
-           SourcePawn::IPluginFunction *func) : m_ownerIdentity(owner),
-                                                m_nativeName(name),
-                                                m_router(router),
-                                                m_func(func)
-    {}
+           SourcePawn::IPluginFunction *func);
 
     Native(std::string_view owner,
-           const sp_nativeinfo_t *native) : m_ownerIdentity(owner),
-                                            m_nativeName(native->name),
-                                            m_router(native->func),
-                                            m_func(nullptr)
-    {}
+           const sp_nativeinfo_t *native);
 
     // INativeInfo
-
-    /**
-     * @brief Returns name of the native.
-     *
-     * @return        Native name.
-     */
-    const char *getName() const override
-    {
-        return m_nativeName.c_str();
-    }
-
-    /**
-     * @brief Returns identity of the owner.
-     *
-     * @return        Owner identity.
-     */
-    const char *getOwner() const override
-    {
-        return m_ownerIdentity.c_str();
-    }
-
-    /**
-     * @brief Returns plugin function to be executed when native is called.
-     *
-     * @note          If nullptr then native was added by module.
-     *
-     * @return        Function pointer.
-     */
-    SourcePawn::IPluginFunction *getFunc() const override
-    {
-        return m_func;
-    }
+    const char *getName() const override;
+    const char *getOwner() const override;
+    SourcePawn::IPluginFunction *getFunc() const override;
 
     // NativeInfo
-    SPVM_NATIVE_FUNC getRouter() const
-    {
-        return m_router;
-    }
-    std::string_view getNameCore() const
-    {
-        return m_nativeName;
-    }
-    std::string_view getOwnerCore() const
-    {
-        return m_ownerIdentity;
-    }
+    SPVM_NATIVE_FUNC getRouter() const;
+    std::string_view getNameCore() const;
+    std::string_view getOwnerCore() const;
 
 private:
 
@@ -107,30 +61,23 @@ public:
     ~NativeMngr() = default;
 
     // INativeMngr
+    bool addNatives(IModuleInterface *interface,
+                    const sp_nativeinfo_t *nativeslist) override;
 
-    bool addNatives(IModuleInterface *interface, const sp_nativeinfo_t *nativeslist) override;
-    INative *getNative(const char *name) const override
-    {
-        return getNativeCore(name).get();
-    }
+    INative *getNative(const char *name) const override;
 
     // NativeMngr
-
     const auto &getNativesList() const
     {
         return m_natives;
     }
 
-    void clearNatives()
-    {
-        freeFakeNatives();
-        m_natives.clear();
-    }
-
+    void clearNatives();
     void freeFakeNatives();
     bool addFakeNative(std::string_view pluginname,
                        std::string_view name,
                        SourcePawn::IPluginFunction *func);
+
     std::shared_ptr<Native> getNativeCore(std::string_view name) const;
 
     // For fake natives

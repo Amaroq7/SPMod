@@ -99,7 +99,7 @@ std::shared_ptr<Cvar> CvarMngr::findCvarCore(std::string_view name, bool cacheon
     return nullptr;
 }
 
-std::shared_ptr<Cvar> CvarMngr::findCvarCore(size_t id)
+std::shared_ptr<Cvar> CvarMngr::findCvarCore(std::size_t id)
 {
     for (auto pair = m_cvars.begin(); pair != m_cvars.end(); pair++)
     {
@@ -108,4 +108,143 @@ std::shared_ptr<Cvar> CvarMngr::findCvarCore(size_t id)
     }
 
     return nullptr;
+}
+
+void CvarMngr::clearCvars()
+{
+    m_cvars.clear();
+    m_id = 0;
+}
+void CvarMngr::clearCvarsCallback()
+{
+    for (auto pair : m_cvars)
+        pair.second->clearCallback();
+}
+
+Cvar::Cvar(std::string_view name,
+           std::size_t id, 
+           std::string_view value,
+           ICvar::Flags flags, 
+           cvar_t *pcvar) : m_flags(flags),
+                            m_name(name),
+                            m_value(value),
+                            m_id(id),
+                            m_cvar(pcvar)
+{}
+
+const char *Cvar::getName() const
+{
+    return m_name.c_str();
+}
+
+Cvar::Flags Cvar::getFlags() const
+{
+    return m_flags;
+}
+
+std::size_t Cvar::getId() const
+{
+    return m_id;
+}
+
+void Cvar::setValue(float val)
+{
+    std::string newval(std::to_string(val));
+    runCallbacks(m_value, newval);
+    m_value.assign(newval);
+    g_engfuncs.pfnCvar_DirectSet(m_cvar, newval.c_str());
+}
+
+void Cvar::setValue(int val)
+{
+    std::string newval(std::to_string(val));
+    runCallbacks(m_value, newval);
+    m_value.assign(newval);
+    g_engfuncs.pfnCvar_DirectSet(m_cvar, newval.c_str());
+}
+
+void Cvar::setValue(const char *val)
+{
+    std::string newval(val);
+    runCallbacks(m_value, newval);
+    m_value.assign(newval);
+    g_engfuncs.pfnCvar_DirectSet(m_cvar, newval.c_str());
+}
+
+void Cvar::setFlags(Flags flags)
+{
+    m_flags = flags;
+    m_cvar->flags = static_cast<int>(flags);
+}
+
+int Cvar::asInt() const
+{
+    try
+    {
+        return std::stoi(m_value, nullptr, 0);
+    }
+    catch (const std::exception &e [[maybe_unused]])
+    {
+        return 0;
+    }
+}
+
+float Cvar::asFloat() const
+{
+    try
+    {
+        return std::stof(m_value);
+    }
+    catch (const std::exception &e [[maybe_unused]])
+    {
+        return 0.0f;
+    }
+}
+
+const char *Cvar::asString() const
+{
+    return m_value.c_str();
+}
+
+std::string_view Cvar::asStringCore() const
+{
+    return m_value;
+}
+
+std::string_view Cvar::getNameCore() const
+{
+    return m_name;
+}
+
+void Cvar::addCallback(cvarCallback_t callback)
+{
+    m_callbacks.push_back(callback);
+}
+
+void Cvar::addPluginCallback(SourcePawn::IPluginFunction *callback)
+{
+    m_plugin_callbacks.push_back(callback);
+}
+
+void Cvar::runCallbacks(std::string_view old_value,
+                        std::string_view new_value)
+
+{
+    for (auto callback : m_callbacks)
+    {
+        callback(this, old_value.data(), new_value.data());
+    }
+    for (auto callback : m_plugin_callbacks)
+    {            
+        callback->PushCell(static_cast<cell_t>(m_id));
+        callback->PushString(old_value.data());
+        callback->PushString(new_value.data());
+        callback->Execute(nullptr);
+    }
+}
+
+void Cvar::clearCallback()
+{
+    m_callbacks.clear();
+    m_plugin_callbacks.clear();
 }

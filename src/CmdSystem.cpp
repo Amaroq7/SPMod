@@ -17,7 +17,27 @@
 
 #include "spmod.hpp"
 
-ClientCommand::ClientCommand(size_t id,
+std::string_view Command::getCmd() const
+{
+    return m_cmd;
+}
+
+std::string_view Command::getInfo() const
+{
+    return m_info;
+}
+
+std::size_t Command::getId() const
+{
+    return m_id;
+}
+
+SourcePawn::IPluginFunction *Command::getFunc() const
+{
+    return m_func;
+}
+
+ClientCommand::ClientCommand(std::size_t id,
                              std::string_view cmd,
                              std::string_view info,
                              SourcePawn::IPluginFunction *func,
@@ -29,7 +49,18 @@ ClientCommand::ClientCommand(size_t id,
     m_func = func;
 }
 
-ServerCommand::ServerCommand(size_t id,
+bool ClientCommand::hasAccess(/*SPPlayer *player*/) const
+{
+    // TODO: Check access
+    return true;
+}
+
+uint32_t ClientCommand::getAccess() const
+{
+    return m_flags;
+}
+
+ServerCommand::ServerCommand(std::size_t id,
                              std::string_view cmd,
                              std::string_view info,
                              SourcePawn::IPluginFunction *func)
@@ -38,4 +69,43 @@ ServerCommand::ServerCommand(size_t id,
     m_cmd = cmd;
     m_info = info;
     m_func = func;
+}
+
+bool ServerCommand::hasAccess(/*SPPlayer *player [[maybe_unused]]*/) const
+{
+    return true;
+}
+
+uint32_t ServerCommand::getAccess() const
+{
+    return 0;
+}
+
+std::shared_ptr<Command> CommandMngr::getCommand(std::size_t id)
+{
+    for (auto cmd : m_clientCommands)
+    {
+        if (cmd->getId() == id)
+            return cmd;
+    }
+
+    for (auto cmd : m_serverCommands)
+    {
+        if (cmd->getId() == id)
+            return cmd;
+    }
+
+    return nullptr;
+}
+
+std::size_t CommandMngr::getCommandsNum(CmdType type)
+{
+    return (type == CmdType::Client ? m_clientCommands.size() : m_serverCommands.size());
+}
+
+void CommandMngr::clearCommands()
+{
+    m_clientCommands.clear();
+    m_serverCommands.clear();
+    m_cid = 0;
 }
