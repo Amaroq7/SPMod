@@ -95,15 +95,15 @@ public:
     {
         return m_utils;
     }
-    const auto &getScriptsDirCore()
+    const auto &getScriptsDirCore() const
     {
         return m_SPModScriptsDir;
     }
-    const auto &getLogsDirCore()
+    const auto &getLogsDirCore() const
     {
         return m_SPModLogsDir;
     }
-    const auto &getDllsDirCore()
+    const auto &getDllsDirCore() const
     {
         return m_SPModDllsDir;
     }
