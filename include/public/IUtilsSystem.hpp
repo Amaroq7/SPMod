@@ -24,7 +24,18 @@ namespace SPMod
     class IUtils SPMOD_FINAL
     {
     public:
-        virtual char *strCopy(char *buffer, std::size_t size, const char *src) const = 0;
+        /**
+         * @brief Copies string to buffer.
+         * 
+         * @note Truncates string whenever it's exceeds buffer size.
+         * 
+         * @param buffer    Pointer to buffer where string will be stored.
+         * @param size      Size of the buffer.
+         * @param src       String to be copied.
+         *
+         * @return          Written chars to buffer.
+         */
+        virtual std::size_t strCopy(char *buffer, std::size_t size, const char *src) const = 0;
 
     protected:
         virtual ~IUtils() {};

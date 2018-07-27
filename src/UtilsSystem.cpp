@@ -19,9 +19,9 @@
 
 #include "spmod.hpp"
 
-char *Utils::strCopyCore(char *buffer,
-                         std::size_t size,
-                         std::string_view src)
+std::size_t Utils::strCopyCore(char *buffer,
+                               std::size_t size,
+                               std::string_view src)
 {
 #if defined __STDC_LIB_EXT1__ || defined SP_MSVC
     #if defined SP_MSVC
@@ -34,12 +34,16 @@ char *Utils::strCopyCore(char *buffer,
     buffer[size - 1] = '\0';
 #endif // __STDC_LIB_EXT1__ || defined SP_MSVC
 
-    return buffer;
+    std::size_t writtenChars = size - 1;
+    if (src.length() < writtenChars)
+        writtenChars = src.length();
+
+    return writtenChars;
 }
 
-char *Utils::strCopy(char *buffer,
-                     std::size_t size,
-                     const char *src)
+std::size_t Utils::strCopy(char *buffer,
+                           std::size_t size,
+                           const char *src)
 {
     return strCopyCore(buffer, size, src);
 }
