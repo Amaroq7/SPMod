@@ -52,29 +52,13 @@ static cell_t GetInfo(SourcePawn::IPluginContext *ctx,
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
     const std::unique_ptr<CommandMngr> &cmdMngr = gSPGlobal->getCommandManagerCore();
-    size_t bufferSize = params[arg_size];
-    size_t writtenChars = bufferSize - 1; //Dont count null
 
     std::shared_ptr<Command> pCmd = cmdMngr->getCommand(params[arg_id]);
 
     if (!pCmd)
         return 0;
 
-#if defined __STDC_LIB_EXT1__ || defined SP_MSVC
-    #if defined SP_MSVC
-    strncpy_s(destBuffer, bufferSize, pCmd->getInfo().data(), _TRUNCATE);
-    #else
-    strncpy_s(destBuffer, bufferSize, pCmd->getInfo().data(), bufferSize - 1);
-    #endif
-#else
-    std::strncpy(destBuffer, pCmd->getInfo().data(), bufferSize);
-    destBuffer[bufferSize - 1] = '\0';
-#endif
-
-    if (pCmd->getInfo().length() < writtenChars)
-        writtenChars = pCmd->getInfo().length();
-
-    return writtenChars;
+    return gSPGlobal->getUtilsCore()->strCopyCore(destBuffer, params[arg_size], pCmd->getInfo());
 }
 
 // property int Access.get()
@@ -99,30 +83,13 @@ static cell_t CmdGetArgv(SourcePawn::IPluginContext *ctx,
 
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
-    size_t bufferSize = params[arg_size];
-    size_t writtenChars = bufferSize - 1; //Dont count null
 
     const char *argv = CMD_ARGV(params[arg_id]);
 
     if (!argv)
         return 0;
 
-#if defined __STDC_LIB_EXT1__ || defined SP_MSVC
-    #if defined SP_MSVC
-    strncpy_s(destBuffer, bufferSize, argv, _TRUNCATE);
-    #else
-    strncpy_s(destBuffer, bufferSize, argv, bufferSize - 1);
-    #endif
-#else
-    std::strncpy(destBuffer, argv, bufferSize);
-    destBuffer[bufferSize - 1] = '\0';
-#endif
-
-    size_t argvLen = strlen(argv);
-    if (argvLen < writtenChars)
-        writtenChars = argvLen;
-
-    return writtenChars;
+    return gSPGlobal->getUtilsCore()->strCopyCore(destBuffer, params[arg_size], argv);
 }
 
 // int CmdGetArgs(char[] buffer, int size)
@@ -133,30 +100,13 @@ static cell_t CmdGetArgs(SourcePawn::IPluginContext *ctx,
 
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
-    size_t bufferSize = params[arg_size];
-    size_t writtenChars = bufferSize - 1; //Dont count null
 
     const char *args = CMD_ARGS();
 
     if (!args)
         return 0;
 
-#if defined __STDC_LIB_EXT1__ || defined SP_MSVC
-    #if defined SP_MSVC
-    strncpy_s(destBuffer, bufferSize, args, _TRUNCATE);
-    #else
-    strncpy_s(destBuffer, bufferSize, args, bufferSize - 1);
-    #endif
-#else
-    std::strncpy(destBuffer, args, bufferSize);
-    destBuffer[bufferSize - 1] = '\0';
-#endif
-
-    size_t argvLen = strlen(args);
-    if (argvLen < writtenChars)
-        writtenChars = argvLen;
-
-    return writtenChars;
+    return gSPGlobal->getUtilsCore()->strCopyCore(destBuffer, params[arg_size], args);
 }
 
 // int CmdGetArgsNum()
