@@ -50,17 +50,10 @@ static cell_t CopyString(SourcePawn::IPluginContext *ctx,
     enum { arg_buffer = 1, arg_size, arg_source }
 
     char *destArray, *stringToCopy;
-    size_t arraySize = params[arg_size];
-
-    size_t stringSize = strlen(stringToCopy);
-    bool isStringBigger = stringSize >= arraySize;
-
     ctx->LocalToString(params[arg_buffer], &destArray);
     ctx->LocalToString(params[arg_source], &stringToCopy);
 
-    gSPGlobal->getUtilsCore()->strCopy(destArray, arraySize, stringToCopy);
-
-    return (isStringBigger ? arraySize - 1 : stringSize);
+    return gSPGlobal->getUtilsCore()->strCopy(destArray, params[arg_size], stringToCopy);
 }
 
 sp_nativeinfo_t gStringNatives[] =
