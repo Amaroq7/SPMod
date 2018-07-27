@@ -17,62 +17,56 @@
 
 #include "spmod.hpp"
 
-// native int numToString(int num, char[] buffer, int size)
-static cell_t numToString(SourcePawn::IPluginContext *ctx,
+// int NumToString(int num, char[] buffer, int size)
+static cell_t NumToString(SourcePawn::IPluginContext *ctx,
                           const cell_t *params)
 {
-    auto numToConvert = params[1];
+    enum { arg_int = 1, arg_buffer, arg_size }
+
+    auto numToConvert = params[arg_int];
     auto numConverted = std::to_string(numToConvert);
-    ctx->StringToLocal(params[2], params[3], numConverted.c_str());
+    ctx->StringToLocal(params[arg_buffer], params[arg_size], numConverted.c_str());
 
     return numConverted.length();
 }
 
-// native int realToString(float real, char[] buffer, int size)
-static cell_t realToString(SourcePawn::IPluginContext *ctx,
+// int RealToString(float real, char[] buffer, int size)
+static cell_t RealToString(SourcePawn::IPluginContext *ctx,
                            const cell_t *params)
 {
-    auto realToConvert = sp_ctof(params[1]);
+    enum { arg_real = 1, arg_buffer, arg_size }
+
+    auto realToConvert = sp_ctof(params[arg_real]);
     auto realConverted = std::to_string(realToConvert);
-    ctx->StringToLocal(params[2], params[3], realConverted.c_str());
+    ctx->StringToLocal(params[arg_buffer], params[arg_size], realConverted.c_str());
 
     return realConverted.length();
 }
 
-// native int copyString(char[] buffer, int size, const char[] source)
-static cell_t copyString(SourcePawn::IPluginContext *ctx,
+// int CopyString(char[] buffer, int size, const char[] source)
+static cell_t CopyString(SourcePawn::IPluginContext *ctx,
                          const cell_t *params)
 {
-    char *destArray, *stringToCopy;
-    size_t arraySize = params[2];
+    enum { arg_buffer = 1, arg_size, arg_source }
 
-    ctx->LocalToString(params[1], &destArray);
-    ctx->LocalToString(params[3], &stringToCopy);
+    char *destArray, *stringToCopy;
+    size_t arraySize = params[arg_size];
 
     size_t stringSize = strlen(stringToCopy);
-
     bool isStringBigger = stringSize >= arraySize;
 
-#if defined __STDC_LIB_EXT1__ || defined SP_MSVC
-    #if defined SP_MSVC
-    strncpy_s(destArray, arraySize, stringToCopy, _TRUNCATE);
-    #else
-    strncpy_s(destArray, arraySize, stringToCopy, arraySize - 1);
-    #endif
-#else
-    std::strncpy(destArray, stringToCopy, arraySize);
+    ctx->LocalToString(params[arg_buffer], &destArray);
+    ctx->LocalToString(params[arg_source], &stringToCopy);
 
-    if (isStringBigger)
-        destArray[arraySize - 1] = '\0';
-#endif
+    gSPGlobal->getUtilsCore()->strCopy(destArray, arraySize, stringToCopy);
 
-    return isStringBigger ? arraySize - 1 : stringSize;
+    return (isStringBigger ? arraySize - 1 : stringSize);
 }
 
 sp_nativeinfo_t gStringNatives[] =
 {
-    {  "numToString",            numToString         },
-    {  "realToString",           realToString        },
-    {  "copyString",             copyString          },
+    {  "NumToString",            NumToString         },
+    {  "RealToString",           RealToString        },
+    {  "CopyString",             CopyString          },
     {  nullptr,                  nullptr             }
 };
