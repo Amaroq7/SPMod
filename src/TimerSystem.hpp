@@ -23,7 +23,7 @@
 
 class Timer;
 
-class TimerMngr : public ITimerMngr
+class TimerMngr final : public ITimerMngr
 {
 public:
     TimerMngr() = default;
@@ -58,7 +58,7 @@ private:
     std::vector<std::shared_ptr<Timer>> m_timers;
 };
 
-class Timer : public ITimer
+class Timer final : public ITimer
 {
 public:
     friend void TimerMngr::execTimers(float);
