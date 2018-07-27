@@ -27,10 +27,10 @@ public:
     // IUtils
     std::size_t strCopy(char *buffer,
                         std::size_t size,
-                        const char *src) override;
+                        const char *src) const override;
 
     // Utils
     std::size_t strCopyCore(char *buffer,
                             std::size_t size,
-                            std::string_view src);
+                            std::string_view src) const;
 };

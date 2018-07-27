@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <IHelpers.hpp>
 
 #ifdef SP_CLANG

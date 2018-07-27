@@ -27,7 +27,7 @@ namespace SPMod
         /**
          * @brief Copies string to buffer.
          * 
-         * @note Truncates string whenever it's exceeds buffer size.
+         * @note Truncates string whenever it exceeds buffer size.
          * 
          * @param buffer    Pointer to buffer where string will be stored.
          * @param size      Size of the buffer.

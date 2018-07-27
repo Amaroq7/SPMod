@@ -21,7 +21,7 @@
 
 std::size_t Utils::strCopyCore(char *buffer,
                                std::size_t size,
-                               std::string_view src)
+                               std::string_view src) const
 {
 #if defined __STDC_LIB_EXT1__ || defined SP_MSVC
     #if defined SP_MSVC
@@ -43,7 +43,7 @@ std::size_t Utils::strCopyCore(char *buffer,
 
 std::size_t Utils::strCopy(char *buffer,
                            std::size_t size,
-                           const char *src)
+                           const char *src) const
 {
     return strCopyCore(buffer, size, src);
 }

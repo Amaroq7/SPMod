@@ -21,7 +21,7 @@
 static cell_t NumToString(SourcePawn::IPluginContext *ctx,
                           const cell_t *params)
 {
-    enum { arg_int = 1, arg_buffer, arg_size }
+    enum { arg_int = 1, arg_buffer, arg_size };
 
     auto numToConvert = params[arg_int];
     auto numConverted = std::to_string(numToConvert);
@@ -34,7 +34,7 @@ static cell_t NumToString(SourcePawn::IPluginContext *ctx,
 static cell_t RealToString(SourcePawn::IPluginContext *ctx,
                            const cell_t *params)
 {
-    enum { arg_real = 1, arg_buffer, arg_size }
+    enum { arg_real = 1, arg_buffer, arg_size };
 
     auto realToConvert = sp_ctof(params[arg_real]);
     auto realConverted = std::to_string(realToConvert);
@@ -47,7 +47,7 @@ static cell_t RealToString(SourcePawn::IPluginContext *ctx,
 static cell_t CopyString(SourcePawn::IPluginContext *ctx,
                          const cell_t *params)
 {
-    enum { arg_buffer = 1, arg_size, arg_source }
+    enum { arg_buffer = 1, arg_size, arg_source };
 
     char *destArray, *stringToCopy;
     ctx->LocalToString(params[arg_buffer], &destArray);

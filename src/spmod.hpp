@@ -99,6 +99,7 @@ using namespace SPMod;
 
 // SPMod specific
 #include <SPConfig.hpp>
+#include "UtilsSystem.hpp"
 #include "SPModModuleDef.hpp"
 #include "LoggingSystem.hpp"
 #include "PluginSystem.hpp"
@@ -108,7 +109,6 @@ using namespace SPMod;
 #include "CmdSystem.hpp"
 #include "TimerSystem.hpp"
 #include "SPGlobal.hpp"
-#include "UtilsSystem.hpp"
 
 constexpr auto gSPModAuthor = "SPMod Development Team";
 
