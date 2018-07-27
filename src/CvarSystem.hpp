@@ -51,6 +51,7 @@ public:
                       std::string_view new_value);
 
     void clearCallback();
+    void setValueCore(std::string_view val);
 
 private:
     Flags       m_flags;

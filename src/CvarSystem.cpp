@@ -151,26 +151,17 @@ std::size_t Cvar::getId() const
 
 void Cvar::setValue(float val)
 {
-    std::string newval(std::to_string(val));
-    runCallbacks(m_value, newval);
-    m_value.assign(newval);
-    g_engfuncs.pfnCvar_DirectSet(m_cvar, newval.c_str());
+    setValueCore(std::to_string(val));
 }
 
 void Cvar::setValue(int val)
 {
-    std::string newval(std::to_string(val));
-    runCallbacks(m_value, newval);
-    m_value.assign(newval);
-    g_engfuncs.pfnCvar_DirectSet(m_cvar, newval.c_str());
+    setValueCore(std::to_string(val));
 }
 
 void Cvar::setValue(const char *val)
 {
-    std::string newval(val);
-    runCallbacks(m_value, newval);
-    m_value.assign(newval);
-    g_engfuncs.pfnCvar_DirectSet(m_cvar, newval.c_str());
+    setValueCore(val);
 }
 
 void Cvar::setFlags(Flags flags)
@@ -249,4 +240,11 @@ void Cvar::clearCallback()
 {
     m_callbacks.clear();
     m_plugin_callbacks.clear();
+}
+
+void Cvar::setValueCore(std::string_view val)
+{
+    runCallbacks(m_value, val);
+    m_value.assign(val);
+    g_engfuncs.pfnCvar_DirectSet(m_cvar, val.data());
 }
