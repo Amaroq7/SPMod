@@ -484,7 +484,7 @@ unsigned int SPGlobal::formatString(char *buffer,
                 if (!checkArgs(param))
                     return 0;
 
-                std::std::size_t l = 1;
+                std::size_t l = 1;
                 // pre padding
                 if (!(flags & FLAGS_LEFT))
                 {
@@ -511,7 +511,7 @@ unsigned int SPGlobal::formatString(char *buffer,
 
                 char *p;
                 ctx->LocalToString(params[param++], &p);
-                std::std::size_t l = strlen(p);
+                std::size_t l = strlen(p);
                 // pre padding
                 if (flags & FLAGS_PRECISION)
                     l = (l < precision ? l : precision);
