@@ -161,32 +161,14 @@ void Menu::display(int player, int page, int time)
         // TODO: add color autodetect (hl don't show colors)
         // TODO: color tags, remove if game mode unsupport it
 
-    #if defined __STDC_LIB_EXT1__ || defined SP_MSVC
-        #if defined SP_MSVC
-        strncpy_s(buffer, sizeof(buffer), text.str().c_str(), _TRUNCATE);
-        #else
-        strncpy_s(buffer, sizeof(buffer), text.str().c_str(), sizeof(buffer) - 1);
-        #endif
-    #else
-        std::strncpy(buffer, text.str().c_str(), sizeof(buffer));
-        buffer[sizeof(buffer) - 1] = '\0';
-    #endif
+        gSPGlobal->getUtilsCore()->strCopyCore(buffer, sizeof(buffer), text.str());
 
         m_keys = keys;
     }
     else
     {
         // text style
-    #if defined __STDC_LIB_EXT1__ || defined SP_MSVC
-        #if defined SP_MSVC
-        strncpy_s(buffer, sizeof(buffer), m_text.c_str(), _TRUNCATE);
-        #else
-        strncpy_s(buffer, sizeof(buffer), m_text.c_str(), sizeof(buffer) - 1);
-        #endif
-    #else
-        std::strncpy(buffer, m_text.c_str(), sizeof(buffer));
-        buffer[sizeof(buffer) - 1] = '\0';
-    #endif
+        gSPGlobal->getUtilsCore()->strCopyCore(buffer, sizeof(buffer), m_text);
     }
 
     m_time = time;
