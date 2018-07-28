@@ -86,7 +86,7 @@ public:
     {
         return m_playersListeners;
     }
-    
+
     static inline unsigned int m_playersNum;
     static inline std::vector<std::shared_ptr<Player>> m_playersToAuth;
     static inline float m_nextAuthCheck = 0.0f;
