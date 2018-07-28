@@ -125,12 +125,15 @@ void Menu::display(int player, int page, int time)
                 if(ret != ItemHide)
                 {
                     addItem(ret, slot, item.name);
-                    m_slots[slot++] = m_items.size() + slot;
+                    m_slots[slot] = m_items.size() + slot;
                 }
+            }
+            else
+            {
+                text << "\n";
             }
 
             slot++;
-            text << "\n";
         }
 
         if(m_items.size() - hidden > i)
@@ -265,7 +268,7 @@ bool Menu::insertItemCore(std::size_t position,
                           std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
                           std::variant<cell_t, void *> &&data)
 {
-    if(position < 0 || position >= m_items.size())
+    if(position >= m_items.size())
         return false;
     
     _addItem(position, name, std::move(callback), std::move(data));
@@ -288,7 +291,7 @@ bool Menu::setStaticItem(std::size_t position,
 
 bool Menu::removeItem(std::size_t position)
 {
-    if(position < 0 || position >= m_items.size())
+    if(position >= m_items.size())
         return false;
     
     m_items.erase(m_items.begin() + position);
@@ -334,7 +337,7 @@ void Menu::setItemData(std::size_t item,
                        std::variant<cell_t, void *> &&data)
 {
     if(item >= m_items.size())
-        m_staticSlots[item - m_items.size()].get()->data;
+        m_staticSlots[item - m_items.size()].get()->data = data;
     else
         m_items[item].data = data;
 }

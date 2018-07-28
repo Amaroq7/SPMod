@@ -177,7 +177,7 @@ public:
     IMenu *registerMenu(SourcePawn::IPluginFunction *func,
                         MenuStyle style,
                         bool global) override;
-    IMenu *findMenu(std::size_t mid) const;
+    IMenu *findMenu(std::size_t mid) const override;
 
     template<typename ...Args>
     std::shared_ptr<Menu> registerMenuCore(Args... args)
