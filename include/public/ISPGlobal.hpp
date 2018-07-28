@@ -48,6 +48,7 @@
 #include <INativeSystem.hpp>
 #include <ICvarSystem.hpp>
 #include <ITimerSystem.hpp>
+#include <IMenuSystem.hpp>
 #include <IUtilsSystem.hpp>
 
 namespace SPMod
@@ -109,6 +110,13 @@ namespace SPMod
          * @return              Timer manager.
          */
         virtual ITimerMngr *getTimerManager() const = 0;
+
+        /**
+         * @brief Return SPMod menu manager.
+         * 
+         * @return              Menu manager.
+         */
+        virtual IMenuMngr *getMenuManager() const = 0;
 
         /**
          * @brief Return SPMod utils funcs.
