@@ -131,11 +131,8 @@ private:
     std::unique_ptr<Logger> m_loggingSystem;
     std::unique_ptr<CommandMngr> m_cmdManager;
     std::unique_ptr<TimerMngr> m_timerManager;
-<<<<<<< HEAD
-    std::unique_ptr<Utils> m_utils;
-=======
     std::unique_ptr<PlayerMngr> m_plrManager;
->>>>>>> Add player manager
+    std::unique_ptr<Utils> m_utils;
     std::string m_modName;
     SourcePawn::ISourcePawnFactory *m_spFactory;
 
