@@ -25,7 +25,7 @@ static cell_t PrintToServer(SourcePawn::IPluginContext *ctx,
     char bufferOutput[1024];
 
     ctx->LocalToString(params[1], &formatString);
-    size_t res = gSPGlobal->formatString(bufferOutput, sizeof(bufferOutput)-2, formatString, ctx, params, 2);
+    std::size_t res = gSPGlobal->formatString(bufferOutput, sizeof(bufferOutput)-2, formatString, ctx, params, 2);
   
     bufferOutput[res++] = '\n';
     bufferOutput[res] = '\0';
@@ -155,7 +155,7 @@ static cell_t NativeGetString(SourcePawn::IPluginContext *ctx,
     char *stringToCopy;
     NativeMngr::m_callerPlugin->LocalToString(NativeMngr::m_callerParams[param], &stringToCopy);
 
-    size_t writtenBytes;
+    std::size_t writtenBytes;
     ctx->StringToLocalUTF8(params[2], params[3], stringToCopy, &writtenBytes);
 
     return writtenBytes;
@@ -228,7 +228,7 @@ static cell_t NativeSetString(SourcePawn::IPluginContext *ctx,
     char *stringToCopy;
     ctx->LocalToString(params[2], &stringToCopy);
 
-    size_t writtenBytes;
+    std::size_t writtenBytes;
     NativeMngr::m_callerPlugin->StringToLocalUTF8(NativeMngr::m_callerParams[param],
                                                   params[3],
                                                   stringToCopy,

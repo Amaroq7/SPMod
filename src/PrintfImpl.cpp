@@ -53,12 +53,12 @@
 #define FLAGS_WIDTH     (1U << 7U)
 
 // internal itoa format
-static size_t _ntoa_format(char *buffer,
+static std::size_t _ntoa_format(char *buffer,
                         char *buf,
-                        size_t len,
+                        std::size_t len,
                         bool negative,
                         unsigned int base,
-                        size_t maxlen,
+                        std::size_t maxlen,
                         unsigned int prec,
                         unsigned int width,
                         unsigned int flags)
@@ -111,15 +111,15 @@ static size_t _ntoa_format(char *buffer,
             buf[len++] = ' ';
     }
     // pad spaces up to given width
-    size_t idx = 0;
+    std::size_t idx = 0;
     if (!(flags & FLAGS_LEFT) && !(flags & FLAGS_ZEROPAD))
     {
-        for (size_t i = len; i < width && i < maxlen; ++i)
+        for (std::size_t i = len; i < width && i < maxlen; ++i)
             buffer[idx++] = ' ';
     }
 
     // reverse string
-    for (size_t i = 0; i < len && i < maxlen; ++i)
+    for (std::size_t i = 0; i < len && i < maxlen; ++i)
         buffer[idx++] = buf[len - i - 1];
 
     // append pad spaces up to given width
@@ -132,17 +132,17 @@ static size_t _ntoa_format(char *buffer,
 }
 
 // internal itoa for 'long' type
-static size_t _ntoa_long(char *buffer,
+static std::size_t _ntoa_long(char *buffer,
                         unsigned long value,
                         bool negative,
                         unsigned long base,
-                        size_t maxlen,
+                        std::size_t maxlen,
                         unsigned int prec,
                         unsigned int width,
                         unsigned int flags)
 {
     char buf[PRINTF_NTOA_BUFFER_SIZE];
-    size_t len = 0;
+    std::size_t len = 0;
 
     // write if precision != 0 and value is != 0
     if (!(flags & FLAGS_PRECISION) || value)
@@ -158,15 +158,15 @@ static size_t _ntoa_long(char *buffer,
     return _ntoa_format(buffer, buf, len, negative, base, maxlen, prec, width, flags);
 }
 
-static size_t _ftoa(double value,
+static std::size_t _ftoa(double value,
                     char *buffer,
-                    size_t maxlen,
+                    std::size_t maxlen,
                     unsigned int prec,
                     unsigned int width,
                     unsigned int flags)
 {
     char buf[PRINTF_FTOA_BUFFER_SIZE];
-    size_t len  = 0;
+    std::size_t len  = 0;
     double diff = 0.0;
 
     // if input is larger than thres_max, revert to exponential
@@ -272,15 +272,15 @@ static size_t _ftoa(double value,
     }
 
     // pad spaces up to given width
-    size_t idx = 0;
+    std::size_t idx = 0;
     if (!(flags & FLAGS_LEFT) && !(flags & FLAGS_ZEROPAD))
     {
-        for (size_t i = len; i < width && i < maxlen; ++i)
+        for (std::size_t i = len; i < width && i < maxlen; ++i)
             buffer[idx++] = ' ';
     }
 
     // reverse string
-    for (size_t i = 0; i < len && i < maxlen; ++i)
+    for (std::size_t i = 0; i < len && i < maxlen; ++i)
         buffer[idx++] = buf[len - i - 1];
 
     // append pad spaces up to given width
@@ -294,23 +294,23 @@ static size_t _ftoa(double value,
 }
 
 unsigned int SPGlobal::formatString(char *buffer,
-                                    size_t buffer_len,
+                                    std::size_t buffer_len,
                                     const char *format,
                                     SourcePawn::IPluginContext *ctx,
                                     const cell_t *params,
-                                    size_t param) const
+                                    std::size_t param) const
 {
     unsigned int flags, width, precision, n;
-    size_t idx = 0;
+    std::size_t idx = 0;
 
     // check if buffer is valid
     if (!buffer)
         return 0;
 
     // Check for bounds
-    auto checkArgs = [ctx, params](size_t paramCheck)
+    auto checkArgs = [ctx, params](std::size_t paramCheck)
     {
-        if (static_cast<size_t>(params[0]) < paramCheck)
+        if (static_cast<std::size_t>(params[0]) < paramCheck)
         {
             ctx->ReportError("String formatted incorrectly - parameter %u (total %u)", paramCheck, params[0]);
             return false;
@@ -484,7 +484,7 @@ unsigned int SPGlobal::formatString(char *buffer,
                 if (!checkArgs(param))
                     return 0;
 
-                size_t l = 1;
+                std::size_t l = 1;
                 // pre padding
                 if (!(flags & FLAGS_LEFT))
                 {
@@ -511,7 +511,7 @@ unsigned int SPGlobal::formatString(char *buffer,
 
                 char *p;
                 ctx->LocalToString(params[param++], &p);
-                size_t l = strlen(p);
+                std::size_t l = strlen(p);
                 // pre padding
                 if (flags & FLAGS_PRECISION)
                     l = (l < precision ? l : precision);

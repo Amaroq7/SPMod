@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <IHelpers.hpp>
 
 #ifdef SP_CLANG
@@ -47,6 +48,7 @@
 #include <INativeSystem.hpp>
 #include <ICvarSystem.hpp>
 #include <ITimerSystem.hpp>
+#include <IUtilsSystem.hpp>
 
 namespace SPMod
 {
@@ -93,18 +95,27 @@ namespace SPMod
          * @return        Forward manager.
          */
         virtual IForwardMngr *getForwardManager() const = 0;
+
         /**
         * @brief Returns SPMod cvar manager.
         *
         * @return                cvar manager.
         */
         virtual ICvarMngr *getCvarManager() const = 0;
+
         /**
          * @brief Return SPMod timer manager.
          * 
          * @return              Timer manager.
          */
         virtual ITimerMngr *getTimerManager() const = 0;
+
+        /**
+         * @brief Return SPMod utils funcs.
+         * 
+         * @return              Utils funcs.
+         */
+        virtual IUtils *getUtils() const = 0;
 
         /**
          * @brief Returns current SourcePawn environment.

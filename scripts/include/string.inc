@@ -31,7 +31,7 @@
  *
  * @return          Number of characters written to buffer.
  */
-native int numToString(int num, char[] buffer, int size);
+native int NumToString(int num, char[] buffer, int size);
 
 /**
  * @brief Converts real to string.
@@ -42,7 +42,7 @@ native int numToString(int num, char[] buffer, int size);
  *
  * @return          Number of characters written to buffer.
  */
-native int realToString(float real, char[] buffer, int size);
+native int RealToString(float real, char[] buffer, int size);
 
 /**
  * @brief Copies string to buffer.
@@ -53,4 +53,4 @@ native int realToString(float real, char[] buffer, int size);
  *
  * @return          Number of characters written to buffer.
  */
-native int copyString(char[] buffer, int size, const char[] source);
+native int CopyString(char[] buffer, int size, const char[] source);

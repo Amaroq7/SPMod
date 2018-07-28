@@ -33,45 +33,21 @@ class Forward : public IForward
 public:
 
     /* name of the forward */
-    const char *getName() const override
-    {
-        return m_name.c_str();
-    }
+    const char *getName() const override;
 
     /* id of the forward */
-    size_t getId() const override
-    {
-        return m_id;
-    }
+    std::size_t getId() const override;
 
     /* type of parameter */
-    ParamType getParamType(size_t id) const override
-    {
-        try
-        {
-            return m_paramTypes.at(id);
-        }
-        catch (const std::out_of_range &e [[maybe_unused]])
-        {
-            return ParamType::None;
-        }
-    }
+    ParamType getParamType(std::size_t id) const override;
 
     /* number of parameters */
-    size_t getParamsNum() const override
-    {
-        return m_paramsNum;
-    }
+    std::size_t getParamsNum() const override;
 
     /* name of the forward for use across SPMod */
-    std::string_view getNameCore() const
-    {
-        return m_name;
-    }
-    bool isExecuted() const
-    {
-        return m_exec;
-    }
+    std::string_view getNameCore() const;
+
+    bool isExecuted() const;
 
     /* plugin which the function will be executed in */
     virtual std::shared_ptr<Plugin> getPluginCore() const = 0;
@@ -82,16 +58,16 @@ protected:
     std::string m_name;
 
     /* forward id */
-    size_t m_id;
+    std::size_t m_id;
 
     /* parameters types */
     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> m_paramTypes;
 
     /* number of already pushed params */
-    size_t m_currentPos;
+    std::size_t m_currentPos;
 
     /* number of parameters in forward */
-    size_t m_paramsNum;
+    std::size_t m_paramsNum;
 
     /* true if forward is being executed */
     bool m_exec;
@@ -108,19 +84,16 @@ class MultiForward final : public Forward
 {
 public:
     MultiForward(std::string_view name,
-                 size_t id,
+                 std::size_t id,
                  std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
-                 size_t params,
+                 std::size_t params,
                  ExecType type);
 
     MultiForward() = delete;
     ~MultiForward() = default;
 
     // IForward
-    IPlugin *getPlugin() const override
-    {
-        return nullptr;
-    }
+    IPlugin *getPlugin() const override;
     bool pushCell(cell_t cell) override;
     bool pushCellPtr(cell_t *cell,
                      bool copyback) override;
@@ -130,25 +103,20 @@ public:
                       bool copyback) override;
 
     bool pushArray(cell_t *array,
-                   size_t size,
+                   std::size_t size,
                    bool copyback) override;
 
     bool pushString(const char *string) override;
     bool pushStringEx(char *buffer,
-                      size_t length,
+                      std::size_t length,
                       IForward::StringFlags sflags,
                       bool copyback) override;
+
     bool execFunc(cell_t *result) override;
-    void resetParams() override
-    {
-        m_currentPos = 0;
-    }
+    void resetParams() override;
 
     // Forward
-    std::shared_ptr<Plugin> getPluginCore() const override
-    {
-        return nullptr;
-    }
+    std::shared_ptr<Plugin> getPluginCore() const override;
 
 private:
 
@@ -160,7 +128,7 @@ private:
     {
         std::variant<cell_t, cell_t *, float, float *, const char *, char *> m_param;
         bool m_copyback;
-        size_t m_size;
+        std::size_t m_size;
         IForward::StringFlags m_stringFlags;
     };
 
@@ -183,19 +151,16 @@ class SingleForward final : public Forward
 {
 public:
     SingleForward(std::string_view name,
-                  size_t id,
+                  std::size_t id,
                   std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
-                  size_t params,
+                  std::size_t params,
                   std::shared_ptr<Plugin> plugin);
 
     SingleForward() = delete;
     ~SingleForward() = default;
 
     // IForward
-    IPlugin *getPlugin() const override
-    {
-        return reinterpret_cast<IPlugin *>(m_plugin.lock().get());
-    }
+    IPlugin *getPlugin() const override;
     bool pushCell(cell_t cell) override;
     bool pushCellPtr(cell_t *cell,
                      bool copyback) override;
@@ -205,25 +170,20 @@ public:
                       bool copyback) override;
 
     bool pushArray(cell_t *array,
-                   size_t size,
+                   std::size_t size,
                    bool copyback) override;
 
     bool pushString(const char *string) override;
     bool pushStringEx(char *buffer,
-                      size_t length,
+                      std::size_t length,
                       IForward::StringFlags sflags,
                       bool copyback) override;
+
     bool execFunc(cell_t *result) override;
-    void resetParams() override
-    {
-        m_pluginFunc->Cancel();
-    }
+    void resetParams() override;
 
     // Forward
-    std::shared_ptr<Plugin> getPluginCore() const override
-    {
-        return m_plugin.lock();
-    }
+    std::shared_ptr<Plugin> getPluginCore() const override;
 
 private:
 
@@ -254,7 +214,7 @@ public:
         /* number of defaults forwards */
         ForwardsNum,
     };
-    static constexpr size_t defaultForwardsNum = static_cast<size_t>(FwdDefault::ForwardsNum);
+    static constexpr std::size_t defaultForwardsNum = static_cast<std::size_t>(FwdDefault::ForwardsNum);
 
     ForwardMngr() = default;
     ~ForwardMngr() = default;
@@ -262,64 +222,45 @@ public:
     // IForwardMngr
     IForward *createForward(const char *name,
                             IForward::ExecType exec,
-                            size_t params,
+                            std::size_t params,
                             ...) override;
 
     IForward *createForward(const char *name,
                             IPlugin *plugin,
-                            size_t params,
+                            std::size_t params,
                             ...) override;
 
-    IForward *findForward(const char *name) const override;
-    IForward *findForward(size_t id) const override;
-    void deleteForward(IForward *forward) override
-    {
-        m_forwards.erase(forward->getName());
-    }
-    size_t getForwardsNum() const override
-    {
-        return m_forwards.size();
-    }
+    void deleteForward(IForward *forward) override;
+    std::size_t getForwardsNum() const override;
     const ForwardList *getForwardsList() const override;
     void freeForwardsList(const ForwardList *list) const override;
 
     // ForwardMngr
-    void clearForwards()
-    {
-        m_forwards.clear();
-        m_id = 0;
-    }
-    void deleteForwardCore(std::shared_ptr<Forward> fwd)
-    {
-        m_forwards.erase(fwd->getNameCore().data());
-    }
-    std::shared_ptr<Forward> getDefaultForward(ForwardMngr::FwdDefault fwd) const
-    {
-        return m_defaultForwards.at(static_cast<size_t>(fwd)).lock();
-    }
+    void clearForwards();
+    void deleteForwardCore(std::shared_ptr<Forward> fwd);
+    std::shared_ptr<Forward> getDefaultForward(ForwardMngr::FwdDefault fwd) const;
 
     void addDefaultsForwards();
 
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
                                                IForward::ExecType exec,
                                                std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> params,
-                                               size_t paramsnum,
+                                               std::size_t paramsnum,
                                                std::shared_ptr<Plugin> plugin = nullptr);
 
-    std::shared_ptr<Forward> findForwardCore(std::string_view name) const;
-    std::shared_ptr<Forward> findForwardCore(size_t id) const;
+    std::shared_ptr<Forward> findForward(std::size_t id) const;
 
 private:
     std::shared_ptr<Forward> _createForwardVa(std::string_view name,
                                               IForward::ExecType exec,
                                               std::va_list params,
-                                              size_t paramsnum,
+                                              std::size_t paramsnum,
                                               IPlugin *plugin = nullptr);
 
     std::unordered_map<std::string, std::shared_ptr<Forward>> m_forwards;
 
     /* keeps track of forwards ids */ 
-    size_t m_id;
+    std::size_t m_id;
 
     /* cache for defaults forwards */
     std::array<std::weak_ptr<Forward>, defaultForwardsNum> m_defaultForwards;

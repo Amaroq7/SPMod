@@ -17,10 +17,47 @@
 
 #include "ForwardSystem.hpp"
 
+const char *Forward::getName() const
+{
+    return m_name.c_str();
+}
+
+std::size_t Forward::getId() const
+{
+    return m_id;
+}
+
+Forward::ParamType Forward::getParamType(std::size_t id) const
+{
+    try
+    {
+        return m_paramTypes.at(id);
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
+        return ParamType::None;
+    }
+}
+
+std::size_t Forward::getParamsNum() const
+{
+    return m_paramsNum;
+}
+
+std::string_view Forward::getNameCore() const
+{
+    return m_name;
+}
+
+bool Forward::isExecuted() const
+{
+    return m_exec;
+}
+
 MultiForward::MultiForward(std::string_view name,
-                           size_t id,
+                           std::size_t id,
                            std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
-                           size_t params,
+                           std::size_t params,
                            ExecType type) : m_execType(type)
 {
     m_name = name;
@@ -28,6 +65,11 @@ MultiForward::MultiForward(std::string_view name,
     m_paramTypes = paramstypes;
     m_currentPos = 0;
     m_paramsNum = params;
+}
+
+IPlugin *MultiForward::getPlugin() const
+{
+    return nullptr;
 }
 
 bool MultiForward::pushCell(cell_t cell)
@@ -107,7 +149,7 @@ bool MultiForward::pushFloatPtr(float *real,
 }
 
 bool MultiForward::pushArray(cell_t *array,
-                             size_t size,
+                             std::size_t size,
                              bool copyback)
 {
     try
@@ -147,7 +189,7 @@ bool MultiForward::pushString(const char *string)
 }
 
 bool MultiForward::pushStringEx(char *buffer,
-                                size_t size,
+                                std::size_t size,
                                 IForward::StringFlags sflags,
                                 bool copyback)
 {
@@ -225,7 +267,7 @@ void MultiForward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
     std::variant<cell_t, cell_t *, float, float *, const char *, char *> paramVar;
     ForwardParam paramObj;
 
-    for (size_t i = 0; i < m_paramsNum; ++i)
+    for (std::size_t i = 0; i < m_paramsNum; ++i)
     {
         paramObj = m_params.at(i);
         paramVar = paramObj.m_param;
@@ -279,10 +321,20 @@ void MultiForward::pushParamsToFunction(SourcePawn::IPluginFunction *func)
     }
 }
 
+void MultiForward::resetParams()
+{
+    m_currentPos = 0;
+}
+
+std::shared_ptr<Plugin> MultiForward::getPluginCore() const
+{
+    return nullptr;
+}
+
 SingleForward::SingleForward(std::string_view name,
-                             size_t id,
+                             std::size_t id,
                              std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
-                             size_t params,
+                             std::size_t params,
                              std::shared_ptr<Plugin> plugin) : m_plugin(plugin)
 {
     m_name = name;
@@ -294,6 +346,11 @@ SingleForward::SingleForward(std::string_view name,
     m_pluginFunc = plugin->getRuntime()->GetFunctionByName(name.data());
     if (!m_pluginFunc)
         throw std::runtime_error("Function not found!");
+}
+
+IPlugin *SingleForward::getPlugin() const
+{
+    return m_plugin.lock().get();
 }
 
 bool SingleForward::pushCell(cell_t cell)
@@ -359,7 +416,7 @@ bool SingleForward::pushFloatPtr(float *real,
 }
 
 bool SingleForward::pushArray(cell_t *array,
-                              size_t size,
+                              std::size_t size,
                               bool copyback)
 {
     try
@@ -391,7 +448,7 @@ bool SingleForward::pushString(const char *string)
 }
 
 bool SingleForward::pushStringEx(char *buffer,
-                                 size_t size,
+                                 std::size_t size,
                                  IForward::StringFlags sflags,
                                  bool copyback)
 {
@@ -420,6 +477,16 @@ bool SingleForward::execFunc(cell_t *result)
     m_exec = false;
 
     return succeed;
+}
+
+void SingleForward::resetParams()
+{
+    m_pluginFunc->Cancel();
+}
+
+std::shared_ptr<Plugin> SingleForward::getPluginCore() const
+{
+    return m_plugin.lock();
 }
 
 const ForwardList *ForwardMngr::getForwardsList() const
@@ -465,7 +532,7 @@ void ForwardMngr::freeForwardsList(const ForwardList *list) const
 
 IForward *ForwardMngr::createForward(const char *name,
                                      IForward::ExecType exec,
-                                     size_t params,
+                                     std::size_t params,
                                      ...)
 {
     if (params > SP_MAX_EXEC_PARAMS)
@@ -482,7 +549,7 @@ IForward *ForwardMngr::createForward(const char *name,
 
 IForward *ForwardMngr::createForward(const char *name,
                                      IPlugin *plugin,
-                                     size_t params,
+                                     std::size_t params,
                                      ...)
 {
     using et = IForward::ExecType;
@@ -499,32 +566,12 @@ IForward *ForwardMngr::createForward(const char *name,
     return createdForward.get();
 }
 
-IForward *ForwardMngr::findForward(const char *name) const
+std::shared_ptr<Forward> ForwardMngr::findForward(std::size_t id) const
 {
-    return findForwardCore(name).get();
-}
-
-IForward *ForwardMngr::findForward(size_t id) const
-{
-    return findForwardCore(id).get();
-}
-
-std::shared_ptr<Forward> ForwardMngr::findForwardCore(std::string_view name) const
-{
-    auto pair = m_forwards.find(name.data());
-
-    if (pair != m_forwards.end())
-        return pair->second;
-
-    return nullptr;
-}
-
-std::shared_ptr<Forward> ForwardMngr::findForwardCore(size_t id) const
-{
-    for (auto pair = m_forwards.begin(); pair != m_forwards.end(); pair++)
+    for (auto pair : m_forwards)
     {
-        if (pair->second->getId() == id)
-            return pair->second;
+        if (pair.second->getId() == id)
+            return pair.second;
     }
 
     return nullptr;
@@ -538,7 +585,7 @@ void ForwardMngr::addDefaultsForwards()
 
     auto defToId = [](FwdDefault forwardId)
     {
-        return static_cast<size_t>(forwardId);
+        return static_cast<std::size_t>(forwardId);
     };
 
     auto posId = defToId(FwdDefault::ClientConnect);
@@ -579,12 +626,12 @@ void ForwardMngr::addDefaultsForwards()
 std::shared_ptr<Forward> ForwardMngr::_createForwardVa(std::string_view name,
                                                        IForward::ExecType exec,
                                                        std::va_list params,
-                                                       size_t paramsnum,
+                                                       std::size_t paramsnum,
                                                        IPlugin *plugin)
 {
     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> forwardParams = {};
 
-    for (size_t i = 0; i < paramsnum; ++i)
+    for (std::size_t i = 0; i < paramsnum; ++i)
         forwardParams.at(i) = static_cast<IForward::ParamType>(va_arg(params, int));
 
     // Find shared_ptr
@@ -601,7 +648,7 @@ std::shared_ptr<Forward> ForwardMngr::_createForwardVa(std::string_view name,
 std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
                                                         IForward::ExecType exec,
                                                         std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> params,
-                                                        size_t paramsnum,
+                                                        std::size_t paramsnum,
                                                         std::shared_ptr<Plugin> plugin)
 {
     std::shared_ptr<Forward> forward;
@@ -629,4 +676,30 @@ std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
     m_id++;
 
     return forward;
+}
+
+void ForwardMngr::deleteForward(IForward *forward)
+{
+    m_forwards.erase(forward->getName());
+}
+
+std::size_t ForwardMngr::getForwardsNum() const
+{
+    return m_forwards.size();
+}
+
+void ForwardMngr::clearForwards()
+{
+    m_forwards.clear();
+    m_id = 0;
+}
+
+void ForwardMngr::deleteForwardCore(std::shared_ptr<Forward> fwd)
+{
+    m_forwards.erase(fwd->getNameCore().data());
+}
+
+std::shared_ptr<Forward> ForwardMngr::getDefaultForward(ForwardMngr::FwdDefault fwd) const
+{
+    return m_defaultForwards.at(static_cast<std::size_t>(fwd)).lock();
 }

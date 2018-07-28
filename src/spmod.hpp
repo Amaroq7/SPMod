@@ -99,6 +99,7 @@ using namespace SPMod;
 
 // SPMod specific
 #include <SPConfig.hpp>
+#include "UtilsSystem.hpp"
 #include "SPModModuleDef.hpp"
 #include "LoggingSystem.hpp"
 #include "PluginSystem.hpp"

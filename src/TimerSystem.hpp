@@ -23,7 +23,7 @@
 
 class Timer;
 
-class TimerMngr : public ITimerMngr
+class TimerMngr final : public ITimerMngr
 {
 public:
     TimerMngr() = default;
@@ -39,25 +39,26 @@ public:
                         TimerCallback func,
                         void *data,
                         bool pause) override;
+
     void removeTimer(ITimer *timer) override;
     void execTimer(ITimer *timer) override;
-    std::shared_ptr<Timer> getTimer(size_t id) const;
+    std::shared_ptr<Timer> getTimer(std::size_t id) const;
     void execTimers(float time);
     void clearTimers();
     void execTimerCore(std::shared_ptr<Timer> timer);
-    void removeTimerCore(size_t id);
+    void removeTimerCore(std::size_t id);
 
     /* next execution of timers */
     static inline float m_nextExecution;
 
 private:
     /* keeps track of timers ids */
-    size_t m_id;
+    std::size_t m_id;
 
     std::vector<std::shared_ptr<Timer>> m_timers;
 };
 
-class Timer : public ITimer
+class Timer final : public ITimer
 {
 public:
     friend void TimerMngr::execTimers(float);
@@ -67,33 +68,24 @@ public:
     Timer() = delete;
     ~Timer() = default;
 
-    Timer(size_t id,
+    Timer(std::size_t id,
           float interval,
           std::variant<SourcePawn::IPluginFunction *, TimerCallback> &&func,
           std::variant<cell_t, void *> &&data,
-          bool pause) : m_id(id),
-                        m_interval(interval),
-                        m_callback(func),
-                        m_data(data),
-                        m_paused(pause),
-                        m_lastExec(gpGlobals->time)
-    {
-        if (m_interval <= 0.0f)
-            throw std::runtime_error("Interval lesser or equal to 0");
-    }
+          bool pause);
 
     float getInterval() const override;
     bool isPaused() const override;
     void setInterval(float newint) override;
     void setPause(bool pause) override;
 
-    size_t getId() const;
+    std::size_t getId() const;
 
 private:
     bool exec(float time);
 
     /* id of timer */
-    size_t m_id;
+    std::size_t m_id;
 
     /* interval */
     float m_interval;

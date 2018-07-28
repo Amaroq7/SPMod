@@ -19,11 +19,26 @@
 
 #include "spmod.hpp"
 
+Timer::Timer(std::size_t id,
+             float interval,
+             std::variant<SourcePawn::IPluginFunction *, TimerCallback> &&func,
+             std::variant<cell_t, void *> &&data,
+             bool pause) : m_id(id),
+                           m_interval(interval),
+                           m_callback(func),
+                           m_data(data),
+                           m_paused(pause),
+                           m_lastExec(gpGlobals->time)
+{
+    if (m_interval <= 0.0f)
+        throw std::runtime_error("Interval lesser or equal to 0");
+}
+
 float Timer::getInterval() const
 {
     return m_interval;
 }
-size_t Timer::getId() const
+std::size_t Timer::getId() const
 {
     return m_id;
 }
@@ -97,7 +112,7 @@ void TimerMngr::removeTimer(ITimer *timer)
     }
 }
 
-void TimerMngr::removeTimerCore(size_t id)
+void TimerMngr::removeTimerCore(std::size_t id)
 {
     auto iter = m_timers.begin();
     while (iter != m_timers.end())
@@ -111,7 +126,7 @@ void TimerMngr::removeTimerCore(size_t id)
     }
 }
 
-std::shared_ptr<Timer> TimerMngr::getTimer(size_t id) const
+std::shared_ptr<Timer> TimerMngr::getTimer(std::size_t id) const
 {
     auto iter = m_timers.begin();
     while (iter != m_timers.end())

@@ -58,7 +58,7 @@ void Logger::ReportError(const SourcePawn::IErrorReport &report,
     if (!iter.Done())
         LogErrorCore("Stack trace:");
 
-    size_t entryPos = 0;
+    std::size_t entryPos = 0;
     while (!iter.Done())
     {
         if (iter.IsInternalFrame())
@@ -92,6 +92,11 @@ void Logger::ReportError(const SourcePawn::IErrorReport &report,
         ++entryPos;
         iter.Next();
     }
+}
+
+void Logger::resetErrorState()
+{
+    m_alreadyReportedError = false;
 }
 
 void Logger::_writeErrorToFile(std::string_view errormsg)

@@ -17,7 +17,7 @@
 
 #include "PluginSystem.hpp"
 
-Plugin::Plugin(size_t id,
+Plugin::Plugin(std::size_t id,
                std::string_view identity,
                const fs::path &path)
 {
@@ -81,6 +81,72 @@ Plugin::Plugin(size_t id,
     }
 }
 
+const char *Plugin::getName() const
+{
+    return m_name.c_str();
+}
+
+const char *Plugin::getVersion() const
+{
+    return m_version.c_str();
+}
+
+const char *Plugin::getAuthor() const
+{
+    return m_author.c_str();
+}
+
+const char *Plugin::getUrl() const
+{
+    return m_url.c_str();
+}
+
+const char *Plugin::getIndentity() const
+{
+    return m_identity.c_str();
+}
+
+const char *Plugin::getFilename() const
+{
+    return m_filename.c_str();
+}
+
+std::size_t Plugin::getId() const
+{
+    return m_id;
+}
+
+SourcePawn::IPluginRuntime *Plugin::getRuntime() const
+{
+    return m_runtime;
+}
+
+// Plugin
+std::string_view Plugin::getNameCore() const
+{
+    return m_name;
+}
+std::string_view Plugin::getVersionCore() const
+{
+    return m_version;
+}
+std::string_view Plugin::getAuthorCore() const
+{
+    return m_author;
+}
+std::string_view Plugin::getUrlCore() const
+{
+    return m_url;
+}
+std::string_view Plugin::getIndentityCore() const
+{
+    return m_identity;
+}
+std::string_view Plugin::getFileNameCore() const
+{
+    return m_filename;
+}
+
 std::shared_ptr<Plugin> PluginMngr::getPluginCore(std::string_view name)
 {
     auto result = m_plugins.find(name.data());
@@ -88,7 +154,7 @@ std::shared_ptr<Plugin> PluginMngr::getPluginCore(std::string_view name)
     return (result != m_plugins.end()) ? result->second : nullptr;
 }
 
-std::shared_ptr<Plugin> PluginMngr::getPluginCore(size_t index)
+std::shared_ptr<Plugin> PluginMngr::getPluginCore(std::size_t index)
 {
     for (const auto &entry : m_plugins)
     {
@@ -108,23 +174,14 @@ std::shared_ptr<Plugin> PluginMngr::getPluginCore(SourcePawn::IPluginContext *ct
 
 IPlugin *PluginMngr::loadPlugin(const char *name,
                                 char *error,
-                                size_t size)
+                                std::size_t size)
 {
     std::string errorMsg;
     std::shared_ptr<Plugin> plugin = loadPluginCore(name, &errorMsg);
 
     if (!plugin)
     {
-#if defined __STDC_LIB_EXT1__ || defined SP_MSVC
-    #if defined SP_MSVC
-        strncpy_s(error, sizeof(error), errorMsg.c_str(), _TRUNCATE);
-    #else
-        strncpy_s(error, sizeof(error), errorMsg.c_str(), sizeof(error) - 1);
-    #endif
-#else
-        std::strncpy(error, errorMsg.c_str(), size);
-        error[size - 1] = '\0';
-#endif
+        gSPGlobal->getUtilsCore()->strCopyCore(error, size, errorMsg);
         return nullptr;
     }
 
@@ -144,7 +201,7 @@ std::shared_ptr<Plugin> PluginMngr::loadPluginCore(std::string_view name,
 std::shared_ptr<Plugin> PluginMngr::_loadPlugin(const fs::path &path,
                                                 std::string *error)
 {
-    size_t pluginId = m_plugins.size();
+    std::size_t pluginId = m_plugins.size();
 
     // Omit any unknown extension
     if (path.extension().string() != ".smx")
@@ -168,7 +225,7 @@ std::shared_ptr<Plugin> PluginMngr::_loadPlugin(const fs::path &path,
     return plugin;
 }
 
-size_t PluginMngr::loadPlugins()
+std::size_t PluginMngr::loadPlugins()
 {
     using def = ForwardMngr::FwdDefault;
 
@@ -222,4 +279,39 @@ size_t PluginMngr::loadPlugins()
     fwdMngr->getDefaultForward(def::PluginInit)->execFunc(nullptr);
     fwdMngr->getDefaultForward(def::PluginsLoaded)->execFunc(nullptr);
     return m_plugins.size();
+}
+
+std::size_t PluginMngr::getPluginsNum() const
+{
+    return m_plugins.size();
+}
+
+IPlugin *PluginMngr::getPlugin(std::size_t index)
+{
+    return getPluginCore(index).get();
+}
+
+IPlugin *PluginMngr::getPlugin(const char *name)
+{
+    return getPluginCore(name).get();
+}
+
+IPlugin *PluginMngr::getPlugin(SourcePawn::IPluginContext *ctx)
+{
+    return getPluginCore(ctx).get();
+}
+
+void PluginMngr::clearPlugins()
+{
+    m_plugins.clear();
+}
+
+void PluginMngr::setPluginPrecache(bool canprecache)
+{
+    m_canPluginsPrecache = canprecache;
+}
+
+bool PluginMngr::canPluginPrecache()
+{
+    return m_canPluginsPrecache;
 }

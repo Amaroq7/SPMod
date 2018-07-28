@@ -17,26 +17,28 @@
 
 #include "spmod.hpp"
 
-// native Forward(const char[] name, ExecType exectype, int plid, ParamType ...)
-static cell_t forwardCtor(SourcePawn::IPluginContext *ctx,
+// Forward(const char[] name, ExecType exectype, int plid, ParamType ...)
+static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx,
                           const cell_t *params)
 {
+    enum { arg_name = 1, arg_exec, arg_plid, arg_paramstypes };
+
     char *fwdName;
-    auto execType = static_cast<IForward::ExecType>(params[2]);
-    cell_t pluginId = params[3];
+    auto execType = static_cast<IForward::ExecType>(params[arg_exec]);
+    cell_t pluginId = params[arg_plid];
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
 
-    ctx->LocalToString(params[1], &fwdName);
+    ctx->LocalToString(params[arg_name], &fwdName);
 
-    size_t fwdParamsNum = params[0] - 3;
+    std::size_t fwdParamsNum = params[0] - 3;
     if (fwdParamsNum > SP_MAX_EXEC_PARAMS)
         return -1;
 
     std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> fwdParamsList = {};
-    for (size_t i = 0; i < fwdParamsNum; ++i)
+    for (std::size_t i = 0; i < fwdParamsNum; ++i)
     {
         cell_t *paramType;
-        ctx->LocalToPhysAddr(params[i + 4], &paramType);
+        ctx->LocalToPhysAddr(params[i + arg_paramstypes], &paramType);
         fwdParamsList.at(i) = static_cast<IForward::ParamType>(*paramType);
     }
 
@@ -63,11 +65,13 @@ static cell_t forwardCtor(SourcePawn::IPluginContext *ctx,
     return plForward->getId();
 }
 
-// native bool pushCell(any cell)
-static cell_t pushCell(SourcePawn::IPluginContext *ctx,
+// bool PushCell(any cell)
+static cell_t PushCell(SourcePawn::IPluginContext *ctx,
                        const cell_t *params)
 {
-    cell_t fwdId = params[1];
+    enum { arg_id = 1, arg_cell };
+
+    cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
         ctx->ReportError("Invalid forward!");
@@ -75,21 +79,23 @@ static cell_t pushCell(SourcePawn::IPluginContext *ctx,
     }
     
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForwardCore(fwdId);
+    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
     if (!forward)
     {
         ctx->ReportError("Forward not found!");
         return 0;
     }
 
-    return forward->pushCell(params[2]);
+    return forward->pushCell(params[arg_cell]);
 }
 
-// native bool pushCellRef(any &cell)
-static cell_t pushCellRef(SourcePawn::IPluginContext *ctx,
+// bool PushCellRef(any &cell)
+static cell_t PushCellRef(SourcePawn::IPluginContext *ctx,
                           const cell_t *params)
 {
-    cell_t fwdId = params[1];
+    enum { arg_id = 1, arg_cellref };
+
+    cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
         ctx->ReportError("Invalid forward!");
@@ -97,7 +103,7 @@ static cell_t pushCellRef(SourcePawn::IPluginContext *ctx,
     }
 
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForwardCore(fwdId);
+    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
     if (!forward)
     {
         ctx->ReportError("Forward not found!");
@@ -105,15 +111,18 @@ static cell_t pushCellRef(SourcePawn::IPluginContext *ctx,
     }
 
     cell_t *value;
-    ctx->LocalToPhysAddr(params[2], &value);
+    ctx->LocalToPhysAddr(params[arg_cellref], &value);
+
     return forward->pushCellPtr(value, true);
 }
 
-// native bool pushFloat(float real)
-static cell_t pushFloat(SourcePawn::IPluginContext *ctx,
+// bool PushFloat(float real)
+static cell_t PushFloat(SourcePawn::IPluginContext *ctx,
                         const cell_t *params)
 {
-    cell_t fwdId = params[1];
+    enum { arg_id = 1, arg_float };
+
+    cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
         ctx->ReportError("Invalid forward!");
@@ -121,21 +130,23 @@ static cell_t pushFloat(SourcePawn::IPluginContext *ctx,
     }
 
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForwardCore(fwdId);
+    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
     if (!forward)
     {
         ctx->ReportError("Forward not found!");
         return 0;
     }
 
-    return forward->pushFloat(sp_ctof(params[2]));
+    return forward->pushFloat(sp_ctof(params[arg_float]));
 }
 
-// native bool pushFloatRef(float &real)
-static cell_t pushFloatRef(SourcePawn::IPluginContext *ctx,
+// bool PushFloatRef(float &real)
+static cell_t PushFloatRef(SourcePawn::IPluginContext *ctx,
                            const cell_t *params)
 {
-    cell_t fwdId = params[1];
+    enum { arg_id = 1, arg_floatref };
+
+    cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
         ctx->ReportError("Invalid forward!");
@@ -143,7 +154,7 @@ static cell_t pushFloatRef(SourcePawn::IPluginContext *ctx,
     }
 
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForwardCore(fwdId);
+    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
     if (!forward)
     {
         ctx->ReportError("Forward not found!");
@@ -154,18 +165,20 @@ static cell_t pushFloatRef(SourcePawn::IPluginContext *ctx,
     {
         cell_t *cellptr;
         float *floatptr;
-    } floatholder;
+    } floatHolder;
 
-    ctx->LocalToPhysAddr(params[2], &floatholder.cellptr);
+    ctx->LocalToPhysAddr(params[arg_floatref], &floatHolder.cellptr);
 
-    return forward->pushFloatPtr(floatholder.floatptr, true);
+    return forward->pushFloatPtr(floatHolder.floatptr, true);
 }
 
-// native bool pushString(const char[] string)
-static cell_t pushString(SourcePawn::IPluginContext *ctx,
+// bool PushString(const char[] string)
+static cell_t PushString(SourcePawn::IPluginContext *ctx,
                          const cell_t *params)
 {
-    cell_t fwdId = params[1];
+    enum { arg_id = 1, arg_string };
+
+    cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
         ctx->ReportError("Invalid forward!");
@@ -173,7 +186,7 @@ static cell_t pushString(SourcePawn::IPluginContext *ctx,
     }
 
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForwardCore(fwdId);
+    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
     if (!forward)
     {
         ctx->ReportError("Forward not found!");
@@ -181,15 +194,18 @@ static cell_t pushString(SourcePawn::IPluginContext *ctx,
     }
 
     char *string;
-    ctx->LocalToString(params[2], &string);
+    ctx->LocalToString(params[arg_string], &string);
+
     return forward->pushString(string);
 }
 
-// native bool pushArray(const any[] array, int size)
-static cell_t pushArray(SourcePawn::IPluginContext *ctx,
+// bool PushArray(const any[] array, int size)
+static cell_t PushArray(SourcePawn::IPluginContext *ctx,
                         const cell_t *params)
 {
-    cell_t fwdId = params[1];
+    enum { arg_id = 1, arg_array, arg_size };
+
+    cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
         ctx->ReportError("Invalid forward!");
@@ -197,7 +213,7 @@ static cell_t pushArray(SourcePawn::IPluginContext *ctx,
     }
 
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForwardCore(fwdId);
+    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
     if (!forward)
     {
         ctx->ReportError("Forward not found!");
@@ -205,15 +221,18 @@ static cell_t pushArray(SourcePawn::IPluginContext *ctx,
     }
 
     cell_t *array;
-    ctx->LocalToPhysAddr(params[2], &array);
-    return forward->pushArray(array, params[3], false);
+    ctx->LocalToPhysAddr(params[arg_array], &array);
+
+    return forward->pushArray(array, params[arg_size], false);
 }
 
-// native bool pushStringEx(char[] string, int length, StringFlags sflags, bool copyback)
-static cell_t pushStringEx(SourcePawn::IPluginContext *ctx,
+// bool PushStringEx(char[] string, int length, StringFlags sflags, bool copyback)
+static cell_t PushStringEx(SourcePawn::IPluginContext *ctx,
                            const cell_t *params)
 {
-    cell_t fwdId = params[1];
+    enum { arg_id = 1, arg_string, arg_length, arg_sflags, arg_copyback };
+
+    cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
         ctx->ReportError("Invalid forward!");
@@ -221,7 +240,7 @@ static cell_t pushStringEx(SourcePawn::IPluginContext *ctx,
     }
 
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForwardCore(fwdId);
+    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
     if (!forward)
     {
         ctx->ReportError("Forward not found!");
@@ -229,16 +248,19 @@ static cell_t pushStringEx(SourcePawn::IPluginContext *ctx,
     }
 
     char *string;
-    ctx->LocalToString(params[2], &string);
-    auto sflags = static_cast<IForward::StringFlags>(params[4]);
-    return forward->pushStringEx(string, params[3], sflags, params[5]);
+    ctx->LocalToString(params[arg_string], &string);
+    auto sflags = static_cast<IForward::StringFlags>(params[arg_sflags]);
+
+    return forward->pushStringEx(string, params[arg_length], sflags, params[arg_copyback]);
 }
 
-// native bool pushArrayEx(any[] array, int size, int cpflags)
-static cell_t pushArrayEx(SourcePawn::IPluginContext *ctx,
+// bool PushArrayEx(any[] array, int size, int cpflags)
+static cell_t PushArrayEx(SourcePawn::IPluginContext *ctx,
                           const cell_t *params)
 {
-    cell_t fwdId = params[1];
+    enum { arg_id = 1, arg_array, arg_size, arg_cpflags };
+
+    cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
         ctx->ReportError("Invalid forward!");
@@ -246,7 +268,7 @@ static cell_t pushArrayEx(SourcePawn::IPluginContext *ctx,
     }
 
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForwardCore(fwdId);
+    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
     if (!forward)
     {
         ctx->ReportError("Forward not found!");
@@ -254,15 +276,18 @@ static cell_t pushArrayEx(SourcePawn::IPluginContext *ctx,
     }
 
     cell_t *array;
-    ctx->LocalToPhysAddr(params[2], &array);
-    return forward->pushArray(array, params[3], params[4]);
+    ctx->LocalToPhysAddr(params[arg_array], &array);
+
+    return forward->pushArray(array, params[arg_size], params[arg_cpflags]);
 }
 
-// native bool pushExec(any &result = 0)
-static cell_t pushExec(SourcePawn::IPluginContext *ctx,
+// bool PushExec(any &result = 0)
+static cell_t PushExec(SourcePawn::IPluginContext *ctx,
                        const cell_t *params)
 {
-    cell_t fwdId = params[1];
+    enum { arg_id = 1, arg_resultref };
+
+    cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
         ctx->ReportError("Invalid forward!");
@@ -270,7 +295,7 @@ static cell_t pushExec(SourcePawn::IPluginContext *ctx,
     }
 
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForwardCore(fwdId);
+    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
     if (!forward)
     {
         ctx->ReportError("Forward not found!");
@@ -278,16 +303,18 @@ static cell_t pushExec(SourcePawn::IPluginContext *ctx,
     }
 
     cell_t *retResult;
-    ctx->LocalToPhysAddr(params[2], &retResult);
+    ctx->LocalToPhysAddr(params[arg_resultref], &retResult);
 
     return forward->execFunc(retResult);
 }
 
-// native bool pushCancel()
-static cell_t pushCancel(SourcePawn::IPluginContext *ctx,
+// bool PushCancel()
+static cell_t PushCancel(SourcePawn::IPluginContext *ctx,
                          const cell_t *params)
 {
-    cell_t fwdId = params[1];
+    enum { arg_id = 1 };
+
+    cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
         ctx->ReportError("Invalid forward!");
@@ -295,7 +322,7 @@ static cell_t pushCancel(SourcePawn::IPluginContext *ctx,
     }
 
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForwardCore(fwdId);
+    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
     if (!forward)
     {
         ctx->ReportError("Forward not found!");
@@ -306,11 +333,13 @@ static cell_t pushCancel(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-// native bool remove()
-static cell_t forwardRemove(SourcePawn::IPluginContext *ctx,
+// bool Remove()
+static cell_t ForwardRemove(SourcePawn::IPluginContext *ctx,
                             const cell_t *params)
 {
-    cell_t fwdId = params[1];
+    enum { arg_id = 1 };
+
+    cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
         ctx->ReportError("Invalid forward!");
@@ -318,7 +347,7 @@ static cell_t forwardRemove(SourcePawn::IPluginContext *ctx,
     }
 
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForwardCore(fwdId);
+    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
 
     if (!forward)
         return 0;
@@ -330,36 +359,19 @@ static cell_t forwardRemove(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-// native Forward findForward(const char[] name)
-static cell_t findForward(SourcePawn::IPluginContext *ctx,
-                          const cell_t *params)
-{
-    char *fwdName;
-    ctx->LocalToString(params[1], &fwdName);
-
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForwardCore(fwdName);
-
-    if (!forward)
-        return -1;
-
-    return forward->getId();
-}
-
 sp_nativeinfo_t gForwardsNatives[] =
 {
-    {  "Forward.Forward",        forwardCtor         },
-    {  "Forward.pushCell",       pushCell            },
-    {  "Forward.pushCellRef",    pushCellRef         },
-    {  "Forward.pushFloat",      pushFloat           },
-    {  "Forward.pushFloatRef",   pushFloatRef        },
-    {  "Forward.pushString",     pushString          },
-    {  "Forward.pushArray",      pushArray           },
-    {  "Forward.pushStringEx",   pushStringEx        },
-    {  "Forward.pushArrayEx",    pushArrayEx         },
-    {  "Forward.pushExec",       pushExec            },
-    {  "Forward.pushCancel",     pushCancel          },
-    {  "Forward.remove",         forwardRemove       },
-    {  "findForward",            findForward         },
+    {  "Forward.Forward",        ForwardCtor         },
+    {  "Forward.PushCell",       PushCell            },
+    {  "Forward.PushCellRef",    PushCellRef         },
+    {  "Forward.PushFloat",      PushFloat           },
+    {  "Forward.PushFloatRef",   PushFloatRef        },
+    {  "Forward.PushString",     PushString          },
+    {  "Forward.PushArray",      PushArray           },
+    {  "Forward.PushStringEx",   PushStringEx        },
+    {  "Forward.PushArrayEx",    PushArrayEx         },
+    {  "Forward.PushExec",       PushExec            },
+    {  "Forward.PushCancel",     PushCancel          },
+    {  "Forward.Remove",         ForwardRemove       },
     {  nullptr,                  nullptr             }
 };
