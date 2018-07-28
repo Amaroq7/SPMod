@@ -232,7 +232,8 @@ static void ClientPutInServerPost(edict_t *pEntity)
     using def = ForwardMngr::FwdDefault;
 
     const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
-    std::shared_ptr<Player> player = plrMngr->getPlayerCore(pEntity);
+    std::shared_ptr<Player> plr = plrMngr->getPlayerCore(pEntity);
+    plr->putInServer();
 
     // callback for modules
     for (auto *listener : plrMngr->getListenerList())

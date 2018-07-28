@@ -47,13 +47,14 @@ static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain,
 
     chain->callNext(client, crash, string);
 
+    PlayerMngr::m_playersNum--;
+    plr->disconnect();
+
     // callback for modules
     for (auto *listener : plrMngr->getListenerList())
     {
         listener->OnClientDisconnected(plr.get(), crash, string);
     }
-
-    PlayerMngr::m_playersNum--;
 
     //TODO: Add OnClientDisconnected(int client, bool crash, const char[] string) for plugins?
 }
@@ -61,14 +62,14 @@ static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain,
 static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain,
                                cvar_t *cvar,
                                const char *value)
-{   
+{
     auto cachedCvar = gSPGlobal->getCvarManagerCore()->findCvarCore(cvar->name, true);
     // If cached cvar is the same, do not update cached value
     if (cachedCvar && cachedCvar->asStringCore().compare(value))
     {
         cachedCvar->setValue(value);
     }
-    
+
     chain->callNext(cvar, value);
 }
 
