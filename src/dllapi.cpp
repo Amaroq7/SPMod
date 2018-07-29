@@ -238,28 +238,26 @@ static void ClientPutInServerPost(edict_t *pEntity)
     // callback for modules
     for (auto *listener : plrMngr->getListenerList())
     {
-        listener->OnClientPutInServer(player.get());
+        listener->OnClientPutInServer(plr.get());
     }
 
     std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServer);
-    forward->pushCell(player->getIndex());
+    forward->pushCell(plr->getIndex());
     forward->execFunc(nullptr);
 }
 
 static void ClientUserInfoChangedPost(edict_t *pEntity,
                                       char *infobuffer)
 {
-    using def = ForwardMngr::FwdDefault;
-
     std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(pEntity);
     plr->setName(INFOKEY_VALUE(infobuffer, "name"));
 }
 
 static void StartFramePost()
 {
-    if (m_nextAuthCheck <= gpGlobals->time && !PlayerMngr::m_playersToAuth.empty())
+    if (PlayerMngr::m_nextAuthCheck <= gpGlobals->time && !PlayerMngr::m_playersToAuth.empty())
     {
-        m_nextAuthCheck = gpGlobals->time + 0.5f;
+        PlayerMngr::m_nextAuthCheck = gpGlobals->time + 0.5f;
 
         auto iter = PlayerMngr::m_playersToAuth.begin();
         while (iter != PlayerMngr::m_playersToAuth.end())
@@ -269,7 +267,7 @@ static void StartFramePost()
             if (!authid.empty() && authid.compare("STEAM_ID_PENDING"))
             {
                 plr->authorize(authid);
-                iter = PlayerMngr::playersToAuth.erase(iter);
+                iter = PlayerMngr::m_playersToAuth.erase(iter);
             }
             else
                 ++iter;

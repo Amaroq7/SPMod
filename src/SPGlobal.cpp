@@ -158,9 +158,9 @@ ITimerMngr *SPGlobal::getTimerManager() const
     return m_timerManager.get();
 }
 
-IPlayerMngr *getPlayerManager() const override
+IPlayerMngr *SPGlobal::getPlayerManager() const
 {
-    return m_timerManager.get();
+    return m_plrManager.get();
 }
 
 IUtils *SPGlobal::getUtils() const
