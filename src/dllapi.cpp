@@ -25,15 +25,8 @@ static qboolean ClientConnect(edict_t *pEntity,
     using sflags = IForward::StringFlags;
     using def = ForwardMngr::FwdDefault;
 
-    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
-    std::shared_ptr<Player> plr = plrMngr->getPlayerCore(pEntity);
-
-    // callback for modules
-    for (auto *listener : plrMngr->getListenerList())
-    {
-        if (!listener->OnClientConnect(plr.get(), szRejectReason, 128))
-            RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
-    }
+    if (!gSPGlobal->getPlayerManagerCore()->ClientConnect(pEntity, pszName, pszAddress, szRejectReason))
+        RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
 
     cell_t result;
     std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnect);
@@ -203,24 +196,7 @@ static qboolean ClientConnectPost(edict_t *pEntity,
                                   const char *pszAddress [[maybe_unused]],
                                   char szRejectReason [[maybe_unused]] [128])
 {
-    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
-    std::shared_ptr<Player> plr = plrMngr->getPlayerCore(pEntity);
-    plr->connect(pszName, pszAddress);
-
-    // callback for modules
-    for (auto *listener : plrMngr->getListenerList())
-    {
-        listener->OnClientConnected(plr.get());
-    }
-
-    PlayerMngr::m_playersNum++;
-
-    std::string_view authid(GETPLAYERAUTHID(pEntity));
-
-    if (authid.empty() || !authid.compare("STEAM_ID_PENDING"))
-        PlayerMngr::m_playersToAuth.push_back(plr);
-    else
-        plr->authorize(authid);
+    gSPGlobal->getPlayerManagerCore()->ClientConnectPost(pEntity, pszName, pszAddress);
 
     // TODO: Add OnClientConnected(int client, const char[] name, const char[] ip) for plugins?
 
@@ -233,13 +209,7 @@ static void ClientPutInServerPost(edict_t *pEntity)
 
     const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
     std::shared_ptr<Player> plr = plrMngr->getPlayerCore(pEntity);
-    plr->putInServer();
-
-    // callback for modules
-    for (auto *listener : plrMngr->getListenerList())
-    {
-        listener->OnClientPutInServer(plr.get());
-    }
+    plrMngr->ClientPutInServerPost(pEntity);
 
     std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServer);
     forward->pushCell(plr->getIndex());
@@ -249,8 +219,7 @@ static void ClientPutInServerPost(edict_t *pEntity)
 static void ClientUserInfoChangedPost(edict_t *pEntity,
                                       char *infobuffer)
 {
-    std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(pEntity);
-    plr->setName(INFOKEY_VALUE(infobuffer, "name"));
+    gSPGlobal->getPlayerManagerCore()->ClientUserInfoChangedPost(pEntity, infobuffer);
 }
 
 static void StartFramePost()

@@ -204,3 +204,63 @@ void PlayerMngr::setMaxClients(int maxClients)
 {
     m_maxClients = maxClients;
 }
+
+bool PlayerMngr::ClientConnect(edict_t *pEntity,
+                               const char *pszName,
+                               const char *pszAddress,
+                               char szRejectReason[128])
+{
+    std::shared_ptr<Player> plr = getPlayerCore(pEntity);
+
+    // callback for modules
+    for (auto *listener : getListenerList())
+    {
+        if (!listener->OnClientConnect(plr.get(), szRejectReason, 128))
+            return false;
+    }
+
+    return true;
+}
+
+void PlayerMngr::ClientConnectPost(edict_t *pEntity,
+                                   const char *pszName,
+                                   const char *pszAddress)
+{
+    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
+    std::shared_ptr<Player> plr = plrMngr->getPlayerCore(pEntity);
+    plr->connect(pszName, pszAddress);
+
+    // callback for modules
+    for (auto *listener : plrMngr->getListenerList())
+    {
+        listener->OnClientConnected(plr.get());
+    }
+
+    PlayerMngr::m_playersNum++;
+
+    std::string_view authid(GETPLAYERAUTHID(pEntity));
+
+    if (authid.empty() || !authid.compare("STEAM_ID_PENDING"))
+        PlayerMngr::m_playersToAuth.push_back(plr);
+    else
+        plr->authorize(authid);
+}
+
+void PlayerMngr::ClientPutInServerPost(edict_t *pEntity)
+{
+    std::shared_ptr<Player> plr = getPlayerCore(pEntity);
+    plr->putInServer();
+
+    // callback for modules
+    for (auto *listener : getListenerList())
+    {
+        listener->OnClientPutInServer(plr.get());
+    }
+}
+
+void PlayerMngr::ClientUserInfoChangedPost(edict_t *pEntity,
+                                           char *infobuffer)
+{
+    std::shared_ptr<Player> plr = getPlayerCore(pEntity);
+    plr->setName(INFOKEY_VALUE(infobuffer, "name"));
+}

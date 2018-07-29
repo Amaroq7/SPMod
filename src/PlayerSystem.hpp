@@ -87,6 +87,19 @@ public:
         return m_playersListeners;
     }
 
+    bool ClientConnect(edict_t *pEntity,
+                       const char *pszName,
+                       const char *pszAddress,
+                       char szRejectReason[128]);
+
+    void ClientConnectPost(edict_t *pEntity,
+                           const char *pszName,
+                           const char *pszAddress);
+
+    void ClientPutInServerPost(edict_t *pEntity);
+    void ClientUserInfoChangedPost(edict_t *pEntity,
+                                   char *infobuffer);
+
     static inline unsigned int m_playersNum;
     static inline std::vector<std::shared_ptr<Player>> m_playersToAuth;
     static inline float m_nextAuthCheck = 0.0f;
