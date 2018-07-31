@@ -43,9 +43,9 @@
     #pragma warning(pop)
 #endif
 
+#include <IInterface.hpp>
 #include <IForwardSystem.hpp>
 #include <IPluginSystem.hpp>
-#include <INativeSystem.hpp>
 #include <ICvarSystem.hpp>
 #include <ITimerSystem.hpp>
 #include <IMenuSystem.hpp>
@@ -54,14 +54,35 @@
 
 namespace SPMod
 {
-    using sp_api_t = unsigned long;
-    constexpr sp_api_t SPMOD_API_VERSION = 0;
-
-    class IModuleInterface;
-
-    class ISPGlobal SPMOD_FINAL
+    class ISPGlobal SPMOD_FINAL : public ISPModInterface
     {
     public:
+        static constexpr uint16_t MAJOR_VERSION = 0;
+        static constexpr uint16_t MINOR_VERSION = 0;
+
+        static constexpr uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
+
+        /**
+         * @brief Gets interface's name.
+         *
+         * @return      Interface's name.
+         */
+        const char *getInterfaceName() const override
+        {
+            return "ISPGlobal";
+        }
+
+        /**
+         * @brief Gets interface's version.
+         *
+         * @note The first 16 most significant bits represent major version, the rest represent minor version.
+         *
+         * @return      Interface's version.
+         */
+        uint32_t getInterfaceVersion() const override
+        {
+            return VERSION;
+        }
 
         /**
          * @brief Returns home dir of SPMod.
@@ -83,13 +104,6 @@ namespace SPMod
          * @return        Plugin manager.
          */
         virtual IPluginMngr *getPluginManager() const = 0;
-
-        /**
-         * @brief Returns SPMod native manager.
-         *
-         * @return              Native manager.
-         */
-        virtual INativeMngr *getNativeManager() const = 0;
 
         /**
          * @brief Returns SPMod forward manager.
@@ -153,11 +167,29 @@ namespace SPMod
          * @return              Number of characters written.
          */
         virtual unsigned int formatString(char *buffer,
-                                        size_t length,
-                                        const char *format,
-                                        SourcePawn::IPluginContext *ctx,
-                                        const cell_t *params,
-                                        size_t param) const = 0;
+                                          std::size_t length,
+                                          const char *format,
+                                          SourcePawn::IPluginContext *ctx,
+                                          const cell_t *params,
+                                          std::size_t param) const = 0;
+
+        /**
+         * @brief Registers new interface.
+         *
+         * @param interface     Address to interface.
+         *
+         * @return              True if registered successfully, false otherwise.
+         */
+        virtual bool registerInterface(IInterface *interface) = 0;
+
+        /**
+         * @brief Gets an interface.
+         *
+         * @param name          Name of the interface to look up for.
+         *
+         * @return              True if registered successfully, false otherwise.
+         */
+        virtual IInterface *getInterface(const char *name) const = 0;
 
     protected:
         virtual ~ISPGlobal() {};
@@ -169,34 +201,4 @@ namespace SPMod
     * @brief Entry point for modules to obtain access to SPMod API.
     */
     SPMOD_API int SPMod_Query(ISPGlobal *spmodInstance);
-
-   /**
-    * @brief Interface for registering a module.
-    */
-    class IModuleInterface
-    {
-    public:
-
-        /**
-         * @brief Returns SPMod API version used by module.
-         *
-         * @return        SPMod API version.
-         */
-        virtual sp_api_t getInterfaceVersion() const
-        {
-            return SPMOD_API_VERSION;
-        }
-
-        /**
-         * @brief Returns name of the module.
-         *
-         * @note        Must be implemented.
-         *
-         * @return      Module name.
-         */
-        virtual const char *getName() const = 0;
-
-    protected:
-        virtual ~IModuleInterface() {}
-    };
 }

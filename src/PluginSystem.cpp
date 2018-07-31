@@ -56,7 +56,7 @@ Plugin::Plugin(std::size_t id,
     m_runtime->GetDefaultContext()->SetKey(1, const_cast<char *>(m_identity.c_str()));
 
     uint32_t nativesNum = plugin->GetNativesNum();
-    const std::unique_ptr<NativeMngr> &nativeManager = gSPGlobal->getNativeManagerCore();
+    const std::unique_ptr<PluginMngr> &plMngr = gSPGlobal->getPluginManagerCore();
     for (uint32_t index = 0; index < nativesNum; ++index)
     {
         const sp_native_t *pluginNative = m_runtime->GetNative(index);
@@ -64,11 +64,11 @@ Plugin::Plugin(std::size_t id,
         if (pluginNative->status == SP_NATIVE_BOUND)
             continue;
 
-        std::shared_ptr<Native> native = nativeManager->getNativeCore(pluginNative->name);
-        if (!native)
+        SPVM_NATIVE_FUNC router = plMngr->findNative(pluginNative->name);
+        if (!router) /* Don't mark plugin as not working yet since native can be made by other plugin */
             continue;
 
-        plugin->UpdateNativeBinding(index, native->getRouter(), 0, nullptr);
+        plugin->UpdateNativeBinding(index, router, 0, nullptr);
     }
 
     // Setup maxclients num
@@ -252,11 +252,9 @@ std::size_t PluginMngr::loadPlugins()
 
     // After first binding let plugins add their natives
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-
     fwdMngr->getDefaultForward(def::PluginNatives)->execFunc(nullptr);
 
     // Try to bind unbound natives
-    const std::unique_ptr<NativeMngr> &nativeManager = gSPGlobal->getNativeManagerCore();
     for (const auto &entry : m_plugins)
     {
         SourcePawn::IPluginRuntime *runtime = entry.second->getRuntime();
@@ -268,11 +266,14 @@ std::size_t PluginMngr::loadPlugins()
             if (pluginNative->status == SP_NATIVE_BOUND)
                 continue;
 
-            std::shared_ptr<Native> native = nativeManager->getNativeCore(pluginNative->name);
-            if (!native)
-                continue;
+            SPVM_NATIVE_FUNC router = findNative(pluginNative->name);
+            if (!router)
+            {
+                // TODO: At this point if native cannot be found mark plugin as not working
+                break;
+            }
 
-            runtime->UpdateNativeBinding(index, native->getRouter(), 0, nullptr);
+            runtime->UpdateNativeBinding(index, router, 0, nullptr);
         }
     }
 
@@ -314,4 +315,106 @@ void PluginMngr::setPluginPrecache(bool canprecache)
 bool PluginMngr::canPluginPrecache()
 {
     return m_canPluginsPrecache;
+}
+
+SPVM_NATIVE_FUNC PluginMngr::findNative(std::string_view name)
+{
+    if (auto iter = m_natives.find(name.data()); iter != m_natives.end())
+        return iter->second;
+
+    return nullptr;
+}
+
+bool PluginMngr::addNatives(const sp_nativeinfo_t *natives)
+{
+    while (natives->name && natives->func)
+    {
+        if (!_addNative(natives->name, natives->func))
+            return false;
+
+        natives++;
+    }
+
+    return true;
+}
+
+bool PluginMngr::_addNative(std::string_view name,
+                            SPVM_NATIVE_FUNC func)
+{
+    if (!m_natives.try_emplace(name.data(), func).second)
+        return false;
+
+    return true;
+}
+
+bool PluginMngr::addFakeNative(std::string_view name,
+                               SourcePawn::IPluginFunction *func)
+{
+    SourcePawn::ISourcePawnEngine2 *spAPIv2 = gSPGlobal->getSPEnvironment()->APIv2();
+    SPVM_NATIVE_FUNC router = spAPIv2->CreateFakeNative(fakeNativeRouter, func);
+
+    if (!_addNative(name, router))
+    {
+        spAPIv2->DestroyFakeNative(router);
+        return false;
+    }
+
+    m_routers.push_back(router);
+    return true;
+}
+
+cell_t PluginMngr::fakeNativeRouter(SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params,
+                                    void *data)
+{
+    if (params[0] > SP_MAX_EXEC_PARAMS)
+    {
+        ctx->ReportError("Too many parameters passed to native! %d (max: %d)", params[0], SP_MAX_EXEC_PARAMS);
+        return 0;
+    }
+    // TODO: Support later?
+    if (PluginMngr::m_callerPlugin)
+    {
+        ctx->ReportError("Cannot call another plugin native in native callback!");
+        return 0;
+    }
+
+    PluginMngr::m_callerPlugin = ctx;
+    std::shared_ptr<Plugin> caller = gSPGlobal->getPluginManagerCore()->getPluginCore(ctx);
+
+    for (std::size_t i = 0; i <= static_cast<std::size_t>(params[0]); i++)
+        m_callerParams[i] = params[i];
+
+    cell_t result = 0;
+
+    auto *func = reinterpret_cast<SourcePawn::IPluginFunction *>(data);
+    func->PushCell(caller->getId());
+    func->Execute(&result);
+
+    PluginMngr::m_callerPlugin = nullptr;
+
+    return result;
+}
+
+void PluginMngr::clearNatives()
+{
+    SourcePawn::ISourcePawnEngine2 *spAPIv2 = gSPGlobal->getSPEnvironment()->APIv2();
+
+    for (auto router : m_routers)
+    {
+        spAPIv2->DestroyFakeNative(router);
+    }
+    m_natives.clear();
+}
+
+void PluginMngr::addDefaultNatives()
+{
+    addNatives(gCoreNatives);
+    addNatives(gCvarsNatives);
+    addNatives(gForwardsNatives);
+    addNatives(gStringNatives);
+    addNatives(gMessageNatives);
+    addNatives(gCmdsNatives);
+    addNatives(gTimerNatives);
+    addNatives(gFloatNatives);
 }

@@ -17,10 +17,11 @@
 
 #pragma once
 
-namespace SPMod {
+namespace SPMod
+{
     class ICvar SPMOD_FINAL
-    {        
-    public:     
+    {
+    public:
         using cvarCallback_t = void (*)(const ICvar *cvar, const char *old_value, const char *new_value);
         /**
          * Cvar flags (from engine)
@@ -74,12 +75,14 @@ namespace SPMod {
         * @return        flags of the cvar.
         */
         virtual Flags getFlags() const = 0;
+
         /**
         * @brief Returns id of plugin.
         *
         * @return        Plugin id.
         */
-        virtual size_t getId() const = 0;
+        virtual std::size_t getId() const = 0;
+
         /**
         * @brief Set's cvar value by string
         *
@@ -88,6 +91,7 @@ namespace SPMod {
         * @noreturn
         */
         virtual void setValue(const char *val) = 0;
+
         /**
         * @brief Set's cvar value by int
         *
@@ -96,6 +100,7 @@ namespace SPMod {
         * @noreturn
         */
         virtual void setValue(int val) = 0;
+
         /**
         * @brief Set's cvar value by float
         *
@@ -104,6 +109,7 @@ namespace SPMod {
         * @noreturn
         */
         virtual void setValue(float val) = 0;
+
         /**
         * @brief Set's cvar flags
         *
@@ -112,62 +118,94 @@ namespace SPMod {
         * @noreturn
         */
         virtual void setFlags(Flags flags) = 0;
+
         /**
         * @brief Add callback for cvar (for modules)
         *
         * @noreturn
-        */        
+        */
         virtual void addCallback(cvarCallback_t callback) = 0;
+
         /**
         * @brief Add callback for cvar (for modules)
         *
         * @noreturn
         */
         virtual void addPluginCallback(SourcePawn::IPluginFunction *callback) = 0;
+
         /**
         * @brief Return cvar value as integer.
         *
         * @return    Integer cvar value
         */
         virtual int            asInt() const = 0;
+
         /**
         * @brief Return cvar value  as Float.
         *
         * @return    Float cvar value
         */
         virtual float        asFloat() const = 0;
+
         /**
         * @brief Return cvar value as String.
         *
         * @return    String cvar value
         */
         virtual const char *asString() const = 0;
+
     protected:
         virtual ~ICvar() {}
     };
-    
-    class ICvarMngr SPMOD_FINAL
+
+    class ICvarMngr SPMOD_FINAL : public ISPModInterface
     {
     public:
-    /*
-    * @brief Registers cvar.
-    *
-    * @param name           Name of the cvar.
-    * @param type           Cvar type
-    * @param value_type     Type of the value
-    * @param flags          Engine flags for cvar
-    *
-    * @return          Cvar pointer, nullptr if failed.
-    */
-    virtual ICvar *registerCvar(const char *name, const char *value, ICvar::Flags flags) = 0;
-    /*
-    * @brief Find cvar.
-    *
-    * @param name           Name of the cvar.
-    *
-    * @return          Cvar pointer, nullptr if failed.
-    */
-    virtual ICvar *findCvar(const char *name) = 0;
+        static constexpr uint16_t MAJOR_VERSION = 0;
+        static constexpr uint16_t MINOR_VERSION = 0;
+
+        static constexpr uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
+        /**
+         * @brief Gets interface's name.
+         *
+         * @return        Interface's name.
+         */
+        const char *getInterfaceName() const override
+        {
+            return "ICvarMngr";
+        }
+
+        /**
+         * @brief Gets interface's version.
+         *
+         * @note The first 16 most significant bits represent major version, the rest represent minor version.
+         *
+         * @return        Interface's version.
+         */
+        uint32_t getInterfaceVersion() const override
+        {
+            return VERSION;
+        }
+
+        /*
+        * @brief Registers cvar.
+        *
+        * @param name           Name of the cvar.
+        * @param type           Cvar type
+        * @param value_type     Type of the value
+        * @param flags          Engine flags for cvar
+        *
+        * @return               Cvar pointer, nullptr if failed.
+        */
+        virtual ICvar *registerCvar(const char *name, const char *value, ICvar::Flags flags) = 0;
+        /*
+        * @brief Find cvar.
+        *
+        * @param name           Name of the cvar.
+        *
+        * @return               Cvar pointer, nullptr if failed.
+        */
+        virtual ICvar *findCvar(const char *name) = 0;
 
     protected:
         virtual ~ICvarMngr() {};

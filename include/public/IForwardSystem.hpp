@@ -107,7 +107,7 @@ namespace SPMod
          *
          * @return      Param type.
          */
-        virtual ParamType getParamType(size_t id) const = 0;
+        virtual ParamType getParamType(std::size_t id) const = 0;
 
         /*
          * @brief Returns params num.
@@ -121,7 +121,7 @@ namespace SPMod
          *
          * @return      Forward id.
          */
-        virtual size_t getId() const = 0;
+        virtual std::size_t getId() const = 0;
 
         /*
          * @brief Pushes cell to current call.
@@ -173,8 +173,8 @@ namespace SPMod
          * @return          True if succeed, false if parameter type is wrong.
          */
         virtual bool pushArray(cell_t *array,
-                                size_t size,
-                                bool copyback) = 0;
+                               std::size_t size,
+                               bool copyback) = 0;
 
         /*
          * @brief Pushes string to current call.
@@ -196,7 +196,7 @@ namespace SPMod
          * @return          True if succeed, false if parameter type is wrong.
          */
         virtual bool pushStringEx(char *buffer,
-                                  size_t length,
+                                  std::size_t length,
                                   StringFlags sflags,
                                   bool copyback) = 0;
 
@@ -233,9 +233,34 @@ namespace SPMod
         ForwardList *next;
     };
 
-    class IForwardMngr SPMOD_FINAL
+    class IForwardMngr SPMOD_FINAL : public ISPModInterface
     {
     public:
+        static constexpr uint16_t MAJOR_VERSION = 0;
+        static constexpr uint16_t MINOR_VERSION = 0;
+
+        static constexpr uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
+        /**
+         * @brief Gets interface's name.
+         *
+         * @return        Interface's name.
+         */
+        const char *getInterfaceName() const override
+        {
+            return "IForwardMngr";
+        }
+
+        /**
+         * @brief Gets interface's version.
+         *
+         * @note The first 16 most significant bits represent major version, the rest represent minor version.
+         *
+         * @return        Interface's version.
+         */
+        uint32_t getInterfaceVersion() const override
+        {
+            return VERSION;
+        }
 
         /*
          * @brief Creates forward.
@@ -252,7 +277,7 @@ namespace SPMod
          */
         virtual IForward *createForward(const char *name,
                                         IForward::ExecType exec,
-                                        size_t params,
+                                        std::size_t params,
                                         ...) = 0;
 
         /*
@@ -270,7 +295,7 @@ namespace SPMod
          */
         virtual IForward *createForward(const char *name,
                                         IPlugin *plugin,
-                                        size_t params,
+                                        std::size_t params,
                                         ...) = 0;
 
         /*
@@ -287,7 +312,7 @@ namespace SPMod
          *
          * @return          Number of created forwards.
          */
-        virtual size_t getForwardsNum() const = 0;
+        virtual std::size_t getForwardsNum() const = 0;
 
         /*
          * @brief Gets list of forwards.

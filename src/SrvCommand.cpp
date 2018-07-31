@@ -42,7 +42,7 @@ void SPModInfoCommand()
         static constexpr std::size_t verWidth = 15;
         static constexpr std::size_t authWidth = 20;
         static constexpr std::size_t fileWidth = 15;
-        
+
         if (arg == "plugins")
         {
             logSystem->LogConsoleCore(std::left,
@@ -89,7 +89,7 @@ You should have received a copy of the GNU General Public License\n \
         }
         else if(arg == "version")
         {
-            logSystem->LogConsoleCore("SPMod ", gSPModVersion, ", API ", SPMOD_API_VERSION, \
+            logSystem->LogConsoleCore("SPMod ", gSPModVersion, ", API ", ISPGlobal::VERSION, \
                 "\nSPMod build: ", __TIME__, " ", __DATE__, \
                 "\nSPMod from: ", APP_COMMIT_URL, APP_COMMIT_SHA);
         }

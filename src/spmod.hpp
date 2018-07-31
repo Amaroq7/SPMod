@@ -100,11 +100,9 @@ using namespace SPMod;
 // SPMod specific
 #include <SPConfig.hpp>
 #include "UtilsSystem.hpp"
-#include "SPModModuleDef.hpp"
 #include "LoggingSystem.hpp"
 #include "PluginSystem.hpp"
 #include "ForwardSystem.hpp"
-#include "NativeSystem.hpp"
 #include "CvarSystem.hpp"
 #include "CmdSystem.hpp"
 #include "TimerSystem.hpp"

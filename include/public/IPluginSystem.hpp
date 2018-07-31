@@ -22,7 +22,6 @@ namespace SPMod
     class IPlugin SPMOD_FINAL
     {
     public:
-
         /**
          * @brief Returns name of plugin.
          *
@@ -73,7 +72,7 @@ namespace SPMod
          *
          * @return        Plugin id.
          */
-        virtual size_t getId() const = 0;
+        virtual std::size_t getId() const = 0;
 
         /**
          * @brief Returns SourcePawn runtime of plugin.
@@ -86,9 +85,34 @@ namespace SPMod
         virtual ~IPlugin() {};
     };
 
-    class IPluginMngr SPMOD_FINAL
+    class IPluginMngr SPMOD_FINAL : public ISPModInterface
     {
     public:
+        static constexpr uint16_t MAJOR_VERSION = 0;
+        static constexpr uint16_t MINOR_VERSION = 0;
+
+        static constexpr uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
+        /**
+         * @brief Gets interface's name.
+         *
+         * @return        Interface's name.
+         */
+        const char *getInterfaceName() const override
+        {
+            return "IPluginMngr";
+        }
+
+        /**
+         * @brief Gets interface's version.
+         *
+         * @note The first 16 most significant bits represent major version, the rest represent minor version.
+         *
+         * @return        Interface's version.
+         */
+        uint32_t getInterfaceVersion() const override
+        {
+            return VERSION;
+        }
 
         /**
          * @brief Loads a plugin.
@@ -103,7 +127,7 @@ namespace SPMod
          */
         virtual IPlugin *loadPlugin(const char *name,
                                     char *error,
-                                    size_t size) = 0;
+                                    std::size_t size) = 0;
 
         /**
          * @brief Searches for plugin by specified id.
@@ -112,7 +136,7 @@ namespace SPMod
          *
          * @return        Plugin pointer, nullptr if not found.
          */
-        virtual IPlugin *getPlugin(size_t index) = 0;
+        virtual IPlugin *getPlugin(std::size_t index) = 0;
 
         /**
          * @brief Searches for plugin by specified identity.
@@ -138,6 +162,15 @@ namespace SPMod
          * @return        Number of loaded plugins.
          */
         virtual size_t getPluginsNum() const = 0;
+
+        /**
+         * @brief Adds natives.
+         *
+         * @note Last entry has to be nullptr.
+         *
+         * @return        List of natives to add.
+         */
+        virtual bool addNatives(const sp_nativeinfo_t *natives) = 0;
 
     protected:
         virtual ~IPluginMngr() {};

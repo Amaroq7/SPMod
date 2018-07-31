@@ -20,7 +20,6 @@
 std::unique_ptr<SPGlobal> gSPGlobal;
 
 SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_path()),
-                                        m_nativeManager(std::make_unique<NativeMngr>()),
                                         m_pluginManager(std::make_unique<PluginMngr>()),
                                         m_forwardManager(std::make_unique<ForwardMngr>()),
                                         m_cvarManager(std::make_unique<CvarMngr>()),
@@ -40,18 +39,6 @@ SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_p
 
     // Initialize SourcePawn library
     _initSourcePawn();
-
-    // Add definition spmod natives
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gCoreNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gCvarsNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gForwardsNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gStringNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gMessageNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gCmdsNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gTimerNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gMenuNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gFloatNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gPlayerNatives);
 
     // Sets up listener for debbugging
     getSPEnvironment()->APIv2()->SetDebugListener(m_loggingSystem.get());
@@ -151,11 +138,6 @@ SourcePawn::ISourcePawnEnvironment *SPGlobal::getSPEnvironment() const
     return m_spFactory->CurrentEnvironment();
 }
 
-INativeMngr *SPGlobal::getNativeManager() const
-{
-    return m_nativeManager.get();
-}
-
 ITimerMngr *SPGlobal::getTimerManager() const
 {
     return m_timerManager.get();
@@ -174,4 +156,17 @@ IPlayerMngr *SPGlobal::getPlayerManager() const
 IUtils *SPGlobal::getUtils() const
 {
     return m_utils.get();
+}
+
+bool SPGlobal::registerInterface(IInterface *interface)
+{
+    return m_interfaces.try_emplace(interface->getInterfaceName(), interface).second;
+}
+
+IInterface *SPGlobal::getInterface(const char *name) const
+{
+    if (auto iter = m_interfaces.find(name); iter != m_interfaces.end())
+        return iter->second;
+
+    return nullptr;
 }

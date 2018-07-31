@@ -26,10 +26,10 @@ static cell_t PrintToServer(SourcePawn::IPluginContext *ctx,
 
     ctx->LocalToString(params[1], &formatString);
     std::size_t res = gSPGlobal->formatString(bufferOutput, sizeof(bufferOutput)-2, formatString, ctx, params, 2);
-  
+
     bufferOutput[res++] = '\n';
     bufferOutput[res] = '\0';
-  
+
     SERVER_PRINT(bufferOutput);
 
     return 1;
@@ -87,13 +87,10 @@ static cell_t PrecacheGeneric(SourcePawn::IPluginContext *ctx,
 static cell_t NativeRegister(SourcePawn::IPluginContext *ctx,
                                   const cell_t *params)
 {
-    char *nativeName, *pluginIdentity;
+    char *nativeName;
     ctx->LocalToString(params[1], &nativeName);
-    ctx->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
 
-    SourcePawn::IPluginFunction *fnToExecute = ctx->GetFunctionById(params[2]);
-
-    return gSPGlobal->getNativeManagerCore()->addFakeNative(pluginIdentity, nativeName, fnToExecute);
+    return gSPGlobal->getPluginManagerCore()->addFakeNative(nativeName, ctx->GetFunctionById(params[2]));
 }
 
 // native any NativeGetCell(int param)
@@ -101,18 +98,18 @@ static cell_t NativeGetCell(SourcePawn::IPluginContext *ctx,
                                  const cell_t *params)
 {
     cell_t param = params[1];
-    if (param > NativeMngr::m_callerParams[0] || param < 0)
+    if (param > PluginMngr::m_callerParams[0] || param < 0)
     {
-        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, NativeMngr::m_callerParams[0]);
+        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, PluginMngr::m_callerParams[0]);
         return 0;
     }
-    if (!NativeMngr::m_callerPlugin)
+    if (!PluginMngr::m_callerPlugin)
     {
         ctx->ReportError("No caller plugin!");
         return 0;
     }
 
-    return NativeMngr::m_callerParams[param];
+    return PluginMngr::m_callerParams[param];
 }
 
 // native any NativeGetCellRef(int param)
@@ -120,19 +117,19 @@ static cell_t NativeGetCellRef(SourcePawn::IPluginContext *ctx,
                                     const cell_t *params)
 {
     cell_t param = params[1];
-    if (param > NativeMngr::m_callerParams[0] || param < 0)
+    if (param > PluginMngr::m_callerParams[0] || param < 0)
     {
-        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, NativeMngr::m_callerParams[0]);
+        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, PluginMngr::m_callerParams[0]);
         return 0;
     }
-    if (!NativeMngr::m_callerPlugin)
+    if (!PluginMngr::m_callerPlugin)
     {
         ctx->ReportError("No caller plugin!");
         return 0;
     }
 
     cell_t *paramToGet;
-    NativeMngr::m_callerPlugin->LocalToPhysAddr(NativeMngr::m_callerParams[param], &paramToGet);
+    PluginMngr::m_callerPlugin->LocalToPhysAddr(PluginMngr::m_callerParams[param], &paramToGet);
     return *paramToGet;
 }
 
@@ -141,19 +138,19 @@ static cell_t NativeGetString(SourcePawn::IPluginContext *ctx,
                                    const cell_t *params)
 {
     cell_t param = params[1];
-    if (param > NativeMngr::m_callerParams[0] || param < 0)
+    if (param > PluginMngr::m_callerParams[0] || param < 0)
     {
-        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, NativeMngr::m_callerParams[0]);
+        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, PluginMngr::m_callerParams[0]);
         return 0;
     }
-    if (!NativeMngr::m_callerPlugin)
+    if (!PluginMngr::m_callerPlugin)
     {
         ctx->ReportError("No caller plugin!");
         return 0;
     }
 
     char *stringToCopy;
-    NativeMngr::m_callerPlugin->LocalToString(NativeMngr::m_callerParams[param], &stringToCopy);
+    PluginMngr::m_callerPlugin->LocalToString(PluginMngr::m_callerParams[param], &stringToCopy);
 
     std::size_t writtenBytes;
     ctx->StringToLocalUTF8(params[2], params[3], stringToCopy, &writtenBytes);
@@ -166,19 +163,19 @@ static cell_t NativeGetArray(SourcePawn::IPluginContext *ctx,
                                   const cell_t *params)
 {
     cell_t param = params[1];
-    if (param > NativeMngr::m_callerParams[0] || param < 0)
+    if (param > PluginMngr::m_callerParams[0] || param < 0)
     {
-        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, NativeMngr::m_callerParams[0]);
+        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, PluginMngr::m_callerParams[0]);
         return 0;
     }
-    if (!NativeMngr::m_callerPlugin)
+    if (!PluginMngr::m_callerPlugin)
     {
         ctx->ReportError("No caller plugin!");
         return 0;
     }
 
     cell_t *arrayToCopy, *destArray;
-    NativeMngr::m_callerPlugin->LocalToPhysAddr(NativeMngr::m_callerParams[param], &arrayToCopy);
+    PluginMngr::m_callerPlugin->LocalToPhysAddr(PluginMngr::m_callerParams[param], &arrayToCopy);
     ctx->LocalToPhysAddr(params[2], &destArray);
 
     std::copy_n(arrayToCopy, params[3], destArray);
@@ -191,19 +188,19 @@ static cell_t NativeSetCellRef(SourcePawn::IPluginContext *ctx,
                                     const cell_t *params)
 {
     cell_t param = params[1];
-    if (param > NativeMngr::m_callerParams[0] || param < 0)
+    if (param > PluginMngr::m_callerParams[0] || param < 0)
     {
-        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, NativeMngr::m_callerParams[0]);
+        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, PluginMngr::m_callerParams[0]);
         return 0;
     }
-    if (!NativeMngr::m_callerPlugin)
+    if (!PluginMngr::m_callerPlugin)
     {
         ctx->ReportError("No caller plugin!");
         return 0;
     }
 
     cell_t *paramToSet;
-    NativeMngr::m_callerPlugin->LocalToPhysAddr(NativeMngr::m_callerParams[param], &paramToSet);
+    PluginMngr::m_callerPlugin->LocalToPhysAddr(PluginMngr::m_callerParams[param], &paramToSet);
 
     *paramToSet = params[2];
     return 1;
@@ -214,12 +211,12 @@ static cell_t NativeSetString(SourcePawn::IPluginContext *ctx,
                                    const cell_t *params)
 {
     cell_t param = params[1];
-    if (param > NativeMngr::m_callerParams[0] || param < 0)
+    if (param > PluginMngr::m_callerParams[0] || param < 0)
     {
-        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, NativeMngr::m_callerParams[0]);
+        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, PluginMngr::m_callerParams[0]);
         return 0;
     }
-    if (!NativeMngr::m_callerPlugin)
+    if (!PluginMngr::m_callerPlugin)
     {
         ctx->ReportError("No caller plugin!");
         return 0;
@@ -229,7 +226,7 @@ static cell_t NativeSetString(SourcePawn::IPluginContext *ctx,
     ctx->LocalToString(params[2], &stringToCopy);
 
     std::size_t writtenBytes;
-    NativeMngr::m_callerPlugin->StringToLocalUTF8(NativeMngr::m_callerParams[param],
+    PluginMngr::m_callerPlugin->StringToLocalUTF8(PluginMngr::m_callerParams[param],
                                                   params[3],
                                                   stringToCopy,
                                                   &writtenBytes);
@@ -242,19 +239,19 @@ static cell_t NativeSetArray(SourcePawn::IPluginContext *ctx,
                                   const cell_t *params)
 {
     cell_t param = params[1];
-    if (param > NativeMngr::m_callerParams[0] || param < 0)
+    if (param > PluginMngr::m_callerParams[0] || param < 0)
     {
-        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, NativeMngr::m_callerParams[0]);
+        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, PluginMngr::m_callerParams[0]);
         return 0;
     }
-    if (!NativeMngr::m_callerPlugin)
+    if (!PluginMngr::m_callerPlugin)
     {
         ctx->ReportError("No caller plugin!");
         return 0;
     }
 
     cell_t *arrayToCopy, *destArray;
-    NativeMngr::m_callerPlugin->LocalToPhysAddr(NativeMngr::m_callerParams[param], &destArray);
+    PluginMngr::m_callerPlugin->LocalToPhysAddr(PluginMngr::m_callerParams[param], &destArray);
     ctx->LocalToPhysAddr(params[2], &arrayToCopy);
 
     std::copy_n(arrayToCopy, params[3], destArray);

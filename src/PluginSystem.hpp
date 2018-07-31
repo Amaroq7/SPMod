@@ -78,6 +78,7 @@ public:
     IPlugin *loadPlugin(const char *name,
                         char *error,
                         std::size_t size) override;
+    bool addNatives(const sp_nativeinfo_t *natives) override;
 
     // PluginMngr
     const auto &getPluginsList() const
@@ -94,12 +95,33 @@ public:
     std::shared_ptr<Plugin> getPluginCore(std::string_view name);
     std::shared_ptr<Plugin> getPluginCore(SourcePawn::IPluginContext *ctx);
     std::size_t loadPlugins();
+    bool addFakeNative(std::string_view name,
+                       SourcePawn::IPluginFunction *func);
+    void clearNatives();
+    void addDefaultNatives();
+    SPVM_NATIVE_FUNC findNative(std::string_view name);
+
+    // Fake natives
+    static cell_t fakeNativeRouter(SourcePawn::IPluginContext *ctx,
+                                   const cell_t *params,
+                                   void *data);
+
+    static inline SourcePawn::IPluginContext *m_callerPlugin;
+    static inline cell_t m_callerParams[SP_MAX_EXEC_PARAMS + 1];
 
 private:
     std::shared_ptr<Plugin> _loadPlugin(const fs::path &path,
                                         std::string *error);
+
+    bool _addNative(std::string_view name,
+                    SPVM_NATIVE_FUNC func);
+
     std::unordered_map<std::string, std::shared_ptr<Plugin>> m_plugins;
+    std::unordered_map<std::string, SPVM_NATIVE_FUNC> m_natives;
 
     // Allow plugins to precache
     bool m_canPluginsPrecache;
+
+    // Routers to be freed on the map change
+    std::vector<SPVM_NATIVE_FUNC> m_routers;
 };

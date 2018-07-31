@@ -21,9 +21,35 @@
 
 namespace SPMod
 {
-    class IUtils SPMOD_FINAL
+    class IUtils SPMOD_FINAL : public ISPModInterface
     {
     public:
+        static constexpr uint16_t MAJOR_VERSION = 0;
+        static constexpr uint16_t MINOR_VERSION = 0;
+
+        static constexpr uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
+        /**
+         * @brief Gets interface's name.
+         *
+         * @return        Interface's name.
+         */
+        const char *getInterfaceName() const override
+        {
+            return "IUtils";
+        }
+
+        /**
+         * @brief Gets interface's version.
+         *
+         * @note The first 16 most significant bits represent major version, the rest represent minor version.
+         *
+         * @return        Interface's version.
+         */
+        uint32_t getInterfaceVersion() const override
+        {
+            return VERSION;
+        }
+
         /**
          * @brief Copies string to buffer.
          *

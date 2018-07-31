@@ -20,7 +20,7 @@
 #include "spmod.hpp"
 
 /*
- * @brief General command 
+ * @brief General command
  */
 class Command
 {
@@ -108,7 +108,7 @@ public:
         else
             return m_serverCommands.emplace_back(cmd);
     }
-    
+
     const auto &getCommandList(CmdType type) const
     {
         return (type == CmdType::Client ? m_clientCommands : m_serverCommands);

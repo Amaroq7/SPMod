@@ -19,92 +19,122 @@
 
 #pragma once
 
-class ITimer
+namespace SPMod
 {
-public:
+    class ITimer SPMOD_FINAL
+    {
+    public:
+        /**
+         * @brief Gets interval.
+         *
+         * @return        Timer interval.
+         */
+        virtual float getInterval() const = 0;
+
+        /**
+         * @brief Checks if timer is paused.
+         *
+         * @return        True if paused, false otherwise.
+         */
+        virtual bool isPaused() const = 0;
+
+        /**
+         * @brief Sets new interval.
+         *
+         * @param newint  New interval to set.
+         *
+         * @noreturn
+         */
+        virtual void setInterval(float newint) = 0;
+
+        /**
+         * @brief Pauses or unpauses a timer.
+         *
+         * @param pause   True to pause timer, false to unpause it.
+         *
+         * @noreturn
+         */
+        virtual void setPause(bool pause) = 0;
+
+    protected:
+        virtual ~ITimer() {};
+    };
+
     /**
-     * @brief Gets interval.
+     * @brief Timer callback
      *
-     * @return        Timer interval.
+     * @return  True to continue executing timer, false to remove.
      */
-    virtual float getInterval() const = 0;
+    using TimerCallback = bool (*)(ITimer *const timer, void *data);
 
-    /**
-     * @brief Checks if timer is paused.
-     * 
-     * @return        True if paused, false otherwise.
-     */
-    virtual bool isPaused() const = 0;
+    class ITimerMngr SPMOD_FINAL : public ISPModInterface
+    {
+    public:
+        static constexpr uint16_t MAJOR_VERSION = 0;
+        static constexpr uint16_t MINOR_VERSION = 0;
 
-    /**
-     * @brief Sets new interval.
-     * 
-     * @param newint  New interval to set.
-     * 
-     * @noreturn
-     */
-    virtual void setInterval(float newint) = 0;
+        static constexpr uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
 
-    /**
-     * @brief Pauses or unpauses a timer.
-     * 
-     * @param pause   True to pause timer, false to unpause it.
-     * 
-     * @noreturn
-     */
-    virtual void setPause(bool pause) = 0;
+        /**
+         * @brief Gets interface's name.
+         *
+         * @return              Interface's name.
+         */
+        const char *getInterfaceName() const override
+        {
+            return "ITimerMngr";
+        }
 
-protected:
-    virtual ~ITimer() {};
-};
+        /**
+         * @brief Gets interface's version.
+         *
+         * @note The first 16 most significant bits represent major version, the rest represent minor version.
+         *
+         * @return      Interface's version.
+         */
+        uint32_t getInterfaceVersion() const override
+        {
+            return VERSION;
+        }
 
-/**
- * @brief Timer callback
- *
- * @return  True to continue executing timer, false to remove.
- */
-using TimerCallback = bool (*)(ITimer *const timer, void *data);
+        /**
+         * @brief Registers a new timer.
+         *
+         * @param interval    Time interval.
+         * @param func        Callback function.
+         * @param data        Data that is passed to timer callback.
+         * @param pause       True if timer should be paused after creation, false otherwise.
+         *
+         * @return            Created timer.
+         */
+        virtual ITimer *createTimer(float interval,
+                                    TimerCallback func,
+                                    void *data = nullptr,
+                                    bool pause = false) = 0;
 
-class ITimerMngr
-{
-public:
-    /**
-     * @brief Registers a new timer.
-     * 
-     * @param interval    Time interval.
-     * @param func        Callback function.
-     * @param data        Data that is passed to timer callback.
-     * @param pause       True if timer should be paused after creation, false otherwise.
-     *
-     * @return            Created timer.
-     */
-    virtual ITimer *createTimer(float interval,
-                                TimerCallback func,
-                                void *data = nullptr,
-                                bool pause = false) = 0;
+        /**
+         * @brief Removes a timer.
+         *
+         * @note  Removing timer in the callback should be done by returning false.
+         *
+         * @param timer       Timer to delete.
+         *
+         * @noreturn
+         */
+        virtual void removeTimer(ITimer *timer) = 0;
 
-    /**
-     * @brief Removes a timer.
-     * 
-     * @note  Removing timer in the callback should be done by returning false.
-     * 
-     * @param timer       Timer to delete.
-     *
-     * @noreturn
-     */
-    virtual void removeTimer(ITimer *timer) = 0;
+        /**
+         * @brief Executes a timer.
+         *
+         * @note If callback returns false, timer will be removed.
+         *
+         * @param timer       Timer to be executed.
+         *
+         * @noreturn
+         */
+        virtual void execTimer(ITimer *timer) = 0;
 
-    /**
-     * @brief Executes a timer.
-     * 
-     * @note If callback returns false, timer will be removed.
-     * 
-     * @param timer       Timer to be executed.
-     * 
-     * @noreturn
-     */
-    virtual void execTimer(ITimer *timer) = 0;
-
-protected:
-    virtual ~ITimerMngr() {};
-};
+    protected:
+        virtual ~ITimerMngr() {};
+    };
+}

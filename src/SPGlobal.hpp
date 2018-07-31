@@ -51,11 +51,12 @@ public:
     IForwardMngr *getForwardManager() const override;
     ICvarMngr *getCvarManager() const override;
     SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const override;
-    INativeMngr *getNativeManager() const override;
     ITimerMngr *getTimerManager() const override;
     IMenuMngr *getMenuManager() const override;
     IPlayerMngr *getPlayerManager() const override;
     IUtils *getUtils() const override;
+    bool registerInterface(IInterface *interface) override;
+    IInterface *getInterface(const char *name) const override;
 
     unsigned int formatString(char *buffer,
                               std::size_t length,
@@ -80,10 +81,6 @@ public:
     const auto &getLoggerCore() const
     {
         return m_loggingSystem;
-    }
-    const auto &getNativeManagerCore() const
-    {
-        return m_nativeManager;
     }
     const auto &getCommandManagerCore() const
     {
@@ -117,6 +114,10 @@ public:
     {
         return m_SPModDllsDir;
     }
+    const auto &getInterfacesList() const
+    {
+        return m_interfaces;
+    }
 
     void setScriptsDir(std::string_view folder);
     void setLogsDir(std::string_view folder);
@@ -129,7 +130,6 @@ private:
     fs::path m_SPModDir;
     fs::path m_SPModLogsDir;
     fs::path m_SPModDllsDir;
-    std::unique_ptr<NativeMngr> m_nativeManager;
     std::unique_ptr<PluginMngr> m_pluginManager;
     std::unique_ptr<ForwardMngr> m_forwardManager;
     std::unique_ptr<CvarMngr> m_cvarManager;
@@ -141,6 +141,7 @@ private:
     std::unique_ptr<Utils> m_utils;
     std::string m_modName;
     SourcePawn::ISourcePawnFactory *m_spFactory;
+    std::unordered_map<std::string, IInterface *> m_interfaces;
 
     // SourcePawn library handle
 #ifdef SP_POSIX
