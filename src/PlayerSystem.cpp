@@ -230,13 +230,13 @@ void PlayerMngr::ClientConnectPost(edict_t *pEntity,
     std::shared_ptr<Player> plr = plrMngr->getPlayerCore(pEntity);
     plr->connect(pszName, pszAddress);
 
+    PlayerMngr::m_playersNum++;
+
     // callback for modules
     for (auto *listener : plrMngr->getListenerList())
     {
         listener->OnClientConnected(plr.get());
     }
-
-    PlayerMngr::m_playersNum++;
 
     std::string_view authid(GETPLAYERAUTHID(pEntity));
 
