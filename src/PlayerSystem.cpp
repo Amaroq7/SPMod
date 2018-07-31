@@ -168,7 +168,7 @@ void PlayerMngr::removePlayerListener(IPlayerListener *listener)
     }
 }
 
-void PlayerMngr::initPlayers(edict_t *edictList)
+void PlayerMngr::_initPlayers(edict_t *edictList)
 {
     for (size_t i = 1; i <= m_maxClients; i++)
     {
@@ -200,7 +200,7 @@ std::shared_ptr<Player> PlayerMngr::getPlayerCore(edict_t *edict) const
     }
 }
 
-void PlayerMngr::setMaxClients(int maxClients)
+void PlayerMngr::_setMaxClients(int maxClients)
 {
     m_maxClients = maxClients;
 }
@@ -241,7 +241,7 @@ void PlayerMngr::ClientConnectPost(edict_t *pEntity,
     std::string_view authid(GETPLAYERAUTHID(pEntity));
 
     if (authid.empty() || !authid.compare("STEAM_ID_PENDING"))
-        PlayerMngr::m_playersToAuth.push_back(plr);
+        m_playersToAuth.push_back(plr);
     else
         plr->authorize(authid);
 }
@@ -287,8 +287,8 @@ void PlayerMngr::StartFramePost()
     }
 }
 
-void ServerActivatePost(edict_t *pEdictList,
-                        int clientMax)
+void PlayerMngr::ServerActivatePost(edict_t *pEdictList,
+                                    int clientMax)
 {
     _setMaxClients(clientMax);
     _initPlayers(pEdictList);

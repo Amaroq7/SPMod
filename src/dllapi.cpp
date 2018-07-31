@@ -25,13 +25,15 @@ static qboolean ClientConnect(edict_t *pEntity,
     using sflags = IForward::StringFlags;
     using def = ForwardMngr::FwdDefault;
 
-    if (!gSPGlobal->getPlayerManagerCore()->ClientConnect(pEntity, pszName, pszAddress, szRejectReason))
+    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
+
+    if (!plrMngr->ClientConnect(pEntity, pszName, pszAddress, szRejectReason))
         RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
 
     cell_t result;
     std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnect);
 
-    forward->pushCell(plr->getIndex());
+    forward->pushCell(plrMngr->getPlayerCore(pEntity)->getIndex());
     forward->pushString(pszName);
     forward->pushString(pszAddress);
     forward->pushStringEx(szRejectReason, 128, sflags::Utf8 | sflags::Copy, true);
