@@ -264,3 +264,32 @@ void PlayerMngr::ClientUserInfoChangedPost(edict_t *pEntity,
     std::shared_ptr<Player> plr = getPlayerCore(pEntity);
     plr->setName(INFOKEY_VALUE(infobuffer, "name"));
 }
+
+void PlayerMngr::StartFramePost()
+{
+    if (m_nextAuthCheck <= gpGlobals->time && !m_playersToAuth.empty())
+    {
+        m_nextAuthCheck = gpGlobals->time + 0.5f;
+
+        auto iter = m_playersToAuth.begin();
+        while (iter != m_playersToAuth.end())
+        {
+            std::shared_ptr<Player> plr = *iter;
+            std::string_view authid(GETPLAYERAUTHID(plr->getEdict()));
+            if (!authid.empty() && authid.compare("STEAM_ID_PENDING"))
+            {
+                plr->authorize(authid);
+                iter = m_playersToAuth.erase(iter);
+            }
+            else
+                ++iter;
+        }
+    }
+}
+
+void ServerActivatePost(edict_t *pEdictList,
+                        int clientMax)
+{
+    _setMaxClients(clientMax);
+    _initPlayers(pEdictList);
+}

@@ -155,9 +155,7 @@ static void ServerActivatePost(edict_t *pEdictList,
                                int edictCount [[maybe_unused]],
                                int clientMax)
 {
-    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
-    plrMngr->setMaxClients(clientMax);
-    plrMngr->initPlayers(pEdictList);
+    gSPGlobal->getPlayerManagerCore()->ServerActivatePost(pEdictList, clientMax);
 
     gSPGlobal->getForwardManagerCore()->addDefaultsForwards();
 
@@ -192,8 +190,8 @@ static void GameInitPost()
 }
 
 static qboolean ClientConnectPost(edict_t *pEntity,
-                                  const char *pszName [[maybe_unused]],
-                                  const char *pszAddress [[maybe_unused]],
+                                  const char *pszName,
+                                  const char *pszAddress,
                                   char szRejectReason [[maybe_unused]] [128])
 {
     gSPGlobal->getPlayerManagerCore()->ClientConnectPost(pEntity, pszName, pszAddress);
@@ -208,11 +206,10 @@ static void ClientPutInServerPost(edict_t *pEntity)
     using def = ForwardMngr::FwdDefault;
 
     const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
-    std::shared_ptr<Player> plr = plrMngr->getPlayerCore(pEntity);
     plrMngr->ClientPutInServerPost(pEntity);
 
     std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServer);
-    forward->pushCell(plr->getIndex());
+    forward->pushCell(plrMngr->getPlayerCore(pEntity)->getIndex());
     forward->execFunc(nullptr);
 }
 
@@ -224,24 +221,7 @@ static void ClientUserInfoChangedPost(edict_t *pEntity,
 
 static void StartFramePost()
 {
-    if (PlayerMngr::m_nextAuthCheck <= gpGlobals->time && !PlayerMngr::m_playersToAuth.empty())
-    {
-        PlayerMngr::m_nextAuthCheck = gpGlobals->time + 0.5f;
-
-        auto iter = PlayerMngr::m_playersToAuth.begin();
-        while (iter != PlayerMngr::m_playersToAuth.end())
-        {
-            std::shared_ptr<Player> plr = *iter;
-            std::string_view authid(GETPLAYERAUTHID(plr->getEdict()));
-            if (!authid.empty() && authid.compare("STEAM_ID_PENDING"))
-            {
-                plr->authorize(authid);
-                iter = PlayerMngr::m_playersToAuth.erase(iter);
-            }
-            else
-                ++iter;
-        }
-    }
+    gSPGlobal->getPlayerManagerCore()->StartFramePost();
 
     if (TimerMngr::m_nextExecution <= gpGlobals->time)
     {

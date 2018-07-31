@@ -78,10 +78,8 @@ public:
     void removePlayerListener(IPlayerListener *listener) override;
 
     // PlayerManager
-    void initPlayers(edict_t *edictList);
     std::shared_ptr<Player> getPlayerCore(int index) const;
     std::shared_ptr<Player> getPlayerCore(edict_t *edict) const;
-    void setMaxClients(int maxClients);
     const auto &getListenerList() const
     {
         return m_playersListeners;
@@ -99,12 +97,19 @@ public:
     void ClientPutInServerPost(edict_t *pEntity);
     void ClientUserInfoChangedPost(edict_t *pEntity,
                                    char *infobuffer);
+    void StartFramePost();
+    void ServerActivatePost(edict_t *pEdictList,
+                            int clientMax);
 
     static inline unsigned int m_playersNum;
-    static inline std::vector<std::shared_ptr<Player>> m_playersToAuth;
-    static inline float m_nextAuthCheck = 0.0f;
 
 private:
+    void _setMaxClients(int maxClients);
+    void _initPlayers(edict_t *edictList);
+
+    std::vector<std::shared_ptr<Player>> m_playersToAuth;
+    float m_nextAuthCheck = 0.0f;
+
     std::array<std::shared_ptr<Player>, MAX_PLAYERS + 1> m_players;
     unsigned int m_maxClients;
 
