@@ -41,16 +41,6 @@ namespace SPMod
         virtual uint32_t getInterfaceVersion() const = 0;
 
         /**
-         * @brief Gets interface's implementation.
-         *
-         * @return              Interface's implementation, nullptr if not provided.
-         */
-        virtual void *getInterfaceImpl() const
-        {
-            return nullptr;
-        }
-
-        /**
          * @brief Check if requested version is compatible.
          *
          * @param reqversion    Version to be checked.
