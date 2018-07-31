@@ -39,11 +39,11 @@ static cell_t GetName(SourcePawn::IPluginContext *ctx,
     return gSPGlobal->getUtilsCore()->strCopyCore(buffer, params[arg_size], plr->getNameCore());
 }
 
-// int Player.GetIP(char[] buffer, int size)
+// int Player.GetIP(char[] buffer, int size, bool port = false)
 static cell_t GetIP(SourcePawn::IPluginContext *ctx,
                     const cell_t *params)
 {
-    enum { arg_id = 1, arg_buffer, arg_size };
+    enum { arg_id = 1, arg_buffer, arg_size, arg_port };
 
     std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_id]);
 
@@ -56,7 +56,16 @@ static cell_t GetIP(SourcePawn::IPluginContext *ctx,
     char *buffer;
     ctx->LocalToString(params[arg_buffer], &buffer);
 
-    return gSPGlobal->getUtilsCore()->strCopyCore(buffer, params[arg_size], plr->getIPAddressCore());
+    std::string IPAddress(plr->getIPAddressCore());
+
+    if (!params[arg_port])
+    {
+        auto pos = IPAddress.find(':');
+        if (pos != std::string::npos)
+            IPAddress[pos] = '\0';
+    }
+
+    return gSPGlobal->getUtilsCore()->strCopyCore(buffer, params[arg_size], IPAddress);
 }
 
 // int Player.GetSteamID(char[] buffer, int size)

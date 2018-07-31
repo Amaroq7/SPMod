@@ -25,7 +25,7 @@
 methodmap Player
 {
     public native int GetName(char[] buffer, int size);
-    public native int GetIP(char[] buffer, int size);
+    public native int GetIP(char[] buffer, int size, bool port = false);
     public native int GetSteamID(char[] buffer, int size);
 
     property int Index {
