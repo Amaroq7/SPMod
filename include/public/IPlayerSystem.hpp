@@ -117,25 +117,27 @@ namespace SPMod
     public:
         /*
          * @brief Called when a client connects to the server.
-         * 
-         * @param player        Player object.
-         * @param error         Buffer to write a reason that will be displayed to the client when they get rejected.
-         * @param maxlength     Size of the buffer.
-         * 
-         * @return              True to let client join or false to reject them.
+         *
+         * @param entity    Client's edict_t structure.
+         * @param name      Client's name.
+         * @param address   Client's IP address.
+         * @param reason    Buffer to write a reason that will be displayed to the client when they get rejected.
+         *
+         * @return          True to let client join or false to reject them.
          */
-        virtual bool OnClientConnect(IPlayer *player [[maybe_unused]],
-                                     char *error [[maybe_unused]],
-                                     std::size_t maxlength [[maybe_unused]])
+        virtual bool OnClientConnect(edict_t *entity [[maybe_unused]],
+                                     const char *name [[maybe_unused]],
+                                     const char *address [[maybe_unused]],
+                                     char reason [[maybe_unused]] [128])
         {
             return true;
         }
 
         /*
          * @brief Called when a client has connected to the server.
-         * 
+         *
          * @param player        Player object.
-         * 
+         *
          * @noreturn
          */
         virtual void OnClientConnected(IPlayer *player [[maybe_unused]])
@@ -144,9 +146,9 @@ namespace SPMod
 
         /*
          * @brief Called when a client enters the game.
-         * 
+         *
          * @param player        Player object.
-         * 
+         *
          * @noreturn
          */
         virtual void OnClientPutInServer(IPlayer *player [[maybe_unused]])
@@ -155,11 +157,11 @@ namespace SPMod
 
         /*
          * @brief Called when a client disconnects from the server.
-         * 
+         *
          * @param player        Player object.
          * @param crash         True if client crashed, false otherwise.
          * @param reason        Reason why the client is disconnecting.
-         * 
+         *
          * @noreturn
          */
         virtual void OnClientDisconnect(IPlayer *player [[maybe_unused]],
@@ -170,11 +172,11 @@ namespace SPMod
 
         /*
          * @brief Called when a client disconnected from the server.
-         * 
+         *
          * @param player        Player object.
          * @param crash         True if client crashed, false otherwise.
          * @param reason        Reason why the client has been disconnected.
-         * 
+         *
          * @noreturn
          */
         virtual void OnClientDisconnected(IPlayer *player [[maybe_unused]],
@@ -196,7 +198,7 @@ namespace SPMod
          * @note Index starts at 1.
          *
          * @param index     Index of the client.
-         * 
+         *
          * @return          IPlayer object, nullptr if out of range.
          */
         virtual IPlayer *getPlayer(int index) const = 0;
@@ -205,7 +207,7 @@ namespace SPMod
          * @brief Returns IPlayer object by its edict_t pointer.
          *
          * @param edict     edict_t structure of the client.
-         * 
+         *
          * @return          IPlayer object, nullptr if out of range.
          */
         virtual IPlayer *getPlayer(edict_t *edict) const = 0;
@@ -226,7 +228,7 @@ namespace SPMod
 
         /**
          * @brief Adds player listener.
-         * 
+         *
          * @param listener  Pointer to player listener instance.
          *
          * @noreturn
@@ -235,7 +237,7 @@ namespace SPMod
 
         /**
          * @brief Removes player listener.
-         * 
+         *
          * @param listener  Pointer to player listener instance.
          *
          * @noreturn

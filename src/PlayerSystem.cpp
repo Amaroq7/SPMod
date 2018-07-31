@@ -210,12 +210,10 @@ bool PlayerMngr::ClientConnect(edict_t *pEntity,
                                const char *pszAddress,
                                char szRejectReason[128])
 {
-    std::shared_ptr<Player> plr = getPlayerCore(pEntity);
-
     // callback for modules
     for (auto *listener : getListenerList())
     {
-        if (!listener->OnClientConnect(plr.get(), szRejectReason, 128))
+        if (!listener->OnClientConnect(pEntity, pszName, pszAddress, szRejectReason))
             return false;
     }
 
