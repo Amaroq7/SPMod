@@ -123,6 +123,7 @@ extern sp_nativeinfo_t gMessageNatives[];
 extern sp_nativeinfo_t gCmdsNatives[];
 extern sp_nativeinfo_t gTimerNatives[];
 extern sp_nativeinfo_t gFloatNatives[];
+extern sp_nativeinfo_t gPlayerNatives[];
 
 // Server command function (SrvCommand.cpp)
 void SPModInfoCommand();

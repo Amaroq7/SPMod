@@ -22,6 +22,35 @@
 #endif
 #define _clients_included
 
+methodmap Player
+{
+    public native int GetName(char[] buffer, int size);
+    public native int GetIP(char[] buffer, int size);
+    public native int GetSteamID(char[] buffer, int size);
+
+    property int Index {
+        public native get();
+    }
+    property int UserID {
+        public native get();
+    }
+    property bool Alive {
+        public native get();
+    }
+    property bool Connected {
+        public native get();
+    }
+    property bool Fake {
+        public native get();
+    }
+    property bool HLTV {
+        public native get();
+    }
+    property bool InGame {
+        public native get();
+    }
+}
+
 /*
  * @brief Called when a client connects to the server.
  *
@@ -32,7 +61,7 @@
  *
  * @return              PluginContinue to let client join or PluginStop to reject them.
  */
-forward PluginReturn OnClientConnect(int client, const char[] name, const char[] ip, char reason[128]);
+forward PluginReturn OnClientConnect(Player client, const char[] name, const char[] ip, char reason[128]);
 
 /*
  * @brief Called when a client disconnects from the server.
@@ -43,7 +72,7 @@ forward PluginReturn OnClientConnect(int client, const char[] name, const char[]
  *
  * @noreturn
  */
-forward void OnClientDisconnect(int client, bool crash, const char[] reason);
+forward void OnClientDisconnect(Player client, bool crash, const char[] reason);
 
 /*
  * @brief Called when a client enters the game.
@@ -52,6 +81,4 @@ forward void OnClientDisconnect(int client, bool crash, const char[] reason);
  *
  * @noreturn
  */
-forward void OnClientPutInServer(int client);
-
-d
+forward void OnClientPutInServer(Player client);
