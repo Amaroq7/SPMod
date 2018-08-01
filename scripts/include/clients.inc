@@ -22,34 +22,63 @@
 #endif
 #define _clients_included
 
+methodmap Player
+{
+    public native int GetName(char[] buffer, int size);
+    public native int GetIP(char[] buffer, int size, bool port = false);
+    public native int GetSteamID(char[] buffer, int size);
+
+    property int Index {
+        public native get();
+    }
+    property int UserID {
+        public native get();
+    }
+    property bool Alive {
+        public native get();
+    }
+    property bool Connected {
+        public native get();
+    }
+    property bool Fake {
+        public native get();
+    }
+    property bool HLTV {
+        public native get();
+    }
+    property bool InGame {
+        public native get();
+    }
+}
+
 /*
  * @brief Called when a client connects to the server.
- * 
+ *
  * @param client        Client id.
  * @param name          Name of the client.
  * @param ip            IP address of the client.
  * @param reason        Reason that will be displayed to the client when they get rejected.
- * 
+ *
  * @return              PluginContinue to let client join or PluginStop to reject them.
  */
-forward PluginReturn OnClientConnect(int client, const char[] name, const char[] ip, char reason[128]);
+forward PluginReturn OnClientConnect(Player client, const char[] name, const char[] ip, char reason[128]);
 
 /*
  * @brief Called when a client disconnects from the server.
- * 
+ *
  * @param client        Client id.
  * @param crash         True if client crashed, false otherwise.
  * @param reason        Reason why the client has been disconnected.
- * 
+ *
  * @noreturn
  */
-forward void OnClientDisconnect(int client, bool crash, const char[] reason);
+forward void OnClientDisconnect(Player client, bool crash, const char[] reason);
 
 /*
  * @brief Called when a client enters the game.
- * 
+ *
  * @param client        Client id.
- * 
+ *
  * @noreturn
  */
-forward void OnClientPutInServer(int client);
+forward void OnClientPutInServer(Player client);

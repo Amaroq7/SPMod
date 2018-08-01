@@ -108,6 +108,7 @@ using namespace SPMod;
 #include "CvarSystem.hpp"
 #include "CmdSystem.hpp"
 #include "TimerSystem.hpp"
+#include "PlayerSystem.hpp"
 #include "SPGlobal.hpp"
 
 constexpr auto gSPModAuthor = "SPMod Development Team";
@@ -122,6 +123,7 @@ extern sp_nativeinfo_t gMessageNatives[];
 extern sp_nativeinfo_t gCmdsNatives[];
 extern sp_nativeinfo_t gTimerNatives[];
 extern sp_nativeinfo_t gFloatNatives[];
+extern sp_nativeinfo_t gPlayerNatives[];
 
 // Server command function (SrvCommand.cpp)
 void SPModInfoCommand();

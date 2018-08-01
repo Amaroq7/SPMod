@@ -53,6 +53,7 @@ public:
     SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const override;
     INativeMngr *getNativeManager() const override;
     ITimerMngr *getTimerManager() const override;
+    IPlayerMngr *getPlayerManager() const override;
     IUtils *getUtils() const override;
 
     unsigned int formatString(char *buffer,
@@ -95,7 +96,11 @@ public:
     {
         return m_utils;
     }
-    const auto &getScriptsDirCore() const
+    const std::unique_ptr<PlayerMngr> &getPlayerManagerCore() const
+    {
+        return m_plrManager;
+    }
+    const auto &getScriptsDirCore()
     {
         return m_SPModScriptsDir;
     }
@@ -126,6 +131,7 @@ private:
     std::unique_ptr<Logger> m_loggingSystem;
     std::unique_ptr<CommandMngr> m_cmdManager;
     std::unique_ptr<TimerMngr> m_timerManager;
+    std::unique_ptr<PlayerMngr> m_plrManager;
     std::unique_ptr<Utils> m_utils;
     std::string m_modName;
     SourcePawn::ISourcePawnFactory *m_spFactory;
