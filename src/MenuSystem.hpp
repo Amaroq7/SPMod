@@ -34,7 +34,7 @@ public:
                  std::variant<cell_t, void *> d);
         ItemStatus execCallback(Menu *menu,
                                 std::size_t i,
-                                int player);
+                                int player) const;
         std::string name;
         std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> callback;
         std::variant<cell_t, void *> data;
@@ -142,7 +142,7 @@ private:
 class MenuMngr : public IMenuMngr
 {
 public:
-    MenuMngr();
+    MenuMngr() = default;
     ~MenuMngr() = default;
 
     IMenu *registerMenu(MenuHandler handler,
@@ -171,7 +171,4 @@ public:
 private:
     std::size_t m_mid = 0;
     std::vector<std::shared_ptr<Menu>> m_menus;
-
-    int m_playerMenu[33];
-    int m_playerPage[33];
 };

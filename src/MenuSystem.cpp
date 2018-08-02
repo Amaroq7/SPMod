@@ -21,12 +21,14 @@ int gmsgShowMenu = 0;
 int gmsgVGUIMenu = 0;
 
 Menu::MenuItem::MenuItem(std::string n,
-                 std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&c,
-                 std::variant<cell_t, void *> d) : name(n),
-                                                   callback(c),
-                                                   data(d)
+                         std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&c,
+                         std::variant<cell_t, void *> d) : name(n),
+                                                           callback(c),
+                                                           data(d)
 {}
-ItemStatus Menu::MenuItem::execCallback(Menu *menu, std::size_t i, int player)
+ItemStatus Menu::MenuItem::execCallback(Menu *menu,
+                                        std::size_t i,
+                                        int player) const
 {
     ItemStatus result = ItemStatus::Enabled;
     
@@ -453,15 +455,6 @@ void Menu::_addItem(int position,
     }
 }
 
-MenuMngr::MenuMngr()
-{
-    for(int i = 1; i < 33; i++)
-    {
-        m_playerMenu[i] = -1;
-        m_playerPage[i] = 0;
-    }
-}
-
 IMenu *MenuMngr::registerMenu(MenuHandler handler,
                                  MenuStyle style,
                                  bool global)
@@ -483,10 +476,21 @@ IMenu *MenuMngr::findMenu(std::size_t mid) const
 void MenuMngr::destroyMenu(std::size_t index)
 {
     // close menu for any player
-    for(int i = 1; i < 33; i++)
+    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
+    std::shared_ptr<Player> plr;
+
+    for(unsigned int i = 1; i <= plrMngr->getMaxClients(); i++)
     {
-        if(m_playerMenu[i] == static_cast<int>(index))
-            closeMenu(i);
+        plr = plrMngr->getPlayerCore(i);
+
+        if(!plr->isInGame()
+            || !plrMngr->getPlayerCore(i)->getMenu()
+            || plrMngr->getPlayerCore(i)->getMenu()->getId() == index)
+        {
+            continue;
+        }
+
+        closeMenu(i);
     }
 
     auto iter = m_menus.begin();
@@ -521,20 +525,24 @@ void MenuMngr::displayMenu(std::shared_ptr<Menu> menu, int player, int page, int
 {
     closeMenu(player);
 
-    m_playerMenu[player] = menu->getId();
-    m_playerPage[player] = page;
+    std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(player);
+
+    plr->setMenu(menu);
+    plr->setMenuPage(page);
 
     menu->display(player, page, time);
 }
 
 void MenuMngr::closeMenu(int player)
 {
-    if(m_playerMenu[player] == -1)
+    std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(player);
+
+    if(!plr->getMenu())
         return;
     
-    std::shared_ptr<Menu> pMenu = findMenuCore(m_playerMenu[player]);
+    std::shared_ptr<Menu> pMenu = plr->getMenu();
 
-    m_playerMenu[player] = -1;
+    plr->setMenu(nullptr);
 
     if(pMenu->getStyle() == MenuStyle::Item)
         pMenu->execHandler(player, MENU_EXIT);
@@ -545,14 +553,16 @@ META_RES MenuMngr::ClientCommand(edict_t *pEntity)
     int pressedKey = std::stoi(CMD_ARGV(1), nullptr, 0) - 1;
     int player = ENTINDEX(pEntity);
 
-    if(m_playerMenu[player] == -1)
+    std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(player);
+
+    if(!plr->getMenu())
         return MRES_IGNORED;
     
-    std::shared_ptr<Menu> pMenu = findMenuCore(m_playerMenu[player]);
+    std::shared_ptr<Menu> pMenu = plr->getMenu();
     
     if(pMenu->getKeys() & (1 << pressedKey))
     {
-        m_playerMenu[player] = -1;
+        plr->setMenu(nullptr);
 
         if(pMenu->getStyle() == MenuStyle::Item)
         {
@@ -562,11 +572,11 @@ META_RES MenuMngr::ClientCommand(edict_t *pEntity)
 
             if(slot == MENU_BACK)
             {
-                displayMenu(pMenu, player, m_playerPage[player] - 1, pMenu->getTime());
+                displayMenu(pMenu, player, plr->getMenuPage() - 1, pMenu->getTime());
             }
             else if(slot == MENU_NEXT)
             {
-                displayMenu(pMenu, player, m_playerPage[player] + 1, pMenu->getTime());
+                displayMenu(pMenu, player, plr->getMenuPage() + 1, pMenu->getTime());
             }
             else if(!pMenu->getGlobal())
             {

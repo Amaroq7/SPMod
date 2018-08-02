@@ -45,6 +45,11 @@ public:
     std::string_view getSteamIDCore() const;
     void setName(std::string_view newname);
 
+    std::shared_ptr<Menu> getMenu() const;
+    void setMenu(std::shared_ptr<Menu> menu);
+    int getMenuPage() const;
+    void setMenuPage(int page);
+
     void connect(std::string_view name,
                  std::string_view ip);
 
@@ -61,6 +66,9 @@ private:
     std::string m_name;
     std::string m_ip;
     std::string m_steamID;
+
+    std::shared_ptr<Menu> m_menu;
+    int m_menuPage;
 };
 
 class PlayerMngr : public IPlayerMngr
