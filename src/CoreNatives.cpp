@@ -282,6 +282,33 @@ static cell_t GetGameTime(SourcePawn::IPluginContext *ctx [[maybe_unused]],
     return sp_ftoc(gpGlobals->time);
 }
 
+// native void ServerCmd(const char[] command, any ...)
+static cell_t ServerCmd(SourcePawn::IPluginContext *ctx,
+                                 const cell_t *params)
+{
+    char *formatString;
+    char bufferOutput[1024];
+
+    ctx->LocalToString(params[1], &formatString);
+    std::size_t res = gSPGlobal->formatString(bufferOutput, sizeof(bufferOutput)-2, formatString, ctx, params, 2);
+  
+    bufferOutput[res++] = '\n';
+    bufferOutput[res] = '\0';
+  
+    SERVER_COMMAND(bufferOutput);
+
+    return 1;
+}
+
+// native void ServerExec(const char[] command, any ...)
+static cell_t ServerExec(SourcePawn::IPluginContext *ctx,
+                                 const cell_t *params)
+{
+    SERVER_EXECUTE();
+    return 1;
+}
+
+
 sp_nativeinfo_t gCoreNatives[] =
 {
     {  "PrintToServer",          PrintToServer       },
@@ -298,5 +325,7 @@ sp_nativeinfo_t gCoreNatives[] =
     {  "NativeSetArray",         NativeSetArray      },
     {  "ChangeLevel",            ChangeLevel         },
     {  "GetGameTime",            GetGameTime         },
+    {  "ServerCmd",              ServerCmd           },
+    {  "ServerExec",             ServerExec          },
     {  nullptr,                  nullptr             }
 };
