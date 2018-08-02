@@ -20,6 +20,39 @@
 int gmsgShowMenu = 0;
 int gmsgVGUIMenu = 0;
 
+Menu::MenuItem::MenuItem(std::string n,
+                 std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&c,
+                 std::variant<cell_t, void *> d) : name(n),
+                                                   callback(c),
+                                                   data(d)
+{}
+ItemStatus Menu::MenuItem::execCallback(Menu *menu, std::size_t i, int player)
+{
+    ItemStatus result = ItemStatus::Enabled;
+    
+    try
+    {
+        auto *func = std::get<SourcePawn::IPluginFunction *>(callback);
+        if(func && func->IsRunnable())
+        {
+            func->PushCell(static_cast<cell_t>(menu->getId()));
+            func->PushCell(static_cast<cell_t>(PACK_ITEM(menu->getId(), i)));
+            func->PushCell(static_cast<cell_t>(player));
+            func->Execute(reinterpret_cast<cell_t*>(&result));
+        }
+    }
+    catch (const std::bad_variant_access &e [[maybe_unused]])
+    {
+        auto func = std::get<MenuItemCallback>(callback);
+        if(func)
+        {
+            result = func(menu, i, player);
+        }
+    }
+
+    return result;
+}
+
 Menu::Menu(std::size_t id,
            std::variant<SourcePawn::IPluginFunction *, MenuHandler> &&handler,
            MenuStyle style,
@@ -36,9 +69,10 @@ Menu::Menu(std::size_t id,
 
 void Menu::display(int player, int page, int time)
 {
+    const std::unique_ptr<Utils> &utils = gSPGlobal->getUtilsCore();
     char buffer[512];
 
-    if(m_style == MenuItemStyle)
+    if(m_style == MenuStyle::Item)
     {
         // format and show menu
         int keys = 0;
@@ -55,7 +89,7 @@ void Menu::display(int player, int page, int time)
         {
             for(std::size_t j = 0; j < start; j++)
             {
-                if(m_items[j].execCallback(this, j, player) == ItemHide)
+                if(m_items[j].execCallback(this, j, player) == ItemStatus::Hide)
                     hidden++;
             }
             start += hidden;
@@ -70,13 +104,12 @@ void Menu::display(int player, int page, int time)
         }
 
         std::size_t slot = 0;
-        
 
-        auto addItem = [&](ItemStatus r, std::size_t s, std::string n)
+        auto addItem = [&](ItemStatus r, std::size_t s, std::string_view n)
         {
-            text << replace(m_numberFormat, "#num", std::to_string(s + 1 == 10 ? 0 : s + 1));
+            text << utils->strReplacedCore(m_numberFormat, "#num", std::to_string(s + 1 == 10 ? 0 : s + 1));
 
-            if(r == ItemEnabled)
+            if(r == ItemStatus::Enabled)
             {
                 text << " \\w" << n << "\n";
                 keys |= (1 << s);
@@ -87,7 +120,7 @@ void Menu::display(int player, int page, int time)
             }
         };
 
-        ItemStatus ret = ItemEnabled;
+        ItemStatus ret = ItemStatus::Enabled;
 
         std::size_t i = start;
         while(slot < m_itemsPerPage && i < m_items.size())
@@ -96,7 +129,7 @@ void Menu::display(int player, int page, int time)
 
             ret = item.execCallback(this, m_staticSlots[slot] ? m_items.size() + slot : i, player);
 
-            if(ret == ItemHide)
+            if(ret == ItemStatus::Hide)
             {
                 if(!m_staticSlots[slot])
                     ++i;
@@ -122,7 +155,7 @@ void Menu::display(int player, int page, int time)
                 MenuItem &item = *m_staticSlots[slot];
                 ret = item.execCallback(this, m_items.size() + slot, player);
 
-                if(ret != ItemHide)
+                if(ret != ItemStatus::Hide)
                 {
                     addItem(ret, slot, item.name);
                     m_slots[slot] = m_items.size() + slot;
@@ -138,7 +171,7 @@ void Menu::display(int player, int page, int time)
 
         if(m_items.size() - hidden > i)
         {
-            addItem(ItemEnabled, slot, "Next");
+            addItem(ItemStatus::Enabled, slot, "Next");
             m_slots[slot++] = MENU_NEXT;
         }
         else
@@ -149,7 +182,7 @@ void Menu::display(int player, int page, int time)
 
         if(page)
         {
-            addItem(ItemEnabled, slot, "Back");
+            addItem(ItemStatus::Enabled, slot, "Back");
             m_slots[slot++] = MENU_BACK;
         }
         else
@@ -158,20 +191,20 @@ void Menu::display(int player, int page, int time)
             text << "\n";
         }
 
-        addItem(ItemEnabled, slot, "Exit");
+        addItem(ItemStatus::Enabled, slot, "Exit");
         m_slots[slot] = MENU_EXIT;
 
         // TODO: add color autodetect (hl don't show colors)
         // TODO: color tags, remove if game mode unsupport it
 
-        gSPGlobal->getUtilsCore()->strCopyCore(buffer, sizeof(buffer), text.str());
+        utils->strCopyCore(buffer, sizeof(buffer), text.str());
 
         m_keys = keys;
     }
     else
     {
         // text style
-        gSPGlobal->getUtilsCore()->strCopyCore(buffer, sizeof(buffer), m_text);
+        utils->strCopyCore(buffer, sizeof(buffer), m_text);
     }
 
     m_time = time;
@@ -315,7 +348,7 @@ bool Menu::setItemName(std::size_t item,
         return false;
     
     if(item >= m_items.size())
-        m_staticSlots[item - m_items.size()].get()->name = name.data();
+        m_staticSlots[item - m_items.size()]->name = name.data();
     else
         m_items[item].name = name.data();
 
@@ -328,7 +361,7 @@ std::string_view Menu::getItemName(std::size_t item) const
         return "";
 
     if(item >= m_items.size())
-        return m_staticSlots[item - m_items.size()].get()->name;
+        return m_staticSlots[item - m_items.size()]->name;
     else
         return m_items[item].name;
 }
@@ -337,7 +370,7 @@ void Menu::setItemData(std::size_t item,
                        std::variant<cell_t, void *> &&data)
 {
     if(item >= m_items.size())
-        m_staticSlots[item - m_items.size()].get()->data = data;
+        m_staticSlots[item - m_items.size()]->data = data;
     else
         m_items[item].data = data;
 }
@@ -347,7 +380,7 @@ cell_t Menu::getItemData(std::size_t item)
     try
     {
         if(item >= m_items.size())
-            return std::get<cell_t>(m_staticSlots[item - m_items.size()].get()->data);
+            return std::get<cell_t>(m_staticSlots[item - m_items.size()]->data);
         else 
             return std::get<cell_t>(m_items[item].data);
     }
@@ -367,16 +400,27 @@ void Menu::setHandlerCore(std::variant<SourcePawn::IPluginFunction *, MenuHandle
     m_handler = func;
 }
 
-void Menu::execHandlerItem(int player, int item)
+void Menu::execHandler(int player,
+                       int item)
 {
     try
     {
         auto *func = std::get<SourcePawn::IPluginFunction *>(m_handler);
         if(func && func->IsRunnable())
         {
-            cell_t packedItem = item >= 0 ? PACK_ITEM(m_id, item) : item;
+            
             func->PushCell(static_cast<cell_t>(m_id));
-            func->PushCell(static_cast<cell_t>(packedItem));
+
+            if(m_style == MenuStyle::Item)
+            {
+                cell_t packedItem = item >= 0 ? PACK_ITEM(m_id, item) : item;
+                func->PushCell(static_cast<cell_t>(packedItem));
+            }
+            else
+            {
+                func->PushCell(static_cast<cell_t>(item));
+            }
+            
             func->PushCell(static_cast<cell_t>(player));
             func->Execute(nullptr);
         }
@@ -385,26 +429,6 @@ void Menu::execHandlerItem(int player, int item)
     {
         auto func = std::get<MenuHandler>(m_handler);
         func(this, item, player);
-    }
-}
-
-void Menu::execHandlerText(int player, int key)
-{
-    try
-    {
-        auto *func = std::get<SourcePawn::IPluginFunction *>(m_handler);
-        if(func && func->IsRunnable())
-        {
-            func->PushCell(static_cast<cell_t>(m_id));
-            func->PushCell(static_cast<cell_t>(key));
-            func->PushCell(static_cast<cell_t>(player));
-            func->Execute(nullptr);
-        }
-    }
-    catch (const std::bad_variant_access &e [[maybe_unused]])
-    {
-        auto func = std::get<MenuHandler>(m_handler);
-        func(this, key, player);
     }
 }
 
@@ -512,8 +536,8 @@ void MenuMngr::closeMenu(int player)
 
     m_playerMenu[player] = -1;
 
-    if(pMenu->getStyle() == MenuItemStyle)
-        pMenu->execHandlerItem(player, MENU_EXIT);
+    if(pMenu->getStyle() == MenuStyle::Item)
+        pMenu->execHandler(player, MENU_EXIT);
 }
 
 META_RES MenuMngr::ClientCommand(edict_t *pEntity)
@@ -530,11 +554,11 @@ META_RES MenuMngr::ClientCommand(edict_t *pEntity)
     {
         m_playerMenu[player] = -1;
 
-        if(pMenu->getStyle() == MenuItemStyle)
+        if(pMenu->getStyle() == MenuStyle::Item)
         {
             int slot = pMenu->keyToSlot(pressedKey);
 
-            pMenu->execHandlerItem(player, slot);
+            pMenu->execHandler(player, slot);
 
             if(slot == MENU_BACK)
             {
@@ -551,7 +575,7 @@ META_RES MenuMngr::ClientCommand(edict_t *pEntity)
         }
         else
         {
-            pMenu->execHandlerText(player, pressedKey);
+            pMenu->execHandler(player, pressedKey);
         }
 
         return MRES_SUPERCEDE;
@@ -594,14 +618,4 @@ void UTIL_ShowMenu(edict_t* pEdict, int slots, int time, char *menu, int mlen)
         menu = n;
     }
     while (*n);
-}
-
-std::string replace(const std::string& str, const std::string& from, const std::string& to)
-{
-    std::string temp(str);
-    std::size_t start_pos = temp.find(from);
-    if(start_pos == std::string::npos)
-        return std::string("");
-    temp.replace(start_pos, from.length(), to);
-    return temp;
 }

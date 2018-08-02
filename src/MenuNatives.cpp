@@ -56,7 +56,7 @@ static cell_t MenuSetTitle(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -92,7 +92,7 @@ static cell_t MenuAddItem(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -128,7 +128,7 @@ static cell_t MenuAddStaticItem(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -164,7 +164,7 @@ static cell_t MenuInsertItem(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -200,7 +200,7 @@ static cell_t MenuRemoveItem(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -233,7 +233,7 @@ static cell_t MenuRemoveAllItems(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -293,7 +293,7 @@ static cell_t MenuDestroy(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -326,7 +326,7 @@ static cell_t MenuItemsGet(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -357,7 +357,7 @@ static cell_t MenuItemsPerPageSet(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -390,7 +390,7 @@ static cell_t MenuItemsPerPageGet(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -426,7 +426,7 @@ static cell_t MenuSetProp(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -469,7 +469,7 @@ static cell_t MenuSetText(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() != MenuTextStyle)
+    if(pMenu->getStyle() != MenuStyle::Text)
     {
         ctx->ReportError("ItemStyle menu can't use this native!");
         return 0;
@@ -505,7 +505,7 @@ static cell_t MenuSetKeys(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() != MenuTextStyle)
+    if(pMenu->getStyle() != MenuStyle::Text)
     {
         ctx->ReportError("ItemStyle menu can't use this native!");
         return 0;
@@ -569,7 +569,7 @@ static cell_t MenuItemSetName(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -614,7 +614,7 @@ static cell_t MenuItemGetName(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -656,7 +656,7 @@ static cell_t MenuItemSetData(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -697,7 +697,7 @@ static cell_t MenuItemGetData(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    if(pMenu->getStyle() == MenuTextStyle)
+    if(pMenu->getStyle() == MenuStyle::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;

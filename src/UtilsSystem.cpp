@@ -41,9 +41,30 @@ std::size_t Utils::strCopyCore(char *buffer,
     return writtenChars;
 }
 
+std::string Utils::strReplacedCore(std::string_view source,
+                                   std::string_view from,
+                                   std::string_view to) const
+{
+    std::string temp(source);
+    std::size_t start_pos = temp.find(from);
+    if(start_pos == std::string::npos)
+        return temp;
+    temp.replace(start_pos, from.length(), to);
+    return temp;
+}
+
 std::size_t Utils::strCopy(char *buffer,
                            std::size_t size,
                            const char *src) const
 {
     return strCopyCore(buffer, size, src);
+}
+
+std::size_t Utils::strReplaced(char *buffer,
+                               std::size_t size,
+                               const char *source,
+                               const char *from,
+                               const char *to) const
+{
+    return strCopyCore(buffer, size, strReplacedCore(source, from, to));
 }

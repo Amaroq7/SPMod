@@ -26,17 +26,17 @@ namespace SPMod
         MENU_BACK = -1
     };
 
-    enum ItemStatus
+    enum class ItemStatus
     {
-        ItemEnabled,
-        ItemDisabled,
-        ItemHide
+        Enabled,
+        Disabled,
+        Hide
     };
 
-    enum MenuStyle
+    enum class MenuStyle
     {
-        MenuItemStyle,
-        MenuTextStyle
+        Item,
+        Text
     };
     
     class IMenu SPMOD_FINAL
@@ -78,8 +78,8 @@ namespace SPMod
 
         virtual void setHandler(MenuHandler func) = 0;
 
-        virtual void execHandlerItem(int player, int item) = 0;
-        virtual void execHandlerText(int player, int key) = 0;
+        virtual void execHandler(int player,
+                                 int item) = 0;
 
     protected:
         virtual ~IMenu() {}

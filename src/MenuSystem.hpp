@@ -20,7 +20,6 @@
 #include "spmod.hpp"
 
 void UTIL_ShowMenu(edict_t* pEdict, int slots, int time, char *menu, int mlen);
-std::string replace(const std::string& str, const std::string& from, const std::string& to);
 
 #define PACK_ITEM(menuid, itemid) (menuid << 16 | itemid)
 #define UNPACK_ITEM(index, menuid, itemid) menuid = index >> 16; itemid = index & 0xFFFF
@@ -32,36 +31,10 @@ public:
     {
         MenuItem(std::string n,
                  std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&c,
-                 std::variant<cell_t, void *> d) : name(n),
-                                                   callback(c),
-                                                   data(d)
-        {}
-        ItemStatus execCallback(Menu *menu, std::size_t i, int player)
-        {
-            ItemStatus result = ItemEnabled;
-            
-            try
-            {
-                auto *func = std::get<SourcePawn::IPluginFunction *>(callback);
-                if(func && func->IsRunnable())
-                {
-                    func->PushCell(static_cast<cell_t>(menu->getId()));
-                    func->PushCell(static_cast<cell_t>(PACK_ITEM(menu->getId(), i)));
-                    func->PushCell(static_cast<cell_t>(player));
-                    func->Execute(reinterpret_cast<cell_t*>(&result));
-                }
-            }
-            catch (const std::bad_variant_access &e [[maybe_unused]])
-            {
-                auto func = std::get<MenuItemCallback>(callback);
-                if(func)
-                {
-                    result = func(menu, i, player);
-                }
-            }
-
-            return result;
-        }
+                 std::variant<cell_t, void *> d);
+        ItemStatus execCallback(Menu *menu,
+                                std::size_t i,
+                                int player);
         std::string name;
         std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> callback;
         std::variant<cell_t, void *> data;
@@ -136,10 +109,11 @@ public:
     cell_t getItemData(std::size_t item);
 
     void setHandler(MenuHandler func) override;
-    void setHandlerCore(std::variant<SourcePawn::IPluginFunction *, MenuHandler> &&func);
+    void setHandlerCore(std::variant<SourcePawn::IPluginFunction *,
+                        MenuHandler> &&func);
 
-    void execHandlerItem(int player, int item) override;
-    void execHandlerText(int player, int key) override;
+    void execHandler(int player,
+                     int item) override;
 
     std::size_t getId() const;
 private:
@@ -157,8 +131,8 @@ private:
     int m_time;
     std::size_t m_itemsPerPage;
     int m_keys;
-    int m_slots[10];
-    std::unique_ptr<MenuItem> m_staticSlots[10];
+    std::array<int, 10> m_slots;
+    std::array<std::unique_ptr<MenuItem>, 10> m_staticSlots;
 
     std::variant<SourcePawn::IPluginFunction *, MenuHandler> m_handler;
 
@@ -182,9 +156,7 @@ public:
     template<typename ...Args>
     std::shared_ptr<Menu> registerMenuCore(Args... args)
     {
-        std::shared_ptr<Menu> menu = std::make_shared<Menu>(m_mid++, std::forward<Args>(args)...);
-        m_menus.push_back(menu);
-        return menu;
+        return m_menus.emplace_back(std::make_shared<Menu>(m_mid++, std::forward<Args>(args)...));
     }
     std::shared_ptr<Menu> findMenuCore(std::size_t index) const;
 

@@ -50,6 +50,7 @@
 #include <ITimerSystem.hpp>
 #include <IMenuSystem.hpp>
 #include <IUtilsSystem.hpp>
+#include <IPlayerSystem.hpp>
 
 namespace SPMod
 {
@@ -106,7 +107,7 @@ namespace SPMod
 
         /**
          * @brief Return SPMod timer manager.
-         * 
+         *
          * @return              Timer manager.
          */
         virtual ITimerMngr *getTimerManager() const = 0;
@@ -119,8 +120,15 @@ namespace SPMod
         virtual IMenuMngr *getMenuManager() const = 0;
 
         /**
+         * @brief Return SPMod player manager.
+         *
+         * @return              Player manager.
+         */
+        virtual IPlayerMngr *getPlayerManager() const = 0;
+
+        /**
          * @brief Return SPMod utils funcs.
-         * 
+         *
          * @return              Utils funcs.
          */
         virtual IUtils *getUtils() const = 0;
