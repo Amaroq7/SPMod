@@ -45,7 +45,7 @@ public:
     std::string_view getSteamIDCore() const;
     void setName(std::string_view newname);
 
-    std::shared_ptr<Menu> getMenu() const;
+    std::weak_ptr<Menu> getMenu() const;
     void setMenu(std::shared_ptr<Menu> menu);
     int getMenuPage() const;
     void setMenuPage(int page);
@@ -67,7 +67,7 @@ private:
     std::string m_ip;
     std::string m_steamID;
 
-    std::shared_ptr<Menu> m_menu;
+    std::weak_ptr<Menu> m_menu;
     int m_menuPage;
 };
 

@@ -47,7 +47,7 @@ void Player::setName(std::string_view newname)
     m_name = newname;
 }
 
-std::shared_ptr<Menu> Player::getMenu() const
+std::weak_ptr<Menu> Player::getMenu() const
 {
     return m_menu;
 }

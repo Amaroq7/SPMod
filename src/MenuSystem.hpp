@@ -29,7 +29,7 @@ class Menu: public IMenu
 public:
     struct MenuItem
     {
-        MenuItem(std::string n,
+        MenuItem(std::string_view n,
                  std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&c,
                  std::variant<cell_t, void *> d);
         ItemStatus execCallback(Menu *menu,
@@ -48,15 +48,16 @@ public:
 
     ~Menu() {}
 
+    // IMenu
     void display(int player,
                  int page,
                  int time) override;
 
     bool getGlobal() const override;
-    MenuStyle getStyle() const;
+    MenuStyle getStyle() const override;
 
     void setText(const char *text) override;
-    void setTextCore(std::string_view text);
+    
     void setKeys(int keys) override;
 
     void setTitle(const char *text) override;
@@ -65,55 +66,68 @@ public:
     void setItemsPerPage(std::size_t value) override;
     std::size_t getItemsPerPage() const override;
 
-    void setNumberFormat(std::string_view format);
-
     int getTime() const override;
     int getKeys() const override;
-    int keyToSlot(int key) const override;
 
     void appendItem(const char *name,
                     MenuItemCallback callback,
                     void *data) override;
-
-    void appendItemCore(std::string_view name,
-                        std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                        std::variant<cell_t, void *> &&data);
 
     bool insertItem(std::size_t position,
                     const char *name,
                     MenuItemCallback callback,
                     void *data) override;
     
+    bool setStaticItem(std::size_t position,
+                       const char *name,
+                       MenuItemCallback callback,
+                       void *data);
+    
+    bool removeItem(std::size_t position) override;
+    void removeAllItems() override;
+
+    const char *getItemName(std::size_t item) const override;
+    bool setItemName(std::size_t item,
+                     const char *name) override;
+
+    void *getItemData(std::size_t position) const override;
+    void setItemData(std::size_t position,
+                     void *data) override;
+    
+    std::size_t getItems() const override;
+
+    // Menu
+    int keyToSlot(int key) const;
+
+    void setTextCore(std::string_view text);
+
+    void appendItemCore(std::string_view name,
+                        std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
+                        std::variant<cell_t, void *> &&data);
+
     bool insertItemCore(std::size_t position,
                         std::string_view name,
                         std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
                         std::variant<cell_t, void *> &&data);
 
-    bool setStaticItem(std::size_t positon,
-                       std::string_view name,
-                       std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                       std::variant<cell_t, void *> &&data);
-
-    bool removeItem(std::size_t position) override;
-    void removeAllItems() override;
-
-    std::size_t getItems() const override;
-
-    bool setItemName(std::size_t item,
-                     std::string_view name);
+    bool setStaticItemCore(std::size_t position,
+                           std::string_view name,
+                           std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
+                           std::variant<cell_t, void *> &&data);
     
-    std::string_view getItemName(std::size_t item) const;
+    bool setItemNameCore(std::size_t item,
+                         std::string_view name);
+    
+    std::string_view getItemNameCore(std::size_t item) const;
 
-    void setItemData(std::size_t item,
-                     std::variant<cell_t, void *> &&data);
-    cell_t getItemData(std::size_t item);
+    void setItemDataCore(std::size_t item,
+                         std::variant<cell_t, void *> &&data);
+    cell_t getItemDataCore(std::size_t item);
 
-    void setHandler(MenuHandler func) override;
-    void setHandlerCore(std::variant<SourcePawn::IPluginFunction *,
-                        MenuHandler> &&func);
+    void setNumberFormat(std::string_view format);
 
     void execHandler(int player,
-                     int item) override;
+                     int item);
 
     std::size_t getId() const;
 private:
@@ -146,9 +160,6 @@ public:
     ~MenuMngr() = default;
 
     IMenu *registerMenu(MenuHandler handler,
-                        MenuStyle style,
-                        bool global) override;
-    IMenu *registerMenu(SourcePawn::IPluginFunction *func,
                         MenuStyle style,
                         bool global) override;
     IMenu *findMenu(std::size_t mid) const override;

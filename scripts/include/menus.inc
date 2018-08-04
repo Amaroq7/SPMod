@@ -57,22 +57,30 @@ enum ItemStatus
 
 typeset MenuHandler
 {
-    // text style
-    function void(
-        Menu menu,
-        int key,
-        int player
-    );
+    /**
+    * Called after choosing menu key.
+    *
+    * @note Used in TextStyle menu
+    *
+    * @param menu           Menu index.
+    * @param key            Pressed menu key.
+    * @param player         Client index.
+    */
+    function void (Menu menu, int key, Player player);
 
-    // item style
-    function void(
-        Menu menu,
-        MenuItem item,
-        int player
-    );
+    /**
+    * Called after selection menu item.
+    *
+    * @note Used in ItemStyle menu
+    *
+    * @param menu           Menu index.
+    * @param item           Selected menu item.
+    * @param player         Client index.
+    */
+    function void (Menu menu, MenuItem item, Player player);
 };
 
-typedef CallbackHandler = function ItemStatus (Menu menu, MenuItem item, int player);
+typedef CallbackHandler = function ItemStatus (Menu menu, MenuItem item, Player player);
 
 methodmap Menu
 {
@@ -171,9 +179,17 @@ methodmap Menu
      * @noreturn
      */
     public native void SetProp(MenuProp prop, any ...);
+    /*
+     * @brief Gets a menu items count.
+     * 
+     */
     property int Items {
         public native get();
     }
+    /*
+     * @brief Gets or sets a menu items per page.
+     * 
+     */
     property int ItemsPerPage {
         public native get();
         public native set(int value);
@@ -227,7 +243,7 @@ methodmap MenuItem
     /*
      * @brief Sets a item data.
      *
-     * @param data          Item datar.
+     * @param data          Item data.
      *
      * @noreturn
      */

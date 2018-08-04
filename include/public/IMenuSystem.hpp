@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
+#pragma once
 
 namespace SPMod
 {
@@ -49,6 +49,7 @@ namespace SPMod
                             int page,
                             int time) = 0;
         virtual bool getGlobal() const = 0;
+        virtual MenuStyle getStyle() const = 0;
 
         virtual void setText(const char *text) = 0;
         virtual void setKeys(int keys) = 0;
@@ -60,7 +61,6 @@ namespace SPMod
 
         virtual int getTime() const = 0;
         virtual int getKeys() const = 0;
-        virtual int keyToSlot(int key) const = 0;
 
         virtual void appendItem(const char *name,
                                 MenuItemCallback callback,
@@ -74,12 +74,15 @@ namespace SPMod
         virtual bool removeItem(std::size_t position) = 0;
         virtual void removeAllItems() = 0;
 
+        virtual const char *getItemName(std::size_t item) const = 0;
+        virtual bool setItemName(std::size_t item,
+                                 const char *name) = 0;
+        
+        virtual void *getItemData(std::size_t position) const = 0;
+        virtual void setItemData(std::size_t position,
+                                 void *data) = 0;
+
         virtual std::size_t getItems() const = 0;
-
-        virtual void setHandler(MenuHandler func) = 0;
-
-        virtual void execHandler(int player,
-                                 int item) = 0;
 
     protected:
         virtual ~IMenu() {}
@@ -90,7 +93,6 @@ namespace SPMod
     public:
         using MenuHandler = void (*)(IMenu *const menu, std::size_t item, int player);
         virtual IMenu *registerMenu(MenuHandler handler, MenuStyle style, bool global) = 0;
-        virtual IMenu *registerMenu(SourcePawn::IPluginFunction *func, MenuStyle style, bool global) = 0;
         virtual IMenu *findMenu(std::size_t mid) const = 0;
     protected:
         virtual ~IMenuMngr() {}

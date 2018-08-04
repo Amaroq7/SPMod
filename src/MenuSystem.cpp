@@ -20,7 +20,7 @@
 int gmsgShowMenu = 0;
 int gmsgVGUIMenu = 0;
 
-Menu::MenuItem::MenuItem(std::string n,
+Menu::MenuItem::MenuItem(std::string_view n,
                          std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&c,
                          std::variant<cell_t, void *> d) : name(n),
                                                            callback(c),
@@ -312,9 +312,17 @@ bool Menu::insertItemCore(std::size_t position,
 }
 
 bool Menu::setStaticItem(std::size_t position,
-                   std::string_view name,
-                   std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                   std::variant<cell_t, void *> &&data)
+                         const char *name,
+                         MenuItemCallback callback,
+                         void *data)
+{
+    return setStaticItemCore(position, name, callback, data);
+}
+
+bool Menu::setStaticItemCore(std::size_t position,
+                             std::string_view name,
+                             std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
+                             std::variant<cell_t, void *> &&data)
 {
     if(position >= m_itemsPerPage)
         return false;
@@ -343,7 +351,17 @@ std::size_t Menu::getItems() const
     return m_items.size();
 }
 
+const char *Menu::getItemName(std::size_t item) const
+{
+    return getItemNameCore(item).data();
+}
 bool Menu::setItemName(std::size_t item,
+                       const char *name)
+{
+    return setItemNameCore(item, name);
+}
+
+bool Menu::setItemNameCore(std::size_t item,
                        std::string_view name)
 {
     if(item >= m_items.size() + 10)
@@ -357,7 +375,7 @@ bool Menu::setItemName(std::size_t item,
     return true;
 }
 
-std::string_view Menu::getItemName(std::size_t item) const
+std::string_view Menu::getItemNameCore(std::size_t item) const
 {
     if(item >= m_items.size() + 10)
         return "";
@@ -368,8 +386,19 @@ std::string_view Menu::getItemName(std::size_t item) const
         return m_items[item].name;
 }
 
-void Menu::setItemData(std::size_t item,
-                       std::variant<cell_t, void *> &&data)
+void *Menu::getItemData(std::size_t position) const
+{
+    return std::get<void *>(m_items[position].data);
+}
+
+void Menu::setItemData(std::size_t position,
+                       void *data)
+{
+    setItemDataCore(position, data);
+}
+
+void Menu::setItemDataCore(std::size_t item,
+                           std::variant<cell_t, void *> &&data)
 {
     if(item >= m_items.size())
         m_staticSlots[item - m_items.size()]->data = data;
@@ -377,7 +406,7 @@ void Menu::setItemData(std::size_t item,
         m_items[item].data = data;
 }
 
-cell_t Menu::getItemData(std::size_t item)
+cell_t Menu::getItemDataCore(std::size_t item)
 {
     try
     {
@@ -390,16 +419,6 @@ cell_t Menu::getItemData(std::size_t item)
     {
         return 0;
     }
-}
-
-void Menu::setHandler(MenuHandler func)
-{
-    setHandlerCore(func);
-}
-
-void Menu::setHandlerCore(std::variant<SourcePawn::IPluginFunction *, MenuHandler> &&func)
-{
-    m_handler = func;
 }
 
 void Menu::execHandler(int player,
@@ -456,16 +475,10 @@ void Menu::_addItem(int position,
 }
 
 IMenu *MenuMngr::registerMenu(MenuHandler handler,
-                                 MenuStyle style,
-                                 bool global)
+                              MenuStyle style,
+                              bool global)
 {
     return registerMenuCore(handler, style, global).get();
-}
-IMenu *MenuMngr::registerMenu(SourcePawn::IPluginFunction *func,
-                                 MenuStyle style,
-                                 bool global)
-{
-    return registerMenuCore(func, style, global).get();
 }
 
 IMenu *MenuMngr::findMenu(std::size_t mid) const
@@ -477,15 +490,17 @@ void MenuMngr::destroyMenu(std::size_t index)
 {
     // close menu for any player
     const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
-    std::shared_ptr<Player> plr;
+    std::shared_ptr<Player> pPlayer;
+    std::shared_ptr<Menu> pMenu;
 
     for(unsigned int i = 1; i <= plrMngr->getMaxClients(); i++)
     {
-        plr = plrMngr->getPlayerCore(i);
+        pPlayer = plrMngr->getPlayerCore(i);
+        pMenu = pPlayer->getMenu().lock();
 
-        if(!plr->isInGame()
-            || !plrMngr->getPlayerCore(i)->getMenu()
-            || plrMngr->getPlayerCore(i)->getMenu()->getId() == index)
+        if(!pPlayer->isInGame()
+            || !pMenu
+            || pMenu->getId() != index)
         {
             continue;
         }
@@ -525,24 +540,23 @@ void MenuMngr::displayMenu(std::shared_ptr<Menu> menu, int player, int page, int
 {
     closeMenu(player);
 
-    std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(player);
+    std::shared_ptr<Player> pPlayer = gSPGlobal->getPlayerManagerCore()->getPlayerCore(player);
 
-    plr->setMenu(menu);
-    plr->setMenuPage(page);
+    pPlayer->setMenu(menu);
+    pPlayer->setMenuPage(page);
 
     menu->display(player, page, time);
 }
 
 void MenuMngr::closeMenu(int player)
 {
-    std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(player);
+    std::shared_ptr<Player> pPlayer = gSPGlobal->getPlayerManagerCore()->getPlayerCore(player);
+    std::shared_ptr<Menu> pMenu = pPlayer->getMenu().lock();
 
-    if(!plr->getMenu())
+    if(!pMenu)
         return;
-    
-    std::shared_ptr<Menu> pMenu = plr->getMenu();
 
-    plr->setMenu(nullptr);
+    pPlayer->setMenu(nullptr);
 
     if(pMenu->getStyle() == MenuStyle::Item)
         pMenu->execHandler(player, MENU_EXIT);
@@ -553,16 +567,15 @@ META_RES MenuMngr::ClientCommand(edict_t *pEntity)
     int pressedKey = std::stoi(CMD_ARGV(1), nullptr, 0) - 1;
     int player = ENTINDEX(pEntity);
 
-    std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(player);
+    std::shared_ptr<Player> pPlayer = gSPGlobal->getPlayerManagerCore()->getPlayerCore(player);
+    std::shared_ptr<Menu> pMenu = pPlayer->getMenu().lock();
 
-    if(!plr->getMenu())
+    if(!pMenu)
         return MRES_IGNORED;
-    
-    std::shared_ptr<Menu> pMenu = plr->getMenu();
     
     if(pMenu->getKeys() & (1 << pressedKey))
     {
-        plr->setMenu(nullptr);
+        pPlayer->setMenu(nullptr);
 
         if(pMenu->getStyle() == MenuStyle::Item)
         {
@@ -572,11 +585,11 @@ META_RES MenuMngr::ClientCommand(edict_t *pEntity)
 
             if(slot == MENU_BACK)
             {
-                displayMenu(pMenu, player, plr->getMenuPage() - 1, pMenu->getTime());
+                displayMenu(pMenu, player, pPlayer->getMenuPage() - 1, pMenu->getTime());
             }
             else if(slot == MENU_NEXT)
             {
-                displayMenu(pMenu, player, plr->getMenuPage() + 1, pMenu->getTime());
+                displayMenu(pMenu, player, pPlayer->getMenuPage() + 1, pMenu->getTime());
             }
             else if(!pMenu->getGlobal())
             {

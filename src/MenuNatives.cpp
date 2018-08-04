@@ -137,7 +137,7 @@ static cell_t MenuAddStaticItem(SourcePawn::IPluginContext *ctx,
     char *name;
     ctx->LocalToString(params[arg_name], &name);
 
-    pMenu->setStaticItem(static_cast<size_t>(params[arg_position]), name, ctx->GetFunctionById(params[arg_callback]), params[arg_data]);
+    pMenu->setStaticItemCore(static_cast<size_t>(params[arg_position]), name, ctx->GetFunctionById(params[arg_callback]), params[arg_data]);
 
     return 1;
 }
@@ -662,7 +662,7 @@ static cell_t MenuItemSetData(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    pMenu->setItemData(itemId, params[arg_data]);
+    pMenu->setItemDataCore(itemId, params[arg_data]);
 
     return 1;
 }
@@ -703,7 +703,7 @@ static cell_t MenuItemGetData(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    return pMenu->getItemData(itemId);
+    return pMenu->getItemDataCore(itemId);
 }
 
 sp_nativeinfo_t gMenuNatives[] =
