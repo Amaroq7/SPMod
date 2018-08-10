@@ -36,6 +36,7 @@ SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_p
     setScriptsDir("scripts");
     setLogsDir("logs");
     setDllsDir("dlls");
+    setExtDir("exts");
 
     // Initialize SourcePawn library
     _initSourcePawn();
@@ -59,13 +60,105 @@ void SPGlobal::setDllsDir(std::string_view folder)
     m_SPModDllsDir = m_SPModDir / folder.data();
 }
 
+void SPGlobal::setExtDir(std::string_view folder)
+{
+    m_SPModExtsDir = m_SPModDir / folder.data();
+}
+
+std::size_t SPGlobal::loadExts()
+{
+    std::error_code errCode;
+    auto directoryIter = fs::directory_iterator(m_SPModExtsDir, errCode);
+
+    if (errCode)
+    {
+        m_loggingSystem->LogMessageCore("Can't read extensions directory: ", errCode.message());
+        return 0u;
+    }
+
+    /* Querying extensions */
+    for (const auto &entry : directoryIter)
+    {
+        fs::path extPath = entry.path();
+        std::unique_ptr<Extension> extHandle;
+        try
+        {
+            extHandle = std::make_unique<Extension>(entry.path());
+        }
+        catch (const std::runtime_error &e)
+        {
+            m_loggingSystem->LogMessageCore(e.what());
+            continue;
+        }
+
+        if (!extHandle->getQueryFunc())
+        {
+            m_loggingSystem->LogMessageCore("Querying problem: ", extPath.filename());
+            continue;
+        }
+
+        ExtQueryValue result = extHandle->getQueryFunc()(gSPGlobal.get());
+        if (result == ExtQueryValue::DontLoad)
+        {
+            m_loggingSystem->LogMessageCore("Can't be loaded: ", extPath.filename());
+            continue;
+        }
+
+        if (result == ExtQueryValue::MetaExt)
+        {
+            void *metaHandle = nullptr;
+
+            if (LOAD_PLUGIN(PLID, extPath.string().c_str(), PT_ANYTIME, &metaHandle) || !metaHandle)
+            {
+                m_loggingSystem->LogMessageCore("Can't attach module: ", extPath.string());
+                continue;
+            }
+            extHandle->setMetaHandle(metaHandle);
+        }
+
+        m_extHandles.push_back(std::move(extHandle));
+    }
+
+    /* Initialize extensions */
+    auto iter = m_extHandles.begin();
+    while (iter != m_extHandles.end())
+    {
+        std::unique_ptr<Extension> &ext = *iter;
+        if (!ext->getInitFunc() || !ext->getInitFunc()())
+        {
+            iter = m_extHandles.erase(iter);
+        }
+        else
+            ++iter;
+    }
+
+    return m_extHandles.size();
+}
+
+void SPGlobal::unloadExts()
+{
+    for (auto &ext : m_extHandles)
+    {
+        if (ext->getEndFunc())
+            ext->getEndFunc()();
+    }
+
+    for (auto &ext : m_extHandles)
+    {
+        if (ext->metaHandle())
+            UNLOAD_PLUGIN_BY_HANDLE(PLID, ext->metaHandle(), PT_ANYTIME, PNL_PLUGIN);
+    }
+
+    m_extHandles.clear();
+}
+
 void SPGlobal::_initSourcePawn()
 {
     fs::path SPDir(getDllsDirCore());
     SPDir /= SPGlobal::sourcepawnLibrary;
 
 #ifdef SP_POSIX
-    void *libraryHandle = dlopen(SPDir.c_str(), RTLD_NOW);
+    void *libraryHandle = dlopen(SPDir.c_str(), RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND);
 #else
     HMODULE libraryHandle = LoadLibrary(SPDir.string().c_str());
 #endif
@@ -110,7 +203,7 @@ void SPGlobal::_initSourcePawn()
 
 const char *SPGlobal::getHome() const
 {
-    return getHomeCore.data();
+    return m_SPModDir.c_str();
 }
 
 const char *SPGlobal::getModName() const
@@ -181,7 +274,7 @@ std::string_view SPGlobal::getModNameCore() const
     return m_modName;
 }
 
-const std::unqiue_ptr<PluginMngr> &SPGlobal::getPluginManagerCore() const
+const std::unique_ptr<PluginMngr> &SPGlobal::getPluginManagerCore() const
 {
     return m_pluginManager;
 }

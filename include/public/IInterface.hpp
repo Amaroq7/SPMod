@@ -17,8 +17,6 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <cstdint>
-
 namespace SPMod
 {
     class IInterface
@@ -34,11 +32,23 @@ namespace SPMod
         /**
          * @brief Gets interface's version.
          *
-         * @note The first 16 most significant bits represent major version, the rest represent minor version.
-         *
          * @return              Interface's version.
          */
         virtual uint32_t getInterfaceVersion() const = 0;
+
+        /**
+         * @brief Gets interface's author.
+         *
+         * @return              Interface's author.
+         */
+        virtual const char *getInterfaceAuthor() const = 0;
+
+        /**
+         * @brief Gets interface's url.
+         *
+         * @return              Interface's url.
+         */
+        virtual const char *getInterfaceUrl() const = 0;
 
         /**
          * @brief Check if requested version is compatible.
@@ -59,6 +69,26 @@ namespace SPMod
     class ISPModInterface SPMOD_FINAL : public IInterface
     {
     public:
+        /**
+         * @brief Gets interface's author.
+         *
+         * @return              Interface's author.
+         */
+        const char *getInterfaceAuthor() const override
+        {
+            return "SPMod Development Team";
+        }
+
+        /**
+         * @brief Gets interface's url.
+         *
+         * @return              Interface's url.
+         */
+        const char *getInterfaceUrl() const override
+        {
+            return "https://github.com/Amaroq7/SPMod";
+        }
+
         /**
          * @brief Check if requested version is compatible.
          *

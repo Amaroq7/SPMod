@@ -108,6 +108,7 @@ using namespace SPMod;
 #include "TimerSystem.hpp"
 #include "MenuSystem.hpp"
 #include "PlayerSystem.hpp"
+#include "ExtensionSystem.hpp"
 #include "SPGlobal.hpp"
 
 constexpr auto gSPModAuthor = "SPMod Development Team";

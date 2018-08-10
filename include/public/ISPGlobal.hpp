@@ -195,10 +195,34 @@ namespace SPMod
         virtual ~ISPGlobal() {};
     };
 
-    using fnSPModQuery = int (*)(ISPGlobal *spmodInstance);
+    enum class ExtQueryValue : uint8_t
+    {
+        DontLoad = 0,
+        SPModExt = 1,
+        MetaExt = 2
+    };
 
-   /**
-    * @brief Entry point for modules to obtain access to SPMod API.
-    */
-    SPMOD_API int SPMod_Query(ISPGlobal *spmodInstance);
+    /**
+     * @brief Entry point for modules to obtain access to SPMod API.
+     *
+     * @return
+     */
+    SPMOD_API ExtQueryValue SPMod_Query(ISPGlobal *spmodInstance);
+    using fnSPModQuery = ExtQueryValue (*)(ISPGlobal *spmodInstance);
+
+    /**
+     * @brief Called after SPMod_Query().
+     *
+     * @note Here extension should ask for interfaces.
+     *
+     * @return True if extension should be loaded, false otherwise.
+     */
+    SPMOD_API bool SPMod_Init();
+    using fnSPModInit = bool (*)();
+
+    /**
+     * @brief Called on extension unloading. (mapchange, server shutdown)
+     */
+    SPMOD_API void SPMod_End();
+    using fnSPModEnd = void (*)();
 }

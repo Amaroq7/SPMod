@@ -47,6 +47,7 @@ public:
     // ISPGlobal
     const char *getHome() const override;
     const char *getModName() const override;
+
     IPluginMngr *getPluginManager() const override;
     IForwardMngr *getForwardManager() const override;
     ICvarMngr *getCvarManager() const override;
@@ -55,6 +56,7 @@ public:
     IMenuMngr *getMenuManager() const override;
     IPlayerMngr *getPlayerManager() const override;
     IUtils *getUtils() const override;
+
     bool registerInterface(IInterface *interface) override;
     IInterface *getInterface(const char *name) const override;
 
@@ -68,6 +70,7 @@ public:
     // SPGlobal
     std::string_view getHomeCore() const;
     std::string_view getModNameCore() const;
+
     const std::unique_ptr<PluginMngr> &getPluginManagerCore() const;
     const std::unique_ptr<ForwardMngr> &getForwardManagerCore() const;
     const std::unique_ptr<CvarMngr> &getCvarManagerCore() const;
@@ -88,14 +91,20 @@ public:
     void setScriptsDir(std::string_view folder);
     void setLogsDir(std::string_view folder);
     void setDllsDir(std::string_view folder);
+    void setExtDir(std::string_view folder);
+
+    std::size_t loadExts();
+    void unloadExts();
 
 private:
     void _initSourcePawn();
 
-    fs::path m_SPModScriptsDir;
     fs::path m_SPModDir;
+    fs::path m_SPModScriptsDir;
     fs::path m_SPModLogsDir;
     fs::path m_SPModDllsDir;
+    fs::path m_SPModExtsDir;
+
     std::unique_ptr<PluginMngr> m_pluginManager;
     std::unique_ptr<ForwardMngr> m_forwardManager;
     std::unique_ptr<CvarMngr> m_cvarManager;
@@ -105,9 +114,11 @@ private:
     std::unique_ptr<MenuMngr> m_menuManager;
     std::unique_ptr<PlayerMngr> m_plrManager;
     std::unique_ptr<Utils> m_utils;
+
     std::string m_modName;
     SourcePawn::ISourcePawnFactory *m_spFactory;
     std::unordered_map<std::string, IInterface *> m_interfaces;
+    std::vector<std::unique_ptr<Extension>> m_extHandles;
 
     // SourcePawn library handle
 #ifdef SP_POSIX
