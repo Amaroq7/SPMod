@@ -168,7 +168,9 @@ namespace SPMod
          *
          * @note Last entry has to be nullptr.
          *
-         * @return        List of natives to add.
+         * @param natives List of natives to add.
+         *
+         * @return        True if all natives have been successfully added, false otherwise.
          */
         virtual bool addNatives(const sp_nativeinfo_t *natives) = 0;
 
