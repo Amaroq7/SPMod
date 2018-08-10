@@ -118,9 +118,9 @@ Menu::Menu(std::size_t id,
                           m_time(-1),
                           m_itemsPerPage(7),
                           m_keys(0),
-                          m_nextItem(std::make_shared<MenuItem>("Next", reinterpret_cast<MenuItemCallback>(nullptr), nullptr, NavigationType::Next)),
-                          m_backItem(std::make_shared<MenuItem>("Back", reinterpret_cast<MenuItemCallback>(nullptr), nullptr, NavigationType::Back)),
-                          m_exitItem(std::make_shared<MenuItem>("Next", reinterpret_cast<MenuItemCallback>(nullptr), nullptr, NavigationType::Exit)),
+                          m_nextItem(std::make_shared<MenuItem>("Next", MenuItemCallback{nullptr}, nullptr, NavigationType::Next)),
+                          m_backItem(std::make_shared<MenuItem>("Back", MenuItemCallback{nullptr}, nullptr, NavigationType::Back)),
+                          m_exitItem(std::make_shared<MenuItem>("Next", MenuItemCallback{nullptr}, nullptr, NavigationType::Exit)),
                           m_handler(handler)
 {}
 
