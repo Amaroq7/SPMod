@@ -24,7 +24,7 @@ class ForwardMngr;
 class CvarMngr;
 class Logger;
 
-class SPGlobal : public ISPGlobal
+class SPGlobal final : public ISPGlobal
 {
 public:
     #ifdef SP_LINUX
