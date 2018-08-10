@@ -19,6 +19,8 @@
 
 #include "spmod.hpp"
 
+class Menu;
+
 class Player : public IPlayer
 {
 public:

@@ -266,7 +266,9 @@ static cell_t MenuDisplay(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    menuManager->displayMenu(pMenu, params[arg_player], params[arg_page], params[arg_time]);
+    std::shared_ptr<Player> pPlayer = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_player]);
+
+    menuManager->displayMenu(pMenu, pPlayer, params[arg_page], params[arg_time]);
 
     return 1;
 }
@@ -530,11 +532,12 @@ static cell_t MenuClose(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
+    std::shared_ptr<Player> pPlayer = gSPGlobal->getPlayerManagerCore()->getPlayerCore(player);
     // TODO: make loop if player == 0
-    gSPGlobal->getMenuManagerCore()->closeMenu(player);
+    gSPGlobal->getMenuManagerCore()->closeMenu(pPlayer);
 
     char menu[] = "\n";
-    UTIL_ShowMenu(INDEXENT(player), 0, 0, menu, strlen(menu));
+    UTIL_ShowMenu(pPlayer->getEdict(), 0, 0, menu, strlen(menu));
 
     return 1;
 }
@@ -578,7 +581,10 @@ static cell_t MenuItemSetName(SourcePawn::IPluginContext *ctx,
     char *name;
     ctx->LocalToString(params[arg_name], &name);
 
-    pMenu->setItemName(itemId, name);
+    std::shared_ptr<MenuItem> pItem = pMenu->getItemCore(itemId);
+
+    // TODO: check item?
+    pItem->setName(name);
 
     return 1;
 }
@@ -623,7 +629,9 @@ static cell_t MenuItemGetName(SourcePawn::IPluginContext *ctx,
     char *name;
     ctx->LocalToString(params[arg_name], &name);
 
-    return gSPGlobal->getUtilsCore()->strCopyCore(name, params[arg_size], pMenu->getItemName(itemId));
+    std::shared_ptr<MenuItem> pItem = pMenu->getItemCore(itemId);
+
+    return gSPGlobal->getUtilsCore()->strCopyCore(name, params[arg_size], pItem->getNameCore());
 }
 
 // native void MenuItem.SetData(any data);
@@ -662,7 +670,9 @@ static cell_t MenuItemSetData(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    pMenu->setItemDataCore(itemId, params[arg_data]);
+    std::shared_ptr<MenuItem> pItem = pMenu->getItemCore(itemId);
+
+    pItem->setDataCore(params[arg_data]);
 
     return 1;
 }
@@ -703,7 +713,9 @@ static cell_t MenuItemGetData(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    return pMenu->getItemDataCore(itemId);
+    std::shared_ptr<MenuItem> pItem = pMenu->getItemCore(itemId);
+
+    return pItem->getDataCore();
 }
 
 sp_nativeinfo_t gMenuNatives[] =

@@ -24,32 +24,62 @@ void UTIL_ShowMenu(edict_t* pEdict, int slots, int time, char *menu, int mlen);
 #define PACK_ITEM(menuid, itemid) (menuid << 16 | itemid)
 #define UNPACK_ITEM(index, menuid, itemid) menuid = index >> 16; itemid = index & 0xFFFF
 
+constexpr unsigned int MAX_STATIC_ITEMS = 10U;
+
+class Menu;
+class Player;
+
+class MenuItem: public IMenuItem
+{
+public:
+    MenuItem(std::string_view name,
+             std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> callback,
+             std::variant<cell_t, void *> data,
+             NavigationType type);
+    
+    ~MenuItem() = default;
+
+    // IMenuItem
+    const char *getName() const override;
+    void setName(const char *name) override;
+
+    void *getData() const override;
+    void setData(void *data) override;
+
+    NavigationType getNavType() const override;
+
+    void setCallback(MenuItemCallback func) override;
+    
+    // MenuItem
+    std::string_view getNameCore() const;
+    void setNameCore(std::string_view name);
+
+    cell_t getDataCore() const;
+    void setDataCore(std::variant<cell_t, void *> &&data);
+
+    ItemStatus execCallbackCore(Menu *menu,
+                                std::shared_ptr<MenuItem> item,
+                                std::shared_ptr<Player> player) const;
+
+private:
+    std::string m_name;
+    std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> m_callback;
+    std::variant<cell_t, void *> m_data;
+    NavigationType m_type;
+};
+
 class Menu: public IMenu
 {
 public:
-    struct MenuItem
-    {
-        MenuItem(std::string_view n,
-                 std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&c,
-                 std::variant<cell_t, void *> d);
-        ItemStatus execCallback(Menu *menu,
-                                std::size_t i,
-                                int player) const;
-        std::string name;
-        std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> callback;
-        std::variant<cell_t, void *> data;
-    };
-
-public:
     Menu(std::size_t id,
-         std::variant<SourcePawn::IPluginFunction *, MenuHandler> &&handler,
+         std::variant<SourcePawn::IPluginFunction *, MenuItemHandler, MenuTextHandler> &&handler,
          MenuStyle style,
          bool global);
 
     ~Menu() {}
 
     // IMenu
-    void display(int player,
+    void display(IPlayer *player,
                  int page,
                  int time) override;
 
@@ -86,18 +116,16 @@ public:
     bool removeItem(std::size_t position) override;
     void removeAllItems() override;
 
-    const char *getItemName(std::size_t item) const override;
-    bool setItemName(std::size_t item,
-                     const char *name) override;
-
-    void *getItemData(std::size_t position) const override;
-    void setItemData(std::size_t position,
-                     void *data) override;
+    IMenuItem *getItem(std::size_t position) const override;
     
     std::size_t getItems() const override;
 
     // Menu
-    int keyToSlot(int key) const;
+    void displayCore(std::shared_ptr<Player> player,
+                     int page,
+                     int time);
+    
+    std::shared_ptr<MenuItem> keyToItem(int key) const;
 
     void setTextCore(std::string_view text);
 
@@ -115,19 +143,18 @@ public:
                            std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
                            std::variant<cell_t, void *> &&data);
     
-    bool setItemNameCore(std::size_t item,
-                         std::string_view name);
-    
-    std::string_view getItemNameCore(std::size_t item) const;
-
-    void setItemDataCore(std::size_t item,
-                         std::variant<cell_t, void *> &&data);
-    cell_t getItemDataCore(std::size_t item);
+    std::shared_ptr<MenuItem> getItemCore(std::size_t position) const;
+    int getItemIndex(std::shared_ptr<MenuItem> menu) const;
 
     void setNumberFormat(std::string_view format);
 
-    void execHandler(int player,
-                     int item);
+    void execTextHandler(std::shared_ptr<Player> player,
+                         int key);
+    
+    void execItemHandler(std::shared_ptr<Player> player,
+                         std::shared_ptr<MenuItem> item);
+    
+    void execExitHandler(std::shared_ptr<Player> player);
 
     std::size_t getId() const;
 private:
@@ -145,12 +172,17 @@ private:
     int m_time;
     std::size_t m_itemsPerPage;
     int m_keys;
-    std::array<int, 10> m_slots;
-    std::array<std::unique_ptr<MenuItem>, 10> m_staticSlots;
 
-    std::variant<SourcePawn::IPluginFunction *, MenuHandler> m_handler;
+    std::array<std::weak_ptr<MenuItem>, 10> m_slots;
+    std::array<std::shared_ptr<MenuItem>, MAX_STATIC_ITEMS> m_staticItems;
 
-    std::vector<MenuItem> m_items;
+    std::shared_ptr<MenuItem> m_nextItem;
+    std::shared_ptr<MenuItem> m_backItem;
+    std::shared_ptr<MenuItem> m_exitItem;
+
+    std::variant<SourcePawn::IPluginFunction *, MenuItemHandler, MenuTextHandler> m_handler;
+
+    std::vector<std::shared_ptr<MenuItem>> m_items;
 };
 
 class MenuMngr : public IMenuMngr
@@ -159,11 +191,15 @@ public:
     MenuMngr() = default;
     ~MenuMngr() = default;
 
-    IMenu *registerMenu(MenuHandler handler,
-                        MenuStyle style,
+    // IMenuMngr
+    IMenu *registerMenu(MenuItemHandler handler,
                         bool global) override;
-    IMenu *findMenu(std::size_t mid) const override;
+    IMenu *registerMenu(MenuTextHandler handler,
+                        bool global) override;
 
+    void destroyMenu(IMenu *menu) override;
+
+    // MenuMngr
     template<typename ...Args>
     std::shared_ptr<Menu> registerMenuCore(Args... args)
     {
@@ -174,11 +210,13 @@ public:
     void destroyMenu(std::size_t index);
     void clearMenus();
 
-    void displayMenu(std::shared_ptr<Menu> menu, int player, int page, int time);
-    void closeMenu(int player);
+    void displayMenu(std::shared_ptr<Menu> menu, std::shared_ptr<Player> player, int page, int time);
+    void closeMenu(std::shared_ptr<Player> player);
 
     META_RES ClientCommand(edict_t *pEntity);
     void ClientDisconnected(edict_t *pEntity);
+private:
+    void _destroyMenu(IMenu *menu);
 private:
     std::size_t m_mid = 0;
     std::vector<std::shared_ptr<Menu>> m_menus;

@@ -41,7 +41,8 @@ static void MessageBegin_Pre(int msg_dest [[maybe_unused]],
 {
     if(msg_type == gmsgShowMenu || msg_type == gmsgVGUIMenu)
     {
-        gSPGlobal->getMenuManagerCore()->closeMenu(ENTINDEX(ed));
+        std::shared_ptr<Player> pPlayer = gSPGlobal->getPlayerManagerCore()->getPlayerCore(ed);
+        gSPGlobal->getMenuManagerCore()->closeMenu(pPlayer);
     }
     RETURN_META(MRES_IGNORED);
 }

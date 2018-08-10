@@ -17,15 +17,10 @@
 
 #pragma once
 
+#include "IPlayerSystem.hpp"
+
 namespace SPMod
 {
-    enum
-    {
-        MENU_EXIT = -3,
-        MENU_NEXT = -2,
-        MENU_BACK = -1
-    };
-
     enum class ItemStatus
     {
         Enabled,
@@ -38,14 +33,44 @@ namespace SPMod
         Item,
         Text
     };
+
+    enum class NavigationType
+    {
+        None,
+        Back,
+        Next,
+        Exit
+    };
+
+    class IMenu;
+
+    class IMenuItem SPMOD_FINAL
+    {
+    public:
+        using MenuItemCallback = ItemStatus (*)(IMenu *const menu, IMenuItem *const item, IPlayer *const player);
+
+        virtual const char *getName() const = 0;
+        virtual void setName(const char *name) = 0;
+
+        virtual void *getData() const = 0;
+        virtual void setData(void *data) = 0;
+
+        virtual NavigationType getNavType() const = 0;
+
+        virtual void setCallback(MenuItemCallback func) = 0;
     
+    protected:
+        virtual ~IMenuItem() {}
+    };
+
     class IMenu SPMOD_FINAL
     {
     public:
-        using MenuItemCallback = ItemStatus (*)(IMenu *const menu, std::size_t item, int player);
-        using MenuHandler = void (*)(IMenu *const menu, std::size_t item, int player);
+        using MenuItemCallback = ItemStatus (*)(IMenu *const menu, IMenuItem *const item, IPlayer *const player);
+        using MenuItemHandler = void (*)(IMenu *const menu, IMenuItem *const item, IPlayer *const player);
+        using MenuTextHandler = void (*)(IMenu *const menu, int key, IPlayer *const player);
 
-        virtual void display(int player,
+        virtual void display(IPlayer *const player,
                             int page,
                             int time) = 0;
         virtual bool getGlobal() const = 0;
@@ -74,13 +99,7 @@ namespace SPMod
         virtual bool removeItem(std::size_t position) = 0;
         virtual void removeAllItems() = 0;
 
-        virtual const char *getItemName(std::size_t item) const = 0;
-        virtual bool setItemName(std::size_t item,
-                                 const char *name) = 0;
-        
-        virtual void *getItemData(std::size_t position) const = 0;
-        virtual void setItemData(std::size_t position,
-                                 void *data) = 0;
+        virtual IMenuItem *getItem(std::size_t position) const = 0;
 
         virtual std::size_t getItems() const = 0;
 
@@ -91,9 +110,12 @@ namespace SPMod
     class IMenuMngr SPMOD_FINAL
     {
     public:
-        using MenuHandler = void (*)(IMenu *const menu, std::size_t item, int player);
-        virtual IMenu *registerMenu(MenuHandler handler, MenuStyle style, bool global) = 0;
-        virtual IMenu *findMenu(std::size_t mid) const = 0;
+        using MenuItemHandler = void (*)(IMenu *const menu, IMenuItem *const item, IPlayer *const player);
+        using MenuTextHandler = void (*)(IMenu *const menu, int key, IPlayer *const player);
+
+        virtual IMenu *registerMenu(MenuItemHandler handler, bool global) = 0;
+        virtual IMenu *registerMenu(MenuTextHandler handler, bool global) = 0;
+        virtual void destroyMenu(IMenu *menu) = 0;
     protected:
         virtual ~IMenuMngr() {}
     };
