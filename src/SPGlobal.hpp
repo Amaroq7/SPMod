@@ -66,54 +66,20 @@ public:
                               std::size_t param) const override;
 
     // SPGlobal
-    const auto &getPluginManagerCore() const
-    {
-        return m_pluginManager;
-    }
-    const auto &getForwardManagerCore() const
-    {
-        return m_forwardManager;
-    }
-    const auto &getCvarManagerCore() const
-    {
-        return m_cvarManager;
-    }
-    const auto &getLoggerCore() const
-    {
-        return m_loggingSystem;
-    }
-    const auto &getCommandManagerCore() const
-    {
-        return m_cmdManager;
-    }
-    const auto &getTimerManagerCore() const
-    {
-        return m_timerManager;
-    }
-    const auto &getMenuManagerCore() const
-    {
-        return m_menuManager;
-    }
-    const auto &getUtilsCore() const
-    {
-        return m_utils;
-    }
-    const std::unique_ptr<PlayerMngr> &getPlayerManagerCore() const
-    {
-        return m_plrManager;
-    }
-    const auto &getScriptsDirCore()
-    {
-        return m_SPModScriptsDir;
-    }
-    const auto &getLogsDirCore() const
-    {
-        return m_SPModLogsDir;
-    }
-    const auto &getDllsDirCore() const
-    {
-        return m_SPModDllsDir;
-    }
+    std::string_view getHomeCore() const;
+    std::string_view getModNameCore() const;
+    const std::unique_ptr<PluginMngr> &getPluginManagerCore() const;
+    const std::unique_ptr<ForwardMngr> &getForwardManagerCore() const;
+    const std::unique_ptr<CvarMngr> &getCvarManagerCore() const;
+    const std::unique_ptr<Logger> &getLoggerCore() const;
+    const std::unique_ptr<CommandMngr> &getCommandManagerCore() const;
+    const std::unique_ptr<TimerMngr> &getTimerManagerCore() const;
+    const std::unique_ptr<Utils> &getUtilsCore() const;
+    const std::unique_ptr<MenuMngr> &getMenuManagerCore() const;
+    const std::unique_ptr<PlayerMngr> &getPlayerManagerCore() const;
+    const fs::path &getScriptsDirCore() const;
+    const fs::path &getLogsDirCore() const;
+    const fs::path &getDllsDirCore() const;
     const auto &getInterfacesList() const
     {
         return m_interfaces;

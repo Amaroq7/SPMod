@@ -110,27 +110,27 @@ void SPGlobal::_initSourcePawn()
 
 const char *SPGlobal::getHome() const
 {
-    return m_SPModDir.string().c_str();
+    return getHomeCore.data();
 }
 
 const char *SPGlobal::getModName() const
 {
-    return m_modName.c_str();
+    return getModNameCore().data();
 }
 
 IPluginMngr *SPGlobal::getPluginManager() const
 {
-    return m_pluginManager.get();
+    return getPluginManagerCore().get();
 }
 
 IForwardMngr *SPGlobal::getForwardManager() const
 {
-    return m_forwardManager.get();
+    return getForwardManagerCore().get();
 }
 
 ICvarMngr *SPGlobal::getCvarManager() const
 {
-    return m_cvarManager.get();
+    return getCvarManagerCore().get();
 }
 
 SourcePawn::ISourcePawnEnvironment *SPGlobal::getSPEnvironment() const
@@ -140,7 +140,7 @@ SourcePawn::ISourcePawnEnvironment *SPGlobal::getSPEnvironment() const
 
 ITimerMngr *SPGlobal::getTimerManager() const
 {
-    return m_timerManager.get();
+    return getTimerManagerCore().get();
 }
 
 IMenuMngr *SPGlobal::getMenuManager() const
@@ -155,7 +155,7 @@ IPlayerMngr *SPGlobal::getPlayerManager() const
 
 IUtils *SPGlobal::getUtils() const
 {
-    return m_utils.get();
+    return getUtilsCore().get();
 }
 
 bool SPGlobal::registerInterface(IInterface *interface)
@@ -169,4 +169,55 @@ IInterface *SPGlobal::getInterface(const char *name) const
         return iter->second;
 
     return nullptr;
+}
+
+std::string_view SPGlobal::getHomeCore() const
+{
+    return m_SPModDir.string();
+}
+
+std::string_view SPGlobal::getModNameCore() const
+{
+    return m_modName;
+}
+
+const std::unqiue_ptr<PluginMngr> &SPGlobal::getPluginManagerCore() const
+{
+    return m_pluginManager;
+}
+const std::unique_ptr<ForwardMngr> &SPGlobal::getForwardManagerCore() const
+{
+    return m_forwardManager;
+}
+const std::unique_ptr<CvarMngr> &SPGlobal::getCvarManagerCore() const
+{
+    return m_cvarManager;
+}
+const std::unique_ptr<Logger> &SPGlobal::getLoggerCore() const
+{
+    return m_loggingSystem;
+}
+const std::unique_ptr<CommandMngr> &SPGlobal::getCommandManagerCore() const
+{
+    return m_cmdManager;
+}
+const std::unique_ptr<TimerMngr> &SPGlobal::getTimerManagerCore() const
+{
+    return m_timerManager;
+}
+const std::unique_ptr<Utils> &SPGlobal::getUtilsCore() const
+{
+    return m_utils;
+}
+const fs::path &SPGlobal::getScriptsDirCore() const
+{
+    return m_SPModScriptsDir;
+}
+const fs::path &SPGlobal::getLogsDirCore() const
+{
+    return m_SPModLogsDir;
+}
+const fs::path &SPGlobal::getDllsDirCore() const
+{
+    return m_SPModDllsDir;
 }
