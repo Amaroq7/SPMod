@@ -584,7 +584,7 @@ static cell_t MenuItemSetName(SourcePawn::IPluginContext *ctx,
     std::shared_ptr<MenuItem> pItem = pMenu->getItemCore(itemId);
 
     // TODO: check item?
-    pItem->setName(name);
+    pItem->setNameCore(name);
 
     return 1;
 }

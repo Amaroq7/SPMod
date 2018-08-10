@@ -31,7 +31,7 @@ MenuItem::MenuItem(std::string_view name,
 
 const char *MenuItem::getName() const
 {
-    return getNameCore().data();
+    return m_name.data();
 }
 void MenuItem::setName(const char *name)
 {
@@ -122,18 +122,14 @@ Menu::Menu(std::size_t id,
                           m_backItem(std::make_shared<MenuItem>("Back", reinterpret_cast<MenuItemCallback>(nullptr), nullptr, NavigationType::Back)),
                           m_exitItem(std::make_shared<MenuItem>("Next", reinterpret_cast<MenuItemCallback>(nullptr), nullptr, NavigationType::Exit)),
                           m_handler(handler)
-{
-    /* for(int i = 0; i < MAX_STATIC_ITEMS; i++)
-    {
-        m_staticItems[i] = nullptr;
-    } */
-}
+{}
 
 void Menu::display(IPlayer *player,
-                 int page,
-                 int time)
+                   int page,
+                   int time)
 {
-    // TODO: write this
+    std::shared_ptr<Player> pPlayer = gSPGlobal->getPlayerManagerCore()->getPlayerCore(player->getEdict());
+    displayCore(pPlayer, page, time);
 }
 
 void Menu::displayCore(std::shared_ptr<Player> player, int page, int time)
@@ -501,7 +497,7 @@ void Menu::execItemHandler(std::shared_ptr<Player> player,
 
 void Menu::execExitHandler(std::shared_ptr<Player> player)
 {
-    execItemHandler(player, std::move(m_exitItem));
+    execItemHandler(player, m_exitItem);
 }
 
 std::size_t Menu::getId() const
