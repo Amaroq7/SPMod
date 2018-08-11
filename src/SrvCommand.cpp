@@ -17,6 +17,11 @@
 
 #include "spmod.hpp"
 
+static constexpr std::size_t nameWidth = 25;
+static constexpr std::size_t verWidth = 15;
+static constexpr std::size_t authWidth = 20;
+static constexpr std::size_t fileWidth = 15;
+
 void SPModInfoCommand()
 {
     auto &logSystem = gSPGlobal->getLoggerCore();
@@ -37,11 +42,6 @@ void SPModInfoCommand()
     else
     {
         std::string arg(CMD_ARGV(1));
-
-        static constexpr std::size_t nameWidth = 25;
-        static constexpr std::size_t verWidth = 15;
-        static constexpr std::size_t authWidth = 20;
-        static constexpr std::size_t fileWidth = 15;
 
         if (arg == "plugins")
         {
@@ -86,6 +86,31 @@ This program is distributed in the hope that it will be useful,\n \
   \
 You should have received a copy of the GNU General Public License\n \
   along with this program.  If not, see <https://www.gnu.org/licenses/>.");
+        }
+        if (arg == "modules")
+        {
+            logSystem->LogConsoleCore(std::left,
+                                      std::setw(7),
+                                      "\n",
+                                      std::setw(nameWidth),
+                                      "name",
+                                      std::setw(verWidth),
+                                      "version",
+                                       std::setw(authWidth),
+                                      "author",
+                                      "filename");
+            std::size_t pos = 1;
+            for (auto entry : gSPGlobal->getInterfacesList())
+            {
+                logSystem->LogConsoleCore("[", std::right, std::setw(3), pos++, "] ", // right align for ordinal number
+                                        std::left, // left align for the rest
+                                        std::setw(nameWidth), // format rules for name
+                                        entry.second->getExtName(),
+                                        std::setw(verWidth), // format rules for version
+                                        entry.second->getVersion(),
+                                        std::setw(authWidth), // format rules for author
+                                        entry.second->getAuthor());
+            }
         }
         else if(arg == "version")
         {
