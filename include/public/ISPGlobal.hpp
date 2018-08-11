@@ -67,7 +67,7 @@ namespace SPMod
          *
          * @return      Interface's name.
          */
-        const char *getInterfaceName() const override
+        const char *getName() const override
         {
             return "ISPGlobal";
         }
@@ -79,7 +79,7 @@ namespace SPMod
          *
          * @return      Interface's version.
          */
-        uint32_t getInterfaceVersion() const override
+        uint32_t getVersion() const override
         {
             return VERSION;
         }
@@ -89,7 +89,7 @@ namespace SPMod
          *
          * @return        Home dir.
          */
-        virtual const char *getHome() const = 0;
+        virtual const char *getHomeDir() const = 0;
 
         /**
          * @brief Returns name of the mod.

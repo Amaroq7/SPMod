@@ -170,7 +170,7 @@ namespace SPMod
          *
          * @return        Interface's name.
          */
-        const char *getInterfaceName() const override
+        const char *getName() const override
         {
             return "ICvarMngr";
         }
@@ -182,7 +182,7 @@ namespace SPMod
          *
          * @return        Interface's version.
          */
-        uint32_t getInterfaceVersion() const override
+        uint32_t getVersion() const override
         {
             return VERSION;
         }

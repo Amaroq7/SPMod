@@ -253,7 +253,7 @@ IUtils *SPGlobal::getUtils() const
 
 bool SPGlobal::registerInterface(IInterface *interface)
 {
-    return m_interfaces.try_emplace(interface->getInterfaceName(), interface).second;
+    return m_interfaces.try_emplace(interface->getName(), interface).second;
 }
 
 IInterface *SPGlobal::getInterface(const char *name) const

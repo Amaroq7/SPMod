@@ -17,6 +17,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 namespace SPMod
 {
     class IInterface
@@ -27,28 +29,35 @@ namespace SPMod
          *
          * @return              Interface's name.
          */
-        virtual const char *getInterfaceName() const = 0;
+        virtual const char *getName() const = 0;
 
         /**
          * @brief Gets interface's version.
          *
          * @return              Interface's version.
          */
-        virtual uint32_t getInterfaceVersion() const = 0;
+        virtual uint32_t getVersion() const = 0;
 
         /**
          * @brief Gets interface's author.
          *
          * @return              Interface's author.
          */
-        virtual const char *getInterfaceAuthor() const = 0;
+        virtual const char *getAuthor() const = 0;
 
         /**
          * @brief Gets interface's url.
          *
          * @return              Interface's url.
          */
-        virtual const char *getInterfaceUrl() const = 0;
+        virtual const char *getUrl() const = 0;
+
+        /**
+         * @brief Gets name of the extension that implements the interface.
+         *
+         * @return              Extension's name.
+         */
+        virtual const char *getExtName() const = 0;
 
         /**
          * @brief Check if requested version is compatible.
@@ -59,7 +68,7 @@ namespace SPMod
          */
         virtual bool isVersionCompatible(uint32_t reqversion) const
         {
-            return (reqversion > getInterfaceVersion() ? false : true);
+            return (reqversion > getVersion() ? false : true);
         }
 
     protected:
@@ -74,7 +83,7 @@ namespace SPMod
          *
          * @return              Interface's author.
          */
-        const char *getInterfaceAuthor() const override
+        const char *getAuthor() const override
         {
             return "SPMod Development Team";
         }
@@ -84,9 +93,19 @@ namespace SPMod
          *
          * @return              Interface's url.
          */
-        const char *getInterfaceUrl() const override
+        const char *getUrl() const override
         {
             return "https://github.com/Amaroq7/SPMod";
+        }
+
+        /**
+         * @brief Gets name of the extension that implements the interface.
+         *
+         * @return              Extension's name.
+         */
+        const char *getExtName() const override
+        {
+            return "SPMod";
         }
 
         /**
@@ -100,12 +119,12 @@ namespace SPMod
         {
             uint16_t majorReqVer = reqversion >> 16;
 
-            if (majorReqVer != (getInterfaceVersion() >> 16))
+            if (majorReqVer != (getVersion() >> 16))
                 return false;
 
             uint16_t minorReqVer = reqversion & 0xFFFF;
 
-            if (minorReqVer > (getInterfaceVersion() & 0xFFFF))
+            if (minorReqVer > (getVersion() & 0xFFFF))
                 return false;
 
             return true;
