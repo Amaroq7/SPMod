@@ -20,6 +20,7 @@
 #include "ext.hpp"
 
 SPMod::ISPGlobal *gSPGlobal;
+ModuleInterface gModuleInterface;
 meta_globals_t *gpMetaGlobals;
 gamedll_funcs_t *gpGamedllFuncs;
 mutil_funcs_t *gpMetaUtilFuncs;
@@ -27,7 +28,7 @@ mutil_funcs_t *gpMetaUtilFuncs;
 plugin_info_t Plugin_info =
 {
     META_INTERFACE_VERSION,
-    "SPMod Test Module",
+    "SPMod Meta Test Module",
     "0.0.0",
     __DATE__,
     "SPMod Development Team",
@@ -49,14 +50,6 @@ META_FUNCTIONS gMetaFunctionTable =
     nullptr
 };
 
-bool timerCall(SPMod::ITimer *const timer [[maybe_unused]],
-               void *data [[maybe_unused]])
-{
-    LOG_CONSOLE(PLID, "%s %s", gSPGlobal->getHome(), gSPGlobal->getModName());
-
-    return false;
-}
-
 C_DLLEXPORT int Meta_Query(char *interfaceVersion [[maybe_unused]],
                            plugin_info_t **plinfo,
                            mutil_funcs_t *pMetaUtilFuncs)
@@ -64,8 +57,7 @@ C_DLLEXPORT int Meta_Query(char *interfaceVersion [[maybe_unused]],
     gpMetaUtilFuncs = pMetaUtilFuncs;
     *plinfo = &Plugin_info;
 
-    SPMod::ITimerMngr *timerMngr = gSPGlobal->getTimerManager();
-    timerMngr->createTimer(5.0f, timerCall);
+    LOG_CONSOLE(PLID, "%s %s", __FILE__, __func__);
 
     return 1;
 }
@@ -80,12 +72,34 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
     memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
     gpGamedllFuncs = pGamedllFuncs;
 
+    LOG_CONSOLE(PLID, "%s %s", __FILE__, __func__);
+
+    return 1;
+}
+
+C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now [[maybe_unused]],
+                            PL_UNLOAD_REASON reason [[maybe_unused]])
+{
+    LOG_CONSOLE(PLID, "%s %s", __FILE__, __func__);
+
     return 1;
 }
 
 SPMOD_API SPMod::ExtQueryValue SPMod_Query(SPMod::ISPGlobal *spmodInstance)
 {
     gSPGlobal = spmodInstance;
+    gSPGlobal->registerInterface(&gModuleInterface);
 
     return SPMod::ExtQueryValue::MetaExt;
+}
+
+SPMOD_API bool SPMod_Init()
+{
+    LOG_CONSOLE(PLID, "%s %s", __FILE__, __func__);
+    return true;
+}
+
+SPMOD_API void SPMod_End()
+{
+    LOG_CONSOLE(PLID, "%s %s", __FILE__, __func__);
 }

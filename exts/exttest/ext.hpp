@@ -17,8 +17,35 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <extdll.h>
-#include <meta_api.h>
 #include <ISPGlobal.hpp>
 
+class ModuleInterface final : public SPMod::IInterface
+{
+    const char *getName() const override
+    {
+        return "ISPExtTest";
+    }
+
+    uint32_t getVersion() const override
+    {
+        return 1U;
+    }
+
+    const char *getAuthor() const override
+    {
+        return "SPMod Development Team";
+    }
+
+    const char *getUrl() const override
+    {
+        return "https://github.com/Amaroq7/SPMod";
+    }
+
+    const char *getExtName() const override
+    {
+        return "SPMod Test Module";
+    }
+};
+
+extern ModuleInterface gModuleInterface;
 extern SPMod::ISPGlobal *gSPGlobal;

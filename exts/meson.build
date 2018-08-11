@@ -1,1 +1,2 @@
-subdir('test')
+subdir('extmetatest')
+subdir('exttest')
