@@ -24,12 +24,20 @@
 class Extension final
 {
 public:
+    enum class Status : uint8_t
+    {
+        Running = 0,
+        BadLoad = 1
+    };
+
     Extension() = delete;
     explicit Extension(fs::path path);
     ~Extension();
 
     void *metaHandle() const;
     void setMetaHandle(void *handle);
+    Status getStatus() const;
+    void setStatus(Status status);
     fnSPModQuery getQueryFunc() const;
     fnSPModInit getInitFunc() const;
     fnSPModEnd getEndFunc() const;
@@ -45,4 +53,5 @@ private:
     fnSPModQuery m_queryFunc;
     fnSPModInit m_initFunc;
     fnSPModEnd m_endFunc;
+    Status m_status;
 };

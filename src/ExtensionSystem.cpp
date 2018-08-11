@@ -77,6 +77,16 @@ void Extension::setMetaHandle(void *handle)
     m_metaExtHandle = handle;
 }
 
+Status Extension::getStatus() const
+{
+    return m_status;
+}
+
+void Extension::setStatus(Status status)
+{
+    m_status = status;
+}
+
 fnSPModQuery Extension::getQueryFunc() const
 {
     return m_queryFunc;
