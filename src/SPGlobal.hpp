@@ -45,7 +45,7 @@ public:
     }
 
     // ISPGlobal
-    const char *getHome() const override;
+    const char *getHomeDir() const override;
     const char *getModName() const override;
 
     IPluginMngr *getPluginManager() const override;
@@ -68,7 +68,7 @@ public:
                               std::size_t param) const override;
 
     // SPGlobal
-    std::string_view getHomeCore() const;
+    fs::path getHomeDirCore() const;
     std::string_view getModNameCore() const;
 
     const std::unique_ptr<PluginMngr> &getPluginManagerCore() const;
