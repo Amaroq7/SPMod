@@ -111,7 +111,7 @@ public:
     bool setStaticItem(std::size_t position,
                        const char *name,
                        MenuItemCallback callback,
-                       void *data);
+                       void *data) override;
     
     bool removeItem(std::size_t position) override;
     void removeAllItems() override;

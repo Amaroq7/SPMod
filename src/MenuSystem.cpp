@@ -120,7 +120,7 @@ Menu::Menu(std::size_t id,
                           m_keys(0),
                           m_nextItem(std::make_shared<MenuItem>("Next", MenuItemCallback{nullptr}, nullptr, NavigationType::Next)),
                           m_backItem(std::make_shared<MenuItem>("Back", MenuItemCallback{nullptr}, nullptr, NavigationType::Back)),
-                          m_exitItem(std::make_shared<MenuItem>("Next", MenuItemCallback{nullptr}, nullptr, NavigationType::Exit)),
+                          m_exitItem(std::make_shared<MenuItem>("Exit", MenuItemCallback{nullptr}, nullptr, NavigationType::Exit)),
                           m_handler(handler)
 {}
 
@@ -143,6 +143,7 @@ void Menu::displayCore(std::shared_ptr<Player> player, int page, int time)
         int keys = 0;
 
         // cache this?
+        // cache to m_text if all items without callback
         std::stringstream text;
 
         text << m_title << "\n\n";

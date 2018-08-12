@@ -96,6 +96,11 @@ namespace SPMod
                                 MenuItemCallback callback,
                                 void *data) = 0;
         
+        virtual bool setStaticItem(std::size_t position,
+                                   const char *name,
+                                   MenuItemCallback callback,
+                                   void *data) = 0;
+        
         virtual bool removeItem(std::size_t position) = 0;
         virtual void removeAllItems() = 0;
 
