@@ -36,6 +36,7 @@ enum PluginReturn
 }
 
 #include <clients>
+#include <access>
 #include <cvars>
 #include <natives>
 #include <forwards>
