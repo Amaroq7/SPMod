@@ -100,6 +100,10 @@ public:
     {
         return m_plrManager;
     }
+    const auto &getGroupManagerCore() const
+    {
+        return m_groupManager;
+    }
     const auto &getScriptsDirCore()
     {
         return m_SPModScriptsDir;
@@ -132,6 +136,7 @@ private:
     std::unique_ptr<CommandMngr> m_cmdManager;
     std::unique_ptr<TimerMngr> m_timerManager;
     std::unique_ptr<PlayerMngr> m_plrManager;
+    std::unique_ptr<GroupMngr> m_groupManager;
     std::unique_ptr<Utils> m_utils;
     std::string m_modName;
     SourcePawn::ISourcePawnFactory *m_spFactory;
