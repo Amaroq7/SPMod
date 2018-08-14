@@ -27,6 +27,7 @@ SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_p
                                         m_loggingSystem(std::make_unique<Logger>()),
                                         m_cmdManager(std::make_unique<CommandMngr>()),
                                         m_timerManager(std::make_unique<TimerMngr>()),
+                                        m_menuManager(std::make_unique<MenuMngr>()),
                                         m_plrManager(std::make_unique<PlayerMngr>()),
                                         m_utils(std::make_unique<Utils>()),
                                         m_modName(GET_GAME_INFO(PLID, GINFO_NAME)),
@@ -48,6 +49,7 @@ SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_p
     m_nativeManager->addNatives(gSPModModuleDef.get(), gMessageNatives);
     m_nativeManager->addNatives(gSPModModuleDef.get(), gCmdsNatives);
     m_nativeManager->addNatives(gSPModModuleDef.get(), gTimerNatives);
+    m_nativeManager->addNatives(gSPModModuleDef.get(), gMenuNatives);
     m_nativeManager->addNatives(gSPModModuleDef.get(), gFloatNatives);
     m_nativeManager->addNatives(gSPModModuleDef.get(), gPlayerNatives);
 
@@ -157,6 +159,11 @@ INativeMngr *SPGlobal::getNativeManager() const
 ITimerMngr *SPGlobal::getTimerManager() const
 {
     return m_timerManager.get();
+}
+
+IMenuMngr *SPGlobal::getMenuManager() const
+{
+    return m_menuManager.get();
 }
 
 IPlayerMngr *SPGlobal::getPlayerManager() const

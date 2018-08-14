@@ -47,6 +47,26 @@ void Player::setName(std::string_view newname)
     m_name = newname;
 }
 
+std::weak_ptr<Menu> Player::getMenu() const
+{
+    return m_menu;
+}
+
+void Player::setMenu(std::shared_ptr<Menu> menu)
+{
+    m_menu = menu;
+}
+
+int Player::getMenuPage() const
+{
+    return m_menuPage;
+}
+
+void Player::setMenuPage(int page)
+{
+    m_menuPage = page;
+}
+
 void Player::connect(std::string_view name,
                      std::string_view ip)
 {
