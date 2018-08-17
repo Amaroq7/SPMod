@@ -28,9 +28,19 @@ public:
     std::size_t strCopy(char *buffer,
                         std::size_t size,
                         const char *src) const override;
+    
+    std::size_t strReplaced(char *buffer,
+                            std::size_t size,
+                            const char *source,
+                            const char *from,
+                            const char *to) const override;
 
     // Utils
     std::size_t strCopyCore(char *buffer,
                             std::size_t size,
                             std::string_view src) const;
+    
+    std::string strReplacedCore(std::string_view source,
+                                std::string_view from,
+                                std::string_view to) const;
 };

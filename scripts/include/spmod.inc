@@ -44,6 +44,7 @@ enum PluginReturn
 #include <messages>
 #include <commands>
 #include <timers>
+#include <menus>
 #include <float>
 
 /*

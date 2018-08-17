@@ -109,6 +109,7 @@ using namespace SPMod;
 #include "CmdSystem.hpp"
 #include "TimerSystem.hpp"
 #include "AccessSystem.hpp"
+#include "MenuSystem.hpp"
 #include "PlayerSystem.hpp"
 #include "SPGlobal.hpp"
 
@@ -123,9 +124,13 @@ extern sp_nativeinfo_t gStringNatives[];
 extern sp_nativeinfo_t gMessageNatives[];
 extern sp_nativeinfo_t gCmdsNatives[];
 extern sp_nativeinfo_t gTimerNatives[];
+extern sp_nativeinfo_t gMenuNatives[];
 extern sp_nativeinfo_t gFloatNatives[];
 extern sp_nativeinfo_t gPlayerNatives[];
 extern sp_nativeinfo_t gAccessNatives[];
+
+extern int gmsgShowMenu;
+extern int gmsgVGUIMenu;
 
 // Server command function (SrvCommand.cpp)
 void SPModInfoCommand();

@@ -119,6 +119,7 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now [[maybe_unused]],
     gSPGlobal->getNativeManagerCore()->clearNatives();
     gSPGlobal->getCvarManagerCore()->clearCvars();
     gSPGlobal->getGroupManagerCore()->clear();
+    gSPGlobal->getMenuManagerCore()->clearMenus();
 
     uninstallRehldsHooks();
 

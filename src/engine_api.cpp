@@ -34,6 +34,19 @@ static void ChangeLevel(const char *s1,
     RETURN_META(MRES_IGNORED);
 }
 
+static void MessageBegin_Pre(int msg_dest [[maybe_unused]],
+                             int msg_type,
+                             const float *pOrigin [[maybe_unused]],
+                             edict_t *ed)
+{
+    if(msg_type == gmsgShowMenu || msg_type == gmsgVGUIMenu)
+    {
+        std::shared_ptr<Player> pPlayer = gSPGlobal->getPlayerManagerCore()->getPlayerCore(ed);
+        gSPGlobal->getMenuManagerCore()->closeMenu(pPlayer);
+    }
+    RETURN_META(MRES_IGNORED);
+}
+
 enginefuncs_t gEngineFunctionsTable =
 {
     nullptr,		// pfnPrecacheModel()
@@ -82,7 +95,7 @@ enginefuncs_t gEngineFunctionsTable =
     nullptr,		// pfnLightStyle()
     nullptr,		// pfnDecalIndex()
     nullptr,		// pfnPointContents()
-    nullptr,		// pfnMessageBegin()
+    MessageBegin_Pre, // pfnMessageBegin()
     nullptr,		// pfnMessageEnd()
     nullptr,		// pfnWriteByte()
     nullptr,		// pfnWriteChar()
@@ -206,6 +219,20 @@ enginefuncs_t gEngineFunctionsTable =
     nullptr,	    // pfnEngCheckParm()
 };
 
+static int RegUserMsg_Post(const char *pszName,
+                           int iSize [[maybe_unused]])
+{
+    if(!strcmp(pszName, "ShowMenu"))
+    {
+        gmsgShowMenu = META_RESULT_ORIG_RET(int);
+    }
+    else if(!strcmp(pszName, "VGUIMenu"))
+    {
+        gmsgVGUIMenu = META_RESULT_ORIG_RET(int);
+    }
+     RETURN_META_VALUE(MRES_IGNORED, 0);
+}
+
 enginefuncs_t gEngineFunctionsTablePost =
 {
     nullptr,		// pfnPrecacheModel()
@@ -283,7 +310,7 @@ enginefuncs_t gEngineFunctionsTablePost =
     nullptr,		// pfnPEntityOfEntIndex()
     nullptr,		// pfnFindEntityByVars()
     nullptr,		// pfnGetModelPtr()
-    nullptr,		// pfnRegUserMsg()
+    RegUserMsg_Post,// pfnRegUserMsg()
     nullptr,		// pfnAnimationAutomove()
     nullptr,		// pfnGetBonePosition()
     nullptr,		// pfnFunctionFromName()

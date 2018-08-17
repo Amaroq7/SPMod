@@ -38,6 +38,23 @@ namespace SPMod
         virtual std::size_t strCopy(char *buffer,
                                     std::size_t size,
                                     const char *src) const = 0;
+        
+        /**
+         * @brief Creates new string with replaced part.
+         *
+         * @param buffer    Pointer to buffer where string will be stored.
+         * @param size      Size of the buffer.
+         * @param source    Pointer to string where part will be replaced.
+         * @param from      Pointer to string to search for.
+         * @param to        Pointer to string to replace the search string from.
+         *
+         * @return          Written chars to buffer.
+         */
+        virtual std::size_t strReplaced(char *buffer,
+                                        std::size_t size,
+                                        const char *source,
+                                        const char *from,
+                                        const char *to) const = 0;
 
     protected:
         virtual ~IUtils() {};

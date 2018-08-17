@@ -53,6 +53,7 @@ public:
     SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const override;
     INativeMngr *getNativeManager() const override;
     ITimerMngr *getTimerManager() const override;
+    IMenuMngr *getMenuManager() const override;
     IPlayerMngr *getPlayerManager() const override;
     IUtils *getUtils() const override;
 
@@ -91,6 +92,10 @@ public:
     const auto &getTimerManagerCore() const
     {
         return m_timerManager;
+    }
+    const auto &getMenuManagerCore() const
+    {
+        return m_menuManager;
     }
     const auto &getUtilsCore() const
     {
@@ -135,6 +140,7 @@ private:
     std::unique_ptr<Logger> m_loggingSystem;
     std::unique_ptr<CommandMngr> m_cmdManager;
     std::unique_ptr<TimerMngr> m_timerManager;
+    std::unique_ptr<MenuMngr> m_menuManager;
     std::unique_ptr<PlayerMngr> m_plrManager;
     std::unique_ptr<GroupMngr> m_groupManager;
     std::unique_ptr<Utils> m_utils;
