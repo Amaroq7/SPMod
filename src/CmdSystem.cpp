@@ -41,23 +41,29 @@ ClientCommand::ClientCommand(std::size_t id,
                              std::string_view cmd,
                              std::string_view info,
                              SourcePawn::IPluginFunction *func,
-                             uint32_t flags) : m_flags(flags)
+                             std::string_view permission)
 {
     m_id = id;
     m_cmd = cmd;
     m_info = info;
     m_func = func;
+    m_permission = permission;
 }
 
-bool ClientCommand::hasAccess(/*SPPlayer *player*/) const
+const char *ClientCommand::getPermission() const
+{
+    return m_permission.data();
+}
+
+bool ClientCommand::hasAccess(/*SPPlayer *player [[maybe_unused]]*/) const
 {
     // TODO: Check access
     return true;
 }
 
-uint32_t ClientCommand::getAccess() const
+std::string_view ClientCommand::getPermissionCore() const
 {
-    return m_flags;
+    return m_permission;
 }
 
 ServerCommand::ServerCommand(std::size_t id,
@@ -76,9 +82,9 @@ bool ServerCommand::hasAccess(/*SPPlayer *player [[maybe_unused]]*/) const
     return true;
 }
 
-uint32_t ServerCommand::getAccess() const
+const char *ServerCommand::getPermission() const
 {
-    return 0;
+    return nullptr;
 }
 
 std::shared_ptr<Command> CommandMngr::getCommand(std::size_t id)

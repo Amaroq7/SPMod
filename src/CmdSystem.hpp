@@ -33,7 +33,7 @@ public:
     SourcePawn::IPluginFunction *getFunc() const;
 
     virtual bool hasAccess(/*SPPlayer *player = nullptr*/) const = 0;
-    virtual uint32_t getAccess() const = 0;
+    virtual const char *getPermission() const = 0;
 
 protected:
     /* command id */
@@ -60,14 +60,16 @@ public:
                   std::string_view cmd,
                   std::string_view info,
                   SourcePawn::IPluginFunction *func,
-                  uint32_t flags);
+                  std::string_view permission);
 
-    bool hasAccess(/*SPPlayer *player*/) const override;
-    uint32_t getAccess() const override;
+    const char *getPermission() const override;
+
+    bool hasAccess(/*SPPlayer *player [[maybe_unused]]*/) const override;
+    std::string_view getPermissionCore() const;
 
 private:
     /* permissions for command */
-    uint32_t m_flags;
+    std::string m_permission;
 };
 
 /* @brief Represents server command */
@@ -83,7 +85,7 @@ public:
                   SourcePawn::IPluginFunction *func);
 
     bool hasAccess(/*SPPlayer *player [[maybe_unused]]*/) const override;
-    uint32_t getAccess() const override;
+    const char *getPermission() const override;
 };
 
 enum class CmdType : uint8_t

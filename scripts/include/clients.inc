@@ -88,3 +88,12 @@ forward void OnClientDisconnect(Player client, bool crash, const char[] reason);
  * @noreturn
  */
 forward void OnClientPutInServer(Player client);
+
+/*
+ * @brief Called when a client permissions changed.
+ *
+ * @param client        Client id.
+ *
+ * @noreturn
+ */
+forward void OnClientPermissionsChanged(Player client);

@@ -33,12 +33,9 @@ typeset CmdCallback
 
 methodmap Command
 {
-    public native Command(const char[] cmd, CmdCallback func, const char[] info = "", bool server = false, int flags = 0);
+    public native Command(const char[] cmd, CmdCallback func, const char[] info = "", bool server = false, const char[] permission = "");
     public native int GetInfo(char[] buffer, int size);
-
-    property int Access {
-		public native get();
-    }
+    public native int GetPermission(char[] buffer, int size);
 };
 
 forward PluginReturn OnClientCommand(int client);

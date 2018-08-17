@@ -56,21 +56,38 @@ bool Player::hasAccessCore(std::string_view perm) const
 void Player::attachGroupCore(std::shared_ptr<AccessGroup> group)
 {
     m_role->attachGroup(group);
+    permissionsChanged();
 }
 
 void Player::removeGroupCore(std::shared_ptr<AccessGroup> group)
 {
     m_role->removeGroup(group);
+    permissionsChanged();
 }
 
 void Player::attachPermissionCore(std::shared_ptr<std::string> perm)
 {
     m_role->attachPermission(perm);
+    permissionsChanged();
 }
 
 void Player::removePermissionCore(std::shared_ptr<std::string> perm)
 {
     m_role->removePermission(perm);
+    permissionsChanged();
+}
+
+void Player::permissionsChanged() const
+{
+    using def = ForwardMngr::FwdDefault;
+
+    std::shared_ptr<Forward> fwdCmd = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPermissionsChanged);
+
+    if (!fwdCmd)
+        return;
+
+    fwdCmd->pushCell(m_index);
+    fwdCmd->execFunc(nullptr);
 }
 
 void Player::connect(std::string_view name,

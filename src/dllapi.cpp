@@ -75,11 +75,18 @@ static void ClientCommand(edict_t *pEntity)
             strCmd += CMD_ARGV(1);
         }
 
+        std::shared_ptr<Player> player = gSPGlobal->getPlayerManagerCore()->getPlayerCore(pEntity);
+
         for (const auto &cmd : cmdMngr->getCommandList(CmdType::Client))
         {
             std::regex cmdToMatch(cmd->getCmd().data());
-            if (std::regex_search(strCmd, cmdToMatch) && cmd->hasAccess())
+            if (std::regex_search(strCmd, cmdToMatch))
             {
+                const char *perm = cmd->getPermission();
+
+                if(perm[0] && !player->hasAccessCore(perm))
+                    continue;
+
                 cell_t result;
                 SourcePawn::IPluginFunction *func = cmd->getFunc();
                 func->PushCell(ENTINDEX(pEntity));

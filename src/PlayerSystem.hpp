@@ -52,6 +52,7 @@ public:
     void removeGroupCore(std::shared_ptr<AccessGroup> group);
     void attachPermissionCore(std::shared_ptr<std::string> perm);
     void removePermissionCore(std::shared_ptr<std::string> perm);
+    void permissionsChanged() const;
 
     void connect(std::string_view name,
                  std::string_view ip);
