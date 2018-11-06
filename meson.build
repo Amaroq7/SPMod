@@ -19,13 +19,15 @@ if build_machine.system() == 'linux'
     gLinkArgs += '-m32'
 
     if cppCompiler.get_id() == 'clang'
-        if cppCompiler.version() < '5.0.0'
-            warning('Clang v' + cppCompiler.version() + ' doesn\'t fully support C++17.')
+        minVersion = '6.0.0'
+
+        if cppCompiler.version() < minVersion
+            warning('Clang v' + cppCompiler.version() + ' is not supported. Minimum version is ' + minVersion)
         endif
         llvmIncludesDir += join_paths('include', 'llvm')
 
         # use LLVM linker if available
-        llvmLinker = find_program('lld-6.0', 'lld-5.0', 'lld', required : false)
+        llvmLinker = find_program('lld-7.0', 'lld-6.0', 'lld', required : false)
         if llvmLinker.found() == true
             gLinkArgs += '-fuse-ld=' + llvmLinker.path().split('/')[-1]
         endif
@@ -44,11 +46,18 @@ if build_machine.system() == 'linux'
                 '-pthread',
             ]
         endif
-        gLinkArgs += '-lc++experimental'
+
+        if (cppCompiler.version() >= '7.0.0')
+            gLinkArgs += '-lc++fs'
+        else
+            gLinkArgs += '-lc++experimental'
+        endif
 
     elif cppCompiler.get_id() == 'gcc'
-        if cppCompiler.version() < '7.0.0'
-            warning('GCC v' + cppCompiler.version() + ' doesn\'t fully support C++17.')
+        minVersion = '7.0.0'
+
+        if cppCompiler.version() < minVersion
+            warning('GCC v' + cppCompiler.version() + ' is not supported. Minimum version is ' + minVersion)
         endif
 
         if get_option('linktype') == 'static'

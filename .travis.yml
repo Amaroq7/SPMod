@@ -12,29 +12,6 @@ matrix:
     - addons:
         apt:
           sources:
-            - llvm-toolchain-trusty-5.0
-            - ubuntu-toolchain-r-test
-            - deadsnakes #python
-            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
-          packages:
-            - clang-5.0
-            - lld-5.0
-            - gcc-multilib
-            - g++-multilib
-            - python3.7
-            - meson
-            - ninja-build
-            - lib32z1-dev
-            - lib32stdc++6
-            - libc6-dev-i386
-            - linux-libc-dev
-      env:
-        - CLANG_VERSION=5 LINK_TYPE=static
-      compiler: clang
-
-    - addons:
-        apt:
-          sources:
             - llvm-toolchain-trusty-6.0
             - ubuntu-toolchain-r-test
             - deadsnakes #python
@@ -52,19 +29,19 @@ matrix:
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - CLANG_VERSION=6 LINK_TYPE=static CC_VERSION=6
+        - CLANG_VERSION=6 LINK_TYPE=static
       compiler: clang
 
     - addons:
         apt:
           sources:
-              - llvm-toolchain-trusty-6.0
-              - ubuntu-toolchain-r-test
-              - deadsnakes #python
-              - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
+            - llvm-toolchain-trusty-7.0
+            - ubuntu-toolchain-r-test
+            - deadsnakes #python
+            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
           packages:
-            - clang-6.0
-            - lld-6.0
+            - clang-7.0
+            - lld-7.0
             - gcc-multilib
             - g++-multilib
             - python3.7
@@ -75,7 +52,30 @@ matrix:
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - CLANG_VERSION=6 LINK_TYPE=dynamic CC_VERSION=6
+        - CLANG_VERSION=7 LINK_TYPE=static CC_VERSION=7
+      compiler: clang
+
+    - addons:
+        apt:
+          sources:
+              - llvm-toolchain-trusty-7.0
+              - ubuntu-toolchain-r-test
+              - deadsnakes #python
+              - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
+          packages:
+            - clang-7.0
+            - lld-7.0
+            - gcc-multilib
+            - g++-multilib
+            - python3.7
+            - meson
+            - ninja-build
+            - lib32z1-dev
+            - lib32stdc++6
+            - libc6-dev-i386
+            - linux-libc-dev
+      env:
+        - CLANG_VERSION=7 LINK_TYPE=dynamic CC_VERSION=7
       compiler: clang
 
     - addons:

@@ -64,8 +64,8 @@
 
 #if __has_include(<filesystem>)
     #include <filesystem>
-    // As of GCC 8.1 filesystem is no longer part of experimental
-    #if defined SP_GCC && __GNUC__ >= 8
+    // As of GCC 8.1 and Clang 7 filesystem is no longer part of experimental
+    #if (defined SP_GCC && __GNUC__ >= 8) || (defined SP_CLANG && __clang_major__ >= 7)
         namespace fs = std::filesystem;
     #else // Some compilers still have filesystem within experimental namespace like MSVC
         namespace fs = std::experimental::filesystem;

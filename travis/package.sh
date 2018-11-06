@@ -7,7 +7,7 @@ XZ_OPT="-9e --threads=0"
 mkdir dlls
 
 # Install ambuild
-git clone https://github.com/alliedmodders/ambuild.git ../ambuild
+git clone --depth=1 https://github.com/alliedmodders/ambuild.git ../ambuild
 
 # Patch to build sourcepawn lib without -g3 switch (Clang only)
 if [[ $CLANG_VERSION ]]

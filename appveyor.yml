@@ -23,10 +23,10 @@ install:
   - git submodule update --init --recursive
   - mkdir dlls
   - cd ..
-  - ps: Start-FileDownload 'https://github.com/mesonbuild/meson/releases/download/0.47.1/meson-0.47.1-64.msi'
-  - start /wait msiexec.exe /i meson-0.47.1-64.msi /quiet /qn /norestart /log install.log
+  - ps: Start-FileDownload 'https://github.com/mesonbuild/meson/releases/download/0.48.1/meson-0.48.1-64.msi'
+  - start /wait msiexec.exe /i meson-0.48.1-64.msi /quiet /qn /norestart /log install.log
   # Install ambuild
-  - git clone https://github.com/alliedmodders/ambuild.git
+  - git clone --depth=1 https://github.com/alliedmodders/ambuild.git
   - cd ambuild
   - python setup.py install
   # Build SourcePawn lib
