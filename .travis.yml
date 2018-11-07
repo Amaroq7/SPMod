@@ -35,13 +35,13 @@ matrix:
     - addons:
         apt:
           sources:
-            - llvm-toolchain-trusty-7.0
+            - llvm-toolchain-trusty-7
             - ubuntu-toolchain-r-test
             - deadsnakes #python
             - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
           packages:
-            - clang-7.0
-            - lld-7.0
+            - clang-7
+            - lld-7
             - gcc-multilib
             - g++-multilib
             - python3.7
@@ -58,13 +58,13 @@ matrix:
     - addons:
         apt:
           sources:
-              - llvm-toolchain-trusty-7.0
+              - llvm-toolchain-trusty-7
               - ubuntu-toolchain-r-test
               - deadsnakes #python
               - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
           packages:
-            - clang-7.0
-            - lld-7.0
+            - clang-7
+            - lld-7
             - gcc-multilib
             - g++-multilib
             - python3.7
@@ -163,4 +163,4 @@ deploy:
   on:
     tags: true
     branch: /^v\d+\.\d+(\.\d+)?(-\S*)?$/
-    condition: $CLANG_VERSION = 6 || $GCC_VERSION = 8
+      condition: $CLANG_VERSION = 7 || $GCC_VERSION = 8

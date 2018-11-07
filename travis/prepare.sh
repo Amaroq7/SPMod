@@ -12,11 +12,11 @@ then
         CLANGPP_COMPILER=/usr/bin/clang++-6.0
     elif [ ${CLANG_VERSION} == 7 ]
     then
-        export LDFLAGS=-fuse-ld=lld-7.0
+        export LDFLAGS=-fuse-ld=lld-7
         BRANCH_NAME=release_70
 
-        CLANG_COMPILER=/usr/bin/clang-7.0
-        CLANGPP_COMPILER=/usr/bin/clang++-7.0
+        CLANG_COMPILER=/usr/bin/clang-7
+        CLANGPP_COMPILER=/usr/bin/clang++-7
     fi
 
     sudo update-alternatives --install /usr/bin/clang clang ${CLANG_COMPILER} 1000
