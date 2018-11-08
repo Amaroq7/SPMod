@@ -31,12 +31,20 @@ cd $TRAVIS_BUILD_DIR
 # Move SPMod lib to dlls
 mv build/src/libspmod_mm.so dlls
 
+if [[ $TRAVIS_TAG ]]
+then
+    ARCHIVE_NAME=spmod-$TRAVIS_OS_NAME-$TRAVIS_TAG-$CC$CC_VERSION-$LINK_TYPE.tar.xz
+else
+    ARCHIVE_NAME=spmod-$TRAVIS_OS_NAME-$COMMIT_NUM-$COMMIT_SHORT_SHA-$CC$CC_VERSION-$LINK_TYPE.tar.xz
+elif
+
 if [[ $LINK_TYPE == "dynamic" && ! -z $CLANG_VERSION ]]
 then
     mkdir libs
     mv build/libc++abi.so.1 libs
     mv build/libc++.so.1 libs
-    tar -cJvf spmod-$TRAVIS_OS_NAME-$TRAVIS_TAG-$CC$CC_VERSION-$LINK_TYPE.tar.xz dlls scripts libs
+
+    tar -cJvf $ARCHIVE_NAME dlls scripts libs
 else
-    tar -cJvf spmod-$TRAVIS_OS_NAME-$TRAVIS_TAG-$CC$CC_VERSION-$LINK_TYPE.tar.xz dlls scripts
+    tar -cJvf $ARCHIVE_NAME dlls scripts
 fi

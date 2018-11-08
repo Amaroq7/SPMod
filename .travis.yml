@@ -5,16 +5,16 @@ branches:
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 sudo: required
 os: linux
-group: travis_latest
+dist: xenial
 
 matrix:
   include:
     - addons:
         apt:
           sources:
-            - llvm-toolchain-trusty-6.0
+            - llvm-toolchain-xenial-6.0
             - ubuntu-toolchain-r-test
-            - deadsnakes #python
+            - deadsnakes
             - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
           packages:
             - clang-6.0
@@ -35,9 +35,9 @@ matrix:
     - addons:
         apt:
           sources:
-            - llvm-toolchain-trusty-7
+            - llvm-toolchain-xenial-7
             - ubuntu-toolchain-r-test
-            - deadsnakes #python
+            - deadsnakes
             - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
           packages:
             - clang-7
@@ -58,10 +58,10 @@ matrix:
     - addons:
         apt:
           sources:
-              - llvm-toolchain-trusty-7
-              - ubuntu-toolchain-r-test
-              - deadsnakes #python
-              - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
+            - llvm-toolchain-xenial-7
+            - ubuntu-toolchain-r-test
+            - deadsnakes
+            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
           packages:
             - clang-7
             - lld-7
@@ -82,7 +82,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - deadsnakes #python3.6
+            - deadsnakes
             - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
           packages:
             - gcc-7
@@ -104,7 +104,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - deadsnakes #python3.6
+            - deadsnakes
             - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
           packages:
             - gcc-8
@@ -126,8 +126,8 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - deadsnakes #python3.6
-            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
+            - deadsnakes
+            - sourceline: 'ppa:ricotz/toolchain'
           packages:
             - gcc-8
             - g++-8
@@ -146,6 +146,8 @@ matrix:
 
 before_script:
   - export PATH=/usr/bin:$PATH LD_LIBRARY_PATH=$TRAVIS_BUILD_DIR/build:$LD_LIBRARY_PATH
+  - export COMMIT_NUM="$(git rev-list --count HEAD)"
+  - export COMMIT_SHORT_SHA="$(git rev-parse --short HEAD)"
   - travis/prepare.sh
 script:
   - travis/build.sh
@@ -153,14 +155,26 @@ script:
 before_deploy:
   - travis/package.sh
 deploy:
-  provider: releases
-  api_key:
-    secure: LGXp5xFYtOnWozrsn8OpmRBBQN0M62GFjvYK4BFyjnxhYjBXnazFg9EOjr3EKgPm7iS7SgzLjjXNGIaSObVSCyFM5/WTcgcewhY2YdL8BzqsFKE/90s0x5mKilOLZPOGfMHwrWV5tK9KgZsdh4ddScY8uaoqNirbXvqaCz56reTk3rTnE+csAYhM5vtE+SnlSQJf1xlACtP30v5YEtYUw1msyH2S50j+d8ezztQT6PA5xpPJVXAGA2q4Z5AafvhIp1IY7br6BxRY5osyKGOpM7coN+b5oqaTs2PbxaYyZDZFEqGnW4sCVXwdgl4Ps+OAQCLfoLWqa9ALYCW9YD8SOkE3AMksjK5eewmXQ5W61R5ejGmUa7h1zEGd+judrP6qQKDP3tBlD21EFwiflGFkze1ocbYu7xA5tjuMndQ+JFl55Yz14tQdVtQRVi8u398go7ueTnkghkQSZbTS60wMyetoxajVYCEVlPAhrxawhXu30CAbSGdGSLLAntZKFa7N6cN2TvfTZ9S9LuSQopRV4rnH7ekqAnH0FuOIaPZNEt9EO08pGMjVhUnLOk0EHh7VbPrQ8vqOzVcvLgGrbA4tFIFbDXTYzeFg34oqxePyGJToOGxUHD1l6nVFRndtNiNFD8cV2n61kyMKffoU8GmZIxADIGdISJvFKDVJWoLf+Ps=
-  file: spmod-$TRAVIS_OS_NAME-$TRAVIS_TAG-$CC$CC_VERSION-$LINK_TYPE.tar.xz
-  skip_cleanup: true
-  draft: true
-  tag_name: $TRAVIS_TAG
-  on:
-    tags: true
-    branch: /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+  - provider: releases
+    api_key:
+      secure: LGXp5xFYtOnWozrsn8OpmRBBQN0M62GFjvYK4BFyjnxhYjBXnazFg9EOjr3EKgPm7iS7SgzLjjXNGIaSObVSCyFM5/WTcgcewhY2YdL8BzqsFKE/90s0x5mKilOLZPOGfMHwrWV5tK9KgZsdh4ddScY8uaoqNirbXvqaCz56reTk3rTnE+csAYhM5vtE+SnlSQJf1xlACtP30v5YEtYUw1msyH2S50j+d8ezztQT6PA5xpPJVXAGA2q4Z5AafvhIp1IY7br6BxRY5osyKGOpM7coN+b5oqaTs2PbxaYyZDZFEqGnW4sCVXwdgl4Ps+OAQCLfoLWqa9ALYCW9YD8SOkE3AMksjK5eewmXQ5W61R5ejGmUa7h1zEGd+judrP6qQKDP3tBlD21EFwiflGFkze1ocbYu7xA5tjuMndQ+JFl55Yz14tQdVtQRVi8u398go7ueTnkghkQSZbTS60wMyetoxajVYCEVlPAhrxawhXu30CAbSGdGSLLAntZKFa7N6cN2TvfTZ9S9LuSQopRV4rnH7ekqAnH0FuOIaPZNEt9EO08pGMjVhUnLOk0EHh7VbPrQ8vqOzVcvLgGrbA4tFIFbDXTYzeFg34oqxePyGJToOGxUHD1l6nVFRndtNiNFD8cV2n61kyMKffoU8GmZIxADIGdISJvFKDVJWoLf+Ps=
+    file: spmod-$TRAVIS_OS_NAME-$TRAVIS_TAG-$CC$CC_VERSION-$LINK_TYPE.tar.xz
+    skip_cleanup: true
+    draft: true
+    tag_name: $TRAVIS_TAG
+    on:
+      tags: true
+      branch: /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+      condition: $CLANG_VERSION = 7 || $GCC_VERSION = 8
+  - provider: s3
+    file: spmod-$TRAVIS_OS_NAME-$COMMIT_SHORT_SHA-$CC$CC_VERSION-$LINK_TYPE.tar.xz
+    access_key_id: 
+      secure: g5eMcCQxblr3kXOtnGeAn/HWVLlRilOjU2+DsO/q0pcnkE6mqRQvXRhWt+fHV1YqBXV1JCdzTlGqv48Mt1X0LQMQYn+Gf1WomutQOcdrT9myWXqLLiXTNqqfoq+yBYLbtHDzwzamYu9iAKD5QY8XwcR2k3r4ThrVq/8wkIkU6HVRwhc4FV/oETtSe0E1SyYsMDmJqLg72TXmZdujmiCp34qjQKxOMFxMykoj9O2FcDmv0CMzOjZap8p9H2ove3U+mI+VUeQ9r1eo72tLtLS6ossH94MI9oBJ8NnONo1nnkskL4/GGqEqGnjcuvH3dSQHhpjqLoDOdJKodWFbPBvsjkpOeSmJmhl3rljMM6Jz0s65gkv8ilNVoGUIahvso+vMV3SMKsqjlCBacIBimar9q6BIouXIioHgnafbKJeqFP/aX7TD1mGJl7j3BFKHKXuBln0etlHfvFy7DR00SRBG8DGjRVKEJTwNc75ma5DQuTbSkf+8Tn12mQA+Ei8GGt68J2/ZERjERlszcphPm+E6X+x8x5wPIwJG58kuxzMGnglaV81LceX8gAkRo4pmM5jkIOjXjPRXw77b0DA9ZSQCzGL2LNi0IDk6kN8Z6VRnaflTFGHcbE0d5vGK0jrFls2IJ/EmCfnt1GRV0+10w9/HP+x642Ud4uXWskzE/QhcuKY=
+    secret_access_key:
+      secure: sJ7abLWZlcHHBlIjJqJ/w+skr2JqQ7qmuUG8MP3JCxRZCm3YF4n2AXuJGslTMmmyslYhzvO2pDUv/EE6rZoxPCoMTDd+12hG1KgUHec5cJKOd5wxdRL8qmBvGHK26Y4xCqEAL4HfX+NPCIUMSDKhekdux+hiMloJeSB/w4vafR13JADm5kVRgqEA0z1P1qOvK90ZtEFHYDYD0uXzWHtqHJa9Z3VkYjaVF6Nsaq3ElwJqedXskPm4ktwg7J3AXKemmiEti2q8AggvQ1IpvLkr+OhCTBHOurW48R7x/ewpjZz7nRBMEYQU91WPHMD2UAJStiggfZ1CKQyrdxbpd7SdODiJkqfno2UYK2nVmTi2MvjdCxssOZs8X+2iLseIBvIg+X8Hw8/hhsU1ntoNd7EuyInFd4afZjLQ/L7Ey4ai0e02GkW8M+SqQ2urU35Hsfcn5thXWOAH+1MSc96snLAq3RWOa/aW58np+1DDrKa0QFVyhzYXvnQcI5DEIiC+n4emSL2nenjS0zeWCG52IuPHrxBCIjbV29fRrrzWeznLHiqus36IABF5rEfZKPR3RRpYF2Oz8nkvB3IRTxyTH1cDVDxWQg77O4P/9anB1KcP0Tfx4aIzOTaEmGX4dWZq7CeE/TiriqZu1VzIrQNHGVuifAfC1FucrCyq7siAIFrKbDs=
+    bucket: spmod
+    region: eu-central-1
+    skip_cleanup: true
+    on:
+      branch: master
       condition: $CLANG_VERSION = 7 || $GCC_VERSION = 8
