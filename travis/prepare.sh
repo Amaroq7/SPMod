@@ -3,28 +3,28 @@
 if [[ ! -z "${CLANG_VERSION}" ]]
 then
     # Overwrite default compiler
-    if [ ${CLANG_VERSION} == 5 ]
-    then
-        export LDFLAGS=-fuse-ld=lld-5.0
-        BRANCH_NAME=release_50
-
-        CLANG_COMPILER=/usr/bin/clang-5.0
-        CLANGPP_COMPILER=/usr/bin/clang++-5.0
-    elif [ ${CLANG_VERSION} == 6 ]
+    if [ ${CLANG_VERSION} == 6 ]
     then
         export LDFLAGS=-fuse-ld=lld-6.0
         BRANCH_NAME=release_60
 
         CLANG_COMPILER=/usr/bin/clang-6.0
         CLANGPP_COMPILER=/usr/bin/clang++-6.0
+    elif [ ${CLANG_VERSION} == 7 ]
+    then
+        export LDFLAGS=-fuse-ld=lld-7
+        BRANCH_NAME=release_70
+
+        CLANG_COMPILER=/usr/bin/clang-7
+        CLANGPP_COMPILER=/usr/bin/clang++-7
     fi
 
     sudo update-alternatives --install /usr/bin/clang clang ${CLANG_COMPILER} 1000
     sudo update-alternatives --install /usr/bin/clang++ clang++ ${CLANGPP_COMPILER} 1000
 
     # Build libcxxabi & libcxx
-    git clone -b ${BRANCH_NAME} https://github.com/llvm-mirror/libcxx.git ../libcxx
-    git clone -b ${BRANCH_NAME} https://github.com/llvm-mirror/libcxxabi.git ../libcxxabi
+    git clone --depth=1 -b ${BRANCH_NAME} https://github.com/llvm-mirror/libcxx.git ../libcxx
+    git clone --depth=1 -b ${BRANCH_NAME} https://github.com/llvm-mirror/libcxxabi.git ../libcxxabi
     mkdir ../libcxx_build ../libcxxabi_build
     cd ../libcxxabi_build
     cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-m32 -DLIBCXXABI_LIBCXX_INCLUDES=../libcxx/include ../libcxxabi/
