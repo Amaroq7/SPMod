@@ -83,6 +83,6 @@ namespace SPMod
                                         const char *to) const = 0;
 
     protected:
-        virtual ~IUtils() {};
+        virtual ~IUtils() = default;
     };
 }

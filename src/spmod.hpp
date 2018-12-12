@@ -101,7 +101,6 @@ using namespace SPMod;
 #include <SPConfig.hpp>
 #include "UtilsSystem.hpp"
 #include "LoggingSystem.hpp"
-#include "PluginSystem.hpp"
 #include "ForwardSystem.hpp"
 #include "CvarSystem.hpp"
 #include "CmdSystem.hpp"
@@ -114,17 +113,6 @@ using namespace SPMod;
 constexpr auto gSPModAuthor = "SPMod Development Team";
 
 #define APP_COMMIT_URL "https://github.com/Amaroq7/SPMod/commits/"
-
-extern sp_nativeinfo_t gCoreNatives[];
-extern sp_nativeinfo_t gCvarsNatives[];
-extern sp_nativeinfo_t gForwardsNatives[];
-extern sp_nativeinfo_t gStringNatives[];
-extern sp_nativeinfo_t gMessageNatives[];
-extern sp_nativeinfo_t gCmdsNatives[];
-extern sp_nativeinfo_t gTimerNatives[];
-extern sp_nativeinfo_t gMenuNatives[];
-extern sp_nativeinfo_t gFloatNatives[];
-extern sp_nativeinfo_t gPlayerNatives[];
 
 extern int gmsgShowMenu;
 extern int gmsgVGUIMenu;

@@ -19,41 +19,26 @@
 
 #include <cstddef>
 #include <IHelpers.hpp>
-
-#ifdef SP_CLANG
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wnon-virtual-dtor"
-    #pragma clang diagnostic ignored "-Wunused-parameter"
-#elif defined SP_GCC
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-    #pragma GCC diagnostic ignored "-Wunused-parameter"
-    #pragma GCC diagnostic ignored "-Wpedantic"
-#elif defined SP_MSVC
-    #pragma warning(push)
-    // Unreferenced formal parameter
-    #pragma warning(disable : 4100)
-#endif
-#include <sp_vm_api.h>
-#ifdef SP_CLANG
-    #pragma clang diagnostic pop
-#elif defined SP_GCC
-    #pragma GCC diagnostic pop
-#elif defined SP_MSVC
-    #pragma warning(pop)
-#endif
-
 #include <IInterface.hpp>
 #include <IForwardSystem.hpp>
-#include <IPluginSystem.hpp>
 #include <ICvarSystem.hpp>
 #include <ITimerSystem.hpp>
 #include <IMenuSystem.hpp>
 #include <IUtilsSystem.hpp>
 #include <IPlayerSystem.hpp>
+#include <ILoggerSystem.hpp>
 
 namespace SPMod
 {
+    enum class DirType : uint8_t
+    {
+        Home = 0,
+        Dlls,
+        Exts,
+        Plugins,
+        Logs
+    };
+
     class ISPGlobal SPMOD_FINAL : public ISPModInterface
     {
     public:
@@ -89,7 +74,7 @@ namespace SPMod
          *
          * @return        Home dir.
          */
-        virtual const char *getHomeDir() const = 0;
+        virtual const char *getPath(DirType type) const = 0;
 
         /**
          * @brief Returns name of the mod.
@@ -97,13 +82,6 @@ namespace SPMod
          * @return        Mod name.
          */
         virtual const char *getModName() const = 0;
-
-        /**
-         * @brief Returns SPMod plugin manager.
-         *
-         * @return        Plugin manager.
-         */
-        virtual IPluginMngr *getPluginManager() const = 0;
 
         /**
          * @brief Returns SPMod forward manager.
@@ -120,18 +98,25 @@ namespace SPMod
         virtual ICvarMngr *getCvarManager() const = 0;
 
         /**
-         * @brief Return SPMod timer manager.
+         * @brief Returns SPMod timer manager.
          *
          * @return              Timer manager.
          */
         virtual ITimerMngr *getTimerManager() const = 0;
 
         /**
-         * @brief Return SPMod menu manager.
+         * @brief Returns SPMod menu manager.
          * 
          * @return              Menu manager.
          */
         virtual IMenuMngr *getMenuManager() const = 0;
+
+        /**
+         * @brief Returns SPMod logger manager.
+         *
+         * @return              Logger manager.
+         */
+        virtual ILoggerMngr *getLoggerManager() const = 0;
 
         /**
          * @brief Return SPMod player manager.
@@ -146,32 +131,6 @@ namespace SPMod
          * @return              Utils funcs.
          */
         virtual IUtils *getUtils() const = 0;
-
-        /**
-         * @brief Returns current SourcePawn environment.
-         *
-         * @return        SourcePawn environment.
-         */
-        virtual SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const = 0;
-
-        /**
-         * @brief Formats a string according to the SPMod format rules.
-         *
-         * @param buffer        Destination buffer.
-         * @param length        Length of buffer.
-         * @param format        Formatting string.
-         * @param ctx           Plugin context.
-         * @param params        Params list passed by native.
-         * @param param         Index of param which contains first formatting argument.
-         *
-         * @return              Number of characters written.
-         */
-        virtual unsigned int formatString(char *buffer,
-                                          std::size_t length,
-                                          const char *format,
-                                          SourcePawn::IPluginContext *ctx,
-                                          const cell_t *params,
-                                          std::size_t param) const = 0;
 
         /**
          * @brief Registers module's interface.
@@ -192,14 +151,13 @@ namespace SPMod
         virtual IInterface *getInterface(const char *name) const = 0;
 
     protected:
-        virtual ~ISPGlobal() {};
+        virtual ~ISPGlobal() = default;
     };
 
     enum class ExtQueryValue : uint8_t
     {
         DontLoad = 0,
-        SPModExt = 1,
-        MetaExt = 2
+        SPModExt = 1
     };
 
     /**

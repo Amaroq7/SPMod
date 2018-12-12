@@ -17,89 +17,97 @@
 
 #include "LoggingSystem.hpp"
 
-void Logger::OnDebugSpew(const char *msg,
-                            ...)
+Logger::Logger(std::string_view prefix) : m_prefix(prefix)
 {
-    char debugMsg[512];
-    va_list paramsList;
-
-    va_start(paramsList, msg);
-    std::vsnprintf(debugMsg, sizeof(debugMsg), msg, paramsList);
-    va_end(paramsList);
-
-    LogConsoleCore("[SPMOD] ", debugMsg);
 }
 
-void Logger::ReportError(const SourcePawn::IErrorReport &report,
-                            SourcePawn::IFrameIterator &iter)
+ILogger *LoggerMngr::getLogger(const char *prefix)
 {
-    auto *spErrorMsg = gSPGlobal->getSPEnvironment()->APIv2()->GetErrorString(report.Code());
-    auto getPluginIdentity = [](SourcePawn::IPluginContext *ctx)
-    {
-        char *pluginIdentity;
-        ctx->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
-        return pluginIdentity;
-    };
+    return getLoggerCore(prefix).get();
+}
 
-    LogErrorCore("Run time error ", report.Code(), ": ", spErrorMsg);
-    LogErrorCore("Error: ", report.Message());
+std::shared_ptr<Logger> LoggerMngr::getLoggerCore(std::string_view prefix)
+{
+    return m_loggers.try_emplace(prefix.data(), std::make_shared<Logger>(prefix)).first->second;
+}
 
-    if (report.Blame() || report.Context())
-    {
-        LogErrorCore("Blaming:");
+void Logger::setFilename(const char *filename)
+{
+    m_filename = filename;
+}
 
-        if (report.Blame())
-            LogErrorCore("   Function: ", report.Blame()->DebugName());
+void Logger::logToConsole(LogType type, const char *format, ...) const
+{
+    /*
+        if (type < logLevelToPrint)
+            return;
+    */
 
-        if (report.Context())
-            LogErrorCore("   Plugin: ", getPluginIdentity(report.Context()));
-    }
+    char logMsg[512];
+    va_list paramsList;
 
-    if (!iter.Done())
-        LogErrorCore("Stack trace:");
+    va_start(paramsList, format);
+    std::vsnprintf(logMsg, sizeof(logMsg), format, paramsList);
+    va_end(paramsList);
 
-    std::size_t entryPos = 0;
-    while (!iter.Done())
-    {
-        if (iter.IsInternalFrame())
-        {
-            iter.Next();
-            continue;
-        }
+    logToConsoleCore(type, logMsg);
+}
 
-        auto *funcName = iter.FunctionName();
-        if (!funcName)
-            funcName = "???";
+void Logger::logToFile(LogType type, const char *format, ...) const
+{
+    /*
+        if (type < logLevelToPrint)
+            return;
+    */
 
-        if (iter.IsScriptedFrame())
-        {
-            const char *pluginIdentity;
+    if (m_filename.empty())
+        return;
 
-            if (auto *pluginCtx = iter.Context(); pluginCtx)
-                pluginIdentity = getPluginIdentity(pluginCtx);
-            else
-                pluginIdentity = "???";
+    char logMsg[512];
+    va_list paramsList;
 
-            LogErrorCore("   [", entryPos, "] ", pluginIdentity, "::",
-                                                                    funcName,
-                                                                    " (line ",
-                                                                    iter.LineNumber(),
-                                                                    ")");
-        }
-        else if(iter.IsNativeFrame())
-            LogErrorCore("   [", entryPos, "] ", funcName);
+    va_start(paramsList, format);
+    std::vsnprintf(logMsg, sizeof(logMsg), format, paramsList);
+    va_end(paramsList);
 
-        ++entryPos;
-        iter.Next();
-    }
+    logToFileCore(type, logMsg);
+}
+
+void Logger::logToBoth(LogType type, const char *format, ...) const
+{
+    /*
+        if (type < logLevelToPrint)
+            return;
+    */
+
+    char logMsg[512];
+    va_list paramsList;
+
+    va_start(paramsList, format);
+    std::vsnprintf(logMsg, sizeof(logMsg), format, paramsList);
+    va_end(paramsList);
+
+    logToBothCore(type, logMsg);
+}
+
+void Logger::sendMsgToConsole(const char *format, ...) const
+{
+    char logMsg[512];
+    va_list paramsList;
+
+    va_start(paramsList, format);
+    std::vsnprintf(logMsg, sizeof(logMsg), format, paramsList);
+    va_end(paramsList);
+
+    sendMsgToConsoleCore(logMsg);
 }
 
 void Logger::resetErrorState()
 {
-    m_alreadyReportedError = false;
+    m_alreadyReported = false;
 }
 
-void Logger::_writeErrorToFile(std::string_view errormsg)
+void Logger::_writeToFile(std::string_view msg)
 {
     using fFlags = std::ios_base;
 
@@ -119,30 +127,30 @@ void Logger::_writeErrorToFile(std::string_view errormsg)
 
     char logDateTime[64], fileName[256];
     std::strftime(logDateTime, sizeof(logDateTime), "%Y/%m/%d - %H:%M:%S: ", &convertedTime);
-    std::strftime(fileName, sizeof(fileName), "error_%Y%m%d.log", &convertedTime);
+    std::strftime(fileName, sizeof(fileName), "logs_%Y%m%d.log", &convertedTime);
 
-    std::fstream errorFile(gSPGlobal->getLogsDirCore() / fileName, fFlags::out | fFlags::app);
+    std::fstream logFile(gSPGlobal->getPathCore(DirType::Logs) / fileName, fFlags::out | fFlags::app);
 
-    if (!m_alreadyReportedError)
+    if (!m_alreadyReported)
     {
-        errorFile << logDateTime << "Start of error session.\n";
-        errorFile << logDateTime << "Info (map ";
+        logFile << logDateTime << "Start of error session.\n";
+        logFile << logDateTime << "Info (map ";
 
         if (STRING(gpGlobals->mapname))
-            errorFile << STRING(gpGlobals->mapname);
+            logFile << STRING(gpGlobals->mapname);
         else
-            errorFile << "<unknown>";
+            logFile << "<unknown>";
 
-        errorFile << ") (CRC ";
+        logFile << ") (CRC ";
 
         if (gRehldsServerData)
-            errorFile << gRehldsServerData->GetWorldmapCrc();
+            logFile << gRehldsServerData->GetWorldmapCrc();
         else
-            errorFile << "<unknown>";
+            logFile << "<unknown>";
 
-        errorFile << ")\n";
-        m_alreadyReportedError = true;
+        logFile << ")\n";
+        m_alreadyReported = true;
     }
 
-    errorFile << logDateTime << errormsg;
+    logFile << logDateTime << msg;
 }

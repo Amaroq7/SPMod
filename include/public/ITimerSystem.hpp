@@ -57,7 +57,7 @@ namespace SPMod
         virtual void setPause(bool pause) = 0;
 
     protected:
-        virtual ~ITimer() {};
+        virtual ~ITimer() = default;
     };
 
     /**
@@ -135,6 +135,6 @@ namespace SPMod
         virtual void execTimer(ITimer *timer) = 0;
 
     protected:
-        virtual ~ITimerMngr() {};
+        virtual ~ITimerMngr() = default;
     };
 }

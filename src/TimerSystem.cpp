@@ -21,8 +21,8 @@
 
 Timer::Timer(std::size_t id,
              float interval,
-             std::variant<SourcePawn::IPluginFunction *, TimerCallback> &&func,
-             std::variant<cell_t, void *> &&data,
+             TimerCallback func,
+             void *data,
              bool pause) : m_id(id),
                            m_interval(interval),
                            m_callback(func),
@@ -65,22 +65,7 @@ bool Timer::exec(float gltime)
 {
     m_lastExec = gltime;
 
-    // First check for plugin timer
-    try
-    {
-        cell_t result;
-        auto *func = std::get<SourcePawn::IPluginFunction *>(m_callback);
-        func->PushCell(m_id);
-        func->PushCell(std::get<cell_t>(m_data));
-        func->Execute(&result);
-
-        return result == IForward::ReturnValue::PluginIgnored;
-    }
-    catch (const std::bad_variant_access &e [[maybe_unused]])
-    {
-        auto func = std::get<TimerCallback>(m_callback);
-        return func(this, std::get<void *>(m_data));
-    }
+    return m_callback(this, m_data);
 }
 
 ITimer *TimerMngr::createTimer(float interval,

@@ -60,7 +60,7 @@ namespace SPMod
         virtual void setCallback(MenuItemCallback func) = 0;
     
     protected:
-        virtual ~IMenuItem() {}
+        virtual ~IMenuItem() = default;
     };
 
     class IMenu SPMOD_FINAL
@@ -109,7 +109,7 @@ namespace SPMod
         virtual std::size_t getItems() const = 0;
 
     protected:
-        virtual ~IMenu() {}
+        virtual ~IMenu() = default;
     };
 
     class IMenuMngr SPMOD_FINAL
@@ -122,7 +122,7 @@ namespace SPMod
         virtual IMenu *registerMenu(MenuTextHandler handler, bool global) = 0;
         virtual void destroyMenu(IMenu *menu) = 0;
     protected:
-        virtual ~IMenuMngr() {}
+        virtual ~IMenuMngr() = default;
     };
 }
 

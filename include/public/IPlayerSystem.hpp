@@ -109,7 +109,7 @@ namespace SPMod
         virtual bool isInGame() const = 0;
 
     protected:
-        virtual ~IPlayer() {};
+        virtual ~IPlayer() = default;
     };
 
     class IPlayerListener
@@ -186,7 +186,7 @@ namespace SPMod
         }
 
     protected:
-        virtual ~IPlayerListener() {};
+        virtual ~IPlayerListener() = default;
     };
 
     class IPlayerMngr
@@ -245,6 +245,6 @@ namespace SPMod
         virtual void removePlayerListener(IPlayerListener *listener) = 0;
 
     protected:
-        virtual ~IPlayerMngr() {};
+        virtual ~IPlayerMngr() = default;
     };
 }

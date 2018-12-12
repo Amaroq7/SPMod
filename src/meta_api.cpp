@@ -37,8 +37,8 @@ plugin_info_t Plugin_info =
 };
 
 C_DLLEXPORT int Meta_Query(char *interfaceVersion [[maybe_unused]],
-                            plugin_info_t **plinfo,
-                            mutil_funcs_t *pMetaUtilFuncs)
+                           plugin_info_t **plinfo,
+                           mutil_funcs_t *pMetaUtilFuncs)
 {
 
     *plinfo = &Plugin_info;
@@ -78,8 +78,8 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
         return 0;
     }
 
-    const std::unique_ptr<Logger> &logSystem = gSPGlobal->getLoggerCore();
-    logSystem->LogConsoleCore("\n   SPMod version ", gSPModVersion, " Copyright (c) 2018 ", gSPModAuthor, \
+    std::shared_ptr<Logger> logger = gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD");
+    logger->sendMsgToConsoleCore("\n   SPMod version ", gSPModVersion, " Copyright (c) 2018 ", gSPModAuthor, \
 "\n   This program comes with ABSOLUTELY NO WARRANTY; for details type `spmod gpl' \
 \n   This is free software, and you are welcome to redistribute it\
 \n   under certain conditions; type `spmod gpl' for details.\n\
@@ -89,7 +89,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
 
     if (!initRehldsApi())
     {
-        logSystem->LogErrorCore("SPMod requires to have ReHLDS installed!");
+        logger->logToBothCore(LogType::Error, "SPMod requires to have ReHLDS installed!");
         return 0;
     }
     GET_HOOK_TABLES(PLID, &gpEngineFuncs, nullptr, nullptr);

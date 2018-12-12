@@ -221,7 +221,7 @@ namespace SPMod
         virtual void resetParams() = 0;
 
     protected:
-        virtual ~IForward() {}
+        virtual ~IForward() = default;
     };
 
     struct ForwardList
@@ -332,7 +332,7 @@ namespace SPMod
          virtual void freeForwardsList(const ForwardList *list) const = 0;
 
     protected:
-        virtual ~IForwardMngr() {}
+        virtual ~IForwardMngr() = default;
     };
 
     template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>

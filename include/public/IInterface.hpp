@@ -72,7 +72,7 @@ namespace SPMod
         }
 
     protected:
-        virtual ~IInterface() {}
+        virtual ~IInterface() = default;
     };
 
     class ISPModInterface SPMOD_FINAL : public IInterface
@@ -131,6 +131,6 @@ namespace SPMod
         }
 
     protected:
-        virtual ~ISPModInterface() {}
+        virtual ~ISPModInterface() = default;
     };
 }

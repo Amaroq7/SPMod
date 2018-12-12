@@ -17,14 +17,39 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "ext.hpp"
+#include "ExtMain.hpp"
+#include "SourcePawnAPI.hpp"
 
-enginefuncs_t g_engfuncs;
-globalvars_t *gpGlobals;
+SPMod::ISPGlobal *gSPGlobal;
+ModuleInterface gModuleInterface;
 
-C_DLLEXPORT void WINAPI GiveFnptrsToDll(enginefuncs_t* pengfuncsFromEngine,
-                                        globalvars_t *pGlobals)
+using namespace SPExt;
+
+SPMOD_API SPMod::ExtQueryValue SPMod_Query(SPMod::ISPGlobal *spmodInstance)
 {
-	memcpy(&g_engfuncs, pengfuncsFromEngine, sizeof(enginefuncs_t));
-	gpGlobals = pGlobals;
+    gSPGlobal = spmodInstance;
+    gSPGlobal->registerInterface(&gModuleInterface);
+
+    return SPMod::ExtQueryValue::SPModExt;
+}
+
+SPMOD_API bool SPMod_Init()
+{
+    try
+    {
+        gSourcePawnAPI = std::make_unique<SourcePawnAPI>(gSPGlobal->getPath(SPMod::DirType::Exts));
+    }
+    catch (const std::exception &e)
+    {
+        //TODO: Logging
+        return false;
+    }
+
+    
+
+    return true;
+}
+
+SPMOD_API void SPMod_End()
+{
 }

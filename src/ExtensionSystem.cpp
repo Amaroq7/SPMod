@@ -19,7 +19,9 @@
 
 #include "spmod.hpp"
 
-Extension::Extension(fs::path path) : m_metaExtHandle(nullptr)
+using namespace std::string_literals;
+
+Extension::Extension(fs::path path)
 {
 #if defined SP_POSIX
     void *extHandle = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND);
@@ -27,14 +29,10 @@ Extension::Extension(fs::path path) : m_metaExtHandle(nullptr)
     HMODULE extHandle = LoadLibrary(path.string().c_str());
 #endif
 
-    std::string exceptMsg;
-
     // Cannot load ext
     if (!extHandle)
     {
-        exceptMsg = "Can't open extension: ";
-        exceptMsg += path.filename();
-        throw std::runtime_error(exceptMsg);
+        throw std::runtime_error("Can't open extension: "s + path.filename().c_str());
     }
 
 #if defined SP_POSIX
@@ -67,17 +65,7 @@ Extension::~Extension()
 #endif
 }
 
-void *Extension::metaHandle() const
-{
-    return m_metaExtHandle;
-}
-
-void Extension::setMetaHandle(void *handle)
-{
-    m_metaExtHandle = handle;
-}
-
-Status Extension::getStatus() const
+Extension::Status Extension::getStatus() const
 {
     return m_status;
 }

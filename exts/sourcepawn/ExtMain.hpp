@@ -18,19 +18,22 @@
 */
 
 #include <extdll.h>
-#include <meta_api.h>
 #include <ISPGlobal.hpp>
 
 class ModuleInterface final : public SPMod::IInterface
 {
+    static constexpr uint16_t MAJOR_VERSION = 0;
+    static constexpr uint16_t MINOR_VERSION = 1;
+    static constexpr uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
+
     const char *getName() const override
     {
-        return "ISPMetaExtTest";
+        return "ISourcePawnModule";
     }
 
     uint32_t getVersion() const override
     {
-        return 1U;
+        return VERSION;
     }
 
     const char *getAuthor() const override
@@ -45,7 +48,7 @@ class ModuleInterface final : public SPMod::IInterface
 
     const char *getExtName() const override
     {
-        return "SPMod Meta Test Module";
+        return "SourcePawn Module";
     }
 };
 

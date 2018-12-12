@@ -82,7 +82,7 @@ namespace SPMod
         virtual SourcePawn::IPluginRuntime *getRuntime() const = 0;
 
     protected:
-        virtual ~IPlugin() {};
+        virtual ~IPlugin() = default;
     };
 
     class IPluginMngr SPMOD_FINAL : public ISPModInterface
@@ -175,6 +175,6 @@ namespace SPMod
         virtual bool addNatives(const sp_nativeinfo_t *natives) = 0;
 
     protected:
-        virtual ~IPluginMngr() {};
+        virtual ~IPluginMngr() = default;
     };
 }

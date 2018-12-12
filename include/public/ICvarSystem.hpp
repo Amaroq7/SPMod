@@ -155,7 +155,7 @@ namespace SPMod
         virtual const char *asString() const = 0;
 
     protected:
-        virtual ~ICvar() {}
+        virtual ~ICvar() = default;
     };
 
     class ICvarMngr SPMOD_FINAL : public ISPModInterface
@@ -208,6 +208,6 @@ namespace SPMod
         virtual ICvar *findCvar(const char *name) = 0;
 
     protected:
-        virtual ~ICvarMngr() {};
+        virtual ~ICvarMngr() = default;
     };
 }

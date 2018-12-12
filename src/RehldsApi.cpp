@@ -147,11 +147,11 @@ bool initRehldsApi()
 {
     std::string errorMsg;
 
-#ifdef SP_POSIX
+#if defined SP_POSIX
     CSysModule *engineModule = Sys_LoadModule("engine_i486.so");
     if (!_initRehldsApi(engineModule, &errorMsg))
     {
-        gSPGlobal->getLoggerCore()->LogErrorCore(errorMsg.c_str());
+        gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD")->logToBothCore(LogType::Error, errorMsg.c_str());
         return false;
     }
 #else
@@ -161,7 +161,7 @@ bool initRehldsApi()
         engineModule = Sys_LoadModule("filesystem_stdio.dll");
         if (!_initRehldsApi(engineModule, &errorMsg))
         {
-            gSPGlobal->getLoggerCore()->LogErrorCore(errorMsg.c_str());
+            gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD")->logToBothCore(LogType::Error, errorMsg.c_str());
             return false;
         }
     }

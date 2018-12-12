@@ -31,11 +31,12 @@ public:
     };
 
     Extension() = delete;
+    Extension(const Extension &other) = delete;
+    Extension(Extension &&other) = default;
+
     explicit Extension(fs::path path);
     ~Extension();
 
-    void *metaHandle() const;
-    void setMetaHandle(void *handle);
     Status getStatus() const;
     void setStatus(Status status);
     fnSPModQuery getQueryFunc() const;
@@ -49,7 +50,6 @@ private:
     HMODULE *m_extHandle;
 #endif
 
-    void *m_metaExtHandle;
     fnSPModQuery m_queryFunc;
     fnSPModInit m_initFunc;
     fnSPModEnd m_endFunc;

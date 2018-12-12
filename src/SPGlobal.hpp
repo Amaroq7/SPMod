@@ -19,7 +19,6 @@
 
 #include "spmod.hpp"
 
-class PluginMngr;
 class ForwardMngr;
 class CvarMngr;
 class Logger;
@@ -27,68 +26,46 @@ class Logger;
 class SPGlobal final : public ISPGlobal
 {
 public:
-    #ifdef SP_LINUX
-        static constexpr auto *sourcepawnLibrary = "sourcepawn.jit.x86.so";
-    #elif defined SP_WINDOWS
-        static constexpr auto *sourcepawnLibrary = "sourcepawn.jit.x86.dll";
-    #endif
-
     SPGlobal() = delete;
+    SPGlobal(const SPGlobal &other) = delete;
+    SPGlobal(SPGlobal &&other) = default;
+    ~SPGlobal() = default;
+
     explicit SPGlobal(fs::path &&dllDir);
-    ~SPGlobal()
-    {
-        #ifdef SP_POSIX
-            dlclose(m_SPLibraryHandle);
-        #else
-            FreeLibrary(m_SPLibraryHandle);
-        #endif
-    }
 
     // ISPGlobal
-    const char *getHomeDir() const override;
+    const char *getPath(DirType type) const override;
     const char *getModName() const override;
 
-    IPluginMngr *getPluginManager() const override;
     IForwardMngr *getForwardManager() const override;
     ICvarMngr *getCvarManager() const override;
-    SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const override;
     ITimerMngr *getTimerManager() const override;
     IMenuMngr *getMenuManager() const override;
+    ILoggerMngr *getLoggerManager() const override;
     IPlayerMngr *getPlayerManager() const override;
     IUtils *getUtils() const override;
 
     bool registerInterface(IInterface *interface) override;
     IInterface *getInterface(const char *name) const override;
 
-    unsigned int formatString(char *buffer,
-                              std::size_t length,
-                              const char *format,
-                              SourcePawn::IPluginContext *ctx,
-                              const cell_t *params,
-                              std::size_t param) const override;
-
     // SPGlobal
-    fs::path getHomeDirCore() const;
+    fs::path getPathCore(DirType type) const;
     std::string_view getModNameCore() const;
 
-    const std::unique_ptr<PluginMngr> &getPluginManagerCore() const;
     const std::unique_ptr<ForwardMngr> &getForwardManagerCore() const;
     const std::unique_ptr<CvarMngr> &getCvarManagerCore() const;
-    const std::unique_ptr<Logger> &getLoggerCore() const;
     const std::unique_ptr<CommandMngr> &getCommandManagerCore() const;
     const std::unique_ptr<TimerMngr> &getTimerManagerCore() const;
     const std::unique_ptr<Utils> &getUtilsCore() const;
     const std::unique_ptr<MenuMngr> &getMenuManagerCore() const;
+    const std::unique_ptr<LoggerMngr> &getLoggerManagerCore() const;
     const std::unique_ptr<PlayerMngr> &getPlayerManagerCore() const;
-    const fs::path &getScriptsDirCore() const;
-    const fs::path &getLogsDirCore() const;
-    const fs::path &getDllsDirCore() const;
     const auto &getInterfacesList() const
     {
         return m_interfaces;
     }
 
-    void setScriptsDir(std::string_view folder);
+    void setPluginsDir(std::string_view folder);
     void setLogsDir(std::string_view folder);
     void setDllsDir(std::string_view folder);
     void setExtDir(std::string_view folder);
@@ -97,18 +74,15 @@ public:
     void unloadExts();
 
 private:
-    void _initSourcePawn();
-
     fs::path m_SPModDir;
-    fs::path m_SPModScriptsDir;
+    fs::path m_SPModPluginsDir;
     fs::path m_SPModLogsDir;
     fs::path m_SPModDllsDir;
     fs::path m_SPModExtsDir;
 
-    std::unique_ptr<PluginMngr> m_pluginManager;
     std::unique_ptr<ForwardMngr> m_forwardManager;
     std::unique_ptr<CvarMngr> m_cvarManager;
-    std::unique_ptr<Logger> m_loggingSystem;
+    std::unique_ptr<LoggerMngr> m_loggingSystem;
     std::unique_ptr<CommandMngr> m_cmdManager;
     std::unique_ptr<TimerMngr> m_timerManager;
     std::unique_ptr<MenuMngr> m_menuManager;
@@ -116,16 +90,8 @@ private:
     std::unique_ptr<Utils> m_utils;
 
     std::string m_modName;
-    SourcePawn::ISourcePawnFactory *m_spFactory;
     std::unordered_map<std::string, IInterface *> m_interfaces;
     std::vector<std::unique_ptr<Extension>> m_extHandles;
-
-    // SourcePawn library handle
-#ifdef SP_POSIX
-    void *m_SPLibraryHandle;
-#else
-    HMODULE m_SPLibraryHandle;
-#endif
 };
 
 extern std::unique_ptr<SPGlobal> gSPGlobal;

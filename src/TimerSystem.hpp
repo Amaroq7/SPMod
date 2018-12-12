@@ -60,19 +60,13 @@ private:
 
 class Timer final : public ITimer
 {
+    friend class TimerMngr;
+
 public:
-    friend void TimerMngr::execTimers(float);
-    friend void TimerMngr::execTimerCore(std::shared_ptr<Timer>);
-    friend void TimerMngr::execTimer(ITimer *);
-
     Timer() = delete;
+    Timer(const Timer &other) = delete;
+    Timer(Timer &&other) = default;
     ~Timer() = default;
-
-    Timer(std::size_t id,
-          float interval,
-          std::variant<SourcePawn::IPluginFunction *, TimerCallback> &&func,
-          std::variant<cell_t, void *> &&data,
-          bool pause);
 
     float getInterval() const override;
     bool isPaused() const override;
@@ -82,6 +76,12 @@ public:
     std::size_t getId() const;
 
 private:
+    Timer(std::size_t id,
+          float interval,
+          TimerCallback func,
+          void *data,
+          bool pause);
+
     bool exec(float time);
 
     /* id of timer */
@@ -91,10 +91,10 @@ private:
     float m_interval;
 
     /* callback */
-    std::variant<SourcePawn::IPluginFunction *, TimerCallback> m_callback;
+    TimerCallback m_callback;
 
     /* callback data */
-    std::variant<cell_t, void *> m_data;
+    void *m_data;
 
     /* Pause state */
     bool m_paused;
