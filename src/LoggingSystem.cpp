@@ -102,7 +102,7 @@ void Logger::sendMsgToConsole(const char *format, ...) const
     sendMsgToConsoleCore(logMsg);
 }
 
-void Logger::resetErrorState()
+void Logger::resetState()
 {
     m_alreadyReported = false;
 }

@@ -21,8 +21,8 @@ int gmsgShowMenu = 0;
 int gmsgVGUIMenu = 0;
 
 MenuItem::MenuItem(std::string_view name,
-                   std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> callback,
-                   std::variant<cell_t, void *> data,
+                   MenuItemCallback callback,
+                   void *data,
                    NavigationType type) : m_name(name),
                                           m_callback(callback),
                                           m_data(data),
@@ -40,11 +40,12 @@ void MenuItem::setName(const char *name)
 
 void *MenuItem::getData() const
 {
-    return std::get<void *>(m_data);
+    return m_data;
 }
+
 void MenuItem::setData(void *data)
 {
-    setDataCore(data);
+    m_data = data;
 }
 
 NavigationType MenuItem::getNavType() const
@@ -67,22 +68,13 @@ void MenuItem::setNameCore(std::string_view name)
     m_name = name.data();
 }
 
-cell_t MenuItem::getDataCore() const
-{
-    return std::get<cell_t>(m_data);
-}
-void MenuItem::setDataCore(std::variant<cell_t, void *> &&data)
-{
-    m_data = data;
-}
-
 ItemStatus MenuItem::execCallbackCore(Menu *menu,
                                       std::shared_ptr<MenuItem> item,
                                       std::shared_ptr<Player> player) const
 {
     ItemStatus result = ItemStatus::Enabled;
     
-    try
+    /*try
     {
         auto *func = std::get<SourcePawn::IPluginFunction *>(m_callback);
         if(func && func->IsRunnable())
@@ -94,21 +86,14 @@ ItemStatus MenuItem::execCallbackCore(Menu *menu,
             func->PushCell(static_cast<cell_t>(player->getIndex()));
             func->Execute(reinterpret_cast<cell_t*>(&result));
         }
-    }
-    catch (const std::bad_variant_access &e [[maybe_unused]])
-    {
-        auto func = std::get<MenuItemCallback>(m_callback);
-        if(func)
-        {
-            result = func(menu, item.get(), player.get());
-        }
-    }
+    }*/
+    result = m_callback(menu, item.get(), player.get());
 
     return result;
 }
 
 Menu::Menu(std::size_t id,
-           std::variant<SourcePawn::IPluginFunction *, MenuItemHandler, MenuTextHandler> &&handler,
+           std::variant<MenuItemHandler, MenuTextHandler> &&handler,
            MenuStyle style,
            bool global) : m_id(id),
                           m_style(style),
@@ -350,10 +335,10 @@ void Menu::appendItem(const char *name,
 }
 
 void Menu::appendItemCore(std::string_view name,
-                          std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                          std::variant<cell_t, void *> &&data)
+                          MenuItemCallback callback,
+                          void *data)
 {
-    _addItem(-1, name, std::move(callback), std::move(data));
+    _addItem(-1, name, callback, data);
 }
 
 bool Menu::insertItem(std::size_t position,
@@ -366,13 +351,13 @@ bool Menu::insertItem(std::size_t position,
 
 bool Menu::insertItemCore(std::size_t position,
                           std::string_view name,
-                          std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                          std::variant<cell_t, void *> &&data)
+                          MenuItemCallback callback,
+                          void *data)
 {
     if(position >= m_items.size())
         return false;
     
-    _addItem(position, name, std::move(callback), std::move(data));
+    _addItem(position, name, callback, data);
 
     return true;
 }
@@ -387,13 +372,13 @@ bool Menu::setStaticItem(std::size_t position,
 
 bool Menu::setStaticItemCore(std::size_t position,
                              std::string_view name,
-                             std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                             std::variant<cell_t, void *> &&data)
+                             MenuItemCallback callback,
+                             void *data)
 {
     if(position >= m_itemsPerPage)
         return false;
     
-    m_staticItems[position] = std::make_shared<MenuItem>(name.data(), std::move(callback), std::move(data), NavigationType::None);
+    m_staticItems[position] = std::make_shared<MenuItem>(name.data(), callback, data, NavigationType::None);
 
     return true;
 }
@@ -448,7 +433,7 @@ int Menu::getItemIndex(std::shared_ptr<MenuItem> item) const
 void Menu::execTextHandler(std::shared_ptr<Player> player,
                            int key)
 {
-    try
+    /*try
     {
         auto *func = std::get<SourcePawn::IPluginFunction *>(m_handler);
         if(func && func->IsRunnable())
@@ -458,18 +443,15 @@ void Menu::execTextHandler(std::shared_ptr<Player> player,
             func->PushCell(static_cast<cell_t>(player->getIndex()));
             func->Execute(nullptr);
         }
-    }
-    catch (const std::bad_variant_access &e [[maybe_unused]])
-    {
-        auto func = std::get<MenuTextHandler>(m_handler);
-        func(this, key, player.get());
-    }
+    }*/
+    auto func = std::get<MenuTextHandler>(m_handler);
+    func(this, key, player.get());
 }
 
 void Menu::execItemHandler(std::shared_ptr<Player> player,
                            std::shared_ptr<MenuItem> item)
 {
-    try
+    /*try
     {
         auto *func = std::get<SourcePawn::IPluginFunction *>(m_handler);
         if(func && func->IsRunnable())
@@ -488,12 +470,9 @@ void Menu::execItemHandler(std::shared_ptr<Player> player,
             func->PushCell(static_cast<cell_t>(player->getIndex()));
             func->Execute(nullptr);
         }
-    }
-    catch (const std::bad_variant_access &e [[maybe_unused]])
-    {
-        auto func = std::get<MenuItemHandler>(m_handler);
-        func(this, item.get(), player.get());
-    }
+    }*/
+    auto func = std::get<MenuItemHandler>(m_handler);
+    func(this, item.get(), player.get());
 }
 
 void Menu::execExitHandler(std::shared_ptr<Player> player)
@@ -508,10 +487,10 @@ std::size_t Menu::getId() const
 
 void Menu::_addItem(int position,
                     std::string_view name,
-                    std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                    std::variant<cell_t, void *> &&data)
+                    MenuItemCallback callback,
+                    void *data)
 {
-    auto item = std::make_shared<MenuItem>(name.data(), std::move(callback), std::move(data), NavigationType::None);
+    auto item = std::make_shared<MenuItem>(name.data(), callback, data, NavigationType::None);
     if(position == -1)
     {
         m_items.push_back(item);

@@ -30,10 +30,10 @@ static qboolean ClientConnect(edict_t *pEntity,
     if (!plrMngr->ClientConnect(pEntity, pszName, pszAddress, szRejectReason))
         RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
 
-    cell_t result;
+    IForward::ReturnValue result;
     std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnect);
 
-    forward->pushCell(plrMngr->getPlayerCore(pEntity)->getIndex());
+    forward->pushInt(plrMngr->getPlayerCore(pEntity)->getIndex());
     forward->pushString(pszName);
     forward->pushString(pszAddress);
     forward->pushStringEx(szRejectReason, 128, sflags::Utf8 | sflags::Copy, true);
@@ -50,13 +50,13 @@ static void ClientCommand(edict_t *pEntity)
     using def = ForwardMngr::FwdDefault;
 
     {
-        cell_t result;
+        IForward::ReturnValue result;
         std::shared_ptr<Forward> fwdCmd = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientCommmand);
 
         if (!fwdCmd)
             RETURN_META(MRES_IGNORED);
 
-        fwdCmd->pushCell(ENTINDEX(pEntity));
+        fwdCmd->pushInt(ENTINDEX(pEntity));
         fwdCmd->execFunc(&result);
 
         if (result == IForward::ReturnValue::PluginStop)
@@ -81,11 +81,11 @@ static void ClientCommand(edict_t *pEntity)
             std::regex cmdToMatch(cmd->getCmd().data());
             if (std::regex_search(strCmd, cmdToMatch) && cmd->hasAccess())
             {
-                cell_t result;
-                SourcePawn::IPluginFunction *func = cmd->getFunc();
+                IForward::ReturnValue result;
+                /*SourcePawn::IPluginFunction *func = cmd->getFunc();
                 func->PushCell(ENTINDEX(pEntity));
                 func->PushCell(cmd->getId());
-                func->Execute(&result);
+                func->Execute(&result);*/
 
                 if (result == IForward::ReturnValue::PluginStop || result == IForward::ReturnValue::PluginHandled)
                 {
@@ -167,15 +167,16 @@ static void ServerActivatePost(edict_t *pEdictList,
 
     gSPGlobal->getForwardManagerCore()->addDefaultsForwards();
 
-    const std::unique_ptr<PluginMngr> &pluginManager = gSPGlobal->getPluginManagerCore();
-
-    pluginManager->addDefaultNatives();
+    #error Execute PluginMngr in exts
 
     gSPGlobal->loadExts();
 
-    pluginManager->setPluginPrecache(true);
+    /*pluginManager->setPluginPrecache(true);
     pluginManager->loadPlugins();
-    pluginManager->setPluginPrecache(false);
+    pluginManager->setPluginPrecache(false);*/
+
+    #error Tell exts to load plugins
+
     installRehldsHooks();
 }
 
@@ -183,22 +184,19 @@ static void ServerDeactivatePost()
 {
     using def = ForwardMngr::FwdDefault;
 
-    const std::unique_ptr<PluginMngr> &plMngr = gSPGlobal->getPluginManagerCore();
-    plMngr->clearPlugins();
-    plMngr->clearNatives();
-
-    gSPGlobal->unloadExts();
-
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
     fwdMngr->getDefaultForward(def::PluginEnd)->execFunc(nullptr);
-    fwdMngr->clearForwards();
+
+    #error Tell exts to unload plugins
+
+    gSPGlobal->unloadExts();
 
     gSPGlobal->getTimerManagerCore()->clearTimers();
     gSPGlobal->getCommandManagerCore()->clearCommands();
     gSPGlobal->getCvarManagerCore()->clearCvarsCallback();
     gSPGlobal->getMenuManagerCore()->clearMenus();
     fwdMngr->clearForwards();
-    gSPGlobal->getLoggerCore()->resetErrorState();
+    gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD")->resetState();
     uninstallRehldsHooks();
 }
 
@@ -227,7 +225,7 @@ static void ClientPutInServerPost(edict_t *pEntity)
     plrMngr->ClientPutInServerPost(pEntity);
 
     std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServer);
-    forward->pushCell(plrMngr->getPlayerCore(pEntity)->getIndex());
+    forward->pushInt(plrMngr->getPlayerCore(pEntity)->getIndex());
     forward->execFunc(nullptr);
 }
 
@@ -313,15 +311,10 @@ NEW_DLL_FUNCTIONS gNewDllFunctionTable =
     nullptr,					//! pfnCvarValue2()
 };
 
-void GameShutdownPost()
-{
-    gSPGlobal->getSPEnvironment()->Shutdown();
-}
-
 NEW_DLL_FUNCTIONS gNewDllFunctionTablePost =
 {
     nullptr,					//! pfnOnFreeEntPrivateData()	Called right before the object's memory is freed.  Calls its destructor.
-    GameShutdownPost,			//! pfnGameShutdown()
+    nullptr,			        //! pfnGameShutdown()
     nullptr,					//! pfnShouldCollide()
     nullptr,					//! pfnCvarValue()
     nullptr,					//! pfnCvarValue2()

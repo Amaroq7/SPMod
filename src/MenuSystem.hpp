@@ -33,8 +33,8 @@ class MenuItem: public IMenuItem
 {
 public:
     MenuItem(std::string_view name,
-             std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> callback,
-             std::variant<cell_t, void *> data,
+             MenuItemCallback callback,
+             void *data,
              NavigationType type);
     
     ~MenuItem() = default;
@@ -54,17 +54,14 @@ public:
     std::string_view getNameCore() const;
     void setNameCore(std::string_view name);
 
-    cell_t getDataCore() const;
-    void setDataCore(std::variant<cell_t, void *> &&data);
-
     ItemStatus execCallbackCore(Menu *menu,
                                 std::shared_ptr<MenuItem> item,
                                 std::shared_ptr<Player> player) const;
 
 private:
     std::string m_name;
-    std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> m_callback;
-    std::variant<cell_t, void *> m_data;
+    MenuItemCallback m_callback;
+    void *m_data;
     NavigationType m_type;
 };
 
@@ -72,7 +69,7 @@ class Menu: public IMenu
 {
 public:
     Menu(std::size_t id,
-         std::variant<SourcePawn::IPluginFunction *, MenuItemHandler, MenuTextHandler> &&handler,
+         std::variant<MenuItemHandler, MenuTextHandler> &&handler,
          MenuStyle style,
          bool global);
 
@@ -130,18 +127,18 @@ public:
     void setTextCore(std::string_view text);
 
     void appendItemCore(std::string_view name,
-                        std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                        std::variant<cell_t, void *> &&data);
+                        MenuItemCallback callback,
+                        void *data);
 
     bool insertItemCore(std::size_t position,
                         std::string_view name,
-                        std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                        std::variant<cell_t, void *> &&data);
+                        MenuItemCallback callback,
+                        void *data);
 
     bool setStaticItemCore(std::size_t position,
                            std::string_view name,
-                           std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                           std::variant<cell_t, void *> &&data);
+                           MenuItemCallback callback,
+                           void *data);
     
     std::shared_ptr<MenuItem> getItemCore(std::size_t position) const;
     int getItemIndex(std::shared_ptr<MenuItem> menu) const;
@@ -160,8 +157,8 @@ public:
 private:
     void _addItem(int position,
                   std::string_view name,
-                  std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                  std::variant<cell_t, void *> &&data);
+                  MenuItemCallback callback,
+                  void *data);
 private:
     std::size_t m_id;
     MenuStyle m_style;
@@ -180,7 +177,7 @@ private:
     std::shared_ptr<MenuItem> m_backItem;
     std::shared_ptr<MenuItem> m_exitItem;
 
-    std::variant<SourcePawn::IPluginFunction *, MenuItemHandler, MenuTextHandler> m_handler;
+    std::variant<MenuItemHandler, MenuTextHandler> m_handler;
 
     std::vector<std::shared_ptr<MenuItem>> m_items;
 };

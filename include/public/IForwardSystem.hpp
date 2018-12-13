@@ -47,12 +47,13 @@ namespace SPMod
         enum class ParamType : uint8_t
         {
             None = 0,
-            Cell,
-            CellRef,
-            Float,
-            FloatRef,
-            Array,
-            String
+            Array = (1 << 0),
+            Int = (1 << 1),
+            IntRef = (1 << 2),
+            Float = (1 << 3),
+            FloatRef = (1 << 4),
+            String = (1 << 5),
+            Data = (1 << 6)    // Generic data
         };
 
         /*
@@ -82,6 +83,16 @@ namespace SPMod
             /* String should be handled as binary data */
             Binary = (1 << 2)
         };
+
+        struct Param
+        {
+            void *m_data;
+            std::size_t m_size; /* Array or stringEx length */
+            bool m_copyback; /* True if data is meant to be overwritten */
+            StringFlags m_stringFlags; /* String flags */
+        };
+
+        static constexpr std::size_t MAX_EXEC_PARAMS = 32;
 
         /*
          * @brief Returns forward name.
@@ -117,34 +128,27 @@ namespace SPMod
         virtual size_t getParamsNum() const = 0;
 
         /*
-         * @brief Returns forward id.
+         * @brief Pushes int to the current call.
          *
-         * @return      Forward id.
-         */
-        virtual std::size_t getId() const = 0;
-
-        /*
-         * @brief Pushes cell to current call.
-         *
-         * @param cell    Cell to pass.
+         * @param int     Integer to pass.
          *
          * @return        True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushCell(cell_t cell) = 0;
+        virtual bool pushInt(int integer) = 0;
 
         /*
-         * @brief Pushes cell pointer to current call.
+         * @brief Pushes integer pointer to the current call.
          *
-         * @param cell      Cell pointer to pass.
+         * @param integer   Integer pointer to pass.
          * @param copyback  True if copy back value, false to not.
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushCellPtr(cell_t *cell,
-                                 bool copyback) = 0;
+        virtual bool pushIntPtr(int *integer,
+                                bool copyback) = 0;
 
         /*
-         * @brief Pushes real to current call.
+         * @brief Pushes real to the current call.
          *
          * @param real    Real to pass.
          *
@@ -153,7 +157,7 @@ namespace SPMod
         virtual bool pushFloat(float real) = 0;
 
         /*
-         * @brief Pushes real pointer to current call.
+         * @brief Pushes real pointer to the current call.
          *
          * @param real      Real pointer to pass.
          * @param copyback  True if copy back value, false to not.
@@ -164,7 +168,7 @@ namespace SPMod
                                   bool copyback) = 0;
 
         /*
-         * @brief Pushes array to current call.
+         * @brief Pushes array to the current call.
          *
          * @param array     Array to pass.
          * @param size      Size of the array.
@@ -172,12 +176,12 @@ namespace SPMod
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushArray(cell_t *array,
+        virtual bool pushArray(void *array,
                                std::size_t size,
                                bool copyback) = 0;
 
         /*
-         * @brief Pushes string to current call.
+         * @brief Pushes string to the current call.
          *
          * @param string    String to pass.
          *
@@ -186,7 +190,7 @@ namespace SPMod
         virtual bool pushString(const char *string) = 0;
 
         /*
-         * @brief Pushes string to current call.
+         * @brief Pushes string to the current call.
          *
          * @param string    String to pass.
          * @param length    Length of the string.
@@ -201,7 +205,16 @@ namespace SPMod
                                   bool copyback) = 0;
 
         /*
-         * @brief Pushes string to current call.
+         * @brief Pushes generic data to the current call.
+         *
+         * @param data      Generic data to pass.
+         *
+         * @return          True if succeed, false if parameter type is wrong.
+         */
+        virtual bool pushData(void *data) = 0;
+
+        /*
+         * @brief Pushes string to the current call.
          *
          * @note If execution has been successful, then pushed params are reset.
          *
@@ -211,7 +224,7 @@ namespace SPMod
          *
          * @return          True if succeed, false if execution failed.
          */
-        virtual bool execFunc(cell_t *result) = 0;
+        virtual bool execFunc(ReturnValue *result) = 0;
 
         /*
          * @brief Resets params already pushed to forward.
@@ -224,14 +237,15 @@ namespace SPMod
         virtual ~IForward() = default;
     };
 
-    struct ForwardList
-    {
-        /* Current forward */
-        IForward *forward;
-
-        /* Next forward in the list, nullptr if there is no more forwards */
-        ForwardList *next;
-    };
+    /**
+     * @brief Callback gets executed when forward is being executed.
+     * 
+     * @param fwd      Forward that is being executed.
+     * @param params   Params passed to forward.
+     * 
+     * @return         If forward is meant for a single plugin then it should return ExecType::Ignore, otherwise return value should be the same value returned by plugins.
+     */
+    using ForwardCallback = IForward::ReturnValue (*)(const IForward *const fwd, IForward::Param *params);
 
     class IForwardMngr SPMOD_FINAL : public ISPModInterface
     {
@@ -270,7 +284,7 @@ namespace SPMod
          *
          * @param name      Name of the forward.
          * @param exec      Exec type.
-         * @param params    Number of parameters, cannot exceed 32.
+         * @param params    Number of parameters, cannot exceed MAX_EXEC_PARAMS.
          * @param ...       Types of parameters (IForward::ParamType).
          *
          * @return          Forward pointer, nullptr if failed.
@@ -308,28 +322,13 @@ namespace SPMod
         virtual void deleteForward(IForward *forward) = 0;
 
         /*
-         * @brief Returns number of forwards.
+         * @brief Adds listener.
          *
-         * @return          Number of created forwards.
-         */
-        virtual std::size_t getForwardsNum() const = 0;
-
-        /*
-         * @brief Gets list of forwards.
-         *
-         * @note Static list. It is safe to remove forwards while iterating it.
-         * @note Needs to be freed using freeForwardsList().
-         *
-         * @return          Pointer to list, nullptr if there is no forwards.
-         */
-         virtual const ForwardList *getForwardsList() const = 0;
-
-        /*
-         * @brief Frees list of forwards.
+         * @param func   Function to be called.
          *
          * @noreturn
          */
-         virtual void freeForwardsList(const ForwardList *list) const = 0;
+        virtual void addForwardListener(ForwardCallback func) = 0;
 
     protected:
         virtual ~IForwardMngr() = default;
@@ -395,19 +394,5 @@ namespace SPMod
         returnVal ^= static_cast<std::underlying_type_t<T>>(rhs);
 
         return static_cast<T>(returnVal);
-    }
-
-    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline bool operator ==(cell_t lhs,
-                            const T rhs)
-    {
-        return lhs == static_cast<std::underlying_type_t<T>>(rhs);
-    }
-
-    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline bool operator !=(cell_t lhs,
-                            const T rhs)
-    {
-        return lhs != static_cast<std::underlying_type_t<T>>(rhs);
     }
 }

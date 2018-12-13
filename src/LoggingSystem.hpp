@@ -109,7 +109,7 @@ public:
         _writeToFile(errorToLog.str());
     }
 
-    void resetErrorState();
+    void resetState();
 
 private:
     Logger(std::string_view prefix);

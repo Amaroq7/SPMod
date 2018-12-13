@@ -46,7 +46,6 @@ public:
     std::string_view asStringCore() const;
     std::string_view getNameCore() const;
     void addCallback(cvarCallback_t callback) override;
-    void addPluginCallback(SourcePawn::IPluginFunction *callback) override;
     void runCallbacks(std::string_view old_value,
                       std::string_view new_value);
 
@@ -60,7 +59,6 @@ private:
     std::size_t      m_id;
     cvar_t      *m_cvar;
     std::vector<cvarCallback_t> m_callbacks;
-    std::vector<SourcePawn::IPluginFunction*> m_plugin_callbacks;
 };
 
 

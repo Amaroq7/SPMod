@@ -214,11 +214,6 @@ void Cvar::addCallback(cvarCallback_t callback)
     m_callbacks.push_back(callback);
 }
 
-void Cvar::addPluginCallback(SourcePawn::IPluginFunction *callback)
-{
-    m_plugin_callbacks.push_back(callback);
-}
-
 void Cvar::runCallbacks(std::string_view old_value,
                         std::string_view new_value)
 
@@ -227,19 +222,11 @@ void Cvar::runCallbacks(std::string_view old_value,
     {
         callback(this, old_value.data(), new_value.data());
     }
-    for (auto callback : m_plugin_callbacks)
-    {            
-        callback->PushCell(static_cast<cell_t>(m_id));
-        callback->PushString(old_value.data());
-        callback->PushString(new_value.data());
-        callback->Execute(nullptr);
-    }
 }
 
 void Cvar::clearCallback()
 {
     m_callbacks.clear();
-    m_plugin_callbacks.clear();
 }
 
 void Cvar::setValueCore(std::string_view val)
