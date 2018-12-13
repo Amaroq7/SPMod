@@ -6,4 +6,4 @@
 	url = https://github.com/theAsmodai/metamod-r
 [submodule "exts/sourcepawn/sourcepawn"]
 	path = exts/sourcepawn/sourcepawn
-	url = git@github.com:alliedmodders/sourcepawn.git
+	url = https://github.com/alliedmodders/sourcepawn
