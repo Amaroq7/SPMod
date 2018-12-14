@@ -32,7 +32,7 @@ public:
     template<typename ...Args>
     std::shared_ptr<Timer> createTimerCore(Args... args)
     {
-        return m_timers.emplace_back(std::make_shared<Timer>(m_id++, std::forward<Args>(args)...));
+        return m_timers.emplace_back(std::make_shared<Timer>(std::forward<Args>(args)...));
     }
 
     ITimer *createTimer(float interval,
@@ -42,25 +42,23 @@ public:
 
     void removeTimer(ITimer *timer) override;
     void execTimer(ITimer *timer) override;
-    std::shared_ptr<Timer> getTimer(std::size_t id) const;
     void execTimers(float time);
     void clearTimers();
     void execTimerCore(std::shared_ptr<Timer> timer);
-    void removeTimerCore(std::size_t id);
+    void removeTimerCore(std::shared_ptr<Timer> timer);
 
     /* next execution of timers */
     static inline float m_nextExecution;
 
 private:
-    /* keeps track of timers ids */
-    std::size_t m_id;
-
     std::vector<std::shared_ptr<Timer>> m_timers;
 };
 
 class Timer final : public ITimer
 {
-    friend class TimerMngr;
+    friend void TimerMngr::execTimer(ITimer *timer);
+    friend void TimerMngr::execTimerCore(std::shared_ptr<Timer> timer);
+    friend void TimerMngr::execTimers(float time);
 
 public:
     Timer() = delete;
@@ -68,24 +66,18 @@ public:
     Timer(Timer &&other) = default;
     ~Timer() = default;
 
+    Timer(float interval,
+          TimerCallback func,
+          void *data,
+          bool pause);
+
     float getInterval() const override;
     bool isPaused() const override;
     void setInterval(float newint) override;
     void setPause(bool pause) override;
 
-    std::size_t getId() const;
-
 private:
-    Timer(std::size_t id,
-          float interval,
-          TimerCallback func,
-          void *data,
-          bool pause);
-
     bool exec(float time);
-
-    /* id of timer */
-    std::size_t m_id;
 
     /* interval */
     float m_interval;

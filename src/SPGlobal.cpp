@@ -200,6 +200,7 @@ fs::path SPGlobal::getPathCore(DirType type) const
         case DirType::Exts: return m_SPModExtsDir;
         case DirType::Logs: return m_SPModLogsDir;
         case DirType::Plugins: return m_SPModPluginsDir;
+        default: return {};
     }
 }
 

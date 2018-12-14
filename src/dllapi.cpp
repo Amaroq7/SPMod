@@ -68,7 +68,8 @@ static void ClientCommand(edict_t *pEntity)
     std::string strCmd(CMD_ARGV(0));
 
     const std::unique_ptr<CommandMngr> &cmdMngr = gSPGlobal->getCommandManagerCore();
-    if (cmdMngr->getCommandsNum(CmdType::Client))
+    std::shared_ptr<Player> player = gSPGlobal->getPlayerManagerCore()->getPlayerCore(pEntity);
+    if (cmdMngr->getCommandsNum(ICommand::Type::Client))
     {
         if (!strCmd.compare("say") || !strCmd.compare("say_team"))
         {
@@ -76,10 +77,10 @@ static void ClientCommand(edict_t *pEntity)
             strCmd += CMD_ARGV(1);
         }
 
-        for (const auto &cmd : cmdMngr->getCommandList(CmdType::Client))
+        for (const auto &cmd : cmdMngr->getCommandList(ICommand::Type::Client))
         {
-            std::regex cmdToMatch(cmd->getCmd().data());
-            if (std::regex_search(strCmd, cmdToMatch) && cmd->hasAccess())
+            std::regex cmdToMatch(cmd->getCmdCore().data());
+            if (std::regex_search(strCmd, cmdToMatch) && cmd->hasAccessCore(player))
             {
                 IForward::ReturnValue result;
                 /*SourcePawn::IPluginFunction *func = cmd->getFunc();
@@ -196,7 +197,6 @@ static void ServerDeactivatePost()
     gSPGlobal->getCvarManagerCore()->clearCvarsCallback();
     gSPGlobal->getMenuManagerCore()->clearMenus();
     fwdMngr->clearForwards();
-    gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD")->resetState();
     uninstallRehldsHooks();
 }
 

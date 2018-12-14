@@ -214,6 +214,26 @@ bool Forward::pushStringEx(char *buffer,
     return true;
 }
 
+bool Forward::pushData(void *data,
+                       bool copyback)
+{
+    try
+    {
+        if (m_paramTypes.at(m_currentPos) != ParamType::String)
+            return false;
+
+        Param &param = m_params.at(m_currentPos++);
+        param.m_data = data;
+        param.m_copyback = copyback;
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
+        return false;
+    }
+
+    return true;
+}
+
 bool MultiForward::execFunc(ReturnValue *result)
 {
     // If passed number of passed arguments is lower then required one fail now
@@ -364,7 +384,7 @@ IPlugin *SingleForward::getPlugin() const
     return m_plugin;
 }
 
-bool MultiForward::execFunc(ReturnValue *result)
+bool SingleForward::execFunc(ReturnValue *result)
 {
     // If passed number of passed arguments is lower then required one fail now
     if (m_paramsNum > m_currentPos)
@@ -491,14 +511,14 @@ std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
 
     // Global forward
     if (!plugin)
-        forward = std::make_shared<MultiForward>(name, params, paramsnum, exec);
+        forward = std::make_shared<MultiForward>(name, params, paramsnum, exec, m_callbacks);
     // Forward for one plugin
     else
     {
         // Forward may be not found in plugin
         try
         {
-            forward = std::make_shared<SingleForward>(name, params, paramsnum, plugin);
+            forward = std::make_shared<SingleForward>(name, params, paramsnum, plugin, m_callbacks);
         }
         catch (const std::runtime_error &e [[maybe_unused]])
         {

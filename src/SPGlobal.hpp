@@ -21,7 +21,7 @@
 
 class ForwardMngr;
 class CvarMngr;
-class Logger;
+class LoggerMngr;
 
 class SPGlobal final : public ISPGlobal
 {

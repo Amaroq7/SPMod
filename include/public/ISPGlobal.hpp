@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <cstddef>
+#include <cinttypes>
 #include <IHelpers.hpp>
 #include <IInterface.hpp>
 #include <IForwardSystem.hpp>
@@ -27,10 +27,11 @@
 #include <IUtilsSystem.hpp>
 #include <IPlayerSystem.hpp>
 #include <ILoggerSystem.hpp>
+#include <ICmdSystem.hpp>
 
 namespace SPMod
 {
-    enum class DirType : uint8_t
+    enum class DirType : std::uint8_t
     {
         Home = 0,
         Dlls,

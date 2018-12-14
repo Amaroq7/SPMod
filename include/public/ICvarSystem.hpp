@@ -127,13 +127,6 @@ namespace SPMod
         virtual void addCallback(cvarCallback_t callback) = 0;
 
         /**
-        * @brief Add callback for cvar (for modules)
-        *
-        * @noreturn
-        */
-        virtual void addPluginCallback(SourcePawn::IPluginFunction *callback) = 0;
-
-        /**
         * @brief Return cvar value as integer.
         *
         * @return    Integer cvar value

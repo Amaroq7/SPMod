@@ -208,10 +208,12 @@ namespace SPMod
          * @brief Pushes generic data to the current call.
          *
          * @param data      Generic data to pass.
+         * @param copyback  True if copy back value, false to not.
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushData(void *data) = 0;
+        virtual bool pushData(void *data,
+                              bool copyback) = 0;
 
         /*
          * @brief Pushes string to the current call.

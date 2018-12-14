@@ -31,6 +31,8 @@ public:
     Logger(Logger &&other) = default;
     ~Logger() = default;
 
+    Logger(std::string_view prefix);
+
     // ILogger
     void setFilename(const char *filename) override;
     void logToConsole(LogType type, const char *format, ...) const override;
@@ -78,13 +80,13 @@ public:
         if (m_filename.empty())
             return;
 
-        std::stringstream errorToLog;
+        std::stringstream messageToLog;
 
-        errorToLog << m_prefix << " ";
-        (errorToLog << ... << args);
-        errorToLog << '\n';
+        messageToLog << m_prefix << " ";
+        (messageToLog << ... << args);
+        messageToLog << '\n';
 
-        _writeToFile(errorToLog.str());
+        _writeToFile(messageToLog.str());
     }
 
     template <typename ...Args>
@@ -106,18 +108,13 @@ public:
         if (m_filename.empty())
             return;
 
-        _writeToFile(errorToLog.str());
+        _writeToFile(messageToLog.str());
     }
 
-    void resetState();
-
 private:
-    Logger(std::string_view prefix);
-
     std::string m_prefix;
     std::string m_filename;
-    void _writeToFile(std::string_view msg);
-    bool m_alreadyReported;
+    void _writeToFile(std::string_view msg) const;
 };
 
 class LoggerMngr final : public ILoggerMngr

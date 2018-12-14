@@ -64,7 +64,8 @@ public:
                       IForward::StringFlags sflags,
                       bool copyback) override;
 
-    bool pushData(void *data) override;
+    bool pushData(void *data,
+                  bool copyback) override;
 
     bool isExecuted() const;
 
@@ -77,20 +78,20 @@ protected:
     /* parameters types */
     std::array<IForward::ParamType, MAX_EXEC_PARAMS> m_paramTypes;
 
-    /* number of already pushed params */
-    std::size_t m_currentPos;
-
     /* number of parameters in forward */
     std::size_t m_paramsNum;
 
     /* true if forward is being executed */
     bool m_exec;
 
+    /* stores parameters */
+    std::array<IForward::Param, MAX_EXEC_PARAMS> m_params;
+
     /* extensions' callbacks */
     const std::vector<ForwardCallback> &m_callbacks;
 
-    /* stores parameters */
-    std::array<IForward::Param, MAX_EXEC_PARAMS> m_params;
+    /* number of already pushed params */
+    std::size_t m_currentPos;
 };
 
 /*
@@ -102,18 +103,7 @@ protected:
 
 class MultiForward final : public Forward
 {
-    friend class ForwardMngr;
-
 public:
-    ~MultiForward() = default;
-
-    // IForward
-    IPlugin *getPlugin() const override;
-
-    bool execFunc(ReturnValue *result) override;
-
-private:
-
     MultiForward(std::string_view name,
                  std::array<IForward::ParamType, MAX_EXEC_PARAMS> paramstypes,
                  std::size_t params,
@@ -123,7 +113,14 @@ private:
     MultiForward() = delete;
     MultiForward(const MultiForward &other) = delete;
     MultiForward(MultiForward &&other) = default;
+    ~MultiForward() = default;
 
+    // IForward
+    IPlugin *getPlugin() const override;
+
+    bool execFunc(ReturnValue *result) override;
+
+private:
     /* helper function to push params to plugin function */
     // void pushParamsToFunction(SourcePawn::IPluginFunction *func);
 
@@ -141,17 +138,7 @@ private:
 
 class SingleForward final : public Forward
 {
-    friend class ForwardMngr;
-
 public:
-    ~SingleForward() = default;
-
-    // IForward
-    IPlugin *getPlugin() const override;
-    bool execFunc(ReturnValue *result) override;
-
-private:
-
     SingleForward(std::string_view name,
                   std::array<IForward::ParamType, MAX_EXEC_PARAMS> paramstypes,
                   std::size_t params,
@@ -161,7 +148,13 @@ private:
     SingleForward() = delete;
     SingleForward(const SingleForward &other) = delete;
     SingleForward(SingleForward &&other) = default;
+    ~SingleForward() = default;
 
+    // IForward
+    IPlugin *getPlugin() const override;
+    bool execFunc(ReturnValue *result) override;
+
+private:
     /* plugin which the function will be executed in */
     IPlugin *m_plugin;
 };

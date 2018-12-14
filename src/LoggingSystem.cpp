@@ -102,12 +102,7 @@ void Logger::sendMsgToConsole(const char *format, ...) const
     sendMsgToConsoleCore(logMsg);
 }
 
-void Logger::resetState()
-{
-    m_alreadyReported = false;
-}
-
-void Logger::_writeToFile(std::string_view msg)
+void Logger::_writeToFile(std::string_view msg) const
 {
     using fFlags = std::ios_base;
 
@@ -129,9 +124,9 @@ void Logger::_writeToFile(std::string_view msg)
     std::strftime(logDateTime, sizeof(logDateTime), "%Y/%m/%d - %H:%M:%S: ", &convertedTime);
     std::strftime(fileName, sizeof(fileName), "logs_%Y%m%d.log", &convertedTime);
 
-    std::fstream logFile(gSPGlobal->getPathCore(DirType::Logs) / fileName, fFlags::out | fFlags::app);
+    std::fstream logFile(gSPGlobal->getPathCore(DirType::Logs) / fileName, fFlags::out | fFlags::app | fFlags::ate);
 
-    if (!m_alreadyReported)
+    if (!logFile.tellg())
     {
         logFile << logDateTime << "Start of error session.\n";
         logFile << logDateTime << "Info (map ";
@@ -149,7 +144,6 @@ void Logger::_writeToFile(std::string_view msg)
             logFile << "<unknown>";
 
         logFile << ")\n";
-        m_alreadyReported = true;
     }
 
     logFile << logDateTime << msg;

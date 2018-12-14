@@ -150,10 +150,6 @@ add_global_arguments(gCArgs, language : 'c')
 add_global_arguments(gCppArgs, language : 'cpp')
 add_global_link_arguments(gLinkArgs, language : [ 'c', 'cpp' ])
 
-spIncludesDir = [
-    join_paths('include', 'sourcepawn', 'include')
-]
-
 publicIncludesDir = [
     join_paths('include', 'public')
 ]
@@ -173,11 +169,10 @@ rehldsIncludesDir = [
 ]
 
 includeDirs = include_directories(publicIncludesDir,
-                                  spIncludesDir,
                                   metamodIncludesDir,
                                   rehldsIncludesDir,
                                   llvmIncludesDir,
                                   '.') #build directory
 
 subdir('src')
-subdir('exts')
+#subdir('exts')

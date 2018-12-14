@@ -40,8 +40,8 @@ static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain,
     }
 
     std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientDisconnect);
-    forward->pushCell(plr->getIndex());
-    forward->pushCell(crash);
+    forward->pushInt(plr->getIndex());
+    forward->pushInt(crash);
     forward->pushString(string);
     forward->execFunc(nullptr);
 
