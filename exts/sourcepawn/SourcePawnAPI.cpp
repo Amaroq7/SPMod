@@ -29,7 +29,7 @@ namespace SPExt
     {
         libraryDir /= SourcePawnAPI::sourcepawnLibrary;
 
-#ifdef SP_POSIX
+#if defined SP_POSIX
         void *libraryHandle = dlopen(libraryDir.c_str(), RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND);
 #else
         HMODULE libraryHandle = LoadLibrary(libraryDir.string().c_str());
@@ -38,7 +38,7 @@ namespace SPExt
         if (!libraryHandle)
             throw std::runtime_error("Failed to open SourcePawn library");
 
-#ifdef SP_POSIX
+#if defined SP_POSIX
         auto getFactoryFunc = reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>
                                     (dlsym(libraryHandle, "GetSourcePawnFactory"));
 #else
@@ -48,7 +48,7 @@ namespace SPExt
 
         if (!getFactoryFunc)
         {
-#ifdef SP_POSIX
+#if defined SP_POSIX
             dlclose(libraryHandle);
 #else
             FreeLibrary(libraryHandle);
@@ -59,7 +59,7 @@ namespace SPExt
         SourcePawn::ISourcePawnFactory *SPFactory = getFactoryFunc(SOURCEPAWN_API_VERSION);
         if (!SPFactory)
         {
-#ifdef SP_POSIX
+#if defined SP_POSIX
             dlclose(libraryHandle);
 #else
             FreeLibrary(libraryHandle);

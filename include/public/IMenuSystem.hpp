@@ -28,12 +28,6 @@ namespace SPMod
         Hide
     };
 
-    enum class MenuStyle
-    {
-        Item,
-        Text
-    };
-
     enum class NavigationType
     {
         None,
@@ -70,11 +64,17 @@ namespace SPMod
         using MenuItemHandler = void (*)(IMenu *const menu, IMenuItem *const item, IPlayer *const player);
         using MenuTextHandler = void (*)(IMenu *const menu, int key, IPlayer *const player);
 
+        enum class Style
+        {
+            Item,
+            Text
+        };
+
         virtual void display(IPlayer *const player,
                             int page,
                             int time) = 0;
         virtual bool getGlobal() const = 0;
-        virtual MenuStyle getStyle() const = 0;
+        virtual Style getStyle() const = 0;
 
         virtual void setText(const char *text) = 0;
         virtual void setKeys(int keys) = 0;

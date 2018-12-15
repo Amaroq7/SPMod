@@ -1,5 +1,7 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018 SPMod Development Team
+ *
+ *  This file is part of SPMod.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,6 +30,7 @@
 #include <IPlayerSystem.hpp>
 #include <ILoggerSystem.hpp>
 #include <ICmdSystem.hpp>
+#include <IPluginSystem.hpp>
 
 namespace SPMod
 {

@@ -101,7 +101,7 @@ const char *Plugin::getUrl() const
     return m_url.c_str();
 }
 
-const char *Plugin::getIndentity() const
+const char *Plugin::getIdentity() const
 {
     return m_identity.c_str();
 }
@@ -138,7 +138,7 @@ std::string_view Plugin::getUrlCore() const
 {
     return m_url;
 }
-std::string_view Plugin::getIndentityCore() const
+std::string_view Plugin::getIdentityCore() const
 {
     return m_identity;
 }

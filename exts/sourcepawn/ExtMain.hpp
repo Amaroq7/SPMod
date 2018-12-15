@@ -20,37 +20,41 @@
 #include <extdll.h>
 #include <ISPGlobal.hpp>
 
-class ModuleInterface final : public SPMod::IInterface
+namespace SPExt
 {
-    static constexpr uint16_t MAJOR_VERSION = 0;
-    static constexpr uint16_t MINOR_VERSION = 1;
-    static constexpr uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
-
-    const char *getName() const override
+    class ModuleInterface final : public SPMod::IInterface
     {
-        return "ISourcePawnModule";
-    }
+        static constexpr uint16_t MAJOR_VERSION = 0;
+        static constexpr uint16_t MINOR_VERSION = 1;
+        static constexpr uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
 
-    uint32_t getVersion() const override
-    {
-        return VERSION;
-    }
+        const char *getName() const override
+        {
+            return "ISourcePawnModule";
+        }
 
-    const char *getAuthor() const override
-    {
-        return "SPMod Development Team";
-    }
+        uint32_t getVersion() const override
+        {
+            return VERSION;
+        }
 
-    const char *getUrl() const override
-    {
-        return "https://github.com/Amaroq7/SPMod";
-    }
+        const char *getAuthor() const override
+        {
+            return "SPMod Development Team";
+        }
 
-    const char *getExtName() const override
-    {
-        return "SourcePawn Module";
-    }
-};
+        const char *getUrl() const override
+        {
+            return "https://github.com/Amaroq7/SPMod";
+        }
 
-extern ModuleInterface gModuleInterface;
+        const char *getExtName() const override
+        {
+            return "SourcePawn Module";
+        }
+    };
+
+    extern ModuleInterface gModuleInterface;
+}
+
 extern SPMod::ISPGlobal *gSPGlobal;

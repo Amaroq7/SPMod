@@ -21,6 +21,7 @@ static void ChangeLevel(const char *s1,
                         const char *s2[[maybe_unused]])
 {
     using def = ForwardMngr::FwdDefault;
+
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
     std::shared_ptr<Forward> fwdMapChange = fwdMngr->getDefaultForward(def::MapChange);
     IForward::ReturnValue result;

@@ -22,7 +22,7 @@ namespace SPMod
     class ICvar SPMOD_FINAL
     {
     public:
-        using cvarCallback_t = void (*)(const ICvar *cvar, const char *old_value, const char *new_value);
+        using CvarCallback = void (*)(const ICvar *cvar, const char *old_value, const char *new_value);
         /**
          * Cvar flags (from engine)
          */
@@ -77,13 +77,6 @@ namespace SPMod
         virtual Flags getFlags() const = 0;
 
         /**
-        * @brief Returns id of plugin.
-        *
-        * @return        Plugin id.
-        */
-        virtual std::size_t getId() const = 0;
-
-        /**
         * @brief Set's cvar value by string
         *
         * @param val           New value of the cvar.
@@ -124,7 +117,7 @@ namespace SPMod
         *
         * @noreturn
         */
-        virtual void addCallback(cvarCallback_t callback) = 0;
+        virtual void addCallback(CvarCallback callback) = 0;
 
         /**
         * @brief Return cvar value as integer.

@@ -18,14 +18,19 @@
 #include "ForwardSystem.hpp"
 
 Forward::Forward(std::string_view name,
-                 std::array<IForward::ParamType, MAX_EXEC_PARAMS> paramstypes,
+                 std::array<IForward::Param::Type, IForward::MAX_EXEC_PARAMS> paramstypes,
                  std::size_t params,
                  const std::vector<ForwardCallback> &callbacks) : m_name(name),
-                                                                  m_paramTypes(paramstypes),
                                                                   m_paramsNum(params),
                                                                   m_callbacks(callbacks),
                                                                   m_currentPos(0)
 {
+    std::size_t i = 0;
+    for (const auto &type : paramstypes)
+    {
+        IForward::Param &param = m_params.at(i++);
+        param.m_dataType = type;
+    }
 }
 
 const char *Forward::getName() const
@@ -33,15 +38,15 @@ const char *Forward::getName() const
     return m_name.c_str();
 }
 
-Forward::ParamType Forward::getParamType(std::size_t id) const
+const IForward::Param *Forward::getParam(std::size_t id) const
 {
     try
     {
-        return m_paramTypes.at(id);
+        return &m_params.at(id);
     }
     catch (const std::out_of_range &e [[maybe_unused]])
     {
-        return ParamType::None;
+        return nullptr;
     }
 }
 
@@ -64,10 +69,10 @@ bool Forward::pushInt(int integer)
 {
     try
     {
-        if (m_paramTypes.at(m_currentPos) != ParamType::Int)
+        IForward::Param &param = m_params.at(m_currentPos);
+        if (param.m_dataType != IForward::Param::Type::Int)
             return false;
 
-        Param &param = m_params.at(m_currentPos++);
         param.m_data = &integer;
         param.m_copyback = false;
         param.m_size = 0;
@@ -78,6 +83,7 @@ bool Forward::pushInt(int integer)
         return false;
     }
 
+    m_currentPos++;
     return true;
 }
 
@@ -86,10 +92,10 @@ bool Forward::pushIntPtr(int *integer,
 {
     try
     {
-        if (m_paramTypes.at(m_currentPos) != ParamType::IntRef)
+        IForward::Param &param = m_params.at(m_currentPos);
+        if (param.m_dataType != IForward::Param::Type::Int)
             return false;
 
-        Param &param = m_params.at(m_currentPos++);
         param.m_data = integer;
         param.m_copyback = copyback;
         param.m_size = 0;
@@ -100,6 +106,7 @@ bool Forward::pushIntPtr(int *integer,
         return false;
     }
 
+    m_currentPos++;
     return true;
 }
 
@@ -107,10 +114,10 @@ bool Forward::pushFloat(float real)
 {
     try
     {
-        if (m_paramTypes.at(m_currentPos) != ParamType::Float)
+        IForward::Param &param = m_params.at(m_currentPos);
+        if (param.m_dataType != IForward::Param::Type::Float)
             return false;
 
-        Param &param = m_params.at(m_currentPos++);
         param.m_data = &real;
         param.m_copyback = false;
         param.m_size = 0;
@@ -121,6 +128,7 @@ bool Forward::pushFloat(float real)
         return false;
     }
 
+    m_currentPos++;
     return true;
 }
 
@@ -129,10 +137,10 @@ bool Forward::pushFloatPtr(float *real,
 {
     try
     {
-        if (m_paramTypes.at(m_currentPos) != ParamType::FloatRef)
+        IForward::Param &param = m_params.at(m_currentPos);
+        if (param.m_dataType != IForward::Param::Type::Float)
             return false;
 
-        Param &param = m_params.at(m_currentPos++);
         param.m_data = &real;
         param.m_copyback = copyback;
         param.m_size = 0;
@@ -143,6 +151,7 @@ bool Forward::pushFloatPtr(float *real,
         return false;
     }
 
+    m_currentPos++;
     return true;
 }
 
@@ -152,10 +161,10 @@ bool Forward::pushArray(void *array,
 {
     try
     {
-        if (m_paramTypes.at(m_currentPos) != ParamType::Array)
+        IForward::Param &param = m_params.at(m_currentPos);
+        if (param.m_dataType != IForward::Param::Type::Array)
             return false;
 
-        Param &param = m_params.at(m_currentPos++);
         param.m_data = array;
         param.m_copyback = copyback;
         param.m_size = size;
@@ -166,6 +175,7 @@ bool Forward::pushArray(void *array,
         return false;
     }
 
+    m_currentPos++;
     return true;
 }
 
@@ -173,12 +183,12 @@ bool Forward::pushString(const char *string)
 {
     try
     {
-        if (m_paramTypes.at(m_currentPos) != ParamType::String)
+        IForward::Param &param = m_params.at(m_currentPos);
+        if (param.m_dataType != IForward::Param::Type::String)
             return false;
 
-        Param &param = m_params.at(m_currentPos++);
         param.m_data = const_cast<char *>(string);
-        param.m_size = 0;
+        param.m_size = strlen(string);
         param.m_copyback = false;
         param.m_stringFlags = StringFlags::None;
     }
@@ -187,6 +197,7 @@ bool Forward::pushString(const char *string)
         return false;
     }
 
+    m_currentPos++;
     return true;
 }
 
@@ -197,10 +208,10 @@ bool Forward::pushStringEx(char *buffer,
 {
     try
     {
-        if (m_paramTypes.at(m_currentPos) != ParamType::String)
+        IForward::Param &param = m_params.at(m_currentPos);
+        if (param.m_dataType != IForward::Param::Type::String)
             return false;
 
-        Param &param = m_params.at(m_currentPos++);
         param.m_data = buffer;
         param.m_copyback = copyback;
         param.m_size = size;
@@ -211,19 +222,20 @@ bool Forward::pushStringEx(char *buffer,
         return false;
     }
 
+    m_currentPos++;
     return true;
 }
 
-bool Forward::pushData(void *data,
-                       bool copyback)
+bool Forward::pushEdict(edict_t *edict,
+                        bool copyback)
 {
     try
     {
-        if (m_paramTypes.at(m_currentPos) != ParamType::String)
+        IForward::Param &param = m_params.at(m_currentPos);
+        if (param.m_dataType != IForward::Param::Type::Edict)
             return false;
 
-        Param &param = m_params.at(m_currentPos++);
-        param.m_data = data;
+        param.m_data = edict;
         param.m_copyback = copyback;
     }
     catch (const std::out_of_range &e [[maybe_unused]])
@@ -231,6 +243,7 @@ bool Forward::pushData(void *data,
         return false;
     }
 
+    m_currentPos++;
     return true;
 }
 
@@ -281,7 +294,7 @@ bool MultiForward::execFunc(ReturnValue *result)
 
     ReturnValue returnValue;
     for (const auto &callback : m_callbacks)
-        returnValue = callback(this, m_params.data());
+        returnValue = callback(this);
 
     if (result && m_execType != ExecType::Ignore)
         *result = returnValue;
@@ -297,7 +310,7 @@ void Forward::resetParams()
 }
 
 MultiForward::MultiForward(std::string_view name,
-                           std::array<IForward::ParamType, MAX_EXEC_PARAMS> paramstypes,
+                           std::array<IForward::Param::Type, MAX_EXEC_PARAMS> paramstypes,
                            std::size_t params,
                            ExecType type,
                            const std::vector<ForwardCallback> callbacks) : Forward(name, paramstypes, params, callbacks),
@@ -371,7 +384,7 @@ IPlugin *MultiForward::getPlugin() const
 }*/
 
 SingleForward::SingleForward(std::string_view name,
-                             std::array<IForward::ParamType, MAX_EXEC_PARAMS> paramstypes,
+                             std::array<IForward::Param::Type, MAX_EXEC_PARAMS> paramstypes,
                              std::size_t params,
                              IPlugin *plugin,
                              const std::vector<ForwardCallback> &callbacks) : Forward(name, paramstypes, params, callbacks),
@@ -394,7 +407,7 @@ bool SingleForward::execFunc(ReturnValue *result)
 
     ReturnValue returnValue;
     for (const auto &callback : m_callbacks)
-        returnValue = callback(this, m_params.data());
+        returnValue = callback(this);
 
     if (result)
         *result = returnValue;
@@ -444,8 +457,8 @@ IForward *ForwardMngr::createForward(const char *name,
 void ForwardMngr::addDefaultsForwards()
 {
     using et = IForward::ExecType;
-    using param = IForward::ParamType;
-    std::array<IForward::ParamType, Forward::MAX_EXEC_PARAMS> paramsList;
+    using param = IForward::Param::Type;
+    std::array<IForward::Param::Type, Forward::MAX_EXEC_PARAMS> paramsList;
 
     auto defToId = [](FwdDefault forwardId)
     {
@@ -493,17 +506,17 @@ std::shared_ptr<Forward> ForwardMngr::_createForwardVa(std::string_view name,
                                                        std::size_t paramsnum,
                                                        IPlugin *plugin)
 {
-    std::array<IForward::ParamType, IForward::MAX_EXEC_PARAMS> forwardParams = {};
+    std::array<IForward::Param::Type, IForward::MAX_EXEC_PARAMS> forwardParams = {};
 
     for (std::size_t i = 0; i < paramsnum; ++i)
-        forwardParams.at(i) = static_cast<IForward::ParamType>(va_arg(params, int));
+        forwardParams.at(i) = static_cast<IForward::Param::Type>(va_arg(params, int));
 
     return createForwardCore(name, exec, forwardParams, paramsnum, plugin);
 }
 
 std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
                                                         IForward::ExecType exec,
-                                                        std::array<IForward::ParamType, IForward::MAX_EXEC_PARAMS> params,
+                                                        std::array<IForward::Param::Type, IForward::MAX_EXEC_PARAMS> params,
                                                         std::size_t paramsnum,
                                                         IPlugin *plugin)
 {

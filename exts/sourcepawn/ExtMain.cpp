@@ -20,10 +20,10 @@
 #include "ExtMain.hpp"
 #include "SourcePawnAPI.hpp"
 
+using namespace SPExt;
+
 SPMod::ISPGlobal *gSPGlobal;
 ModuleInterface gModuleInterface;
-
-using namespace SPExt;
 
 SPMOD_API SPMod::ExtQueryValue SPMod_Query(SPMod::ISPGlobal *spmodInstance)
 {

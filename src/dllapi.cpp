@@ -165,7 +165,6 @@ static void ServerActivatePost(edict_t *pEdictList,
                                int clientMax)
 {
     gSPGlobal->getPlayerManagerCore()->ServerActivatePost(pEdictList, clientMax);
-
     gSPGlobal->getForwardManagerCore()->addDefaultsForwards();
 
     #error Execute PluginMngr in exts
@@ -321,7 +320,7 @@ NEW_DLL_FUNCTIONS gNewDllFunctionTablePost =
 };
 
 C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
-                                int *interfaceVersion)
+                              int *interfaceVersion)
 {
     if (!pFunctionTable)
         return 0;
@@ -337,7 +336,7 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
 }
 
 C_DLLEXPORT int GetEntityAPI2_Post(DLL_FUNCTIONS *pFunctionTable,
-                                    int *interfaceVersion)
+                                   int *interfaceVersion)
 {
     if (!pFunctionTable)
         return 0;
@@ -353,7 +352,7 @@ C_DLLEXPORT int GetEntityAPI2_Post(DLL_FUNCTIONS *pFunctionTable,
 }
 
 C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pNewFunctionTable,
-                                    int *interfaceVersion)
+                                   int *interfaceVersion)
 {
     if (!pNewFunctionTable)
         return 0;
@@ -369,7 +368,7 @@ C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pNewFunctionTable,
 }
 
 C_DLLEXPORT int GetNewDLLFunctions_Post(NEW_DLL_FUNCTIONS *pNewFunctionTable,
-                                            int *interfaceVersion)
+                                        int *interfaceVersion)
 {
     if (!pNewFunctionTable)
         return 0;

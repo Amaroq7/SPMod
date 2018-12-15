@@ -1,5 +1,7 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018 SPMod Development Team
+ *
+ *  This file is part of SPMod.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,7 +31,7 @@ namespace SPMod
         /*
          * Execution types
          */
-        enum class ExecType : uint8_t
+        enum class ExecType : std::uint8_t
         {
             /* Ignore returned result */
             Ignore = 0,
@@ -42,34 +44,9 @@ namespace SPMod
         };
 
         /*
-         * Param types
-         */
-        enum class ParamType : uint8_t
-        {
-            None = 0,
-            Array = (1 << 0),
-            Int = (1 << 1),
-            IntRef = (1 << 2),
-            Float = (1 << 3),
-            FloatRef = (1 << 4),
-            String = (1 << 5),
-            Data = (1 << 6)    // Generic data
-        };
-
-        /*
-         * Predefined values that can be returned by plugins
-         */
-        enum class ReturnValue : uint8_t
-        {
-            PluginIgnored = 0,
-            PluginStop,
-            PluginHandled
-        };
-
-        /*
          * String flags for StringEx param
          */
-        enum class StringFlags : uint8_t
+        enum class StringFlags : std::uint8_t
         {
             /* No special behavior */
             None = 0,
@@ -86,10 +63,34 @@ namespace SPMod
 
         struct Param
         {
+            /*
+             * Param types
+             */
+            enum class Type : std::uint8_t
+            {
+                None = 0,
+                Array = (1 << 0),
+                Int = (1 << 1),
+                Float = (1 << 2),
+                String = (1 << 3),
+                Edict = (1 << 4)
+            };
+
             void *m_data;
-            std::size_t m_size; /* Array or stringEx length */
+            std::size_t m_size; /* Array or string length */
             bool m_copyback; /* True if data is meant to be overwritten */
             StringFlags m_stringFlags; /* String flags */
+            Type m_dataType;
+        };
+
+        /*
+         * Predefined values that can be returned by plugins
+         */
+        enum class ReturnValue : std::uint8_t
+        {
+            PluginIgnored = 0,
+            PluginStop,
+            PluginHandled
         };
 
         static constexpr std::size_t MAX_EXEC_PARAMS = 32;
@@ -112,13 +113,13 @@ namespace SPMod
         virtual IPlugin *getPlugin() const = 0;
 
         /*
-         * @brief Returns param type.
+         * @brief Returns param.
          *
          * @param id    Param id.
          *
-         * @return      Param type.
+         * @return      Param.
          */
-        virtual ParamType getParamType(std::size_t id) const = 0;
+        virtual const Param *getParam(std::size_t id) const = 0;
 
         /*
          * @brief Returns params num.
@@ -205,21 +206,20 @@ namespace SPMod
                                   bool copyback) = 0;
 
         /*
-         * @brief Pushes generic data to the current call.
+         * @brief Pushes edict to the current call.
          *
-         * @param data      Generic data to pass.
+         * @param data      Edict to pass.
          * @param copyback  True if copy back value, false to not.
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushData(void *data,
-                              bool copyback) = 0;
+        virtual bool pushEdict(edict_t *edict,
+                               bool copyback) = 0;
 
         /*
          * @brief Pushes string to the current call.
          *
          * @note If execution has been successful, then pushed params are reset.
-         *
          * @note Param result can be nullptr only if exec type of forward is ignore.
          *
          * @param result    Address where the result will be stored.
@@ -243,19 +243,18 @@ namespace SPMod
      * @brief Callback gets executed when forward is being executed.
      * 
      * @param fwd      Forward that is being executed.
-     * @param params   Params passed to forward.
      * 
      * @return         If forward is meant for a single plugin then it should return ExecType::Ignore, otherwise return value should be the same value returned by plugins.
      */
-    using ForwardCallback = IForward::ReturnValue (*)(const IForward *const fwd, IForward::Param *params);
+    using ForwardCallback = IForward::ReturnValue (*)(const IForward *const fwd);
 
     class IForwardMngr SPMOD_FINAL : public ISPModInterface
     {
     public:
-        static constexpr uint16_t MAJOR_VERSION = 0;
-        static constexpr uint16_t MINOR_VERSION = 0;
+        static constexpr std::uint16_t MAJOR_VERSION = 0;
+        static constexpr std::uint16_t MINOR_VERSION = 0;
 
-        static constexpr uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
+        static constexpr std::uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
         /**
          * @brief Gets interface's name.
          *
@@ -273,7 +272,7 @@ namespace SPMod
          *
          * @return        Interface's version.
          */
-        uint32_t getVersion() const override
+        std::uint32_t getVersion() const override
         {
             return VERSION;
         }

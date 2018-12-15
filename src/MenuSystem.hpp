@@ -29,7 +29,7 @@ constexpr unsigned int MAX_STATIC_ITEMS = 10U;
 class Menu;
 class Player;
 
-class MenuItem: public IMenuItem
+class MenuItem final : public IMenuItem
 {
 public:
     MenuItem(std::string_view name,
@@ -65,15 +65,14 @@ private:
     NavigationType m_type;
 };
 
-class Menu: public IMenu
+class Menu final : public IMenu
 {
 public:
-    Menu(std::size_t id,
-         std::variant<MenuItemHandler, MenuTextHandler> &&handler,
-         MenuStyle style,
+    Menu(std::variant<MenuItemHandler, MenuTextHandler> &&handler,
+         IMenu::Style style,
          bool global);
 
-    ~Menu() {}
+    ~Menu() = default;
 
     // IMenu
     void display(IPlayer *player,
@@ -81,7 +80,7 @@ public:
                  int time) override;
 
     bool getGlobal() const override;
-    MenuStyle getStyle() const override;
+    IMenu::Style getStyle() const override;
 
     void setText(const char *text) override;
     
@@ -153,15 +152,13 @@ public:
     
     void execExitHandler(std::shared_ptr<Player> player);
 
-    std::size_t getId() const;
 private:
     void _addItem(int position,
                   std::string_view name,
                   MenuItemCallback callback,
                   void *data);
 private:
-    std::size_t m_id;
-    MenuStyle m_style;
+    IMenu::Style m_style;
     bool m_global;
     std::string m_text;
     std::string m_title;
@@ -182,7 +179,7 @@ private:
     std::vector<std::shared_ptr<MenuItem>> m_items;
 };
 
-class MenuMngr : public IMenuMngr
+class MenuMngr final : public IMenuMngr
 {
 public:
     MenuMngr() = default;
@@ -200,21 +197,21 @@ public:
     template<typename ...Args>
     std::shared_ptr<Menu> registerMenuCore(Args... args)
     {
-        return m_menus.emplace_back(std::make_shared<Menu>(m_mid++, std::forward<Args>(args)...));
+        return m_menus.emplace_back(std::make_shared<Menu>(std::forward<Args>(args)...));
     }
-    std::shared_ptr<Menu> findMenuCore(std::size_t index) const;
 
-    void destroyMenu(std::size_t index);
     void clearMenus();
+    void destroyMenuCore(std::shared_ptr<Menu> menu);
 
     void displayMenu(std::shared_ptr<Menu> menu, std::shared_ptr<Player> player, int page, int time);
     void closeMenu(std::shared_ptr<Player> player);
 
     META_RES ClientCommand(edict_t *pEntity);
     void ClientDisconnected(edict_t *pEntity);
+
 private:
-    void _destroyMenu(IMenu *menu);
+    void _destroyMenu(std::shared_ptr<Menu> menu);
+
 private:
-    std::size_t m_mid = 0;
     std::vector<std::shared_ptr<Menu>> m_menus;
 };

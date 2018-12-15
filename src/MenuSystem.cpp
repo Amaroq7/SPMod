@@ -92,11 +92,9 @@ ItemStatus MenuItem::execCallbackCore(Menu *menu,
     return result;
 }
 
-Menu::Menu(std::size_t id,
-           std::variant<MenuItemHandler, MenuTextHandler> &&handler,
-           MenuStyle style,
-           bool global) : m_id(id),
-                          m_style(style),
+Menu::Menu(std::variant<MenuItemHandler, MenuTextHandler> &&handler,
+           IMenu::Style style,
+           bool global) : m_style(style),
                           m_global(global),
                           m_title(""),
                           m_numberFormat("\\r#num."),
@@ -122,7 +120,7 @@ void Menu::displayCore(std::shared_ptr<Player> player, int page, int time)
     const std::unique_ptr<Utils> &utils = gSPGlobal->getUtilsCore();
     char buffer[512];
 
-    if(m_style == MenuStyle::Item)
+    if(m_style == IMenu::Style::Item)
     {
         // format and show menu
         int keys = 0;
@@ -271,7 +269,7 @@ bool Menu::getGlobal() const
     return m_global;
 }
 
-MenuStyle Menu::getStyle() const
+IMenu::Style Menu::getStyle() const
 {
     return m_style;
 }
@@ -480,11 +478,6 @@ void Menu::execExitHandler(std::shared_ptr<Player> player)
     execItemHandler(player, m_exitItem);
 }
 
-std::size_t Menu::getId() const
-{
-    return m_id;
-}
-
 void Menu::_addItem(int position,
                     std::string_view name,
                     MenuItemCallback callback,
@@ -504,26 +497,28 @@ void Menu::_addItem(int position,
 IMenu *MenuMngr::registerMenu(MenuItemHandler handler,
                               bool global)
 {
-    return registerMenuCore(handler, MenuStyle::Item, global).get();
+    return registerMenuCore(handler, IMenu::Style::Item, global).get();
 }
 
 IMenu *MenuMngr::registerMenu(MenuTextHandler handler,
                               bool global)
 {
-    return registerMenuCore(handler, MenuStyle::Text, global).get();
+    return registerMenuCore(handler, IMenu::Style::Text, global).get();
 }
 
 void MenuMngr::destroyMenu(IMenu *menu)
 {
-    _destroyMenu(menu);
+    for (auto pmenu : m_menus)
+    {
+        if (pmenu.get() == menu)
+        {
+            _destroyMenu(pmenu);
+            break;
+        }
+    }
 }
 
-void MenuMngr::destroyMenu(std::size_t index)
-{
-    _destroyMenu(findMenuCore(index).get());
-}
-
-void MenuMngr::_destroyMenu(IMenu *menu)
+void MenuMngr::_destroyMenu(std::shared_ptr<Menu> menu)
 {
     // close menu for any player
     const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
@@ -535,7 +530,7 @@ void MenuMngr::_destroyMenu(IMenu *menu)
 
         if(!pPlayer->isInGame()
             || !pMenu
-            || pMenu.get() != menu)
+            || pMenu != menu)
         {
             continue;
         }
@@ -546,7 +541,7 @@ void MenuMngr::_destroyMenu(IMenu *menu)
     auto iter = m_menus.begin();
     while (iter != m_menus.end())
     {
-        if (iter->get() == menu)
+        if (*iter == menu)
         {
             m_menus.erase(iter);
             break;
@@ -555,20 +550,9 @@ void MenuMngr::_destroyMenu(IMenu *menu)
     }
 }
 
-std::shared_ptr<Menu> MenuMngr::findMenuCore(std::size_t index) const
-{
-    for(auto menu : m_menus)
-    {
-        if(menu->getId() == index)
-            return menu;
-    }
-    return nullptr;
-}
-
 void MenuMngr::clearMenus()
 {
     m_menus.clear();
-    m_mid = 0;
 }
 
 void MenuMngr::displayMenu(std::shared_ptr<Menu> menu,
@@ -593,7 +577,7 @@ void MenuMngr::closeMenu(std::shared_ptr<Player> player)
 
     player->setMenu(nullptr);
 
-    if(pMenu->getStyle() == MenuStyle::Item)
+    if(pMenu->getStyle() == IMenu::Style::Item)
         pMenu->execExitHandler(player);
 }
 
@@ -611,7 +595,7 @@ META_RES MenuMngr::ClientCommand(edict_t *pEntity)
     {
         pPlayer->setMenu(nullptr);
 
-        if(pMenu->getStyle() == MenuStyle::Item)
+        if(pMenu->getStyle() == IMenu::Style::Item)
         {
             std::shared_ptr<MenuItem> item = pMenu->keyToItem(pressedKey);
 
@@ -627,7 +611,7 @@ META_RES MenuMngr::ClientCommand(edict_t *pEntity)
             }
             else if(!pMenu->getGlobal())
             {
-                destroyMenu(pMenu->getId());
+                destroyMenuCore(pMenu);
             }
         }
         else

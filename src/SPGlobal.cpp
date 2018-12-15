@@ -31,7 +31,7 @@ SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_p
                                         m_modName(GET_GAME_INFO(PLID, GINFO_NAME))
 {
     // Sets default dirs
-    setPluginsDir("scripting");
+    setPluginsDir("plugins");
     setLogsDir("logs");
     setDllsDir("dlls");
     setExtDir("exts");

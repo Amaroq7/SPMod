@@ -40,7 +40,7 @@ public:
     const char *getVersion() const override;
     const char *getAuthor() const override;
     const char *getUrl() const override;
-    const char *getIndentity() const override;
+    const char *getIdentity() const override;
     const char *getFilename() const override;
     std::size_t getId() const override;
     SourcePawn::IPluginRuntime *getRuntime() const override;
@@ -50,7 +50,7 @@ public:
     std::string_view getVersionCore() const;
     std::string_view getAuthorCore() const;
     std::string_view getUrlCore() const;
-    std::string_view getIndentityCore() const;
+    std::string_view getIdentityCore() const;
     std::string_view getFileNameCore() const;
 
 private:

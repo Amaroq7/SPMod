@@ -30,18 +30,18 @@ class Forward : public IForward
 {
 public:
     Forward(std::string_view name,
-            std::array<IForward::ParamType, MAX_EXEC_PARAMS> paramstypes,
+            std::array<IForward::Param::Type, IForward::MAX_EXEC_PARAMS> paramstypes,
             std::size_t params,
             const std::vector<ForwardCallback> &callbacks);
 
     /* name of the forward */
     const char *getName() const override;
 
-    /* type of parameter */
-    ParamType getParamType(std::size_t id) const override;
-
     /* number of parameters */
     std::size_t getParamsNum() const override;
+
+    /* param of the forward */
+    const IForward::Param *getParam(std::size_t id) const override;
 
     /* name of the forward for use across SPMod */
     std::string_view getNameCore() const;
@@ -64,8 +64,8 @@ public:
                       IForward::StringFlags sflags,
                       bool copyback) override;
 
-    bool pushData(void *data,
-                  bool copyback) override;
+    bool pushEdict(edict_t *edict,
+                   bool copyback) override;
 
     bool isExecuted() const;
 
@@ -74,9 +74,6 @@ public:
 protected:
     /* forward name */
     std::string m_name;
-
-    /* parameters types */
-    std::array<IForward::ParamType, MAX_EXEC_PARAMS> m_paramTypes;
 
     /* number of parameters in forward */
     std::size_t m_paramsNum;
@@ -105,7 +102,7 @@ class MultiForward final : public Forward
 {
 public:
     MultiForward(std::string_view name,
-                 std::array<IForward::ParamType, MAX_EXEC_PARAMS> paramstypes,
+                 std::array<IForward::Param::Type, MAX_EXEC_PARAMS> paramstypes,
                  std::size_t params,
                  ExecType type,
                  const std::vector<ForwardCallback> callbacks);
@@ -140,7 +137,7 @@ class SingleForward final : public Forward
 {
 public:
     SingleForward(std::string_view name,
-                  std::array<IForward::ParamType, MAX_EXEC_PARAMS> paramstypes,
+                  std::array<IForward::Param::Type, MAX_EXEC_PARAMS> paramstypes,
                   std::size_t params,
                   IPlugin *plugin,
                   const std::vector<ForwardCallback> &callbacks);
@@ -208,7 +205,7 @@ public:
 
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
                                                IForward::ExecType exec,
-                                               std::array<IForward::ParamType, IForward::MAX_EXEC_PARAMS> params,
+                                               std::array<IForward::Param::Type, IForward::MAX_EXEC_PARAMS> params,
                                                std::size_t paramsnum,
                                                IPlugin *plugin = nullptr);
 
