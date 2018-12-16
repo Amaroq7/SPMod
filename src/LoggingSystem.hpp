@@ -62,7 +62,7 @@ public:
 
         std::stringstream messageToLog;
 
-        messageToLog << m_prefix << " ";
+        messageToLog << '[' << m_prefix << "] ";
         (messageToLog << ... << args);
         messageToLog << '\n';
 
@@ -82,7 +82,7 @@ public:
 
         std::stringstream messageToLog;
 
-        messageToLog << m_prefix << " ";
+        messageToLog << '[' << m_prefix << "] ";
         (messageToLog << ... << args);
         messageToLog << '\n';
 
@@ -99,7 +99,7 @@ public:
 
         std::stringstream messageToLog;
 
-        messageToLog << m_prefix << " ";
+        messageToLog << '[' << m_prefix << "] ";
         (messageToLog << ... << args);
         messageToLog << '\n';
 

@@ -209,12 +209,10 @@ namespace SPMod
          * @brief Pushes edict to the current call.
          *
          * @param data      Edict to pass.
-         * @param copyback  True if copy back value, false to not.
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushEdict(edict_t *edict,
-                               bool copyback) = 0;
+        virtual bool pushEdict(edict_t *edict) = 0;
 
         /*
          * @brief Pushes string to the current call.

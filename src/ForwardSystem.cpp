@@ -226,8 +226,7 @@ bool Forward::pushStringEx(char *buffer,
     return true;
 }
 
-bool Forward::pushEdict(edict_t *edict,
-                        bool copyback)
+bool Forward::pushEdict(edict_t *edict)
 {
     try
     {
@@ -236,7 +235,7 @@ bool Forward::pushEdict(edict_t *edict,
             return false;
 
         param.m_data = edict;
-        param.m_copyback = copyback;
+        param.m_copyback = false;
     }
     catch (const std::out_of_range &e [[maybe_unused]])
     {
@@ -548,6 +547,11 @@ std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
 void ForwardMngr::deleteForward(IForward *forward)
 {
     m_forwards.erase(forward->getName());
+}
+
+void ForwardMngr::addForwardListener(ForwardCallback func)
+{
+    m_callbacks.push_back(func);
 }
 
 void ForwardMngr::clearForwards()

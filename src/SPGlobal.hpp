@@ -73,6 +73,9 @@ public:
     std::size_t loadExts();
     void unloadExts();
 
+    bool canPluginsPrecache() const;
+    void allowPrecacheForPlugins(bool allow);
+
 private:
     fs::path m_SPModDir;
     fs::path m_SPModPluginsDir;
@@ -92,6 +95,8 @@ private:
     std::string m_modName;
     std::unordered_map<std::string, IInterface *> m_interfaces;
     std::vector<std::unique_ptr<Extension>> m_extHandles;
+
+    bool m_canPluginsPrecache;
 };
 
 extern std::unique_ptr<SPGlobal> gSPGlobal;

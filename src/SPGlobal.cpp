@@ -127,6 +127,16 @@ void SPGlobal::unloadExts()
     m_extHandles.clear();
 }
 
+bool SPGlobal::canPluginsPrecache() const
+{
+    return m_canPluginsPrecache;
+}
+
+void SPGlobal::allowPrecacheForPlugins(bool allow)
+{
+    m_canPluginsPrecache = allow;
+}
+
 const char *SPGlobal::getPath(DirType type) const
 {
 #if defined SP_POSIX

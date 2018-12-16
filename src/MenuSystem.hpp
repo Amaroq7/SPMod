@@ -210,8 +210,5 @@ public:
     void ClientDisconnected(edict_t *pEntity);
 
 private:
-    void _destroyMenu(std::shared_ptr<Menu> menu);
-
-private:
     std::vector<std::shared_ptr<Menu>> m_menus;
 };

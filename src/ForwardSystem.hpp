@@ -64,8 +64,7 @@ public:
                       IForward::StringFlags sflags,
                       bool copyback) override;
 
-    bool pushEdict(edict_t *edict,
-                   bool copyback) override;
+    bool pushEdict(edict_t *edict) override;
 
     bool isExecuted() const;
 
@@ -160,7 +159,7 @@ class ForwardMngr final : public IForwardMngr
 {
 public:
 
-    enum class FwdDefault : uint8_t
+    enum class FwdDefault : std::uint8_t
     {
         ClientConnect = 0,
         ClientDisconnect,

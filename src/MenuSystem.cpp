@@ -512,13 +512,13 @@ void MenuMngr::destroyMenu(IMenu *menu)
     {
         if (pmenu.get() == menu)
         {
-            _destroyMenu(pmenu);
+            destroyMenuCore(pmenu);
             break;
         }
     }
 }
 
-void MenuMngr::_destroyMenu(std::shared_ptr<Menu> menu)
+void MenuMngr::destroyMenuCore(std::shared_ptr<Menu> menu)
 {
     // close menu for any player
     const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();

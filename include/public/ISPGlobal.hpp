@@ -46,10 +46,10 @@ namespace SPMod
     class ISPGlobal SPMOD_FINAL : public ISPModInterface
     {
     public:
-        static constexpr uint16_t MAJOR_VERSION = 0;
-        static constexpr uint16_t MINOR_VERSION = 0;
+        static constexpr std::uint16_t MAJOR_VERSION = 0;
+        static constexpr std::uint16_t MINOR_VERSION = 0;
 
-        static constexpr uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
+        static constexpr std::uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
 
         /**
          * @brief Gets interface's name.
