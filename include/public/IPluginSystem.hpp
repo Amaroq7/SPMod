@@ -22,6 +22,7 @@
 namespace SPMod
 {
     class IPluginMngr;
+    class IProxiedNative;
 
     class IPlugin
     {
@@ -75,32 +76,69 @@ namespace SPMod
          * 
          * @return        Plugin manager.
          */
-        virtual const IPluginMngr *getPluginMngr() const = 0;
+        virtual IPluginMngr *getPluginMngr() const = 0;
+
+        /**
+         * @brief Gets proxied param as int.
+         * 
+         * @param index   Param number.
+         * 
+         * @return        Param as int.
+         */
+        virtual int getProxiedParamAsInt(std::size_t index) const = 0;
+
+        /**
+         * @brief Gets proxied param as pointer to int.
+         * 
+         * @param index   Param number.
+         * 
+         * @return        Param as pointer to int.
+         */
+        virtual int *getProxiedParamAsIntAddr(std::size_t index) const = 0;
+
+        /**
+         * @brief Gets proxied param as float.
+         * 
+         * @param index   Param number.
+         * 
+         * @return        Param as float.
+         */
+        virtual float getProxiedParamAsFloat(std::size_t index) const = 0;
+
+        /**
+         * @brief Gets proxied param as pointer to float.
+         * 
+         * @param index   Param number.
+         * 
+         * @return        Param as pointer to float.
+         */
+        virtual float *getProxiedParamAsFloatAddr(std::size_t index) const = 0;
+
+        /**
+         * @brief Gets proxied param as string.
+         * 
+         * @param index   Param number.
+         * 
+         * @return        Param as string.
+         */
+        virtual const char *getProxiedParamAsString(std::size_t index) const = 0;
+
+        /**
+         * @brief Gets proxied param as array.
+         * 
+         * @param index   Param number.
+         * 
+         * @return        Param as pointer to float.
+         */
+        virtual void *getProxiedParamAsArray(std::size_t index) const = 0;
 
     protected:
         virtual ~IPlugin() = default;
     };
 
-    class IPluginMngr : public ISPModInterface
+    class IPluginMngr
     {
     public:
-        static constexpr std::uint16_t MAJOR_VERSION = 0;
-        static constexpr std::uint16_t MINOR_VERSION = 0;
-
-        static constexpr std::uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
-
-        /**
-         * @brief Gets interface's version.
-         *
-         * @note The first 16 most significant bits represent major version, the rest represent minor version.
-         *
-         * @return        Interface's version.
-         */
-        std::uint32_t getVersion() const override
-        {
-            return VERSION;
-        }
-
         /**
          * @brief Searches for plugin by specified identity.
          *
@@ -111,11 +149,49 @@ namespace SPMod
         virtual IPlugin *getPlugin(const char *name) = 0;
 
         /**
+         * @brief Loads plugins.
+         *
+         * @noreturn
+         */
+        virtual void loadPlugins() = 0;
+
+        /**
+         * @brief Binds natives created by other plugins.
+         *
+         * @noreturn
+         */
+        virtual void bindPluginsNatives() = 0;
+
+        /**
+         * @brief Unloads plugins.
+         *
+         * @noreturn
+         */
+        virtual void unloadPlugins() = 0;
+
+        /**
+         * @brief Called on proxied native.
+         * 
+         * @param native  Proxied native.
+         * @param plugin  Plugin which executed the native.
+         *
+         * @return        Native result.
+         */
+        virtual int proxyNativeCallback(const IProxiedNative *const native, const IPlugin *const plugin) = 0;
+
+        /**
          * @brief Returns numbers of loaded plugins.
          *
          * @return        Number of loaded plugins.
          */
         virtual std::size_t getPluginsNum() const = 0;
+
+        /**
+         * @brief Returns plugins extension.
+         *
+         * @return        Plugins extension.
+         */
+        virtual const char *getPluginsExt() const = 0;
 
     protected:
         virtual ~IPluginMngr() = default;

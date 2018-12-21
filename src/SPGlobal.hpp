@@ -36,6 +36,7 @@ public:
     // ISPGlobal
     const char *getPath(DirType type) const override;
     const char *getModName() const override;
+    bool canPluginsPrecache() const override;
 
     IForwardMngr *getForwardManager() const override;
     ICvarMngr *getCvarManager() const override;
@@ -43,6 +44,7 @@ public:
     IMenuMngr *getMenuManager() const override;
     ILoggerMngr *getLoggerManager() const override;
     IPlayerMngr *getPlayerManager() const override;
+    INativeProxy *getNativeProxy() const override;
     IUtils *getUtils() const override;
 
     bool registerInterface(IInterface *interface) override;
@@ -60,6 +62,7 @@ public:
     const std::unique_ptr<MenuMngr> &getMenuManagerCore() const;
     const std::unique_ptr<LoggerMngr> &getLoggerManagerCore() const;
     const std::unique_ptr<PlayerMngr> &getPlayerManagerCore() const;
+    const std::unique_ptr<NativeProxy> &getNativeProxyCore() const;
     const auto &getInterfacesList() const
     {
         return m_interfaces;
@@ -73,7 +76,6 @@ public:
     std::size_t loadExts();
     void unloadExts();
 
-    bool canPluginsPrecache() const;
     void allowPrecacheForPlugins(bool allow);
 
 private:
@@ -90,11 +92,13 @@ private:
     std::unique_ptr<TimerMngr> m_timerManager;
     std::unique_ptr<MenuMngr> m_menuManager;
     std::unique_ptr<PlayerMngr> m_plrManager;
+    std::unique_ptr<NativeProxy> m_nativeProxy;
     std::unique_ptr<Utils> m_utils;
 
     std::string m_modName;
     std::unordered_map<std::string, IInterface *> m_interfaces;
     std::vector<std::unique_ptr<Extension>> m_extHandles;
+    std::vector<IPluginMngr *> m_pluginManagers;
 
     bool m_canPluginsPrecache;
 };

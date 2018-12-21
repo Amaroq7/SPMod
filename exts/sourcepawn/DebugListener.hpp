@@ -27,18 +27,20 @@
     #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #endif
 
-class Logger final : public SourcePawn::IDebugListener
+class DebugListener final : public SourcePawn::IDebugListener
 {
 public:
-    Logger() = default;
-    ~Logger() = default;
+    DebugListener() = default;
+    DebugListener(const DebugListener &other) = delete;
+    DebugListener(const DebugListener &&other) = default;
+    ~DebugListener() = default;
 
     // IDebugListener
     void OnDebugSpew(const char *msg,
-                        ...) override;
+                     ...) override;
 
     void ReportError(const SourcePawn::IErrorReport &report,
-                        SourcePawn::IFrameIterator &iter) override;
+                     SourcePawn::IFrameIterator &iter) override;
 };
 
 #ifdef SP_CLANG

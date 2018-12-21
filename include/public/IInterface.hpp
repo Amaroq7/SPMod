@@ -21,6 +21,8 @@
 
 namespace SPMod
 {
+    class IPluginMngr;
+
     class IInterface
     {
     public:
@@ -36,7 +38,7 @@ namespace SPMod
          *
          * @return              Interface's version.
          */
-        virtual uint32_t getVersion() const = 0;
+        virtual std::uint32_t getVersion() const = 0;
 
         /**
          * @brief Gets interface's author.
@@ -66,10 +68,17 @@ namespace SPMod
          *
          * @return              True if is compatible, false otherwise.
          */
-        virtual bool isVersionCompatible(uint32_t reqversion) const
+        virtual bool isVersionCompatible(std::uint32_t reqversion) const
         {
             return (reqversion > getVersion() ? false : true);
         }
+
+        /**
+         * @brief Gets plugin manager.
+         *
+         * @return              Plugin manager.
+         */
+        virtual IPluginMngr *getPluginMngr() const = 0;
 
     protected:
         virtual ~IInterface() = default;
@@ -78,56 +87,39 @@ namespace SPMod
     class ISPModInterface SPMOD_FINAL : public IInterface
     {
     public:
-        /**
-         * @brief Gets interface's author.
-         *
-         * @return              Interface's author.
-         */
-        const char *getAuthor() const override
+        const char *getAuthor() const override final
         {
             return "SPMod Development Team";
         }
 
-        /**
-         * @brief Gets interface's url.
-         *
-         * @return              Interface's url.
-         */
-        const char *getUrl() const override
+        const char *getUrl() const override final
         {
             return "https://github.com/Amaroq7/SPMod";
         }
 
-        /**
-         * @brief Gets name of the extension that implements the interface.
-         *
-         * @return              Extension's name.
-         */
-        const char *getExtName() const override
+        const char *getExtName() const override final
         {
             return "SPMod";
         }
 
-        /**
-         * @brief Check if requested version is compatible.
-         *
-         * @param reqversion    Version to be checked.
-         *
-         * @return              True if is compatible, false otherwise.
-         */
-        bool isVersionCompatible(uint32_t reqversion) const override
+        bool isVersionCompatible(std::uint32_t reqversion) const override final
         {
-            uint16_t majorReqVer = reqversion >> 16;
+            std::uint16_t majorReqVer = reqversion >> 16;
 
             if (majorReqVer != (getVersion() >> 16))
                 return false;
 
-            uint16_t minorReqVer = reqversion & 0xFFFF;
+            std::uint16_t minorReqVer = reqversion & 0xFFFF;
 
             if (minorReqVer > (getVersion() & 0xFFFF))
                 return false;
 
             return true;
+        }
+
+        IPluginMngr *getPluginMngr() const final
+        {
+            return nullptr;
         }
 
     protected:

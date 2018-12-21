@@ -20,7 +20,7 @@
 static constexpr std::size_t nameWidth = 25;
 static constexpr std::size_t verWidth = 15;
 static constexpr std::size_t authWidth = 20;
-static constexpr std::size_t fileWidth = 15;
+//static constexpr std::size_t fileWidth = 15;
 
 void SPModInfoCommand()
 {
@@ -50,7 +50,7 @@ void SPModInfoCommand()
                                        std::setw(authWidth),
                                       "author",
                                       "filename");
-            std::size_t pos = 1;
+            //std::size_t pos = 1;
             /*for (auto entry : gSPGlobal->getPluginManagerCore()->getPluginsList())
             {
                 logSystem->LogConsoleCore("[", std::right, std::setw(3), pos++, "] ", // right align for ordinal number
@@ -118,7 +118,7 @@ You should have received a copy of the GNU General Public License\n \
 
 void PluginSrvCmd()
 {
-    const char *argv = CMD_ARGV(0);
+    //const char *argv = CMD_ARGV(0);
 
     /*for (const auto &cmd : gSPGlobal->getCommandManagerCore()->getCommandList(CmdType::Server))
     {

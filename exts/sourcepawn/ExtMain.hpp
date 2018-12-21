@@ -17,44 +17,29 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#if __has_include(<filesystem>)
+    #include <filesystem>
+    // As of GCC 8.1 and Clang 7 filesystem is no longer part of experimental
+    #if (defined SP_GCC && __GNUC__ >= 8) || (defined SP_CLANG && __clang_major__ >= 7)
+        namespace fs = std::filesystem;
+    #else // Some compilers still have filesystem within experimental namespace like MSVC
+        namespace fs = std::experimental::filesystem;
+    #endif
+#elif __has_include(<experimental/filesystem>)
+    #include <experimental/filesystem>
+    namespace fs = std::experimental::filesystem;
+#else
+    #error Filesystem header missing
+#endif
+
+#include <dlfcn.h>
+
 #include <extdll.h>
 #include <ISPGlobal.hpp>
 
-namespace SPExt
-{
-    class ModuleInterface final : public SPMod::IInterface
-    {
-        static constexpr uint16_t MAJOR_VERSION = 0;
-        static constexpr uint16_t MINOR_VERSION = 1;
-        static constexpr uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
+#include "SourcePawnAPI.hpp"
+#include "DebugListener.hpp"
+#include "ModuleInterface.hpp"
 
-        const char *getName() const override
-        {
-            return "ISourcePawnModule";
-        }
-
-        uint32_t getVersion() const override
-        {
-            return VERSION;
-        }
-
-        const char *getAuthor() const override
-        {
-            return "SPMod Development Team";
-        }
-
-        const char *getUrl() const override
-        {
-            return "https://github.com/Amaroq7/SPMod";
-        }
-
-        const char *getExtName() const override
-        {
-            return "SourcePawn Module";
-        }
-    };
-
-    extern ModuleInterface gModuleInterface;
-}
-
+extern std::unique_ptr<ModuleInterface> gModuleInterface;
 extern SPMod::ISPGlobal *gSPGlobal;

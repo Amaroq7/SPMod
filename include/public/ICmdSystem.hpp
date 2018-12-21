@@ -69,6 +69,7 @@ namespace SPMod
         static constexpr std::uint16_t MINOR_VERSION = 0;
 
         static constexpr std::uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
+
         /**
          * @brief Gets interface's name.
          *

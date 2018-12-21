@@ -47,24 +47,22 @@ public:
     std::string_view getNameCore() const;
 
     bool pushInt(int integer) override;
-    bool pushIntPtr(int *integer,
-                    bool copyback) override;
+    bool pushInt(int *integer,
+                 bool copyback) override;
 
     bool pushFloat(float real) override;
-    bool pushFloatPtr(float *real,
-                      bool copyback) override;
+    bool pushFloat(float *real,
+                   bool copyback) override;
 
     bool pushArray(void *array,
                    std::size_t size,
                    bool copyback) override;
 
     bool pushString(const char *string) override;
-    bool pushStringEx(char *buffer,
-                      std::size_t length,
-                      IForward::StringFlags sflags,
-                      bool copyback) override;
-
-    bool pushEdict(edict_t *edict) override;
+    bool pushString(char *buffer,
+                    std::size_t length,
+                    IForward::StringFlags sflags,
+                    bool copyback) override;
 
     bool isExecuted() const;
 
@@ -113,13 +111,11 @@ public:
 
     // IForward
     IPlugin *getPlugin() const override;
+    ExecType getExecType() const override;
 
-    bool execFunc(ReturnValue *result) override;
+    bool execFunc(int *result) override;
 
 private:
-    /* helper function to push params to plugin function */
-    // void pushParamsToFunction(SourcePawn::IPluginFunction *func);
-
     /* exec type of forward */
     ExecType m_execType;
 };
@@ -148,7 +144,8 @@ public:
 
     // IForward
     IPlugin *getPlugin() const override;
-    bool execFunc(ReturnValue *result) override;
+    ExecType getExecType() const override;
+    bool execFunc(int *result) override;
 
 private:
     /* plugin which the function will be executed in */

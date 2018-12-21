@@ -1,5 +1,7 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018 SPMod Development Team
+ *
+ *  This file is part of SPMod.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,111 +19,118 @@
 
 #pragma once
 
-#include "spmod.hpp"
+#include "ExtMain.hpp"
 
-class Plugin final : public IPlugin
+namespace SPExt
 {
-public:
-
-    static constexpr uint32_t FIELD_NAME = 0;
-    static constexpr uint32_t FIELD_VERSION = 1;
-    static constexpr uint32_t FIELD_AUTHOR = 2;
-    static constexpr uint32_t FIELD_URL = 3;
-
-    Plugin(std::size_t id,
-           std::string_view identity,
-           const fs::path &path);
-
-    Plugin() = delete;
-    ~Plugin() = default;
-
-    // IPlugin
-    const char *getName() const override;
-    const char *getVersion() const override;
-    const char *getAuthor() const override;
-    const char *getUrl() const override;
-    const char *getIdentity() const override;
-    const char *getFilename() const override;
-    std::size_t getId() const override;
-    SourcePawn::IPluginRuntime *getRuntime() const override;
-
-    // Plugin
-    std::string_view getNameCore() const;
-    std::string_view getVersionCore() const;
-    std::string_view getAuthorCore() const;
-    std::string_view getUrlCore() const;
-    std::string_view getIdentityCore() const;
-    std::string_view getFileNameCore() const;
-
-private:
-    SourcePawn::IPluginRuntime *m_runtime;
-    std::string m_identity;
-    std::string m_filename;
-    std::string m_name;
-    std::string m_version;
-    std::string m_author;
-    std::string m_url;
-    std::size_t m_id;
-};
-
-class PluginMngr final : public IPluginMngr
-{
-public:
-    PluginMngr() = default;
-    ~PluginMngr() = default;
-
-    // IPluginMngr
-    std::size_t getPluginsNum() const override;
-    IPlugin *getPlugin(std::size_t index) override;
-    IPlugin *getPlugin(const char *name) override;
-    IPlugin *getPlugin(SourcePawn::IPluginContext *ctx) override;
-    IPlugin *loadPlugin(const char *name,
-                        char *error,
-                        std::size_t size) override;
-    bool addNatives(const sp_nativeinfo_t *natives) override;
-
-    // PluginMngr
-    const auto &getPluginsList() const
+    class Plugin final : public SPMod::IPlugin
     {
-        return m_plugins;
-    }
-    void clearPlugins();
-    void setPluginPrecache(bool canprecache);
-    bool canPluginPrecache();
-    std::shared_ptr<Plugin> loadPluginCore(std::string_view name,
-                                           std::string *error);
+    public:
+        static constexpr std::uint32_t FIELD_NAME = 0;
+        static constexpr std::uint32_t FIELD_VERSION = 1;
+        static constexpr std::uint32_t FIELD_AUTHOR = 2;
+        static constexpr std::uint32_t FIELD_URL = 3;
 
-    std::shared_ptr<Plugin> getPluginCore(std::size_t index);
-    std::shared_ptr<Plugin> getPluginCore(std::string_view name);
-    std::shared_ptr<Plugin> getPluginCore(SourcePawn::IPluginContext *ctx);
-    std::size_t loadPlugins();
-    bool addFakeNative(std::string_view name,
-                       SourcePawn::IPluginFunction *func);
-    void clearNatives();
-    void addDefaultNatives();
-    SPVM_NATIVE_FUNC findNative(std::string_view name);
+        Plugin(std::size_t id,
+            std::string_view identity,
+            const fs::path &path,
+            std::shared_ptr<PluginMngr> pluginMngr);
 
-    // Fake natives
-    static cell_t fakeNativeRouter(SourcePawn::IPluginContext *ctx,
-                                   const cell_t *params,
-                                   void *data);
+        Plugin() = delete;
+        ~Plugin() = default;
 
-    static inline SourcePawn::IPluginContext *m_callerPlugin;
-    static inline cell_t m_callerParams[SP_MAX_EXEC_PARAMS + 1];
+        // IPlugin
+        const char *getName() const override;
+        const char *getVersion() const override;
+        const char *getAuthor() const override;
+        const char *getUrl() const override;
+        const char *getIdentity() const override;
+        const char *getFilename() const override;
+        SPMod::IPluginMngr *getPluginMngr() const override;
+        int getProxiedParamAsInt(std::size_t index) const override;
+        int *getProxiedParamAsIntAddr(std::size_t index) const override;
+        float getProxiedParamAsFloat(std::size_t index) const override;
+        float *getProxiedParamAsFloatAddr(std::size_t index) const override;
+        const char *getProxiedParamAsString(std::size_t index) const override;
+        void *getProxiedParamAsArray(std::size_t index) const override;
 
-private:
-    std::shared_ptr<Plugin> _loadPlugin(const fs::path &path,
-                                        std::string *error);
+        // Plugin
+        SourcePawn::IPluginRuntime *getRuntime() const;
+        std::size_t getId() const;
+        std::string_view getNameCore() const;
+        std::string_view getVersionCore() const;
+        std::string_view getAuthorCore() const;
+        std::string_view getUrlCore() const;
+        std::string_view getIdentityCore() const;
+        std::string_view getFileNameCore() const;
 
-    bool _addNative(std::string_view name,
-                    SPVM_NATIVE_FUNC func);
+    private:
+        std::weak_ptr<PluginMngr> m_pluginMngr;
+        SourcePawn::IPluginRuntime *m_runtime;
+        std::string m_identity;
+        std::string m_filename;
+        std::string m_name;
+        std::string m_version;
+        std::string m_author;
+        std::string m_url;
+        std::size_t m_id;
+        std::array<cell_t, SP_MAX_CALL_ARGUMENTS> m_proxiedParams;
+    };
 
-    std::unordered_map<std::string, std::shared_ptr<Plugin>> m_plugins;
-    std::unordered_map<std::string, SPVM_NATIVE_FUNC> m_natives;
+    class PluginMngr final : public SPMod::IPluginMngr
+    {
+    public:
+        constexpr static const char *PluginsExtension = ".smx";
 
-    // Allow plugins to precache
-    bool m_canPluginsPrecache;
+        PluginMngr() = default;
+        ~PluginMngr() = default;
 
-    // Routers to be freed on the map change
-    std::vector<SPVM_NATIVE_FUNC> m_routers;
-};
+        // IPluginMngr
+        std::size_t getPluginsNum() const override;
+        SPMod::IPlugin *getPlugin(const char *name) override;
+        void loadPlugins() override;
+        void bindPluginsNatives() override;
+        void unloadPlugins() override;
+        const char *getPluginsExt() override;
+
+        // PluginMngr
+        const auto &getPluginsList() const
+        {
+            return m_plugins;
+        }
+
+        bool addNatives(const sp_nativeinfo_t *natives);
+
+        std::shared_ptr<Plugin> getPluginCore(std::size_t index) const;
+        std::shared_ptr<Plugin> getPluginCore(std::string_view name) const;
+        std::shared_ptr<Plugin> getPluginCore(SourcePawn::IPluginContext *ctx) const;
+        std::shared_ptr<Plugin> getPluginCore(SPMod::IPlugin *plugin) const;
+
+        void clearNatives();
+        void addDefaultNatives();
+        SPVM_NATIVE_FUNC findNative(std::string_view name);
+
+        // Proxied natives
+        bool addProxiedNative(std::string_view name,
+                              SPMod::IProxiedNative *native);
+
+        static cell_t proxyNativeRouter(SourcePawn::IPluginContext *ctx,
+                                        const cell_t *params,
+                                        void *data);
+
+        static inline SPMod::IPlugin *m_callerPlugin;
+
+    private:
+        std::shared_ptr<Plugin> _loadPlugin(const fs::path &path,
+                                            std::string &error);
+
+        bool _addNative(std::string_view name,
+                        SPVM_NATIVE_FUNC func);
+
+        std::unordered_map<std::string, std::shared_ptr<Plugin>> m_plugins;
+        std::unordered_map<std::string, SPVM_NATIVE_FUNC> m_natives;
+
+        // Routers to be freed on the map change
+        std::vector<SPVM_NATIVE_FUNC> m_routers;
+    };
+}

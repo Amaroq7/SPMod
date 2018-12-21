@@ -27,7 +27,6 @@ namespace SPMod
     class IForward SPMOD_FINAL
     {
     public:
-
         /*
          * Execution types
          */
@@ -44,7 +43,7 @@ namespace SPMod
         };
 
         /*
-         * String flags for StringEx param
+         * String flags for string param
          */
         enum class StringFlags : std::uint8_t
         {
@@ -70,10 +69,10 @@ namespace SPMod
             {
                 None = 0,
                 Array = (1 << 0),
-                Int = (1 << 1),
-                Float = (1 << 2),
-                String = (1 << 3),
-                Edict = (1 << 4)
+                Pointer = (1 << 1),
+                Int = (1 << 2),
+                Float = (1 << 3),
+                String = (1 << 4)
             };
 
             void *m_data;
@@ -88,9 +87,9 @@ namespace SPMod
          */
         enum class ReturnValue : std::uint8_t
         {
-            PluginIgnored = 0,
-            PluginStop,
-            PluginHandled
+            Ignored = 0,
+            Stop,
+            Handled,
         };
 
         static constexpr std::size_t MAX_EXEC_PARAMS = 32;
@@ -113,6 +112,13 @@ namespace SPMod
         virtual IPlugin *getPlugin() const = 0;
 
         /*
+         * @brief Gets execution type of the forward.
+         *
+         * @return      Execution type.
+         */
+        virtual ExecType getExecType() const = 0;
+
+        /*
          * @brief Returns param.
          *
          * @param id    Param id.
@@ -126,7 +132,7 @@ namespace SPMod
          *
          * @return      Param num.
          */
-        virtual size_t getParamsNum() const = 0;
+        virtual std::size_t getParamsNum() const = 0;
 
         /*
          * @brief Pushes int to the current call.
@@ -145,8 +151,8 @@ namespace SPMod
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushIntPtr(int *integer,
-                                bool copyback) = 0;
+        virtual bool pushInt(int *integer,
+                             bool copyback) = 0;
 
         /*
          * @brief Pushes real to the current call.
@@ -165,8 +171,8 @@ namespace SPMod
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushFloatPtr(float *real,
-                                  bool copyback) = 0;
+        virtual bool pushFloat(float *real,
+                               bool copyback) = 0;
 
         /*
          * @brief Pushes array to the current call.
@@ -200,19 +206,10 @@ namespace SPMod
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushStringEx(char *buffer,
-                                  std::size_t length,
-                                  StringFlags sflags,
-                                  bool copyback) = 0;
-
-        /*
-         * @brief Pushes edict to the current call.
-         *
-         * @param data      Edict to pass.
-         *
-         * @return          True if succeed, false if parameter type is wrong.
-         */
-        virtual bool pushEdict(edict_t *edict) = 0;
+        virtual bool pushString(char *buffer,
+                                std::size_t length,
+                                StringFlags sflags,
+                                bool copyback) = 0;
 
         /*
          * @brief Pushes string to the current call.
@@ -224,7 +221,7 @@ namespace SPMod
          *
          * @return          True if succeed, false if execution failed.
          */
-        virtual bool execFunc(ReturnValue *result) = 0;
+        virtual bool execFunc(int *result) = 0;
 
         /*
          * @brief Resets params already pushed to forward.
@@ -241,10 +238,12 @@ namespace SPMod
      * @brief Callback gets executed when forward is being executed.
      * 
      * @param fwd      Forward that is being executed.
+     * @param result   Result of executing where it should be written to.
+     * @param stop     Should be set to true if further callbacks should not be called. (multi forward only)
      * 
-     * @return         If forward is meant for a single plugin then it should return ExecType::Ignore, otherwise return value should be the same value returned by plugins.
+     * @noreturn
      */
-    using ForwardCallback = IForward::ReturnValue (*)(const IForward *const fwd);
+    using ForwardCallback = void (*)(const IForward *const fwd, int *result, bool *stop);
 
     class IForwardMngr SPMOD_FINAL : public ISPModInterface
     {

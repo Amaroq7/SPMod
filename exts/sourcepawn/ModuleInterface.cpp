@@ -19,25 +19,9 @@
 
 #include "ExtMain.hpp"
 
-using namespace SPExt;
-
-SPMod::ISPGlobal *gSPGlobal;
-std::unique_ptr<ModuleInterface> gModuleInterface;
-
-SPMOD_API SPMod::ExtQueryValue SPMod_Query(SPMod::ISPGlobal *spmodInstance)
+ModuleInterface::ModuleInterface(fs::path &&path) : m_sourcePawnAPI(std::make_unique<SourcePawnAPI>(std::move(path))),
+                                                    m_pluginMngr(std::make_unique<PluginMngr>()),
+                                                    m_debugListener(std::make_unique<DebugListener>())
 {
-    gSPGlobal = spmodInstance;
-    gModuleInterface = std::make_unique<ModuleInterface>(gSPGlobal->getPath(DirType::Exts));
-
-    return (gSPGlobal->registerInterface(&gModuleInterface) ? SPMod::ExtQueryValue::SPModExt : SPMod::ExtQueryValue::DontLoad);
-}
-
-SPMOD_API bool SPMod_Init()
-{
-    gSPGlobal->
-    return true;
-}
-
-SPMOD_API void SPMod_End()
-{
+    m_sourcePawnAPI->getSPEnvironment()->APIv2()->setDebugListener(m_debugListener.get());
 }

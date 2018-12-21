@@ -31,6 +31,7 @@
 #include <ILoggerSystem.hpp>
 #include <ICmdSystem.hpp>
 #include <IPluginSystem.hpp>
+#include <INativeProxy.hpp>
 
 namespace SPMod
 {
@@ -68,7 +69,7 @@ namespace SPMod
          *
          * @return      Interface's version.
          */
-        uint32_t getVersion() const override
+        std::uint32_t getVersion() const override
         {
             return VERSION;
         }
@@ -86,6 +87,13 @@ namespace SPMod
          * @return        Mod name.
          */
         virtual const char *getModName() const = 0;
+
+        /**
+         * @brief Checks if plugins can precache resources.
+         *
+         * @return        True if they are allowed to, false otherwise.
+         */
+        virtual bool canPluginsPrecache() const = 0;
 
         /**
          * @brief Returns SPMod forward manager.
@@ -135,6 +143,13 @@ namespace SPMod
          * @return              Utils funcs.
          */
         virtual IUtils *getUtils() const = 0;
+
+        /**
+         * @brief Return native proxy.
+         *
+         * @return              Native proxy.
+         */
+        virtual INativeProxy *getNativeProxy() const = 0;
 
         /**
          * @brief Registers module's interface.

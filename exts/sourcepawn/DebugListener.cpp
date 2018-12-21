@@ -15,10 +15,10 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "LoggingSystem.hpp"
+#include "DebugListener.hpp"
 
 void Logger::OnDebugSpew(const char *msg,
-                            ...)
+                         ...)
 {
     char debugMsg[512];
     va_list paramsList;
@@ -31,7 +31,7 @@ void Logger::OnDebugSpew(const char *msg,
 }
 
 void Logger::ReportError(const SourcePawn::IErrorReport &report,
-                            SourcePawn::IFrameIterator &iter)
+                         SourcePawn::IFrameIterator &iter)
 {
     auto *spErrorMsg = gSPGlobal->getSPEnvironment()->APIv2()->GetErrorString(report.Code());
     auto getPluginIdentity = [](SourcePawn::IPluginContext *ctx)

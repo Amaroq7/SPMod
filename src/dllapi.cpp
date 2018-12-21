@@ -30,16 +30,16 @@ static qboolean ClientConnect(edict_t *pEntity,
     if (!plrMngr->ClientConnect(pEntity, pszName, pszAddress, szRejectReason))
         RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
 
-    IForward::ReturnValue result;
+    int result;
     std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnect);
 
     forward->pushInt(plrMngr->getPlayerCore(pEntity)->getIndex());
     forward->pushString(pszName);
     forward->pushString(pszAddress);
-    forward->pushStringEx(szRejectReason, 128, sflags::Utf8 | sflags::Copy, true);
+    forward->pushString(szRejectReason, 128, sflags::Utf8 | sflags::Copy, true);
     forward->execFunc(&result);
 
-    if (result == IForward::ReturnValue::PluginStop)
+    if (static_cast<IForward::ReturnValue>(result) == IForward::ReturnValue::Stop)
         RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
 
     RETURN_META_VALUE(MRES_IGNORED, TRUE);
@@ -50,7 +50,7 @@ static void ClientCommand(edict_t *pEntity)
     using def = ForwardMngr::FwdDefault;
 
     {
-        IForward::ReturnValue result;
+        int result;
         std::shared_ptr<Forward> fwdCmd = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientCommmand);
 
         if (!fwdCmd)
@@ -59,7 +59,7 @@ static void ClientCommand(edict_t *pEntity)
         fwdCmd->pushInt(ENTINDEX(pEntity));
         fwdCmd->execFunc(&result);
 
-        if (result == IForward::ReturnValue::PluginStop)
+        if (static_cast<IForward::ReturnValue>(result) == IForward::ReturnValue::Stop)
             RETURN_META(MRES_SUPERCEDE);
     }
 
@@ -82,16 +82,16 @@ static void ClientCommand(edict_t *pEntity)
             std::regex cmdToMatch(cmd->getCmdCore().data());
             if (std::regex_search(strCmd, cmdToMatch) && cmd->hasAccessCore(player))
             {
-                IForward::ReturnValue result;
+                int result = 0;
                 /*SourcePawn::IPluginFunction *func = cmd->getFunc();
                 func->PushCell(ENTINDEX(pEntity));
                 func->PushCell(cmd->getId());
                 func->Execute(&result);*/
 
-                if (result == IForward::ReturnValue::PluginStop || result == IForward::ReturnValue::PluginHandled)
+                if (result == IForward::ReturnValue::Stop || result == IForward::ReturnValue::Handled)
                 {
                     res = MRES_SUPERCEDE;
-                    if (result == IForward::ReturnValue::PluginStop)
+                    if (result == IForward::ReturnValue::Stop)
                         break;
                 }
             }
@@ -164,30 +164,48 @@ static void ServerActivatePost(edict_t *pEdictList,
                                int edictCount [[maybe_unused]],
                                int clientMax)
 {
-    gSPGlobal->getPlayerManagerCore()->ServerActivatePost(pEdictList, clientMax);
-    gSPGlobal->getForwardManagerCore()->addDefaultsForwards();
+    using DefFwd = ForwardMngr::FwdDefault;
 
-    #error Execute PluginMngr in exts
+    gSPGlobal->getPlayerManagerCore()->ServerActivatePost(pEdictList, clientMax);
+
+    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
+    fwdMngr->addDefaultsForwards();
 
     gSPGlobal->loadExts();
+    gSPGlobal->allowPrecacheForPlugins(true);
 
-    /*pluginManager->setPluginPrecache(true);
-    pluginManager->loadPlugins();
-    pluginManager->setPluginPrecache(false);*/
+    for (auto& interface : gSPGlobal->getInterfacesList())
+    {
+        interface.second->getPluginMngr()->loadPlugins();
+    }
 
-    #error Tell exts to load plugins
+    // Allow plugins to add their natives
+    fwdMngr->getDefaultForward(DefFwd::PluginNatives)->execFunc(nullptr);
+
+    for (auto& interface : gSPGlobal->getInterfacesList())
+    {
+        interface.second->getPluginMngr()->bindPluginsNatives();
+    }
+
+    fwdMngr->getDefaultForward(DefFwd::PluginInit)->execFunc(nullptr);
+    fwdMngr->getDefaultForward(DefFwd::PluginsLoaded)->execFunc(nullptr);
+
+    gSPGlobal->allowPrecacheForPlugins(false);
 
     installRehldsHooks();
 }
 
 static void ServerDeactivatePost()
 {
-    using def = ForwardMngr::FwdDefault;
+    using DefFwd = ForwardMngr::FwdDefault;
 
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    fwdMngr->getDefaultForward(def::PluginEnd)->execFunc(nullptr);
+    fwdMngr->getDefaultForward(DefFwd::PluginEnd)->execFunc(nullptr);
 
-    #error Tell exts to unload plugins
+    for (auto& interface : gSPGlobal->getInterfacesList())
+    {
+        interface.second->getPluginMngr()->unloadPlugins();
+    }
 
     gSPGlobal->unloadExts();
 

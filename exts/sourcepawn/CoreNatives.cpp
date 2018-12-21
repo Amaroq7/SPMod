@@ -1,5 +1,7 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018 SPMod Development Team
+ *
+ *  This file is part of SPMod.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,11 +17,11 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "spmod.hpp"
+#include "SourcePawnAPI.hpp"
 
 // native void PrintToServer(const char[] text, any ...)
 static cell_t PrintToServer(SourcePawn::IPluginContext *ctx,
-                                 const cell_t *params)
+                            const cell_t *params)
 {
     char *formatString;
     char bufferOutput[1024];
