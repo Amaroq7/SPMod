@@ -17,7 +17,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "SourcePawnAPI.hpp"
+#include "ExtMain.hpp"
 
 // native void PrintToServer(const char[] text, any ...)
 static cell_t PrintToServer(SourcePawn::IPluginContext *ctx,
@@ -27,7 +27,7 @@ static cell_t PrintToServer(SourcePawn::IPluginContext *ctx,
     char bufferOutput[1024];
 
     ctx->LocalToString(params[1], &formatString);
-    std::size_t res = gSPGlobal->formatString(bufferOutput, sizeof(bufferOutput)-2, formatString, ctx, params, 2);
+    std::size_t res = formatString(bufferOutput, sizeof(bufferOutput) - 2, formatString, ctx, params, 2);
 
     bufferOutput[res++] = '\n';
     bufferOutput[res] = '\0';
@@ -39,9 +39,9 @@ static cell_t PrintToServer(SourcePawn::IPluginContext *ctx,
 
 // native int PrecacheModel(const char[] model)
 static cell_t PrecacheModel(SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
+                            const cell_t *params)
 {
-    if (!gSPGlobal->getPluginManagerCore()->canPluginPrecache())
+    if (!gSPGlobal->canPluginPrecache())
     {
         ctx->ReportError("Precaching is not allowed");
         return 0;
@@ -55,9 +55,9 @@ static cell_t PrecacheModel(SourcePawn::IPluginContext *ctx,
 
 // native int PrecacheSound(const char[] sound)
 static cell_t PrecacheSound(SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
+                            const cell_t *params)
 {
-    if (!gSPGlobal->getPluginManagerCore()->canPluginPrecache())
+    if (!gSPGlobal->canPluginPrecache())
     {
         ctx->ReportError("Precaching is not allowed");
         return 0;
@@ -71,9 +71,9 @@ static cell_t PrecacheSound(SourcePawn::IPluginContext *ctx,
 
 // native int PrecacheGeneric(const char[] generic)
 static cell_t PrecacheGeneric(SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
+                              const cell_t *params)
 {
-    if (!gSPGlobal->getPluginManagerCore()->canPluginPrecache())
+    if (!gSPGlobal->canPluginPrecache())
     {
         ctx->ReportError("Precaching is not allowed");
         return 0;
@@ -87,72 +87,120 @@ static cell_t PrecacheGeneric(SourcePawn::IPluginContext *ctx,
 
 // native bool NativeRegister(const char[] name, PluginNative func)
 static cell_t NativeRegister(SourcePawn::IPluginContext *ctx,
-                                  const cell_t *params)
+                             const cell_t *params)
 {
     char *nativeName;
     ctx->LocalToString(params[1], &nativeName);
+    std::shared_ptr<Plugin> plugin = gModuleInterface->getPluginMngrCore()->getPluginCore(ctx);
 
-    return gSPGlobal->getPluginManagerCore()->addFakeNative(nativeName, ctx->GetFunctionById(params[2]));
+    return gSPGlobal->getNativeProxy()->registerNative(nativeName, ctx->GetFunctionById(params[2]), plugin.get());
 }
 
-// native any NativeGetCell(int param)
-static cell_t NativeGetCell(SourcePawn::IPluginContext *ctx,
-                                 const cell_t *params)
+// native int NativeGetInt(int param)
+static cell_t NativeGetInt(SourcePawn::IPluginContext *ctx,
+                           const cell_t *params)
 {
-    cell_t param = params[1];
-    if (param > PluginMngr::m_callerParams[0] || param < 0)
-    {
-        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, PluginMngr::m_callerParams[0]);
-        return 0;
-    }
     if (!PluginMngr::m_callerPlugin)
     {
-        ctx->ReportError("No caller plugin!");
+        ctx->ReportError("No caller plugin");
         return 0;
     }
 
-    return PluginMngr::m_callerParams[param];
+    cell_t param = params[1];
+    int paramsNum = m_callerPlugin->getProxiedParamAsInt(0);
+
+    if (param > paramsNum || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
+        return 0;
+    }
+
+    return PluginMngr::m_callerPlugin->getProxiedParamAsInt(param);
 }
 
-// native any NativeGetCellRef(int param)
-static cell_t NativeGetCellRef(SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
+// native int NativeGetIntRef(int param)
+static cell_t NativeGetIntRef(SourcePawn::IPluginContext *ctx,
+                              const cell_t *params)
 {
-    cell_t param = params[1];
-    if (param > PluginMngr::m_callerParams[0] || param < 0)
-    {
-        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, PluginMngr::m_callerParams[0]);
-        return 0;
-    }
     if (!PluginMngr::m_callerPlugin)
     {
-        ctx->ReportError("No caller plugin!");
+        ctx->ReportError("No caller plugin");
         return 0;
     }
 
-    cell_t *paramToGet;
-    PluginMngr::m_callerPlugin->LocalToPhysAddr(PluginMngr::m_callerParams[param], &paramToGet);
-    return *paramToGet;
+    cell_t param = params[1];
+    int paramsNum = m_callerPlugin->getProxiedParamAsInt(0);
+    if (param > paramsNum || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
+        return 0;
+    }
+
+    return *PluginMngr::m_callerPlugin->getProxiedParamAsIntAddr(param);
+}
+
+// native float NativeGetFloat(int param)
+static cell_t NativeGetFloat(SourcePawn::IPluginContext *ctx,
+                             const cell_t *params)
+{
+    if (!PluginMngr::m_callerPlugin)
+    {
+        ctx->ReportError("No caller plugin");
+        return 0;
+    }
+
+    cell_t param = params[1];
+    int paramsNum = m_callerPlugin->getProxiedParamAsInt(0);
+
+    if (param > paramsNum || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
+        return 0;
+    }
+
+    return sp_ftoc(PluginMngr::m_callerPlugin->getProxiedParamAsFloat(param));
+}
+
+// native float NativeGetFloatRef(int param)
+static cell_t NativeGetFloatRef(SourcePawn::IPluginContext *ctx,
+                                const cell_t *params)
+{
+    if (!PluginMngr::m_callerPlugin)
+    {
+        ctx->ReportError("No caller plugin");
+        return 0;
+    }
+
+    cell_t param = params[1];
+    int paramsNum = m_callerPlugin->getProxiedParamAsInt(0);
+    if (param > paramsNum || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
+        return 0;
+    }
+
+    return sp_ftoc(*PluginMngr::m_callerPlugin->getProxiedParamAsIntAddr(param));
 }
 
 // native int NativeGetString(int param, char[] buffer, int size)
 static cell_t NativeGetString(SourcePawn::IPluginContext *ctx,
-                                   const cell_t *params)
+                              const cell_t *params)
 {
-    cell_t param = params[1];
-    if (param > PluginMngr::m_callerParams[0] || param < 0)
-    {
-        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, PluginMngr::m_callerParams[0]);
-        return 0;
-    }
     if (!PluginMngr::m_callerPlugin)
     {
-        ctx->ReportError("No caller plugin!");
+        ctx->ReportError("No caller plugin");
         return 0;
     }
 
-    char *stringToCopy;
-    PluginMngr::m_callerPlugin->LocalToString(PluginMngr::m_callerParams[param], &stringToCopy);
+    cell_t param = params[1];
+    int paramsNum = m_callerPlugin->getProxiedParamAsInt(0);
+    if (param > paramsNum || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
+        return 0;
+    }
+
+    const char *stringToCopy = PluginMngr::m_callerPlugin->getProxiedParamAsString(param);
 
     std::size_t writtenBytes;
     ctx->StringToLocalUTF8(params[2], params[3], stringToCopy, &writtenBytes);
@@ -160,67 +208,122 @@ static cell_t NativeGetString(SourcePawn::IPluginContext *ctx,
     return writtenBytes;
 }
 
-// native bool NativeGetArray(int param, any[] buffer, int size)
-static cell_t NativeGetArray(SourcePawn::IPluginContext *ctx,
-                                  const cell_t *params)
+// native bool NativeGetArrayInt(int param, int[] buffer, int size)
+static cell_t NativeGetArrayInt(SourcePawn::IPluginContext *ctx,
+                                const cell_t *params)
 {
-    cell_t param = params[1];
-    if (param > PluginMngr::m_callerParams[0] || param < 0)
-    {
-        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, PluginMngr::m_callerParams[0]);
-        return 0;
-    }
     if (!PluginMngr::m_callerPlugin)
     {
-        ctx->ReportError("No caller plugin!");
+        ctx->ReportError("No caller plugin");
         return 0;
     }
 
-    cell_t *arrayToCopy, *destArray;
-    PluginMngr::m_callerPlugin->LocalToPhysAddr(PluginMngr::m_callerParams[param], &arrayToCopy);
-    ctx->LocalToPhysAddr(params[2], &destArray);
+    cell_t param = params[1];
+    int paramsNum = m_callerPlugin->getProxiedParamAsInt(0);
+    if (param > paramsNum || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
+        return 0;
+    }
 
-    std::copy_n(arrayToCopy, params[3], destArray);
+    cell_t *destArray;
+    ctx->LocalToPhysAddr(params[2], &destArray);
+    auto srcArray = reinterpret_cast<cell_t *>(PluginMngr::m_callerPlugin->getProxiedParamAsArray(param));
+
+    std::copy_n(srcArray, params[3], destArray);
 
     return 1;
 }
 
-// native bool NativeSetCellRef(int param, any value)
-static cell_t NativeSetCellRef(SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params)
+// native bool NativeGetArrayFloat(int param, float[] buffer, int size)
+static cell_t NativeGetArrayFloat(SourcePawn::IPluginContext *ctx,
+                                  const cell_t *params)
 {
-    cell_t param = params[1];
-    if (param > PluginMngr::m_callerParams[0] || param < 0)
-    {
-        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, PluginMngr::m_callerParams[0]);
-        return 0;
-    }
     if (!PluginMngr::m_callerPlugin)
     {
-        ctx->ReportError("No caller plugin!");
+        ctx->ReportError("No caller plugin");
         return 0;
     }
 
-    cell_t *paramToSet;
-    PluginMngr::m_callerPlugin->LocalToPhysAddr(PluginMngr::m_callerParams[param], &paramToSet);
+    cell_t param = params[1];
+    int paramsNum = m_callerPlugin->getProxiedParamAsInt(0);
+    if (param > paramsNum || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
+        return 0;
+    }
 
-    *paramToSet = params[2];
+    cell_t *destArray;
+    ctx->LocalToPhysAddr(params[2], &destArray);
+    auto srcArray = reinterpret_cast<float *>(PluginMngr::m_callerPlugin->getProxiedParamAsArray(param));
+
+    for (std::size_t i = 0; i < params[3]; i++)
+    {
+        destArray[i] = sp_ftoc(srcArray[i]);
+    }
+
+    return 1;
+}
+
+// native bool NativeSetIntRef(int param, int value)
+static cell_t NativeSetIntRef(SourcePawn::IPluginContext *ctx,
+                              const cell_t *params)
+{
+    if (!PluginMngr::m_callerPlugin)
+    {
+        ctx->ReportError("No caller plugin");
+        return 0;
+    }
+
+    cell_t param = params[1];
+    int paramsNum = m_callerPlugin->getProxiedParamAsInt(0);
+    if (param > paramsNum || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
+        return 0;
+    }
+
+    *PluginMngr::m_callerPlugin->getProxiedParamAsIntAddr(param) = params[2];
+    return 1;
+}
+
+// native bool NativeSetFloatRef(int param, float value)
+static cell_t NativeSetFloatRef(SourcePawn::IPluginContext *ctx,
+                                const cell_t *params)
+{
+    if (!PluginMngr::m_callerPlugin)
+    {
+        ctx->ReportError("No caller plugin");
+        return 0;
+    }
+
+    cell_t param = params[1];
+    int paramsNum = m_callerPlugin->getProxiedParamAsInt(0);
+    if (param > paramsNum || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
+        return 0;
+    }
+
+    *PluginMngr::m_callerPlugin->getProxiedParamAsFloatAddr(param) = params[2];
     return 1;
 }
 
 // native int NativeSetString(int param, const char[] string, int size)
 static cell_t NativeSetString(SourcePawn::IPluginContext *ctx,
-                                   const cell_t *params)
+                              const cell_t *params)
 {
-    cell_t param = params[1];
-    if (param > PluginMngr::m_callerParams[0] || param < 0)
-    {
-        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, PluginMngr::m_callerParams[0]);
-        return 0;
-    }
     if (!PluginMngr::m_callerPlugin)
     {
-        ctx->ReportError("No caller plugin!");
+        ctx->ReportError("No caller plugin");
+        return 0;
+    }
+
+    cell_t param = params[1];
+    int paramsNum = m_callerPlugin->getProxiedParamAsInt(0);
+    if (param > paramsNum || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
         return 0;
     }
 
@@ -228,35 +331,66 @@ static cell_t NativeSetString(SourcePawn::IPluginContext *ctx,
     ctx->LocalToString(params[2], &stringToCopy);
 
     std::size_t writtenBytes;
-    PluginMngr::m_callerPlugin->StringToLocalUTF8(PluginMngr::m_callerParams[param],
-                                                  params[3],
-                                                  stringToCopy,
-                                                  &writtenBytes);
+    char *destString = PluginMngr::m_callerPlugin->getProxiedParamAsString(param);
 
-    return writtenBytes;
+    std::copy_n(stringToCopy, params[3], destString);
+
+    return params[3];
 }
 
-// native bool NativeSetArray(int param, const any[] buffer, int size)
-static cell_t NativeSetArray(SourcePawn::IPluginContext *ctx,
-                                  const cell_t *params)
+// native bool NativeSetArrayInt(int param, const int[] buffer, int size)
+static cell_t NativeSetArrayInt(SourcePawn::IPluginContext *ctx,
+                                const cell_t *params)
 {
-    cell_t param = params[1];
-    if (param > PluginMngr::m_callerParams[0] || param < 0)
-    {
-        ctx->ReportError("Incorrect parameter! %d (range: 0 - %d)", param, PluginMngr::m_callerParams[0]);
-        return 0;
-    }
     if (!PluginMngr::m_callerPlugin)
     {
-        ctx->ReportError("No caller plugin!");
+        ctx->ReportError("No caller plugin");
         return 0;
     }
 
-    cell_t *arrayToCopy, *destArray;
-    PluginMngr::m_callerPlugin->LocalToPhysAddr(PluginMngr::m_callerParams[param], &destArray);
+    cell_t param = params[1];
+    int paramsNum = m_callerPlugin->getProxiedParamAsInt(0);
+    if (param > paramsNum || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
+        return 0;
+    }
+
+    cell_t *arrayToCopy;
     ctx->LocalToPhysAddr(params[2], &arrayToCopy);
+    auto destArray = reinterpret_cast<cell_t *>(PluginMngr::m_callerPlugin->getProxiedParamAsArray(param));
 
     std::copy_n(arrayToCopy, params[3], destArray);
+
+    return 1;
+}
+
+// native bool NativeSetArrayFloat(int param, const float[] buffer, int size)
+static cell_t NativeSetArrayFloat(SourcePawn::IPluginContext *ctx,
+                                  const cell_t *params)
+{
+    if (!PluginMngr::m_callerPlugin)
+    {
+        ctx->ReportError("No caller plugin");
+        return 0;
+    }
+
+    cell_t param = params[1];
+    int paramsNum = m_callerPlugin->getProxiedParamAsInt(0);
+    if (param > paramsNum || param < 0)
+    {
+        ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
+        return 0;
+    }
+
+    cell_t *arrayToCopy;
+    ctx->LocalToPhysAddr(params[2], &arrayToCopy);
+    auto destArray = reinterpret_cast<float *>(PluginMngr::m_callerPlugin->getProxiedParamAsArray(param));
+
+    for (std::size_t i = 0; i < params[3]; i++)
+    {
+        destArray[i] = sp_ctof(arrayToCopy[i]);
+    }
 
     return 1;
 }
@@ -291,7 +425,7 @@ static cell_t ServerCmd(SourcePawn::IPluginContext *ctx,
     char bufferOutput[1024];
 
     ctx->LocalToString(params[arg_buffer], &formatString);
-    std::size_t res = gSPGlobal->formatString(bufferOutput, sizeof(bufferOutput)-2, formatString, ctx, params, arg_params);
+    std::size_t res = formatString(bufferOutput, sizeof(bufferOutput) - 2, formatString, ctx, params, arg_params);
   
     bufferOutput[res++] = '\n';
     bufferOutput[res] = '\0';
@@ -316,13 +450,17 @@ sp_nativeinfo_t gCoreNatives[] =
     {  "PrecacheSound",          PrecacheSound       },
     {  "PrecacheGeneric",        PrecacheGeneric     },
     {  "NativeRegister",         NativeRegister      },
-    {  "NativeGetCell",          NativeGetCell       },
-    {  "NativeGetCellRef",       NativeGetCellRef    },
+    {  "NativeGetInt",           NativeGetInt        },
+    {  "NativeGetIntRef",        NativeGetIntRef     },
+    {  "NativeGetFloat",         NativeGetInt        },
+    {  "NativeGetFloatRef",      NativeGetIntRef     },
     {  "NativeGetString",        NativeGetString     },
     {  "NativeGetArray",         NativeGetArray      },
-    {  "NativeSetCellRef",       NativeSetCellRef    },
+    {  "NativeSetIntRef",        NativeSetIntRef     },
+    {  "NativeSetFloatRef",      NativeSetFloatRef   },
     {  "NativeSetString",        NativeSetString     },
-    {  "NativeSetArray",         NativeSetArray      },
+    {  "NativeSetArrayInt",      NativeSetArrayInt   },
+    {  "NativeSetArrayFloat",    NativeSetArrayFloat },
     {  "ChangeLevel",            ChangeLevel         },
     {  "GetGameTime",            GetGameTime         },
     {  "ServerCmd",              ServerCmd           },

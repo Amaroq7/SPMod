@@ -132,6 +132,28 @@ bool SPGlobal::canPluginsPrecache() const
     return m_canPluginsPrecache;
 }
 
+IPlugin *SPGlobal::getPlugin(const char *pluginname) const
+{
+    if (strlen(pluginname) < 4)
+    {
+        return nullptr;
+    }
+
+    std::string_view pluginExt(pluginname);
+    pluginExt = pluginExt.substr(pluginExt.length() - 4);
+    for (const auto &interface : m_interfaces)
+    {
+        IPluginMngr *pluginMngr = interface.second->getPluginMngr();
+
+        if (pluginExt != pluginMngr->getPluginsExt())
+            continue;
+
+        return pluginMngr->getPlugin(pluginname);
+    }
+
+    return nullptr;
+}
+
 void SPGlobal::allowPrecacheForPlugins(bool allow)
 {
     m_canPluginsPrecache = allow;
@@ -186,6 +208,11 @@ IPlayerMngr *SPGlobal::getPlayerManager() const
 IUtils *SPGlobal::getUtils() const
 {
     return getUtilsCore().get();
+}
+
+INativeProxy *SPGlobal::getNativeProxy() const
+{
+    return getNativeProxyCore().get();
 }
 
 bool SPGlobal::registerInterface(IInterface *interface)
@@ -257,4 +284,9 @@ const std::unique_ptr<MenuMngr> &SPGlobal::getMenuManagerCore() const
 const std::unique_ptr<PlayerMngr> &SPGlobal::getPlayerManagerCore() const
 {
     return m_plrManager;
+}
+
+const std::unique_ptr<NativeProxy> &SPGlobal::getNativeProxyCore() const
+{
+    return m_nativeProxy;
 }

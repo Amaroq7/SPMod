@@ -22,7 +22,7 @@ namespace SPMod
     class ICvar SPMOD_FINAL
     {
     public:
-        using CvarCallback = void (*)(const ICvar *cvar, const char *old_value, const char *new_value);
+        using CvarCallback = void (*)(const ICvar *const cvar, const char *old_value, const char *new_value);
         /**
          * Cvar flags (from engine)
          */

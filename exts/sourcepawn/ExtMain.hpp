@@ -32,6 +32,8 @@
     #error Filesystem header missing
 #endif
 
+#include <unordered_map>
+
 #include <dlfcn.h>
 
 #include <extdll.h>
@@ -40,6 +42,16 @@
 #include "SourcePawnAPI.hpp"
 #include "DebugListener.hpp"
 #include "ModuleInterface.hpp"
+#include "TypeHandler.hpp"
+#include "PrintfImpl.hpp"
+#include "Listeners.hpp"
 
 extern std::unique_ptr<ModuleInterface> gModuleInterface;
 extern SPMod::ISPGlobal *gSPGlobal;
+
+// ForwardNatives.cpp
+extern TypeHandler<SPMod::IForward> gForwardHandlers;
+
+// CvarNatives.cpp
+extern TypeHandler<SPMod::ICvar> gCvarsHandlers;
+extern std::unordered_multimap<SPMod::ICvar *, SourcePawn::IPluginFunction *> gCvarPluginsCallbacks;

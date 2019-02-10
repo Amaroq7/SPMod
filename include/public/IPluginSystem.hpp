@@ -121,7 +121,7 @@ namespace SPMod
          * 
          * @return        Param as string.
          */
-        virtual const char *getProxiedParamAsString(std::size_t index) const = 0;
+        virtual char *getProxiedParamAsString(std::size_t index) const = 0;
 
         /**
          * @brief Gets proxied param as array.

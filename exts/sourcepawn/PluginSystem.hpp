@@ -51,7 +51,7 @@ namespace SPExt
         int *getProxiedParamAsIntAddr(std::size_t index) const override;
         float getProxiedParamAsFloat(std::size_t index) const override;
         float *getProxiedParamAsFloatAddr(std::size_t index) const override;
-        const char *getProxiedParamAsString(std::size_t index) const override;
+        char *getProxiedParamAsString(std::size_t index) const override;
         void *getProxiedParamAsArray(std::size_t index) const override;
 
         // Plugin
@@ -63,6 +63,7 @@ namespace SPExt
         std::string_view getUrlCore() const;
         std::string_view getIdentityCore() const;
         std::string_view getFileNameCore() const;
+        void setProxyContext(SourcePawn::IPluginContext *ctx);
 
     private:
         std::weak_ptr<PluginMngr> m_pluginMngr;
@@ -75,12 +76,13 @@ namespace SPExt
         std::string m_url;
         std::size_t m_id;
         std::array<cell_t, SP_MAX_CALL_ARGUMENTS> m_proxiedParams;
+        SourcePawn::IPluginContext *m_proxyContext;
     };
 
     class PluginMngr final : public SPMod::IPluginMngr
     {
     public:
-        constexpr static const char *PluginsExtension = ".smx";
+        constexpr static const char *pluginsExtension = ".smx";
 
         PluginMngr() = default;
         ~PluginMngr() = default;

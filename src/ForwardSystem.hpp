@@ -181,13 +181,13 @@ public:
     // IForwardMngr
     IForward *createForward(const char *name,
                             IForward::ExecType exec,
-                            std::size_t params,
-                            ...) override;
+                            std::size_t paramsnum,
+                            IForward::Param::Type *params) override;
 
     IForward *createForward(const char *name,
                             IPlugin *plugin,
-                            std::size_t params,
-                            ...) override;
+                            std::size_t paramsnum,
+                            IForward::Param::Type *params) override;
 
     void deleteForward(IForward *forward) override;
     void addForwardListener(ForwardCallback func) override;
@@ -206,11 +206,11 @@ public:
                                                IPlugin *plugin = nullptr);
 
 private:
-    std::shared_ptr<Forward> _createForwardVa(std::string_view name,
-                                              IForward::ExecType exec,
-                                              std::va_list params,
-                                              std::size_t paramsnum,
-                                              IPlugin *plugin = nullptr);
+    std::shared_ptr<Forward> _createForward(std::string_view name,
+                                            IForward::ExecType exec,
+                                            IForward::Param::Type *params,
+                                            std::size_t paramsnum,
+                                            IPlugin *plugin = nullptr);
 
     std::unordered_map<std::string, std::shared_ptr<Forward>> m_forwards;
     std::vector<ForwardCallback> m_callbacks;

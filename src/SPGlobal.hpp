@@ -37,6 +37,7 @@ public:
     const char *getPath(DirType type) const override;
     const char *getModName() const override;
     bool canPluginsPrecache() const override;
+    IPlugin *getPlugin(const char *pluginname) const override;
 
     IForwardMngr *getForwardManager() const override;
     ICvarMngr *getCvarManager() const override;

@@ -1,5 +1,7 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018 SPMod Development Team
+ *
+ *  This file is part of SPMod.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,26 +17,27 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "spmod.hpp"
+#include "ExtMain.hpp"
 
-// Forward(const char[] name, ExecType exectype, int plid, ParamType ...)
+TypeHandler<SPMod::IForward> gForwardHandlers;
+
+// Forward(const char[] name, ExecType exectype, const char[] plgname, ParamType ...)
 static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx,
                           const cell_t *params)
 {
-    enum { arg_name = 1, arg_exec, arg_plid, arg_paramstypes };
+    enum { args_num = 0, arg_name, arg_exec, arg_pluginname, arg_paramstypes };
+
+    auto execType = static_cast<IForward::ExecType>(params[arg_exec]);
+    SPMod::IForwardMngr *fwdMngr = gSPGlobal->getForwardManager();
 
     char *fwdName;
-    auto execType = static_cast<IForward::ExecType>(params[arg_exec]);
-    cell_t pluginId = params[arg_plid];
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-
     ctx->LocalToString(params[arg_name], &fwdName);
 
-    std::size_t fwdParamsNum = params[0] - 3;
+    std::size_t fwdParamsNum = params[args_num] - 3;
     if (fwdParamsNum > SP_MAX_EXEC_PARAMS)
         return -1;
 
-    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> fwdParamsList = {};
+    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> fwdParamsList;
     for (std::size_t i = 0; i < fwdParamsNum; ++i)
     {
         cell_t *paramType;
@@ -42,27 +45,48 @@ static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx,
         fwdParamsList.at(i) = static_cast<IForward::ParamType>(*paramType);
     }
 
+    // Created forward
+    SPMod::IForward *forward;
+
     // If single forward search for shared_ptr of that plugin
-    std::shared_ptr<Plugin> plugin;
-    if (pluginId > -1)
+    char *pluginName;
+    ctx->LocalToStringNULL(params[arg_pluginname], &pluginName);
+    if (pluginName)
     {
-        plugin = gSPGlobal->getPluginManagerCore()->getPluginCore(pluginId);
+        if (strlen(pluginName) < 4)
+        {
+            ctx->ReportError("Invalid plugin name");
+            return 0;
+        }
+
+        std::string_view pluginNameExt(pluginName);
+        pluginNameExt = pluginNameExt.substr(pluginNameExt.length() - 4);
+
+        IPlugin *plugin;
+        // If it's SourcePawn plugin lets find it here without involving core
+        if (pluginNameExt == PluginMngr::pluginsExtension)
+            plugin = gModuleInterface->getPluginMngrCore()->getPluginCore(pluginName).get();
+        else
+            plugin = gSPGlobal->getPlugin(pluginName);
+
         if (!plugin)
         {
-            ctx->ReportError("Plugin not found!");
+            ctx->ReportError("Plugin not found");
             return -1;
         }
+
+        forward = fwdMngr->createForward(fwdName, pluginName, fwdParamsNum, fwdParamsList.data());
+    }
+    else
+        forward = fwdMngr->createForward(fwdName, execType, fwdParamsNum, fwdParamsList.data());
+
+    if (!forward)
+    {
+        ctx->ReportError("Forward could not be created");
+        return -1;
     }
 
-    std::shared_ptr<Forward> plForward = fwdMngr->createForwardCore(fwdName,
-                                                                    execType,
-                                                                    fwdParamsList,
-                                                                    fwdParamsNum,
-                                                                    plugin);
-    if (!plForward)
-        return -1;
-
-    return plForward->getId();
+    return gForwardHandlers.create(forward);
 }
 
 // bool PushCell(any cell)
@@ -74,15 +98,14 @@ static cell_t PushCell(SourcePawn::IPluginContext *ctx,
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
-        ctx->ReportError("Invalid forward!");
+        ctx->ReportError("Invalid forward");
         return 0;
     }
     
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
+    SPMod::IForward *forward = gForwardHandlers.get(fwdId);
     if (!forward)
     {
-        ctx->ReportError("Forward not found!");
+        ctx->ReportError("Forward not found");
         return 0;
     }
 
@@ -98,15 +121,14 @@ static cell_t PushCellRef(SourcePawn::IPluginContext *ctx,
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
-        ctx->ReportError("Invalid forward!");
+        ctx->ReportError("Invalid forward");
         return 0;
     }
 
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
+    SPMod::IForward *forward = gForwardHandlers.get(fwdId);
     if (!forward)
     {
-        ctx->ReportError("Forward not found!");
+        ctx->ReportError("Forward not found");
         return 0;
     }
 
@@ -125,15 +147,14 @@ static cell_t PushFloat(SourcePawn::IPluginContext *ctx,
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
-        ctx->ReportError("Invalid forward!");
+        ctx->ReportError("Invalid forward");
         return 0;
     }
 
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
+    SPMod::IForward *forward = gForwardHandlers.get(fwdId);
     if (!forward)
     {
-        ctx->ReportError("Forward not found!");
+        ctx->ReportError("Forward not found");
         return 0;
     }
 
@@ -149,15 +170,14 @@ static cell_t PushFloatRef(SourcePawn::IPluginContext *ctx,
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
-        ctx->ReportError("Invalid forward!");
+        ctx->ReportError("Invalid forward");
         return 0;
     }
 
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
+    SPMod::IForward *forward = gForwardHandlers.get(fwdId);
     if (!forward)
     {
-        ctx->ReportError("Forward not found!");
+        ctx->ReportError("Forward not found");
         return 0;
     }
 
@@ -181,15 +201,14 @@ static cell_t PushString(SourcePawn::IPluginContext *ctx,
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
-        ctx->ReportError("Invalid forward!");
+        ctx->ReportError("Invalid forward");
         return 0;
     }
 
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
+    SPMod::IForward *forward = gForwardHandlers.get(fwdId);
     if (!forward)
     {
-        ctx->ReportError("Forward not found!");
+        ctx->ReportError("Forward not found");
         return 0;
     }
 
@@ -208,15 +227,14 @@ static cell_t PushArray(SourcePawn::IPluginContext *ctx,
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
-        ctx->ReportError("Invalid forward!");
+        ctx->ReportError("Invalid forward");
         return 0;
     }
 
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
+    SPMod::IForward *forward = gForwardHandlers.get(fwdId);
     if (!forward)
     {
-        ctx->ReportError("Forward not found!");
+        ctx->ReportError("Forward not found");
         return 0;
     }
 
@@ -235,15 +253,14 @@ static cell_t PushStringEx(SourcePawn::IPluginContext *ctx,
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
-        ctx->ReportError("Invalid forward!");
+        ctx->ReportError("Invalid forward");
         return 0;
     }
 
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
+    SPMod::IForward *forward = gForwardHandlers.(fwdId);
     if (!forward)
     {
-        ctx->ReportError("Forward not found!");
+        ctx->ReportError("Forward not found");
         return 0;
     }
 
@@ -263,15 +280,14 @@ static cell_t PushArrayEx(SourcePawn::IPluginContext *ctx,
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
-        ctx->ReportError("Invalid forward!");
+        ctx->ReportError("Invalid forward");
         return 0;
     }
 
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
+    SPMod::IForward *forward = gForwardHandlers.get(fwdId);
     if (!forward)
     {
-        ctx->ReportError("Forward not found!");
+        ctx->ReportError("Forward not found");
         return 0;
     }
 
@@ -290,15 +306,14 @@ static cell_t PushExec(SourcePawn::IPluginContext *ctx,
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
-        ctx->ReportError("Invalid forward!");
+        ctx->ReportError("Invalid forward");
         return 0;
     }
 
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
+    SPMod::IForward *forward = gForwardHandlers.get(fwdId);
     if (!forward)
     {
-        ctx->ReportError("Forward not found!");
+        ctx->ReportError("Forward not found");
         return 0;
     }
 
@@ -317,15 +332,14 @@ static cell_t PushCancel(SourcePawn::IPluginContext *ctx,
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
-        ctx->ReportError("Invalid forward!");
+        ctx->ReportError("Invalid forward");
         return 0;
     }
 
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
+    SPMod::IForward *forward = gForwardHandlers.get(fwdId);
     if (!forward)
     {
-        ctx->ReportError("Forward not found!");
+        ctx->ReportError("Forward not found");
         return 0;
     }
 
@@ -342,20 +356,19 @@ static cell_t ForwardRemove(SourcePawn::IPluginContext *ctx,
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
     {
-        ctx->ReportError("Invalid forward!");
+        ctx->ReportError("Invalid forward");
         return 0;
     }
 
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> forward = fwdMngr->findForward(fwdId);
-
+    SPMod::IForward *forward = gForwardHandlers.get(fwdId);
     if (!forward)
         return 0;
 
     if (forward->isExecuted())
         return 0;
 
-    fwdMngr->deleteForwardCore(forward);
+    gSPGlobal->getForwardManager()->deleteForward(forward);
+    gForwardHandlers.free(fwdId);
     return 1;
 }
 

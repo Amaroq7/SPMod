@@ -59,7 +59,7 @@ Plugin::Plugin(std::size_t id,
     m_runtime->GetDefaultContext()->SetKey(1, const_cast<char *>(m_identity.c_str()));
 
     std::uint32_t nativesNum = plugin->GetNativesNum();
-    const std::unique_ptr<PluginMngr> &plMngr = gSPGlobal->getPluginManagerCore();
+    const std::unique_ptr<PluginMngr> &plMngr = gModuleInterface->getPluginMngrCore();
     for (std::uint32_t index = 0; index < nativesNum; ++index)
     {
         const sp_native_t *pluginNative = m_runtime->GetNative(index);
@@ -137,7 +137,7 @@ int *getProxiedParamAsIntAddr(std::size_t index) const
     {
         cell_t *result;
         cell_t address = m_proxiedParams.at(index);
-        m_runtime->GetDefaultContext()->LocalToPhysAddr(address, &result);
+        m_runtime->m_proxyContext->LocalToPhysAddr(address, &result);
 
         return result;
     }
@@ -165,7 +165,7 @@ float *getProxiedParamAsFloatAddr(std::size_t index) const
     {
         cell_t *result;
         cell_t address = m_proxiedParams.at(index);
-        m_runtime->GetDefaultContext()->LocalToPhysAddr(address, &result);
+        m_runtime->m_proxyContext->LocalToPhysAddr(address, &result);
 
         return reinterpret_cast<float *>(result);
     }
@@ -175,13 +175,13 @@ float *getProxiedParamAsFloatAddr(std::size_t index) const
     }
 }
 
-const char *getProxiedParamAsString(std::size_t index) const
+char *getProxiedParamAsString(std::size_t index) const
 {
     try
     {
         char *result;
         cell_t address = m_proxiedParams.at(index);
-        m_runtime->GetDefaultContext()->LocalToString(address, &result);
+        m_runtime->m_proxyContext->LocalToString(address, &result);
 
         return result;
     }
@@ -197,7 +197,7 @@ void *getProxiedParamAsArray(std::size_t index) const
     {
         cell_t *result;
         cell_t address = m_proxiedParams.at(index);
-        m_runtime->GetDefaultContext()->LocalToPhysAddr(address, &result);
+        m_runtime->m_proxyContext->LocalToPhysAddr(address, &result);
 
         return result;
     }
@@ -236,6 +236,11 @@ std::string_view Plugin::getIdentityCore() const
 std::string_view Plugin::getFileNameCore() const
 {
     return m_filename;
+}
+
+void Plugin::setProxyContext(SourcePawn::IPluginContext *ctx)
+{
+    m_proxyContext = ctx;
 }
 
 std::size_t Plugin::getId() const
@@ -431,18 +436,19 @@ cell_t PluginMngr::proxyNativeRouter(SourcePawn::IPluginContext *ctx,
 {
     if (params[0] > SP_MAX_CALL_ARGUMENTS)
     {
-        ctx->ReportError("Too many parameters passed to native! %d (max: %d)", params[0], SP_MAX_CALL_ARGUMENTS);
+        ctx->ReportError("Too many parameters passed to native %d (max: %d)", params[0], SP_MAX_CALL_ARGUMENTS);
         return 0;
     }
 
     // TODO: Support later?
     if (PluginMngr::m_callerPlugin)
     {
-        ctx->ReportError("Cannot call another plugin native in native callback!");
+        ctx->ReportError("Cannot call another plugin native in native callback");
         return 0;
     }
 
-    std::shared_ptr<Plugin> caller = gSPGlobal->getPluginManagerCore()->getPluginCore(ctx);
+    std::shared_ptr<Plugin> caller = gModuleInterface->getPluginMngrCore()->getPluginCore(ctx);
+    caller->setProxyContext(ctx);
 
     for (std::size_t i = 0; i <= static_cast<std::size_t>(params[0]); i++)
         m_proxiedParams[i] = params[i];

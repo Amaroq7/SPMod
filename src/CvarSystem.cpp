@@ -193,6 +193,9 @@ std::string_view Cvar::getNameCore() const
 
 void Cvar::addCallback(CvarCallback callback)
 {
+    if (std::find(m_callbacks.begin(), m_callbacks.end(), callback) != m_callbacks.end())
+        return;
+
     m_callbacks.push_back(callback);
 }
 

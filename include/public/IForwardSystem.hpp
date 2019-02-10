@@ -282,15 +282,15 @@ namespace SPMod
          *
          * @param name      Name of the forward.
          * @param exec      Exec type.
-         * @param params    Number of parameters, cannot exceed MAX_EXEC_PARAMS.
-         * @param ...       Types of parameters (IForward::ParamType).
+         * @param paramsnum Number of parameters, cannot exceed MAX_EXEC_PARAMS.
+         * @param params    Types of parameters (IForward::Param::Type).
          *
          * @return          Forward pointer, nullptr if failed.
          */
         virtual IForward *createForward(const char *name,
                                         IForward::ExecType exec,
-                                        std::size_t params,
-                                        ...) = 0;
+                                        std::size_t paramsnum,
+                                        IForward::Param::Type *params) = 0;
 
         /*
          * @brief Creates forward.
@@ -300,15 +300,15 @@ namespace SPMod
          *
          * @param name      Name of the forward.
          * @param plugin    Plugin which the forward will be executed in.
-         * @param params    Number of parameters, cannot exceed 32.
-         * @param ...       Types of parameters (IForward::ParamType).
+         * @param paramsnum Number of parameters, cannot exceed 32.
+         * @param params    Types of parameters (IForward::Param::Type).
          *
          * @return          Forward pointer, nullptr if failed.
          */
         virtual IForward *createForward(const char *name,
                                         IPlugin *plugin,
-                                        std::size_t params,
-                                        ...) = 0;
+                                        std::size_t paramsnum,
+                                        IForward::Param::Type *params) = 0;
 
         /*
          * @brief Deletes forward.
@@ -392,5 +392,33 @@ namespace SPMod
         returnVal ^= static_cast<std::underlying_type_t<T>>(rhs);
 
         return static_cast<T>(returnVal);
+    }
+
+    template<typename T, typename S, typename = std::enable_if_t<std::is_enum_v<T>>>
+    inline bool operator ==(const T lhs,
+                            const S rhs)
+    {
+        return static_cast<std::underlying_type_t<T>>(lhs) == rhs;
+    }
+
+    template<typename T, typename S, typename = std::enable_if_t<std::is_enum_v<T>>>
+    inline bool operator ==(const S lhs,
+                            const T rhs)
+    {
+        return lhs == static_cast<std::underlying_type_t<T>>(rhs);
+    }
+
+    template<typename T, typename S, typename = std::enable_if_t<std::is_enum_v<T>>>
+    inline bool operator !=(const T lhs,
+                            const S rhs)
+    {
+        return static_cast<std::underlying_type_t<T>>(lhs) != rhs;
+    }
+
+    template<typename T, typename S, typename = std::enable_if_t<std::is_enum_v<T>>>
+    inline bool operator !=(const S lhs,
+                            const T rhs)
+    {
+        return lhs != static_cast<std::underlying_type_t<T>>(rhs);
     }
 }

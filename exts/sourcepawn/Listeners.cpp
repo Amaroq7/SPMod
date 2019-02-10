@@ -91,9 +91,11 @@ namespace
     }
 }
 
-namespace SPExt::Listener::Forward
+namespace SPExt::Listener
 {
-    int Forward(const IForward *const fwd, int *result, bool *stop)
+    int Forward(const IForward *const fwd,
+                int *result,
+                bool *stop)
     {
         // One plugin forward
         std::shared_ptr<Plugin> plugin = gModuleInterface->getPluginMngrCore()->getPluginCore(fwd->getPlugin());
@@ -134,6 +136,21 @@ namespace SPExt::Listener::Forward
                     break;
                 }
             }
+        }
+    }
+
+    void Cvar(const ICvar *const cvar,
+              const char *old_value,
+              const char *new_value)
+    {
+        auto range = gCvarPluginsCallbacks.equal_range(cvar);
+        for (auto it = range.first; it != range.second; it++)
+        {
+            SourcePawn::IPluginFunction *func = it->second;
+            func->PushCell(gCvarsHandlers.getKey(cvar));
+            func->PushString(old_value);
+            func->PushString(new_value);
+            func->Execute(nullptr);
         }
     }
 }

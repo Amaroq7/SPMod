@@ -328,36 +328,30 @@ bool SingleForward::execFunc(int *result)
 
 IForward *ForwardMngr::createForward(const char *name,
                                      IForward::ExecType exec,
-                                     std::size_t params,
-                                     ...)
+                                     std::size_t paramsnum,
+                                     IForward::Param::Type *params)
 {
-    if (params > Forward::MAX_EXEC_PARAMS)
+    if (paramsnum > Forward::MAX_EXEC_PARAMS)
         return nullptr;
 
     // Get passed params types
-    std::va_list paramsList;
-    va_start(paramsList, params);
-    std::shared_ptr<Forward> createdForward = _createForwardVa(name, exec, paramsList, params);
-    va_end(paramsList);
+    std::shared_ptr<Forward> createdForward = _createForward(name, exec, params, paramsnum);
 
     return createdForward.get();
 }
 
 IForward *ForwardMngr::createForward(const char *name,
                                      IPlugin *plugin,
-                                     std::size_t params,
-                                     ...)
+                                     std::size_t paramsnum,
+                                     IForward::Param::Type *params)
 {
     using et = IForward::ExecType;
 
-    if (params > Forward::MAX_EXEC_PARAMS)
+    if (paramsnum > Forward::MAX_EXEC_PARAMS)
         return nullptr;
 
     // Get passed params types
-    std::va_list paramsList;
-    va_start(paramsList, params);
-    std::shared_ptr<Forward> createdForward = _createForwardVa(name, et::Ignore, paramsList, params, plugin);
-    va_end(paramsList);
+    std::shared_ptr<Forward> createdForward = _createForward(name, et::Ignore, params, paramsnum, plugin);
 
     return createdForward.get();
 }
@@ -408,16 +402,16 @@ void ForwardMngr::addDefaultsForwards()
     m_defaultForwards.at(posId) = createForwardCore("OnPluginNatives", et::Ignore, paramsList, 0);
 }
 
-std::shared_ptr<Forward> ForwardMngr::_createForwardVa(std::string_view name,
-                                                       IForward::ExecType exec,
-                                                       std::va_list params,
-                                                       std::size_t paramsnum,
-                                                       IPlugin *plugin)
+std::shared_ptr<Forward> ForwardMngr::_createForward(std::string_view name,
+                                                     IForward::ExecType exec,
+                                                     IForward::Param::Type *params,
+                                                     std::size_t paramsnum,
+                                                     IPlugin *plugin)
 {
-    std::array<IForward::Param::Type, IForward::MAX_EXEC_PARAMS> forwardParams = {};
+    std::array<IForward::Param::Type, IForward::MAX_EXEC_PARAMS> forwardParams;
 
     for (std::size_t i = 0; i < paramsnum; ++i)
-        forwardParams.at(i) = static_cast<IForward::Param::Type>(va_arg(params, int));
+        forwardParams.at(i) = static_cast<IForward::Param::Type>(params[i]);
 
     return createForwardCore(name, exec, forwardParams, paramsnum, plugin);
 }

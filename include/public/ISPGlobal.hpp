@@ -77,35 +77,44 @@ namespace SPMod
         /**
          * @brief Returns home dir of SPMod.
          *
-         * @return        Home dir.
+         * @return              Home dir.
          */
         virtual const char *getPath(DirType type) const = 0;
 
         /**
          * @brief Returns name of the mod.
          *
-         * @return        Mod name.
+         * @return              Mod name.
          */
         virtual const char *getModName() const = 0;
 
         /**
          * @brief Checks if plugins can precache resources.
          *
-         * @return        True if they are allowed to, false otherwise.
+         * @return              True if they are allowed to, false otherwise.
          */
         virtual bool canPluginsPrecache() const = 0;
 
         /**
+         * @brief Finds plugin.
+         * 
+         * @param pluginname    Plugin name to look up.
+         *
+         * @return              Plugin pointer or nullptr if not found.
+         */
+        virtual IPlugin *getPlugin(const char *pluginname) const = 0;
+
+        /**
          * @brief Returns SPMod forward manager.
          *
-         * @return        Forward manager.
+         * @return              Forward manager.
          */
         virtual IForwardMngr *getForwardManager() const = 0;
 
         /**
         * @brief Returns SPMod cvar manager.
         *
-        * @return                cvar manager.
+        * @return               Cvar manager.
         */
         virtual ICvarMngr *getCvarManager() const = 0;
 

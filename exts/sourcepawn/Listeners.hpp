@@ -17,27 +17,12 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 #include "ExtMain.hpp"
 
-using namespace SPExt;
-
-SPMod::ISPGlobal *gSPGlobal;
-std::unique_ptr<ModuleInterface> gModuleInterface;
-
-SPMOD_API SPMod::ExtQueryValue SPMod_Query(SPMod::ISPGlobal *spmodInstance)
+namespace SPExt::Listener
 {
-    gSPGlobal = spmodInstance;
-    gModuleInterface = std::make_unique<ModuleInterface>(gSPGlobal->getPath(DirType::Exts));
-
-    return (gSPGlobal->registerInterface(gModuleInterface.get()) ? SPMod::ExtQueryValue::SPModExt : SPMod::ExtQueryValue::DontLoad);
-}
-
-SPMOD_API bool SPMod_Init()
-{
-    gSPGlobal->getForwardManager()->addForwardListener(Listener::Forward);
-    return true;
-}
-
-SPMOD_API void SPMod_End()
-{
+    int Forward(const SPMod::IForward *const fwd, int *result, bool *stop);
+    void Cvar(const ICvar *const cvar, const char *old_value, const char *new_value);
 }
