@@ -147,10 +147,53 @@ namespace SPExt::Listener
         for (auto it = range.first; it != range.second; it++)
         {
             SourcePawn::IPluginFunction *func = it->second;
+
+            if (!func || !func->IsRunnable())
+                continue;
+
             func->PushCell(gCvarsHandlers.getKey(cvar));
             func->PushString(old_value);
             func->PushString(new_value);
             func->Execute(nullptr);
         }
+    }
+
+    void Menu(SPMod::IMenu *const menu, SPMod::IMenuItem *const item, SPMod::IPlayer *const player)
+    {
+        SourcePawn::IPluginFunction *func = gMenuPluginHandlers[menu];
+        if(func && func->IsRunnable())
+        {
+            std::size_t menuId = gMenuHandlers.getKey(menu);
+            func->PushCell(menuId);
+
+            if(item->getNavType() == NavigationType::None)
+            {
+                func->PushCell(static_cast<cell_t>(menuPackItem(menuId, getItemIndex(item))));
+            }
+            else
+            {
+                func->PushCell(static_cast<cell_t>(item->getNavType()));
+            }
+
+            func->PushCell(static_cast<cell_t>(player->getIndex()));
+            func->Execute(nullptr);
+        }
+    }
+
+    void MenuText(SPMod::IMenu *const menu, int key, SPMod::IPlayer *const player)
+    {
+        SourcePawn::IPluginFunction *func = gMenuPluginHandlers[menu];
+        if(func && func->IsRunnable())
+        {
+            func->PushCell(static_cast<cell_t>(gMenuHandlers.getKey(menu)));
+            func->PushCell(static_cast<cell_t>(key));
+            func->PushCell(static_cast<cell_t>(player->getIndex()));
+            func->Execute(nullptr);
+        }
+    }
+
+    ItemStatus MenuItemCallback(SPMod::IMenu *const menu, SPMod::IMenuItem *const item, SPMod::IPlayer *const player)
+    {
+
     }
 }

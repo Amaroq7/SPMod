@@ -55,3 +55,19 @@ extern TypeHandler<SPMod::IForward> gForwardHandlers;
 // CvarNatives.cpp
 extern TypeHandler<SPMod::ICvar> gCvarsHandlers;
 extern std::unordered_multimap<SPMod::ICvar *, SourcePawn::IPluginFunction *> gCvarPluginsCallbacks;
+
+// MenuNatives.cpp
+extern TypeHandler<IMenu> gMenuHandlers;
+extern std::unordered_map<SPMod::IMenu *, SourcePawn::IPluginFunction *> gMenuPluginHandlers;
+extern std::unordered_map<SPMod::IMenuItem *, SourcePawn::IPluginFunction *> gMenuItemPluginHandlers;
+
+constexpr std::size_t menuPackItem(std::size_t menuid, std::size_t itemid)
+{
+    return (menuid << 16 | itemid);
+}
+
+constexpr std::size_t menuUnpackItem(std::size_t index, std::size_t &menuid, std::size_t &itemid)
+{
+    menuid = index >> 16;
+    itemid = index & 0xFFFF;
+}

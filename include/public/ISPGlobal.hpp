@@ -97,7 +97,7 @@ namespace SPMod
 
         /**
          * @brief Finds plugin.
-         * 
+         *
          * @param pluginname    Plugin name to look up.
          *
          * @return              Plugin pointer or nullptr if not found.

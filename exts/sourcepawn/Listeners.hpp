@@ -25,4 +25,7 @@ namespace SPExt::Listener
 {
     int Forward(const SPMod::IForward *const fwd, int *result, bool *stop);
     void Cvar(const ICvar *const cvar, const char *old_value, const char *new_value);
+    void Menu(SPMod::IMenu *const menu, SPMod::IMenuItem *const item, SPMod::IPlayer *const player);
+    void MenuText(SPMod::IMenu *const menu, int key, SPMod::IPlayer *const player);
+    ItemStatus MenuItemCallback(SPMod::IMenu *const menu, SPMod::IMenuItem *const item, SPMod::IPlayer *const player);
 }

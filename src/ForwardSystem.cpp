@@ -411,7 +411,7 @@ std::shared_ptr<Forward> ForwardMngr::_createForward(std::string_view name,
     std::array<IForward::Param::Type, IForward::MAX_EXEC_PARAMS> forwardParams;
 
     for (std::size_t i = 0; i < paramsnum; ++i)
-        forwardParams.at(i) = static_cast<IForward::Param::Type>(params[i]);
+        forwardParams.at(i) = params[i];
 
     return createForwardCore(name, exec, forwardParams, paramsnum, plugin);
 }

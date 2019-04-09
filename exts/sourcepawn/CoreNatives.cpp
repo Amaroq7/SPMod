@@ -179,7 +179,7 @@ static cell_t NativeGetFloatRef(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    return sp_ftoc(*PluginMngr::m_callerPlugin->getProxiedParamAsIntAddr(param));
+    return sp_ftoc(*PluginMngr::m_callerPlugin->getProxiedParamAsFloatAddr(param));
 }
 
 // native int NativeGetString(int param, char[] buffer, int size)
@@ -305,7 +305,7 @@ static cell_t NativeSetFloatRef(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    *PluginMngr::m_callerPlugin->getProxiedParamAsFloatAddr(param) = params[2];
+    *PluginMngr::m_callerPlugin->getProxiedParamAsFloatAddr(param) = sp_ctof(params[2]);
     return 1;
 }
 
