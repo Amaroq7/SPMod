@@ -23,9 +23,9 @@ ProxiedNative::ProxiedNative(std::size_t id,
                              std::string_view name,
                              void *data,
                              const IPlugin *plugin) : m_id(id),
+                                                      m_plugin(plugin),
                                                       m_name(name),
-                                                      m_data(data),
-                                                      m_plugin(plugin)
+                                                      m_data(data)
 {
 }
 
@@ -37,6 +37,11 @@ const char *ProxiedNative::getName() const
 void *ProxiedNative::getData() const
 {
     return m_data;
+}
+
+const IPlugin *ProxiedNative::getPlugin() const
+{
+    return m_plugin;
 }
 
 std::size_t ProxiedNative::getId() const
@@ -51,7 +56,7 @@ bool NativeProxy::registerNative(const char *name, void *data, const IPlugin *pl
 
 int NativeProxy::nativeExecNotify(const IProxiedNative *const native, const IPlugin *const plugin) const
 {
-    return plugin->getPluginMngr()->proxyNativeCallback(native, plugin);
+    return native->getPlugin()->getPluginMngr()->proxyNativeCallback(native, plugin);
 }
 
 const IProxiedNative *NativeProxy::getProxiedNative(std::size_t id) const

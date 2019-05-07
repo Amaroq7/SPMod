@@ -20,6 +20,7 @@ sourceFiles = files('h_export.cpp',
                     'ExtensionSystem.cpp',
                     'SrvCommand.cpp',
                     'ValveInterface.cpp',
-                    'UtilsSystem.cpp')
+                    'UtilsSystem.cpp',
+                    'NativeProxy.cpp')
 
 shared_library('spmod_mm', sourceFiles, include_directories : includeDirs)

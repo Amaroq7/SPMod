@@ -39,6 +39,13 @@ namespace SPMod
          * @return      Native's data.
          */
         virtual void *getData() const = 0;
+
+        /**
+         * @brief Gets native plugin.
+         *
+         * @return      Native's plugin.
+         */
+        virtual const IPlugin *getPlugin() const = 0;
     
     protected:
         ~IProxiedNative() = default;

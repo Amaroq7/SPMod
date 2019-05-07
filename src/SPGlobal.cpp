@@ -165,7 +165,7 @@ const char *SPGlobal::getPath(DirType type) const
     return getPathCore(type).c_str();
 #else
     static std::string tempDir;
-    tempDir = getPathCore().string();
+    tempDir = getPathCore(type).string();
     return tempDir.c_str();
 #endif
 }

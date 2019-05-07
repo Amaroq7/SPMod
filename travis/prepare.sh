@@ -5,12 +5,12 @@ then
     # Overwrite default compiler
     if [ ${CLANG_VERSION} == 7 ]
     then
-        export LDFLAGS=-fuse-ld=lld-7.0
+        export LDFLAGS=-fuse-ld=lld-7
         BRANCH_NAME=release_70
 
-        CLANG_COMPILER=/usr/bin/clang-6.0
-        CLANGPP_COMPILER=/usr/bin/clang++-6.0
-    elif [ ${CLANG_VERSION} == 7 ]
+        CLANG_COMPILER=/usr/bin/clang-7
+        CLANGPP_COMPILER=/usr/bin/clang++-7
+    elif [ ${CLANG_VERSION} == 8 ]
     then
         export LDFLAGS=-fuse-ld=lld-8
         BRANCH_NAME=release_80

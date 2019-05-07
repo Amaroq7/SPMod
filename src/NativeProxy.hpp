@@ -36,6 +36,7 @@ public:
 
     const char *getName() const override;
     void *getData() const override;
+    const IPlugin *getPlugin() const override;
 
     std::size_t getId() const;
 

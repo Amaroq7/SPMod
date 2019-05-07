@@ -11,7 +11,7 @@ find_program('ninja', required : true)
 git = find_program('git', required : false)
 cppCompiler = meson.get_compiler('cpp')
 
-llvmIncludesDir = []
+llvmIncludesDir = ''
 
 if build_machine.system() == 'linux'
     gCppArgs += '-m32'
@@ -24,7 +24,13 @@ if build_machine.system() == 'linux'
         if cppCompiler.version() < minVersion
             warning('Clang v' + cppCompiler.version() + ' is not supported. Minimum version is ' + minVersion)
         endif
-        llvmIncludesDir += join_paths('include', 'llvm')
+
+        # Check if include files already exist
+        if cppCompiler.has_header('__cxxabi_config.h', args : '-I/usr/include/c++/v1') == false
+            llvmIncludesDir = join_paths('include', 'llvm')
+        else
+            llvmIncludesDir = ''
+        endif
 
         # use LLVM linker if available
         llvmLinker = find_program('lld-8', 'lld-7', 'lld', required : false)
