@@ -32,13 +32,17 @@ public:
     Command() = delete;
     ~Command() = default;
     Command(std::string_view cmd,
-            std::string_view info);
+            std::string_view info,
+            ICommand::Callback *cb,
+            void *data);
 
     const char *getCmd() const override;
     const char *getInfo() const override;
+    void *getData() const override;
 
     std::string_view getCmdCore() const;
     std::string_view getInfoCore() const;
+    ICommand::Callback *getCallback() const;
 
     virtual bool hasAccessCore(std::shared_ptr<Player> player) const = 0;
 
@@ -48,6 +52,12 @@ protected:
 
     /* info for cmd, example of usage etc. */
     std::string m_info;
+
+    /* cmd callback */
+    ICommand::Callback *m_callback;
+
+    /* command data */
+    void *m_data;
 };
 
 /* @brief Represents client command */
@@ -61,7 +71,9 @@ public:
 
     ClientCommand(std::string_view cmd,
                   std::string_view info,
-                  std::uint32_t flags);
+                  std::uint32_t flags,
+                  ICommand::Callback *cb,
+                  void *data);
 
     bool hasAccess(IPlayer *player) const override;
     bool hasAccessCore(std::shared_ptr<Player> player) const override;
@@ -82,7 +94,9 @@ public:
     ~ServerCommand() = default;
 
     ServerCommand(std::string_view cmd,
-                  std::string_view info);
+                  std::string_view info,
+                  ICommand::Callback *cb,
+                  void *data);
 
     bool hasAccess(IPlayer *player) const override;
     bool hasAccessCore(std::shared_ptr<Player> player) const override;
@@ -95,7 +109,12 @@ public:
     CommandMngr() = default;
     ~CommandMngr() = default;
 
-    ICommand *registerCommand(ICommand::Type type, const char *cmd, const char *info, std::uint32_t flags) override;
+    ICommand *registerCommand(ICommand::Type type,
+                              const char *cmd,
+                              const char *info,
+                              std::uint32_t flags,
+                              ICommand::Callback *cb,
+                              void *data) override;
 
     template<typename T, typename ...Args, typename = std::enable_if_t<std::is_base_of_v<Command, T>>>
     std::shared_ptr<Command> registerCommandCore(Args... args)

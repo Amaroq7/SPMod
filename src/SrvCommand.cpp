@@ -118,17 +118,14 @@ You should have received a copy of the GNU General Public License\n \
 
 void PluginSrvCmd()
 {
-    //const char *argv = CMD_ARGV(0);
+    const char *argv = CMD_ARGV(0);
 
-    /*for (const auto &cmd : gSPGlobal->getCommandManagerCore()->getCommandList(CmdType::Server))
+    for (const auto &cmd : gSPGlobal->getCommandManagerCore()->getCommandList(Command::Type::Server))
     {
-        if (!cmd->getCmd().compare(argv))
+        if (!cmd->getCmdCore().compare(argv))
         {
-            cell_t result;
-            SourcePawn::IPluginFunction *func = cmd->getFunc();
-            func->PushCell(cmd->getId());
-            func->Execute(&result);
-            break;
+            ICommand::Callback *func = cmd->getCallback();
+            (*func)(nullptr, cmd.get());
         }
-    }*/
+    }
 }

@@ -20,8 +20,12 @@
 #include "spmod.hpp"
 
 Command::Command(std::string_view cmd,
-                 std::string_view info) : m_cmd(cmd),
-                                          m_info(info)
+                 std::string_view info,
+                 ICommand::Callback *cb,
+                 void *data) : m_cmd(cmd),
+                               m_info(info),
+                               m_callback(cb),
+                               m_data(data)
 {
 }
 
@@ -33,6 +37,16 @@ const char *Command::getCmd() const
 const char *Command::getInfo() const
 {
     return getInfoCore().data();
+}
+
+ICommand::Callback *Command::getCallback() const
+{
+    return m_callback;
+}
+
+void *Command::getData() const
+{
+    return m_data;
 }
 
 std::string_view Command::getCmdCore() const
@@ -47,8 +61,10 @@ std::string_view Command::getInfoCore() const
 
 ClientCommand::ClientCommand(std::string_view cmd,
                              std::string_view info,
-                             std::uint32_t flags) : Command(cmd, info),
-                                                    m_flags(flags)
+                             std::uint32_t flags,
+                             ICommand::Callback *cb,
+                             void *data) : Command(cmd, info, cb, data),
+                                           m_flags(flags)
 {
 }
 
@@ -57,7 +73,7 @@ bool ClientCommand::hasAccess(IPlayer *player) const
     return hasAccessCore(gSPGlobal->getPlayerManagerCore()->getPlayerCore(player->getIndex()));
 }
 
-bool ClientCommand::hasAccessCore(std::shared_ptr<Player> player) const
+bool ClientCommand::hasAccessCore(std::shared_ptr<Player> player [[maybe_unused]]) const
 {
     // TODO: Check access
     return true;
@@ -69,7 +85,9 @@ uint32_t ClientCommand::getAccess() const
 }
 
 ServerCommand::ServerCommand(std::string_view cmd,
-                             std::string_view info) : Command(cmd, info)
+                             std::string_view info,
+                             ICommand::Callback *cb,
+                             void *data) : Command(cmd, info, cb, data)
 {
 }
 
@@ -88,12 +106,17 @@ std::uint32_t ServerCommand::getAccess() const
     return 0;
 }
 
-ICommand *CommandMngr::registerCommand(ICommand::Type type, const char *cmd, const char *info, std::uint32_t flags)
+ICommand *CommandMngr::registerCommand(ICommand::Type type,
+                                       const char *cmd,
+                                       const char *info,
+                                       std::uint32_t flags,
+                                       ICommand::Callback *cb,
+                                       void *data)
 {
     switch (type)
     {
-        case ICommand::Type::Client: return registerCommandCore<ClientCommand>(cmd, info, flags).get();
-        case ICommand::Type::Server: return registerCommandCore<ServerCommand>(cmd, info).get();
+        case ICommand::Type::Client: return registerCommandCore<ClientCommand>(cmd, info, flags, cb, data).get();
+        case ICommand::Type::Server: return registerCommandCore<ServerCommand>(cmd, info, cb, data).get();
         default: return nullptr;
     }
 }

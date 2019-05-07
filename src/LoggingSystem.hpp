@@ -53,7 +53,8 @@ public:
     }
 
     template <typename ...Args>
-    void logToConsoleCore(LogType type, Args... args) const
+    void logToConsoleCore(LogType type [[maybe_unused]],
+                          Args... args) const
     {
         /*
         if (type < logLevelToPrint)
@@ -70,7 +71,8 @@ public:
     }
 
     template <typename ...Args>
-    void logToFileCore(LogType type, Args... args) const
+    void logToFileCore(LogType type [[maybe_unused]],
+                       Args... args) const
     {
         /*
         if (type < logLevelToPrint)
@@ -90,7 +92,8 @@ public:
     }
 
     template <typename ...Args>
-    void logToBothCore(LogType type, Args... args) const
+    void logToBothCore(LogType type [[maybe_unused]],
+                       Args... args) const
     {
         /*
         if (type < logLevelToPrint)

@@ -82,11 +82,9 @@ static void ClientCommand(edict_t *pEntity)
             std::regex cmdToMatch(cmd->getCmdCore().data());
             if (std::regex_search(strCmd, cmdToMatch) && cmd->hasAccessCore(player))
             {
-                int result = 0;
-                /*SourcePawn::IPluginFunction *func = cmd->getFunc();
-                func->PushCell(ENTINDEX(pEntity));
-                func->PushCell(cmd->getId());
-                func->Execute(&result);*/
+                IForward::ReturnValue result = IForward::ReturnValue::Ignored;
+                ICommand::Callback *func = cmd->getCallback();
+                result = (*func)(player.get(), cmd.get());
 
                 if (result == IForward::ReturnValue::Stop || result == IForward::ReturnValue::Handled)
                 {

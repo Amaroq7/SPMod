@@ -112,8 +112,8 @@ namespace SPMod
     class IMenuMngr SPMOD_FINAL
     {
     public:
-        virtual IMenu *registerMenu(Menu::ItemHandler handler, bool global) = 0;
-        virtual IMenu *registerMenu(Menu::TextHandler handler, bool global) = 0;
+        virtual IMenu *registerMenu(IMenu::ItemHandler handler, bool global) = 0;
+        virtual IMenu *registerMenu(IMenu::TextHandler handler, bool global) = 0;
         virtual void destroyMenu(IMenu *menu) = 0;
 
     protected:

@@ -270,8 +270,8 @@ MultiForward::MultiForward(std::string_view name,
                            std::array<IForward::Param::Type, MAX_EXEC_PARAMS> paramstypes,
                            std::size_t params,
                            ExecType type,
-                           const std::vector<ForwardCallback> callbacks) : Forward(name, paramstypes, params, callbacks),
-                                                                           m_execType(type)
+                           const std::vector<ForwardCallback> &callbacks) : Forward(name, paramstypes, params, callbacks),
+                                                                            m_execType(type)
 {
 }
 

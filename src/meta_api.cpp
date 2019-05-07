@@ -40,7 +40,6 @@ C_DLLEXPORT int Meta_Query(char *interfaceVersion [[maybe_unused]],
                            plugin_info_t **plinfo,
                            mutil_funcs_t *pMetaUtilFuncs)
 {
-
     *plinfo = &Plugin_info;
     gpMetaUtilFuncs = pMetaUtilFuncs;
 

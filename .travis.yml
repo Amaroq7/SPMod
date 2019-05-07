@@ -12,29 +12,6 @@ matrix:
     - addons:
         apt:
           sources:
-            - llvm-toolchain-xenial-6.0
-            - ubuntu-toolchain-r-test
-            - deadsnakes
-            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
-          packages:
-            - clang-6.0
-            - lld-6.0
-            - gcc-multilib
-            - g++-multilib
-            - python3.7
-            - meson
-            - ninja-build
-            - lib32z1-dev
-            - lib32stdc++6
-            - libc6-dev-i386
-            - linux-libc-dev
-      env:
-        - CLANG_VERSION=6 LINK_TYPE=static
-      compiler: clang
-
-    - addons:
-        apt:
-          sources:
             - llvm-toolchain-xenial-7
             - ubuntu-toolchain-r-test
             - deadsnakes
@@ -52,19 +29,19 @@ matrix:
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - CLANG_VERSION=7 LINK_TYPE=static CC_VERSION=7
+        - CLANG_VERSION=7 LINK_TYPE=static
       compiler: clang
 
     - addons:
         apt:
           sources:
-            - llvm-toolchain-xenial-7
+            - llvm-toolchain-xenial-8
             - ubuntu-toolchain-r-test
             - deadsnakes
             - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
           packages:
-            - clang-7
-            - lld-7
+            - clang-8
+            - lld-8
             - gcc-multilib
             - g++-multilib
             - python3.7
@@ -75,7 +52,30 @@ matrix:
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - CLANG_VERSION=7 LINK_TYPE=dynamic CC_VERSION=7
+        - CLANG_VERSION=8 LINK_TYPE=static CC_VERSION=8
+      compiler: clang
+
+    - addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-8
+            - ubuntu-toolchain-r-test
+            - deadsnakes
+            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
+          packages:
+            - clang-8
+            - lld-8
+            - gcc-multilib
+            - g++-multilib
+            - python3.7
+            - meson
+            - ninja-build
+            - lib32z1-dev
+            - lib32stdc++6
+            - libc6-dev-i386
+            - linux-libc-dev
+      env:
+        - CLANG_VERSION=8 LINK_TYPE=dynamic CC_VERSION=8
       compiler: clang
 
     - addons:
@@ -166,7 +166,7 @@ deploy:
     on:
       tags: true
       branch: /^v\d+\.\d+(\.\d+)?(-\S*)?$/
-      condition: $CLANG_VERSION = 7 || $GCC_VERSION = 8
+      condition: $CLANG_VERSION = 8 || $GCC_VERSION = 8
   - provider: s3
     local-dir: upload
     access_key_id: 
@@ -178,4 +178,4 @@ deploy:
     skip_cleanup: true
     on:
       branch: master
-      condition: $CLANG_VERSION = 7 || $GCC_VERSION = 8
+      condition: $CLANG_VERSION = 8 || $GCC_VERSION = 8

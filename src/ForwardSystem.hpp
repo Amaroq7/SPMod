@@ -102,7 +102,7 @@ public:
                  std::array<IForward::Param::Type, MAX_EXEC_PARAMS> paramstypes,
                  std::size_t params,
                  ExecType type,
-                 const std::vector<ForwardCallback> callbacks);
+                 const std::vector<ForwardCallback> &callbacks);
 
     MultiForward() = delete;
     MultiForward(const MultiForward &other) = delete;

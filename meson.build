@@ -27,7 +27,7 @@ if build_machine.system() == 'linux'
         llvmIncludesDir += join_paths('include', 'llvm')
 
         # use LLVM linker if available
-        llvmLinker = find_program('lld-7', 'lld-6.0', 'lld', required : false)
+        llvmLinker = find_program('lld-8', 'lld-7', 'lld', required : false)
         if llvmLinker.found() == true
             gLinkArgs += '-fuse-ld=' + llvmLinker.path().split('/')[-1]
         endif
