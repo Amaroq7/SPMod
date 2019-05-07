@@ -47,7 +47,7 @@ private:
 #if defined SP_POSIX
     void *m_extHandle;
 #else
-    HMODULE *m_extHandle;
+    HMODULE m_extHandle;
 #endif
 
     fnSPModQuery m_queryFunc;

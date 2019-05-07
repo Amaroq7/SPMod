@@ -32,7 +32,11 @@ Extension::Extension(fs::path path)
     // Cannot load ext
     if (!extHandle)
     {
+#if defined SP_POSIX
         throw std::runtime_error("Can't open extension: "s + path.filename().c_str());
+#else
+        throw std::runtime_error("Can't open extension: "s + path.filename().string());
+#endif
     }
 
 #if defined SP_POSIX
