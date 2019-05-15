@@ -72,11 +72,11 @@ std::size_t SPGlobal::loadExts()
     /* Querying extensions */
     for (const auto &entry : directoryIter)
     {
-        fs::path extPath = entry.path();
+        const fs::path &extPath = entry.path();
         std::unique_ptr<Extension> extHandle;
         try
         {
-            extHandle = std::make_unique<Extension>(entry.path());
+            extHandle = std::make_unique<Extension>(extPath);
         }
         catch (const std::runtime_error &e)
         {

@@ -25,11 +25,14 @@ if build_machine.system() == 'linux'
             warning('Clang v' + cppCompiler.version() + ' is not supported. Minimum version is ' + minVersion)
         endif
 
+        libcxxLibraryHeaderPaths = [
+                                    '-I/usr/lib/llvm-' + cppCompiler.version()[0] + '/include/c++/v1',
+                                    '-I/usr/include/c++/v1'
+                                   ]
+
         # Check if include files already exist
-        if cppCompiler.has_header('__cxxabi_config.h', args : '-I/usr/include/c++/v1') == false
+        if cppCompiler.has_header('__cxxabi_config.h', args : libcxxLibraryHeaderPaths) == false
             llvmIncludesDir = join_paths('include', 'llvm')
-        else
-            llvmIncludesDir = ''
         endif
 
         # use LLVM linker if available

@@ -78,7 +78,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
     }
 
     std::shared_ptr<Logger> logger = gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD");
-    logger->sendMsgToConsoleCore("\n   SPMod version ", gSPModVersion, " Copyright (c) 2018 ", gSPModAuthor, \
+    logger->sendMsgToConsoleCore("\n   SPMod version ", gSPModVersion, " Copyright (c) 2018-2019 ", gSPModAuthor, \
 "\n   This program comes with ABSOLUTELY NO WARRANTY; for details type `spmod gpl' \
 \n   This is free software, and you are welcome to redistribute it\
 \n   under certain conditions; type `spmod gpl' for details.\n\

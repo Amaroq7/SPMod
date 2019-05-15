@@ -67,7 +67,7 @@ void SPModInfoCommand()
         else if (arg == "gpl")
         {
             logger->sendMsgToConsoleCore("   SPMod - SourcePawn Scripting Engine for Half-Life\n \
-  Copyright (C) 2018  SPMod Development Team\n\n \
+  Copyright (C) 2018-2019  SPMod Development Team\n\n \
   \
 This program is free software: you can redistribute it and/or modify\n \
   it under the terms of the GNU General Public License as published by\n \

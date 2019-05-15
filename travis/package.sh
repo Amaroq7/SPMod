@@ -7,26 +7,26 @@ XZ_OPT="-9e --threads=0"
 mkdir dlls
 
 # Install ambuild
-git clone --depth=1 https://github.com/alliedmodders/ambuild.git ../ambuild
+# git clone --depth=1 https://github.com/alliedmodders/ambuild.git ../ambuild
 
 # Patch to build sourcepawn lib without -g3 switch (Clang only)
-if [[ $CLANG_VERSION ]]
-then
-    patch --verbose -d ../ambuild/ambuild2/frontend/v2_1/cpp < patches/gcc-nodbg-clang.patch
-fi
+#if [[ $CLANG_VERSION ]]
+#then
+#    patch --verbose -d ../ambuild/ambuild2/frontend/v2_1/cpp < patches/gcc-nodbg-clang.patch
+#fi
 
-cd ../ambuild
-sudo python setup.py install
-cd $TRAVIS_BUILD_DIR
+#cd ../ambuild
+#sudo python setup.py install
+#cd $TRAVIS_BUILD_DIR
 
 # Build SourcePawn lib
-mkdir include/sourcepawn/build
-cd include/sourcepawn/build
-python ../configure.py --enable-optimize --build=core
-ambuild
-mv vm/sourcepawn.jit.x86/sourcepawn.jit.x86.so $TRAVIS_BUILD_DIR/dlls
-mv compiler/spcomp/spcomp $TRAVIS_BUILD_DIR/scripts
-cd $TRAVIS_BUILD_DIR
+#mkdir include/sourcepawn/build
+#cd include/sourcepawn/build
+#python ../configure.py --enable-optimize --build=core
+#ambuild
+#mv vm/sourcepawn.jit.x86/sourcepawn.jit.x86.so $TRAVIS_BUILD_DIR/dlls
+#mv compiler/spcomp/spcomp $TRAVIS_BUILD_DIR/scripts
+#cd $TRAVIS_BUILD_DIR
 
 # Move SPMod lib to dlls
 mv build/src/libspmod_mm.so dlls
