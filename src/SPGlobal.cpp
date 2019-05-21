@@ -65,7 +65,7 @@ std::size_t SPGlobal::loadExts()
 
     if (errCode)
     {
-        logger->logToBothCore(LogType::Error, "Can't read extensions directory: ", errCode.message());
+        logger->logToBothCore(LogLevel::Error, "Can't read extensions directory: ", errCode.message());
         return 0u;
     }
 
@@ -80,20 +80,20 @@ std::size_t SPGlobal::loadExts()
         }
         catch (const std::runtime_error &e)
         {
-            logger->logToBothCore(LogType::Error, e.what());
+            logger->logToBothCore(LogLevel::Error, e.what());
             continue;
         }
 
         if (!extHandle->getQueryFunc())
         {
-            logger->logToBothCore(LogType::Error, "Querying problem: ", extPath.filename());
+            logger->logToBothCore(LogLevel::Error, "Querying problem: ", extPath.filename());
             continue;
         }
 
         ExtQueryValue result = extHandle->getQueryFunc()(gSPGlobal.get());
         if (result == ExtQueryValue::DontLoad)
         {
-            logger->logToBothCore(LogType::Error, "Can't be loaded: ", extPath.filename());
+            logger->logToBothCore(LogLevel::Error, "Can't be loaded: ", extPath.filename());
             continue;
         }
 

@@ -88,7 +88,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
 
     if (!initRehldsApi())
     {
-        logger->logToBothCore(LogType::Error, "SPMod requires to have ReHLDS installed!");
+        logger->logToBothCore(LogLevel::Error, "SPMod requires to have ReHLDS installed!");
         return 0;
     }
     GET_HOOK_TABLES(PLID, &gpEngineFuncs, nullptr, nullptr);

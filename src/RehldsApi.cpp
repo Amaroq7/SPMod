@@ -151,7 +151,7 @@ bool initRehldsApi()
     CSysModule *engineModule = Sys_LoadModule("engine_i486.so");
     if (!_initRehldsApi(engineModule, &errorMsg))
     {
-        gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD")->logToBothCore(LogType::Error, errorMsg.c_str());
+        gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD")->logToBothCore(LogLevel::Error, errorMsg.c_str());
         return false;
     }
 #else
@@ -161,7 +161,7 @@ bool initRehldsApi()
         engineModule = Sys_LoadModule("filesystem_stdio.dll");
         if (!_initRehldsApi(engineModule, &errorMsg))
         {
-            gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD")->logToBothCore(LogType::Error, errorMsg.c_str());
+            gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD")->logToBothCore(LogLevel::Error, errorMsg.c_str());
             return false;
         }
     }
