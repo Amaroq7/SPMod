@@ -72,7 +72,7 @@ namespace SPMod
         /**
         * @brief Returns flags of the cvar
         *
-        * @return        flags of the cvar.
+        * @return        Flags of the cvar.
         */
         virtual Flags getFlags() const = 0;
 

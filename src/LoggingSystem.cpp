@@ -36,12 +36,12 @@ void Logger::setFilename(const char *filename)
     m_filename = filename;
 }
 
-void Logger::logToConsole(LogType type, const char *format, ...) const
+void Logger::logToConsole(LogLevel level,
+                          const char *format,
+                          ...) const
 {
-    /*
-        if (type < logLevelToPrint)
-            return;
-    */
+    if (level < m_logLevel)
+        return;
 
     char logMsg[512];
     va_list paramsList;
@@ -50,15 +50,15 @@ void Logger::logToConsole(LogType type, const char *format, ...) const
     std::vsnprintf(logMsg, sizeof(logMsg), format, paramsList);
     va_end(paramsList);
 
-    logToConsoleCore(type, logMsg);
+    logToConsoleCore(level, logMsg);
 }
 
-void Logger::logToFile(LogType type, const char *format, ...) const
+void Logger::logToFile(LogLevel level,
+                       const char *format,
+                       ...) const
 {
-    /*
-        if (type < logLevelToPrint)
-            return;
-    */
+    if (level < m_logLevel)
+        return;
 
     if (m_filename.empty())
         return;
@@ -70,15 +70,13 @@ void Logger::logToFile(LogType type, const char *format, ...) const
     std::vsnprintf(logMsg, sizeof(logMsg), format, paramsList);
     va_end(paramsList);
 
-    logToFileCore(type, logMsg);
+    logToFileCore(level, logMsg);
 }
 
-void Logger::logToBoth(LogType type, const char *format, ...) const
+void Logger::logToBoth(LogLevel level, const char *format, ...) const
 {
-    /*
-        if (type < logLevelToPrint)
-            return;
-    */
+    if (level < m_logLevel)
+        return;
 
     char logMsg[512];
     va_list paramsList;
@@ -87,7 +85,7 @@ void Logger::logToBoth(LogType type, const char *format, ...) const
     std::vsnprintf(logMsg, sizeof(logMsg), format, paramsList);
     va_end(paramsList);
 
-    logToBothCore(type, logMsg);
+    logToBothCore(level, logMsg);
 }
 
 void Logger::sendMsgToConsole(const char *format, ...) const
@@ -100,6 +98,16 @@ void Logger::sendMsgToConsole(const char *format, ...) const
     va_end(paramsList);
 
     sendMsgToConsoleCore(logMsg);
+}
+
+void Logger::setLogLevel(LogLevel level)
+{
+    m_logLevel = level;
+}
+
+LogLevel Logger::getLogLevel() const
+{
+    return m_logLevel;
 }
 
 void Logger::_writeToFile(std::string_view msg) const

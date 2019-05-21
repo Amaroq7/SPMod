@@ -23,7 +23,7 @@
 
 namespace SPMod
 {
-    enum class LogType : uint8_t
+    enum class LogLevel : uint8_t
     {
         Debug = 0,
         Info,
@@ -49,13 +49,15 @@ namespace SPMod
         /**
          * @brief Logs to the console.
          *
-         * @param type          Type of log.
+         * @param level         Level of the log.
          * @param format        Formatting string.
          * @param ...           Formatting parameters.
          *
          * @noreturn
          */
-        virtual void logToConsole(LogType type, const char *format, ...) const = 0;
+        virtual void logToConsole(LogLevel level,
+                                  const char *format,
+                                  ...) const = 0;
 
         /**
          * @brief Logs to the file.
@@ -64,24 +66,28 @@ namespace SPMod
          * @note If file does not exist, it will be created.
          * @note setFilename() has to be called at least once before executing this function.
          *
-         * @param type          Type of log.
+         * @param level         Level of the log.
          * @param format        Formatting string.
          * @param ...           Formatting parameters.
          *
          * @noreturn
          */
-        virtual void logToFile(LogType type, const char *format, ...) const = 0;
+        virtual void logToFile(LogLevel level,
+                               const char *format,
+                               ...) const = 0;
 
         /**
          * @brief Logs to the console and the file.
          * 
-         * @param type          Type of log.
+         * @param level         Level of the log.
          * @param format        Formatting string.
          * @param ...           Formatting parameters.
          *
          * @noreturn
          */
-        virtual void logToBoth(LogType type, const char *format, ...) const = 0;
+        virtual void logToBoth(LogLevel level,
+                               const char *format,
+                               ...) const = 0;
 
         /**
          * @brief Sends message to the console.
@@ -91,7 +97,24 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void sendMsgToConsole(const char *format, ...) const = 0;
+        virtual void sendMsgToConsole(const char *format,
+                                      ...) const = 0;
+
+        /**
+         * @brief Sets log level.
+         *
+         * @param logLevel      Log level to set.
+         *
+         * @noreturn
+         */
+        virtual void setLogLevel(LogLevel logLevel) = 0;
+
+        /**
+         * @brief Gets log level.
+         *
+         * @return              Currently set log level.
+         */
+        virtual LogLevel getLogLevel() const = 0;
 
     protected:
         virtual ~ILogger() = default;

@@ -28,17 +28,32 @@ class Logger final : public ILogger
 public:
     Logger() = delete;
     Logger(const Logger &other) = delete;
-    Logger(Logger &&other) = default;
+    Logger &operator=(const Logger &other) = delete;
+    Logger &operator=(Logger &&other) = delete;
+    Logger(Logger &&other) = delete;
     ~Logger() = default;
 
     Logger(std::string_view prefix);
 
     // ILogger
     void setFilename(const char *filename) override;
-    void logToConsole(LogType type, const char *format, ...) const override;
-    void logToFile(LogType type, const char *format, ...) const override;
-    void logToBoth(LogType type, const char *format, ...) const override;
-    void sendMsgToConsole(const char *format, ...) const override;
+    void logToConsole(LogLevel level,
+                      const char *format,
+                      ...) const override;
+
+    void logToFile(LogLevel level,
+                   const char *format,
+                   ...) const override;
+
+    void logToBoth(LogLevel level,
+                   const char *format,
+                   ...) const override;
+
+    void sendMsgToConsole(const char *format,
+                          ...) const override;
+
+    void setLogLevel(LogLevel logType) override;
+    LogLevel getLogLevel() const override;
 
     // Logger
     template <typename ...Args>
@@ -53,13 +68,11 @@ public:
     }
 
     template <typename ...Args>
-    void logToConsoleCore(LogType type [[maybe_unused]],
+    void logToConsoleCore(LogLevel level,
                           Args... args) const
     {
-        /*
-        if (type < logLevelToPrint)
+        if (level < m_logLevel)
             return;
-        */
 
         std::stringstream messageToLog;
 
@@ -71,13 +84,11 @@ public:
     }
 
     template <typename ...Args>
-    void logToFileCore(LogType type [[maybe_unused]],
+    void logToFileCore(LogLevel level,
                        Args... args) const
     {
-        /*
-        if (type < logLevelToPrint)
+        if (level < m_logLevel)
             return;
-        */
 
         if (m_filename.empty())
             return;
@@ -92,13 +103,11 @@ public:
     }
 
     template <typename ...Args>
-    void logToBothCore(LogType type [[maybe_unused]],
+    void logToBothCore(LogLevel level,
                        Args... args) const
     {
-        /*
-        if (type < logLevelToPrint)
+        if (level < m_logLevel)
             return;
-        */
 
         std::stringstream messageToLog;
 
@@ -117,6 +126,7 @@ public:
 private:
     std::string m_prefix;
     std::string m_filename;
+    LogLevel m_logLevel;
     void _writeToFile(std::string_view msg) const;
 };
 
