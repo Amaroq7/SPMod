@@ -1,4 +1,4 @@
-# SPMod [![License](https://img.shields.io/badge/License-GPLv3-brightgreen.svg?style=flat-square)](LICENSE) ![Tux](resources/linux.svg) [![Travis status](https://img.shields.io/travis/Amaroq7/SPMod.svg?style=flat-square)](https://travis-ci.org/Amaroq7/SPMod) ![Windows](resources/windows.svg) [![Appveyor status](https://img.shields.io/appveyor/ci/Amaroq/SPMod.svg?style=flat-square)](https://ci.appveyor.com/project/Amaroq/spmod)
+# SPMod [![License](https://img.shields.io/badge/License-GPLv3-brightgreen.svg?style=flat-square)](LICENSE) ![Tux](resources/linux.svg) [![Travis status](https://img.shields.io/travis/com/Amaroq7/SPMod.svg?style=flat-square)](https://travis-ci.com/Amaroq7/SPMod) ![Windows](resources/windows.svg) [![Appveyor status](https://img.shields.io/appveyor/ci/Amaroq/SPMod.svg?style=flat-square)](https://ci.appveyor.com/project/Amaroq/spmod)
 SourcePawn Scripting Engine for Half-Life 1 based games
 
 ## About
