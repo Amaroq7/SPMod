@@ -17,29 +17,21 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#if defined _commands_included
+#if defined _access_included
     #endinput
 #endif
-#define _commands_included
+#define _access_included
 
-typeset CmdCallback
+enum Group
 {
-    // Server command
-    function void (Command cid);
-
-    // Client command
-    function PluginReturn (int client, Command cid);
+    INVALID_GROUP = -1
 };
 
-methodmap Command
+methodmap Group
 {
-    public native Command(const char[] cmd, CmdCallback func, const char[] info = "", bool server = false, const char[] permission = "");
-    public native int GetInfo(char[] buffer, int size);
-    public native int GetPermission(char[] buffer, int size);
-};
+    public native Group(const char[] name);
+    public native void AttachPermission(const char[] permission);
+    public native void RemovePermission(const char[] permission);
+}
 
-forward PluginReturn OnClientCommand(int client);
-
-native int CmdGetArgv(int arg, char[] buffer, int size);
-native int CmdGetArgs(char[] buffer, int size);
-native int CmdGetArgsNum();
+native Group FindGroup(const char[] name);

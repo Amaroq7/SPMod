@@ -19,21 +19,22 @@
 
 #include "spmod.hpp"
 
-// Command Command(const char[] cmd, ConCallback func, const char[] info = "", bool server = false, int flags = 0)
+// Command Command(const char[] cmd, ConCallback func, const char[] info = "", bool server = false, const char[] permission = "")
 static cell_t CommandCtor(SourcePawn::IPluginContext *ctx,
                           const cell_t *params)
 {
-    enum { arg_cmd = 1, arg_func, arg_info, arg_server, arg_flags };
+    enum { arg_cmd = 1, arg_func, arg_info, arg_server, arg_perm };
 
     const std::unique_ptr<CommandMngr> &cmdMngr = gSPGlobal->getCommandManagerCore();
     SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_func]);
-    char *cmd, *info;
+    char *cmd, *info, *perm;
     ctx->LocalToString(params[arg_cmd], &cmd);
     ctx->LocalToString(params[arg_info], &info);
+    ctx->LocalToString(params[arg_perm], &perm);
 
     std::shared_ptr<Command> pCmd;
     if (!params[arg_server])
-        pCmd = cmdMngr->registerCommand<ClientCommand>(cmd, info, func, params[arg_flags]);
+        pCmd = cmdMngr->registerCommand<ClientCommand>(cmd, info, func, perm);
     else
     {
         pCmd = cmdMngr->registerCommand<ServerCommand>(cmd, info, func);
@@ -61,18 +62,20 @@ static cell_t GetInfo(SourcePawn::IPluginContext *ctx,
     return gSPGlobal->getUtilsCore()->strCopyCore(destBuffer, params[arg_size], pCmd->getInfo());
 }
 
-// property int Access.get()
-static cell_t GetAccess(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+// int GetPermission(char[] buffer, int size)
+static cell_t GetPermission(SourcePawn::IPluginContext *ctx [[maybe_unused]],
                         const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum { arg_id = 1, arg_buffer, arg_size };
 
     const std::unique_ptr<CommandMngr> &cmdMngr = gSPGlobal->getCommandManagerCore();
     std::shared_ptr<Command> pCmd = cmdMngr->getCommand(params[arg_id]);
     if (!pCmd)
         return 0;
 
-    return pCmd->getAccess();
+    char *buffer;
+    ctx->LocalToString(params[arg_buffer], &buffer);
+    return gSPGlobal->getUtilsCore()->strCopyCore(buffer, params[arg_size], pCmd->getPermission());
 }
 
 // int CmdGetArgv(int arg, char[] buffer, int size)
@@ -118,11 +121,11 @@ static cell_t CmdGetArgsNum(SourcePawn::IPluginContext *ctx [[maybe_unused]],
 
 sp_nativeinfo_t gCmdsNatives[] =
 {
-    { "Command.Command",    CommandCtor   },
-    { "Command.GetInfo",    GetInfo       },
-    { "Command.Access.get", GetAccess     },
-    { "CmdGetArgv",         CmdGetArgv    },
-    { "CmdGetArgs",         CmdGetArgs    },
-    { "CmdGetArgsNum",      CmdGetArgsNum },
-    { nullptr,              nullptr       }
+    { "Command.Command",        CommandCtor     },
+    { "Command.GetInfo",        GetInfo         },
+    { "Command.GetPermission",  GetPermission   },
+    { "CmdGetArgv",             CmdGetArgv      },
+    { "CmdGetArgs",             CmdGetArgs      },
+    { "CmdGetArgsNum",          CmdGetArgsNum   },
+    { nullptr,                  nullptr         }
 };

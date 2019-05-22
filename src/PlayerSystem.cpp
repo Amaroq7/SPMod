@@ -23,7 +23,8 @@ Player::Player(edict_t *edict,
                unsigned int index) : m_edict(edict),
                                      m_index(index),
                                      m_connected(false),
-                                     m_inGame(false)
+                                     m_inGame(false),
+                                     m_role(std::make_unique<PlayerRole>())
 {
 }
 
@@ -45,6 +46,48 @@ std::string_view Player::getSteamIDCore() const
 void Player::setName(std::string_view newname)
 {
     m_name = newname;
+}
+
+bool Player::hasAccessCore(std::string_view perm) const
+{
+    return m_role->hasAccess(perm);
+}
+
+void Player::attachGroupCore(std::shared_ptr<AccessGroup> group)
+{
+    m_role->attachGroup(group);
+    permissionsChanged();
+}
+
+void Player::removeGroupCore(std::shared_ptr<AccessGroup> group)
+{
+    m_role->removeGroup(group);
+    permissionsChanged();
+}
+
+void Player::attachPermissionCore(std::shared_ptr<std::string> perm)
+{
+    m_role->attachPermission(perm);
+    permissionsChanged();
+}
+
+void Player::removePermissionCore(std::shared_ptr<std::string> perm)
+{
+    m_role->removePermission(perm);
+    permissionsChanged();
+}
+
+void Player::permissionsChanged() const
+{
+    using def = ForwardMngr::FwdDefault;
+
+    std::shared_ptr<Forward> fwdCmd = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPermissionsChanged);
+
+    if (!fwdCmd)
+        return;
+
+    fwdCmd->pushCell(m_index);
+    fwdCmd->execFunc(nullptr);
 }
 
 std::weak_ptr<Menu> Player::getMenu() const

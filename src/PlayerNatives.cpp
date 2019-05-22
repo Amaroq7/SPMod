@@ -207,17 +207,108 @@ static cell_t InGame(SourcePawn::IPluginContext *ctx [[maybe_unused]],
     return plr->isInGame();
 }
 
+// native bool Player.HasAccess(int player, const char[] permission);
+static cell_t HasAccess(SourcePawn::IPluginContext *ctx,
+                                    const cell_t *params)
+{
+    enum { arg_player = 1, arg_perm };
+    
+    std::shared_ptr<Player> player = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_player]);
+
+    char *perm;
+    ctx->LocalToString(params[arg_perm], &perm);
+
+    return player->hasAccessCore(perm);
+}
+
+// native void Player.AttachGroup(Group group);
+static cell_t AttachGroup(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                          const cell_t *params)
+{
+    enum { arg_player = 1, arg_group };
+
+    const std::unique_ptr<GroupMngr> &groupMngr = gSPGlobal->getGroupManagerCore();
+    
+    std::shared_ptr<Player> player = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_player]);
+
+    std::shared_ptr<AccessGroup> group = groupMngr->getGroup(params[arg_group]);
+    player->attachGroupCore(group);
+
+    return 1;
+}
+
+// native void Player.RemoveGroup(Group group);
+static cell_t RemoveGroup(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                          const cell_t *params)
+{
+    enum { arg_player = 1, arg_group };
+
+    const std::unique_ptr<GroupMngr> &groupMngr = gSPGlobal->getGroupManagerCore();
+    
+    std::shared_ptr<Player> player = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_player]);
+
+    std::shared_ptr<AccessGroup> group = groupMngr->getGroup(params[arg_group]);
+    player->removeGroupCore(group);
+
+    return 1;
+}
+
+// native void Player.AttachPermission(const char[] permission);
+static cell_t AttachPermission(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                               const cell_t *params)
+{
+    enum { arg_player = 1, arg_perm };
+
+    const std::unique_ptr<GroupMngr> &groupMngr = gSPGlobal->getGroupManagerCore();
+    
+    std::shared_ptr<Player> player = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_player]);
+
+    char *perm;
+    ctx->LocalToString(params[arg_perm], &perm);
+
+    std::shared_ptr<std::string> p = groupMngr->createPermission(perm);
+    player->attachPermissionCore(p);
+
+    return 1;
+}
+
+// native void Player.RemovePermission(const char[] permission);
+static cell_t RemovePermission(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                               const cell_t *params)
+{
+    enum { arg_player = 1, arg_perm };
+
+    const std::unique_ptr<GroupMngr> &groupMngr = gSPGlobal->getGroupManagerCore();
+    
+    std::shared_ptr<Player> player = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_player]);
+
+    char *perm;
+    ctx->LocalToString(params[arg_perm], &perm);
+
+    std::shared_ptr<std::string> p = groupMngr->createPermission(perm);
+    player->removePermissionCore(p);
+
+    return 1;
+}
+
 sp_nativeinfo_t gPlayerNatives[] =
 {
-    { "Player.GetName",         GetName      },
-    { "Player.GetIP",           GetIP        },
-    { "Player.GetSteamID",      GetSteamID   },
-    { "Player.Index.get",       GetIndex     },
-    { "Player.UserID.get",      GetUserID    },
-    { "Player.Alive.get",       AliveGet     },
-    { "Player.Connected.get",   ConnectedGet },
-    { "Player.Fake.get",        FakeGet      },
-    { "Player.HLTV.get",        HLTVGet      },
-    { "Player.InGame.get",      InGame       },
-    { nullptr,                  nullptr      }
+    { "Player.GetName",             GetName             },
+    { "Player.GetIP",               GetIP               },
+    { "Player.GetSteamID",          GetSteamID          },
+    { "Player.Index.get",           GetIndex            },
+    { "Player.UserID.get",          GetUserID           },
+    { "Player.Alive.get",           AliveGet            },
+    { "Player.Connected.get",       ConnectedGet        },
+    { "Player.Fake.get",            FakeGet             },
+    { "Player.HLTV.get",            HLTVGet             },
+    { "Player.InGame.get",          InGame              },
+
+    { "Player.HasAccess",           HasAccess           },
+    { "Player.AttachGroup",         AttachGroup         },
+    { "Player.RemoveGroup",         RemoveGroup         },
+    { "Player.AttachPermission",    AttachPermission    },
+    { "Player.RemovePermission",    RemovePermission    },
+
+    { nullptr,                      nullptr             }
 };

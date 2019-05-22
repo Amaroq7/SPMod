@@ -17,6 +17,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 #include "spmod.hpp"
 
 class Menu;
@@ -47,6 +49,13 @@ public:
     std::string_view getSteamIDCore() const;
     void setName(std::string_view newname);
 
+    bool hasAccessCore(std::string_view perm) const;
+    void attachGroupCore(std::shared_ptr<AccessGroup> group);
+    void removeGroupCore(std::shared_ptr<AccessGroup> group);
+    void attachPermissionCore(std::shared_ptr<std::string> perm);
+    void removePermissionCore(std::shared_ptr<std::string> perm);
+    void permissionsChanged() const;
+
     std::weak_ptr<Menu> getMenu() const;
     void setMenu(std::shared_ptr<Menu> menu);
     int getMenuPage() const;
@@ -71,6 +80,8 @@ private:
 
     std::weak_ptr<Menu> m_menu;
     int m_menuPage;
+
+    std::unique_ptr<PlayerRole> m_role;
 };
 
 class PlayerMngr : public IPlayerMngr

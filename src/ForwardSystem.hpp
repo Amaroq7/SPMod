@@ -209,6 +209,7 @@ public:
         PluginEnd,
         PluginNatives,
         ClientCommmand,
+        ClientPermissionsChanged,
         MapChange,
 
         /* number of defaults forwards */
