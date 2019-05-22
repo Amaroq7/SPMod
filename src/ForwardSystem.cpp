@@ -425,12 +425,26 @@ std::shared_ptr<Forward> ForwardMngr::createForwardCore(std::string_view name,
     std::shared_ptr<Forward> forward;
 
     if (!plugin) // Global forward
-        forward = std::make_shared<MultiForward>(name, params, paramsnum, exec, m_callbacks);
-    else // Forward for one plugin
-        forward = std::make_shared<SingleForward>(name, params, paramsnum, plugin, m_callbacks);
+    {
+        // Global forward with the same name already found
+        if (size_t count = m_forwards.count(name.data()); count)
+            return nullptr;
 
-    if (!m_forwards.try_emplace(name.data(), forward).second)
-        return nullptr;
+        forward = std::make_shared<MultiForward>(name, params, paramsnum, exec, m_callbacks);
+    }
+    else // Forward for one plugin
+    {
+        // Check if forward with the same name and for the same plugin is already registered
+        for (auto iter = m_forwards.find(name.data()); iter != m_forwards.end(); iter++)
+        {
+            if (iter->second->getPlugin() == plugin)
+                return nullptr;
+        }
+
+        forward = std::make_shared<SingleForward>(name, params, paramsnum, plugin, m_callbacks);
+    }
+
+    m_forwards.emplace(name.data(), forward);
 
     return forward;
 }

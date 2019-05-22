@@ -212,7 +212,7 @@ private:
                                             std::size_t paramsnum,
                                             IPlugin *plugin = nullptr);
 
-    std::unordered_map<std::string, std::shared_ptr<Forward>> m_forwards;
+    std::unordered_multimap<std::string, std::shared_ptr<Forward>> m_forwards;
     std::vector<ForwardCallback> m_callbacks;
 
     /* cache for defaults forwards */
