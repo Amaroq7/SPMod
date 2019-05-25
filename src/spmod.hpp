@@ -36,6 +36,7 @@
 #endif
 
 #include <osconfig.h>
+#include <usercmd.h>
 #include <rehlds_api.h>
 
 #ifdef SP_CLANG

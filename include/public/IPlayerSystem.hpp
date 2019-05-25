@@ -20,6 +20,7 @@
 #pragma once
 
 #include <cstddef>
+#include <extdll.h>
 
 namespace SPMod
 {

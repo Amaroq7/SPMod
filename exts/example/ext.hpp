@@ -23,7 +23,7 @@ class ModuleInterface final : public SPMod::IInterface
 {
     const char *getName() const override
     {
-        return "ISPExtTest";
+        return "ISPExampleExt";
     }
 
     uint32_t getVersion() const override
@@ -43,7 +43,12 @@ class ModuleInterface final : public SPMod::IInterface
 
     const char *getExtName() const override
     {
-        return "SPMod Test Module";
+        return "SPMod Example Module";
+    }
+
+    SPMod::IPluginMngr *getPluginMngr() const override
+    {
+        return nullptr;
     }
 };
 

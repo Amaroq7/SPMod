@@ -1,6 +1,6 @@
 project('SPMod', ['c', 'cpp'],
                   license : 'GPLv3',
-                  meson_version : '>=0.44.0',
+                  meson_version : '>=0.49.0',
                   version : '0.2.0-dev')
 
 gLinkArgs = []
@@ -12,6 +12,8 @@ git = find_program('git', required : false)
 cppCompiler = meson.get_compiler('cpp')
 
 llvmIncludesDir = ''
+
+gExtsToBuild = get_option('extensions')
 
 if build_machine.system() == 'linux'
     gCppArgs += '-m32'
@@ -70,10 +72,10 @@ if build_machine.system() == 'linux'
         endif
 
         if get_option('linktype') == 'static'
-        gLinkArgs += [
-            '-static-libgcc',
-            '-static-libstdc++'
-        ]
+            gLinkArgs += [
+                '-static-libgcc',
+                '-static-libstdc++'
+            ]
         endif
         gLinkArgs += '-lstdc++fs'
 
@@ -184,4 +186,6 @@ includeDirs = include_directories(publicIncludesDir,
                                   '.') #build directory
 
 subdir('src')
-#subdir('exts')
+if gExtsToBuild.length() != 0
+    subdir('exts')
+endif
