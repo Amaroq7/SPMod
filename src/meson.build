@@ -8,7 +8,7 @@ elif build_machine.system() == 'windows'
         '/SECTION:.data,RW'
     ]
 
-    add_project_link_arguments('-ldl', language : [ 'c', 'cpp'])
+    add_project_link_arguments(linkArgs, language : [ 'c', 'cpp'])
 endif
 
 sourceFiles = files('h_export.cpp',
