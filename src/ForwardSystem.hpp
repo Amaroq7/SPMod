@@ -159,8 +159,11 @@ public:
     enum class FwdDefault : std::uint8_t
     {
         ClientConnect = 0,
+        ClientConnectPost,
         ClientDisconnect,
+        ClientDisconnectPost,
         ClientPutInServer,
+        ClientPutInServerPost,
         PluginsLoaded,
         PluginInit,
         PluginEnd,
@@ -175,8 +178,10 @@ public:
 
     ForwardMngr() = default;
     ForwardMngr(const ForwardMngr &other) = delete;
-    ForwardMngr(ForwardMngr &&other) = default;
+    ForwardMngr(ForwardMngr &&other) = delete;
     ~ForwardMngr() = default;
+    ForwardMngr &operator=(const ForwardMngr &other) = delete;
+    ForwardMngr &operator=(ForwardMngr &&other) = delete;
 
     // IForwardMngr
     IForward *createForward(const char *name,

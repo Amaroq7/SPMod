@@ -34,7 +34,7 @@ public:
     Extension(const Extension &other) = delete;
     Extension(Extension &&other) = default;
 
-    explicit Extension(fs::path path);
+    explicit Extension(const fs::path &path);
     ~Extension();
 
     Status getStatus() const;

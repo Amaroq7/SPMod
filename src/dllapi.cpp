@@ -22,24 +22,9 @@ static qboolean ClientConnect(edict_t *pEntity,
                               const char *pszAddress,
                               char szRejectReason[128])
 {
-    using sflags = IForward::StringFlags;
-    using def = ForwardMngr::FwdDefault;
-
     const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
 
     if (!plrMngr->ClientConnect(pEntity, pszName, pszAddress, szRejectReason))
-        RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
-
-    int result;
-    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnect);
-
-    forward->pushInt(plrMngr->getPlayerCore(pEntity)->getIndex());
-    forward->pushString(pszName);
-    forward->pushString(pszAddress);
-    forward->pushString(szRejectReason, 128, sflags::Utf8 | sflags::Copy, true);
-    forward->execFunc(&result);
-
-    if (static_cast<IForward::ReturnValue>(result) == IForward::ReturnValue::Stop)
         RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
 
     RETURN_META_VALUE(MRES_IGNORED, TRUE);
@@ -104,6 +89,11 @@ static void ClientCommand(edict_t *pEntity)
     RETURN_META(res);
 }
 
+void ClientPutInServer(edict_t *pEntity)
+{
+    gSPGlobal->getPlayerManagerCore()->ClientPutInServer(pEntity);
+}
+
 DLL_FUNCTIONS gDllFunctionTable =
 {
     nullptr,					// pfnGameInit
@@ -124,7 +114,7 @@ DLL_FUNCTIONS gDllFunctionTable =
     ClientConnect,              // pfnClientConnect
     nullptr,					// pfnClientDisconnect
     nullptr,					// pfnClientKill
-    nullptr,					// pfnClientPutInServer
+    ClientPutInServer,		    // pfnClientPutInServer
     ClientCommand,              // pfnClientCommand
     nullptr,					// pfnClientUserInfoChanged
     nullptr,                    // pfnServerActivate
@@ -227,21 +217,13 @@ static qboolean ClientConnectPost(edict_t *pEntity,
 {
     gSPGlobal->getPlayerManagerCore()->ClientConnectPost(pEntity, pszName, pszAddress);
 
-    // TODO: Add OnClientConnected(int client, const char[] name, const char[] ip) for plugins?
-
     RETURN_META_VALUE(MRES_IGNORED, TRUE);
 }
 
 static void ClientPutInServerPost(edict_t *pEntity)
 {
-    using def = ForwardMngr::FwdDefault;
-
     const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
     plrMngr->ClientPutInServerPost(pEntity);
-
-    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServer);
-    forward->pushInt(plrMngr->getPlayerCore(pEntity)->getIndex());
-    forward->execFunc(nullptr);
 }
 
 static void ClientUserInfoChangedPost(edict_t *pEntity,

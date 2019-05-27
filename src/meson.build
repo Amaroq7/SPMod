@@ -2,6 +2,13 @@ add_project_arguments('-DSPMOD_CORE', language : [ 'c', 'cpp' ])
 
 if build_machine.system() == 'linux'
     add_project_link_arguments('-ldl', language : [ 'c', 'cpp'])
+elif build_machine.system() == 'windows'
+    linkArgs = [
+        '/EXPORT:GiveFnptrsToDll=_GiveFnptrsToDll@8',
+        '/SECTION:.data,RW'
+    ]
+
+    add_project_link_arguments('-ldl', language : [ 'c', 'cpp'])
 endif
 
 sourceFiles = files('h_export.cpp',

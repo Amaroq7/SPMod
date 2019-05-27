@@ -20,7 +20,38 @@
 #pragma once
 
 #include <cstddef>
-#include <extdll.h>
+
+#include <archtypes.h>
+
+#if !defined vec_t
+    using vec_t = float;
+#endif
+
+#if !defined sqrt
+    #include <cmath>
+    #define sqrt std::sqrt
+#endif
+
+#include <vector.h>
+
+#if !defined vec3_t
+    #define vec3_t Vector
+#endif
+
+#if !defined string_t
+    using string_t = unsigned int;
+#endif
+
+#if !defined vec_t
+    using vec_t = float;
+#endif
+
+#if !defined byte
+    using byte = unsigned char;
+#endif
+
+#include <const.h>
+#include <edict.h>
 
 namespace SPMod
 {
@@ -113,83 +144,6 @@ namespace SPMod
         virtual ~IPlayer() = default;
     };
 
-    class IPlayerListener
-    {
-    public:
-        /*
-         * @brief Called when a client connects to the server.
-         *
-         * @param entity    Client's edict_t structure.
-         * @param name      Client's name.
-         * @param address   Client's IP address.
-         * @param reason    Buffer to write a reason that will be displayed to the client when they get rejected.
-         *
-         * @return          True to let client join or false to reject them.
-         */
-        virtual bool OnClientConnect(edict_t *entity [[maybe_unused]],
-                                     const char *name [[maybe_unused]],
-                                     const char *address [[maybe_unused]],
-                                     char reason [[maybe_unused]] [128])
-        {
-            return true;
-        }
-
-        /*
-         * @brief Called when a client has connected to the server.
-         *
-         * @param player        Player object.
-         *
-         * @noreturn
-         */
-        virtual void OnClientConnected(IPlayer *player [[maybe_unused]])
-        {
-        }
-
-        /*
-         * @brief Called when a client enters the game.
-         *
-         * @param player        Player object.
-         *
-         * @noreturn
-         */
-        virtual void OnClientPutInServer(IPlayer *player [[maybe_unused]])
-        {
-        }
-
-        /*
-         * @brief Called when a client disconnects from the server.
-         *
-         * @param player        Player object.
-         * @param crash         True if client crashed, false otherwise.
-         * @param reason        Reason why the client is disconnecting.
-         *
-         * @noreturn
-         */
-        virtual void OnClientDisconnect(IPlayer *player [[maybe_unused]],
-                                        bool crash [[maybe_unused]],
-                                        const char *reason [[maybe_unused]])
-        {
-        }
-
-        /*
-         * @brief Called when a client disconnected from the server.
-         *
-         * @param player        Player object.
-         * @param crash         True if client crashed, false otherwise.
-         * @param reason        Reason why the client has been disconnected.
-         *
-         * @noreturn
-         */
-        virtual void OnClientDisconnected(IPlayer *player [[maybe_unused]],
-                                          bool crash [[maybe_unused]],
-                                          const char *reason [[maybe_unused]])
-        {
-        }
-
-    protected:
-        virtual ~IPlayerListener() = default;
-    };
-
     class IPlayerMngr
     {
     public:
@@ -226,24 +180,6 @@ namespace SPMod
          * @return          Number of connected clients.
          */
         virtual unsigned int getNumPlayers() const = 0;
-
-        /**
-         * @brief Adds player listener.
-         *
-         * @param listener  Pointer to player listener instance.
-         *
-         * @noreturn
-         */
-        virtual void addPlayerListener(IPlayerListener *listener) = 0;
-
-        /**
-         * @brief Removes player listener.
-         *
-         * @param listener  Pointer to player listener instance.
-         *
-         * @noreturn
-         */
-        virtual void removePlayerListener(IPlayerListener *listener) = 0;
 
     protected:
         virtual ~IPlayerMngr() = default;

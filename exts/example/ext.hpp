@@ -17,7 +17,10 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 #include <ISPGlobal.hpp>
+#include "DummyPluginMngr.hpp"
 
 class ModuleInterface final : public SPMod::IInterface
 {
@@ -48,7 +51,7 @@ class ModuleInterface final : public SPMod::IInterface
 
     SPMod::IPluginMngr *getPluginMngr() const override
     {
-        return nullptr;
+        return &SPExtExample::gPluginMngr;
     }
 };
 

@@ -1,0 +1,127 @@
+/*
+ *  Copyright (C) 2018 SPMod Development Team
+ *
+ *  This file is part of SPMod.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#include "ext.hpp"
+
+namespace SPExtExample
+{
+    PluginMngr gPluginMngr;
+
+    const char *Plugin::getName() const
+    {
+        return "";
+    }
+
+    const char *Plugin::getVersion() const
+    {
+        return "";
+    }
+
+    const char *Plugin::getAuthor() const
+    {
+        return "";
+    }
+
+    const char *Plugin::getUrl() const
+    {
+        return "";
+    }
+
+    const char *Plugin::getIdentity() const
+    {
+        return "";
+    }
+
+    const char *Plugin::getFilename() const
+    {
+        return "";
+    }
+
+    SPMod::IPluginMngr *Plugin::getPluginMngr() const
+    {
+        return &gPluginMngr;
+    }
+
+    int Plugin::getProxiedParamAsInt(std::size_t index) const
+    {
+        return 0;
+    }
+
+    int *Plugin::getProxiedParamAsIntAddr(std::size_t index) const
+    {
+        static int dummy = 0;
+        return &dummy;
+    }
+
+    float Plugin::getProxiedParamAsFloat(std::size_t index) const
+    {
+        return 0.0f;
+    }
+
+    float *Plugin::getProxiedParamAsFloatAddr(std::size_t index) const
+    {
+        static float dummy = 0.0f;
+        return &dummy;
+    }
+
+    char *Plugin::getProxiedParamAsString(std::size_t index) const
+    {
+        static char dummy[1] = {};
+        return dummy;
+    }
+
+    void *Plugin::getProxiedParamAsArray(std::size_t index) const
+    {
+        static int array[1] = {};
+        return array;
+    }
+
+    std::size_t PluginMngr::getPluginsNum() const
+    {
+        return 0;
+    }
+
+    SPMod::IPlugin *PluginMngr::getPlugin(const char *name)
+    {
+        static Plugin dummy;
+        return &dummy;
+    }
+
+    void PluginMngr::loadPlugins()
+    {
+    }
+
+    void PluginMngr::bindPluginsNatives()
+    {
+    }
+
+    void PluginMngr::unloadPlugins()
+    {
+    }
+
+    const char *PluginMngr::getPluginsExt() const
+    {
+        return "";
+    }
+
+    int PluginMngr::proxyNativeCallback(const SPMod::IProxiedNative *const native, const SPMod::IPlugin *const plugin)
+    {
+        return 0;
+    }
+}

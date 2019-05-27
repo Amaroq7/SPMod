@@ -86,16 +86,10 @@ public:
     IPlayer *getPlayer(edict_t *edict) const override;
     unsigned int getMaxClients() const override;
     unsigned int getNumPlayers() const override;
-    void addPlayerListener(IPlayerListener *listener) override;
-    void removePlayerListener(IPlayerListener *listener) override;
 
     // PlayerManager
     std::shared_ptr<Player> getPlayerCore(int index) const;
     std::shared_ptr<Player> getPlayerCore(edict_t *edict) const;
-    const auto &getListenerList() const
-    {
-        return m_playersListeners;
-    }
 
     bool ClientConnect(edict_t *pEntity,
                        const char *pszName,
@@ -106,6 +100,7 @@ public:
                            const char *pszName,
                            const char *pszAddress);
 
+    void ClientPutInServer(edict_t *pEntity);
     void ClientPutInServerPost(edict_t *pEntity);
     void ClientUserInfoChangedPost(edict_t *pEntity,
                                    char *infobuffer);
@@ -124,6 +119,4 @@ private:
 
     std::array<std::shared_ptr<Player>, MAX_PLAYERS + 1> m_players;
     unsigned int m_maxClients;
-
-    std::vector<IPlayerListener *> m_playersListeners;
 };

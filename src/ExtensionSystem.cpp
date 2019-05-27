@@ -21,7 +21,7 @@
 
 using namespace std::string_literals;
 
-Extension::Extension(fs::path path)
+Extension::Extension(const fs::path &path)
 {
 #if defined SP_POSIX
     void *extHandle = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND);

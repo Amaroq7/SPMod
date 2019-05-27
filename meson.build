@@ -114,10 +114,6 @@ elif build_machine.system() == 'windows'
         '/TP',  # Treat files as c++ sources
         '/WX'   # Treat warnings as errors
     ]
-    gLinkArgs += [
-        '/EXPORT:GiveFnptrsToDll=_GiveFnptrsToDll@8',
-        '/SECTION:.data,RW'
-    ]
 
     # MSVC support is limited, we need to set compile options here for the time being
     gCppArgs += '/std:c++17'
@@ -180,8 +176,8 @@ rehldsIncludesDir = [
 ]
 
 includeDirs = include_directories(publicIncludesDir,
-                                  metamodIncludesDir,
                                   rehldsIncludesDir,
+                                  metamodIncludesDir,
                                   llvmIncludesDir,
                                   '.') #build directory
 

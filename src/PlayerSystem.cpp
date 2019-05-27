@@ -171,23 +171,6 @@ unsigned int PlayerMngr::getNumPlayers() const
     return m_playersNum;
 }
 
-void PlayerMngr::addPlayerListener(IPlayerListener *listener)
-{
-    m_playersListeners.push_back(listener);
-}
-
-void PlayerMngr::removePlayerListener(IPlayerListener *listener)
-{
-    for (auto iter = m_playersListeners.begin(); iter != m_playersListeners.end(); ++iter)
-    {
-        if (*iter == listener)
-        {
-            m_playersListeners.erase(iter);
-            break;
-        }
-    }
-}
-
 void PlayerMngr::_initPlayers(edict_t *edictList)
 {
     for (size_t i = 1; i <= m_maxClients; i++)
@@ -230,12 +213,18 @@ bool PlayerMngr::ClientConnect(edict_t *pEntity,
                                const char *pszAddress,
                                char szRejectReason[128])
 {
-    // callback for modules
-    for (auto *listener : getListenerList())
-    {
-        if (!listener->OnClientConnect(pEntity, pszName, pszAddress, szRejectReason))
-            return false;
-    }
+    using def = ForwardMngr::FwdDefault;
+
+    std::shared_ptr<Forward> fwdPlrConnect = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnect);
+
+    int result;
+    fwdPlrConnect->pushInt(ENTINDEX(pEntity));
+    fwdPlrConnect->pushString(pszName);
+    fwdPlrConnect->pushString(pszAddress);
+    fwdPlrConnect->execFunc(&result);
+
+    if (static_cast<IForward::ReturnValue>(result) == IForward::ReturnValue::Stop)
+        return false;
 
     return true;
 }
@@ -244,17 +233,13 @@ void PlayerMngr::ClientConnectPost(edict_t *pEntity,
                                    const char *pszName,
                                    const char *pszAddress)
 {
+    using def = ForwardMngr::FwdDefault;
+
     const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
     std::shared_ptr<Player> plr = plrMngr->getPlayerCore(pEntity);
     plr->connect(pszName, pszAddress);
 
     PlayerMngr::m_playersNum++;
-
-    // callback for modules
-    for (auto *listener : plrMngr->getListenerList())
-    {
-        listener->OnClientConnected(plr.get());
-    }
 
     std::string_view authid(GETPLAYERAUTHID(pEntity));
 
@@ -262,18 +247,35 @@ void PlayerMngr::ClientConnectPost(edict_t *pEntity,
         m_playersToAuth.push_back(plr);
     else
         plr->authorize(authid);
+
+    std::shared_ptr<Forward> fwdPlrConnectPost = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnectPost);
+    fwdPlrConnectPost->pushInt(ENTINDEX(pEntity));
+    fwdPlrConnectPost->pushString(pszName);
+    fwdPlrConnectPost->pushString(pszAddress);
+    fwdPlrConnectPost->execFunc(nullptr);
+}
+
+void PlayerMngr::ClientPutInServer(edict_t *pEntity)
+{
+    using def = ForwardMngr::FwdDefault;
+
+    std::shared_ptr<Player> plr = getPlayerCore(pEntity);
+
+    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServer);
+    forward->pushInt(plr->getIndex());
+    forward->execFunc(nullptr);
 }
 
 void PlayerMngr::ClientPutInServerPost(edict_t *pEntity)
 {
+    using def = ForwardMngr::FwdDefault;
+
     std::shared_ptr<Player> plr = getPlayerCore(pEntity);
     plr->putInServer();
 
-    // callback for modules
-    for (auto *listener : getListenerList())
-    {
-        listener->OnClientPutInServer(plr.get());
-    }
+    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServerPost);
+    forward->pushInt(plr->getIndex());
+    forward->execFunc(nullptr);
 }
 
 void PlayerMngr::ClientUserInfoChangedPost(edict_t *pEntity,
