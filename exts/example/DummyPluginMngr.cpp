@@ -58,35 +58,35 @@ namespace SPExtExample
         return &gPluginMngr;
     }
 
-    int Plugin::getProxiedParamAsInt(std::size_t index) const
+    int Plugin::getProxiedParamAsInt(std::size_t index [[maybe_unused]]) const
     {
         return 0;
     }
 
-    int *Plugin::getProxiedParamAsIntAddr(std::size_t index) const
+    int *Plugin::getProxiedParamAsIntAddr(std::size_t index [[maybe_unused]]) const
     {
         static int dummy = 0;
         return &dummy;
     }
 
-    float Plugin::getProxiedParamAsFloat(std::size_t index) const
+    float Plugin::getProxiedParamAsFloat(std::size_t index [[maybe_unused]]) const
     {
         return 0.0f;
     }
 
-    float *Plugin::getProxiedParamAsFloatAddr(std::size_t index) const
+    float *Plugin::getProxiedParamAsFloatAddr(std::size_t index [[maybe_unused]]) const
     {
         static float dummy = 0.0f;
         return &dummy;
     }
 
-    char *Plugin::getProxiedParamAsString(std::size_t index) const
+    char *Plugin::getProxiedParamAsString(std::size_t index [[maybe_unused]]) const
     {
         static char dummy[1] = {};
         return dummy;
     }
 
-    void *Plugin::getProxiedParamAsArray(std::size_t index) const
+    void *Plugin::getProxiedParamAsArray(std::size_t index [[maybe_unused]]) const
     {
         static int array[1] = {};
         return array;
@@ -97,7 +97,7 @@ namespace SPExtExample
         return 0;
     }
 
-    SPMod::IPlugin *PluginMngr::getPlugin(const char *name)
+    SPMod::IPlugin *PluginMngr::getPlugin(const char *name [[maybe_unused]])
     {
         static Plugin dummy;
         return &dummy;
@@ -120,7 +120,8 @@ namespace SPExtExample
         return "";
     }
 
-    int PluginMngr::proxyNativeCallback(const SPMod::IProxiedNative *const native, const SPMod::IPlugin *const plugin)
+    int PluginMngr::proxyNativeCallback(const SPMod::IProxiedNative *const native [[maybe_unused]],
+                                        const SPMod::IPlugin *const plugin [[maybe_unused]])
     {
         return 0;
     }

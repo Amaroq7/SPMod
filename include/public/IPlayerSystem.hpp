@@ -42,10 +42,6 @@
     using string_t = unsigned int;
 #endif
 
-#if !defined vec_t
-    using vec_t = float;
-#endif
-
 #if !defined byte
     using byte = unsigned char;
 #endif

@@ -214,6 +214,7 @@ bool PlayerMngr::ClientConnect(edict_t *pEntity,
                                char szRejectReason[128])
 {
     using def = ForwardMngr::FwdDefault;
+    using sf = IForward::StringFlags;
 
     std::shared_ptr<Forward> fwdPlrConnect = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnect);
 
@@ -221,6 +222,7 @@ bool PlayerMngr::ClientConnect(edict_t *pEntity,
     fwdPlrConnect->pushInt(ENTINDEX(pEntity));
     fwdPlrConnect->pushString(pszName);
     fwdPlrConnect->pushString(pszAddress);
+    fwdPlrConnect->pushString(szRejectReason, 128, sf::Copy | sf::Utf8, true);
     fwdPlrConnect->execFunc(&result);
 
     if (static_cast<IForward::ReturnValue>(result) == IForward::ReturnValue::Stop)
