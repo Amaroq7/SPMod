@@ -15,7 +15,7 @@ if build_machine.system() == 'linux'
 
         # Check if include files already exist
         if cppCompiler.has_header('__cxxabi_config.h', args : libcxxLibraryHeaderPaths) == false
-            llvmIncludesDir = join_paths('include', 'llvm')
+            llvmIncludesDir = join_paths('..', '..', 'include', 'llvm')
         endif
     endif
 endif
