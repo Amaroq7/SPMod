@@ -84,7 +84,7 @@ namespace SPMod
         virtual ~IInterface() = default;
     };
 
-    class ISPModInterface SPMOD_FINAL : public IInterface
+    class ISPModInterface : public IInterface
     {
     public:
         const char *getAuthor() const override final

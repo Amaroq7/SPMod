@@ -29,7 +29,7 @@ namespace SPMod
         Exit = -3
     };
 
-    class IMenu SPMOD_FINAL
+    class IMenu
     {
     public:
         enum class Style : int8_t
@@ -38,7 +38,7 @@ namespace SPMod
             Text
         };
 
-        class IItem SPMOD_FINAL
+        class IItem
         {
         public:
             enum class Status : int8_t
@@ -109,7 +109,7 @@ namespace SPMod
         virtual ~IMenu() = default;
     };
 
-    class IMenuMngr SPMOD_FINAL
+    class IMenuMngr
     {
     public:
         virtual IMenu *registerMenu(IMenu::ItemHandler handler, bool global) = 0;

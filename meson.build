@@ -182,6 +182,17 @@ includeDirs = include_directories(publicIncludesDir,
                                   '.') #build directory
 
 subdir('src')
+
 if gExtsToBuild.length() != 0
-    subdir('exts')
+    if 'all' in gExtsToBuild
+        subproject('example')
+        subproject('sourcepawn')
+    else
+        if 'sorucepawn' in gExtsToBuild
+            subproject('sourcepawn')
+        endif
+        if 'example' in gExtsToBuild
+            subproject('example', default_options : ['foo=bar', 'bob=bob'])
+        endif
+    endif
 endif

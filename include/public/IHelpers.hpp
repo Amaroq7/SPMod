@@ -47,10 +47,3 @@
         #define SPMOD_API	extern "C" __declspec(dllexport)
     #endif
 #endif
-
-// Forbid inheritance outside core
-#ifdef SPMOD_CORE
-    #define SPMOD_FINAL
-#else
-    #define SPMOD_FINAL final
-#endif

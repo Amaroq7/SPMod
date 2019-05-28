@@ -21,7 +21,7 @@
 
 namespace SPMod
 {
-    class IUtils SPMOD_FINAL : public ISPModInterface
+    class IUtils : public ISPModInterface
     {
     public:
         static constexpr uint16_t MAJOR_VERSION = 0;

@@ -24,7 +24,7 @@
 namespace SPMod
 {
     class IPlugin;
-    class IForward SPMOD_FINAL
+    class IForward
     {
     public:
         /*
@@ -245,7 +245,7 @@ namespace SPMod
      */
     using ForwardCallback = void (*)(const IForward *const fwd, int *result, bool *stop);
 
-    class IForwardMngr SPMOD_FINAL : public ISPModInterface
+    class IForwardMngr : public ISPModInterface
     {
     public:
         static constexpr std::uint16_t MAJOR_VERSION = 0;

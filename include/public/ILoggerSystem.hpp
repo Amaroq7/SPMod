@@ -120,7 +120,7 @@ namespace SPMod
         virtual ~ILogger() = default;
     };
 
-    class ILoggerMngr SPMOD_FINAL : public ISPModInterface
+    class ILoggerMngr : public ISPModInterface
     {
     public:
         static constexpr uint16_t MAJOR_VERSION = 0;

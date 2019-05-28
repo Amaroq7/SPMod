@@ -44,7 +44,7 @@ namespace SPMod
         Logs
     };
 
-    class ISPGlobal SPMOD_FINAL : public ISPModInterface
+    class ISPGlobal : public ISPModInterface
     {
     public:
         static constexpr std::uint16_t MAJOR_VERSION = 0;

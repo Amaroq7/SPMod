@@ -19,7 +19,7 @@
 
 namespace SPMod
 {
-    class ICvar SPMOD_FINAL
+    class ICvar
     {
     public:
         using CvarCallback = void (*)(const ICvar *const cvar, const char *old_value, const char *new_value);
@@ -144,7 +144,7 @@ namespace SPMod
         virtual ~ICvar() = default;
     };
 
-    class ICvarMngr SPMOD_FINAL : public ISPModInterface
+    class ICvarMngr : public ISPModInterface
     {
     public:
         static constexpr uint16_t MAJOR_VERSION = 0;

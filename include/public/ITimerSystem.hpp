@@ -21,7 +21,7 @@
 
 namespace SPMod
 {
-    class ITimer SPMOD_FINAL
+    class ITimer
     {
     public:
         /**
@@ -67,7 +67,7 @@ namespace SPMod
      */
     using TimerCallback = bool (*)(ITimer *const timer, void *data);
 
-    class ITimerMngr SPMOD_FINAL : public ISPModInterface
+    class ITimerMngr : public ISPModInterface
     {
     public:
         static constexpr uint16_t MAJOR_VERSION = 0;

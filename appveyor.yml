@@ -42,7 +42,7 @@ build_script:
   - cd build
   - meson .. . --buildtype plain -D windebug=false -D linktype=%LINK_TYPE%
   - meson configure
-  - ninja
+  - ninja -v
   - cd ..
   - move build\src\spmod_mm.dll dlls
   - ps: appveyor\package.ps1

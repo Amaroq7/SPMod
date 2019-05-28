@@ -23,7 +23,7 @@ namespace SPMod
 {
     class IPlugin;
 
-    class IProxiedNative SPMOD_FINAL
+    class IProxiedNative
     {
     public:
         /**
@@ -51,7 +51,7 @@ namespace SPMod
         ~IProxiedNative() = default;
     };
 
-    class INativeProxy SPMOD_FINAL : public ISPModInterface
+    class INativeProxy : public ISPModInterface
     {
     public:
         static constexpr std::uint16_t MAJOR_VERSION = 0;

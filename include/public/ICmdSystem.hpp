@@ -21,7 +21,7 @@ namespace SPMod
 {
     class IPlayer;
 
-    class ICommand SPMOD_FINAL
+    class ICommand
     {
     public:
         using Callback = IForward::ReturnValue (*)(IPlayer *player, const ICommand *const cmd);
@@ -71,7 +71,7 @@ namespace SPMod
         virtual ~ICommand() = default;
     };
 
-    class ICommandMngr SPMOD_FINAL : public ISPModInterface
+    class ICommandMngr : public ISPModInterface
     {
     public:
         static constexpr std::uint16_t MAJOR_VERSION = 0;
