@@ -192,7 +192,7 @@ if gExtsToBuild.length() != 0
             subproject('sourcepawn')
         endif
         if 'example' in gExtsToBuild
-            subproject('example', default_options : ['foo=bar', 'bob=bob'])
+            subproject('example')
         endif
     endif
 endif
