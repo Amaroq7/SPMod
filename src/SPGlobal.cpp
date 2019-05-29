@@ -164,8 +164,7 @@ const char *SPGlobal::getPath(DirType type) const
 #if defined SP_POSIX
     return getPathCore(type).c_str();
 #else
-    static std::string tempDir;
-    tempDir = getPathCore(type).string();
+    static std::string tempDir = getPathCore(type).string();
     return tempDir.c_str();
 #endif
 }
@@ -228,8 +227,10 @@ IInterface *SPGlobal::getInterface(const char *name) const
     return nullptr;
 }
 
-fs::path SPGlobal::getPathCore(DirType type) const
+const fs::path &SPGlobal::getPathCore(DirType type) const
 {
+    static fs::path emptyPath;
+
     switch(type)
     {
         case DirType::Home: return m_SPModDir;
@@ -237,7 +238,7 @@ fs::path SPGlobal::getPathCore(DirType type) const
         case DirType::Exts: return m_SPModExtsDir;
         case DirType::Logs: return m_SPModLogsDir;
         case DirType::Plugins: return m_SPModPluginsDir;
-        default: return {};
+        default: return emptyPath;
     }
 }
 

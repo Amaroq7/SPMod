@@ -19,6 +19,12 @@
 
 #pragma once
 
+#if defined SP_POSIX
+    #define _vsnprintf vsnprintf
+#endif
+
+#include <utlvector.h>
+
 namespace SPMod
 {
     class IPluginMngr;
@@ -192,6 +198,13 @@ namespace SPMod
          * @return        Plugins extension.
          */
         virtual const char *getPluginsExt() const = 0;
+
+        /**
+         * @brief Returns list of the plugins.
+         *
+         * @return        Plugins list.
+         */
+        virtual const CUtlVector<IPlugin *> &getPluginsList() const = 0;
 
     protected:
         virtual ~IPluginMngr() = default;

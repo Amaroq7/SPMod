@@ -26,8 +26,6 @@ namespace SPExtExample
     class Plugin final : public SPMod::IPlugin
     {
     public:
-
-        // IPlugin
         const char *getName() const override;
         const char *getVersion() const override;
         const char *getAuthor() const override;
@@ -53,6 +51,7 @@ namespace SPExtExample
         void unloadPlugins() override;
         const char *getPluginsExt() const override;
         int proxyNativeCallback(const SPMod::IProxiedNative *const native, const SPMod::IPlugin *const plugin) override;
+        const CUtlVector<SPMod::IPlugin *> &getPluginsList() const override;
     };
 
     extern PluginMngr gPluginMngr;

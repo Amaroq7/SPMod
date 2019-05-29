@@ -25,32 +25,32 @@ namespace SPExtExample
 
     const char *Plugin::getName() const
     {
-        return "";
+        return "Dummy plugin";
     }
 
     const char *Plugin::getVersion() const
     {
-        return "";
+        return "1.0.0";
     }
 
     const char *Plugin::getAuthor() const
     {
-        return "";
+        return "SPMod Development Team";
     }
 
     const char *Plugin::getUrl() const
     {
-        return "";
+        return "https:://github.com/Amaroq7/SPMod";
     }
 
     const char *Plugin::getIdentity() const
     {
-        return "";
+        return "dummy";
     }
 
     const char *Plugin::getFilename() const
     {
-        return "";
+        return "dummy";
     }
 
     SPMod::IPluginMngr *Plugin::getPluginMngr() const
@@ -124,5 +124,18 @@ namespace SPExtExample
                                         const SPMod::IPlugin *const plugin [[maybe_unused]])
     {
         return 0;
+    }
+
+    const CUtlVector<SPMod::IPlugin *> &PluginMngr::getPluginsList() const
+    {
+        static CUtlVector<SPMod::IPlugin *> pluginsList;
+        static Plugin dummyPlugin;
+
+        if (!pluginsList.Count())
+        {
+            pluginsList.AddToTail(&dummyPlugin);
+        }
+
+        return pluginsList;
     }
 }

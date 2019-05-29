@@ -52,7 +52,7 @@ public:
     IInterface *getInterface(const char *name) const override;
 
     // SPGlobal
-    fs::path getPathCore(DirType type) const;
+    const fs::path &getPathCore(DirType type) const;
     std::string_view getModNameCore() const;
 
     const std::unique_ptr<ForwardMngr> &getForwardManagerCore() const;

@@ -25,6 +25,12 @@
 // Supress warning about redefining
 #undef MAX_PATH
 
+#if defined SP_POSIX
+    #undef _vsnprintf
+#endif
+
+#define ULONG typedefWorkaround
+
 // ReHLDS
 #ifdef SP_CLANG
     #pragma clang diagnostic push

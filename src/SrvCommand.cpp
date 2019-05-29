@@ -20,7 +20,7 @@
 static constexpr std::size_t nameWidth = 25;
 static constexpr std::size_t verWidth = 15;
 static constexpr std::size_t authWidth = 20;
-//static constexpr std::size_t fileWidth = 15;
+static constexpr std::size_t fileWidth = 15;
 
 void SPModInfoCommand()
 {
@@ -32,7 +32,7 @@ void SPModInfoCommand()
                                       Command:\n \
                                       version - displays currently version\n \
                                       plugins - displays currently loaded plugins\n \
-                                      gpl - displays spmod license"); \
+                                      gpl - displays spmod license");
     }
     else
     {
@@ -41,28 +41,32 @@ void SPModInfoCommand()
         if (arg == "plugins")
         {
             logger->sendMsgToConsoleCore(std::left,
-                                      std::setw(7),
-                                      "\n",
-                                      std::setw(nameWidth),
-                                      "name",
-                                      std::setw(verWidth),
-                                      "version",
-                                       std::setw(authWidth),
-                                      "author",
-                                      "filename");
-            //std::size_t pos = 1;
-            /*for (auto entry : gSPGlobal->getPluginManagerCore()->getPluginsList())
+                                         std::setw(7),
+                                         "\n",
+                                         std::setw(nameWidth),
+                                         "name",
+                                         std::setw(verWidth),
+                                         "version",
+                                          std::setw(authWidth),
+                                         "author",
+                                         "filename");
+            std::size_t pos = 1;
+
+            for (auto interface : gSPGlobal->getInterfacesList())
             {
-                logSystem->LogConsoleCore("[", std::right, std::setw(3), pos++, "] ", // right align for ordinal number
-                                        std::left, // left align for the rest
-                                        std::setw(nameWidth), // format rules for name
-                                        entry.second->getNameCore().substr(0, nameWidth - 1),
-                                        std::setw(verWidth), // format rules for version
-                                        entry.second->getVersionCore().substr(0, verWidth - 1),
-                                        std::setw(authWidth), // format rules for author
-                                        entry.second->getAuthorCore().substr(0, authWidth - 1),
-                                        entry.second->getFileNameCore().substr(0, fileWidth));
-            }*/
+                for (auto plugin : interface.second->getPluginMngr()->getPluginsList())
+                {
+                    logger->sendMsgToConsoleCore("[", std::right, std::setw(3), pos++, "] ", // right align for ordinal number
+                                                 std::left, // left align for the rest
+                                                 std::setw(nameWidth), // format rules for name
+                                                 std::string_view(plugin->getName()).substr(0, nameWidth - 1),
+                                                 std::setw(verWidth), // format rules for version
+                                                 std::string_view(plugin->getVersion()).substr(0, verWidth - 1),
+                                                 std::setw(authWidth), // format rules for author
+                                                 std::string_view(plugin->getAuthor()).substr(0, authWidth - 1),
+                                                 std::string_view(plugin->getFilename()).substr(0, fileWidth));
+                }
+            }
         }
         else if (arg == "gpl")
         {
