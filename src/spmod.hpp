@@ -120,7 +120,7 @@ using namespace SPMod;
 
 constexpr auto gSPModAuthor = "SPMod Development Team";
 
-#define APP_COMMIT_URL "https://github.com/Amaroq7/SPMod/commits/"
+constexpr const char *APP_COMMIT_URL = "https://github.com/Amaroq7/SPMod/commits/";
 
 extern int gmsgShowMenu;
 extern int gmsgVGUIMenu;

@@ -164,7 +164,8 @@ const char *SPGlobal::getPath(DirType type) const
 #if defined SP_POSIX
     return getPathCore(type).c_str();
 #else
-    static std::string tempDir = getPathCore(type).string();
+    static std::string tempDir;
+    tempDir = getPathCore(type).string();
     return tempDir.c_str();
 #endif
 }
