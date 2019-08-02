@@ -25,7 +25,7 @@ namespace SPMod
 {
     enum class LogLevel : uint8_t
     {
-        Debug = 0,
+        Debug,
         Info,
         Warning,
         Error

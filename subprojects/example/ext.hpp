@@ -22,38 +22,42 @@
 #include <ISPGlobal.hpp>
 #include "DummyPluginMngr.hpp"
 
-class ModuleInterface final : public SPMod::IInterface
+namespace SPExtExample
 {
-    const char *getName() const override
+    class Interface final : public SPMod::IInterface
     {
-        return "ISPExampleExt";
-    }
+        const char *getName() const override
+        {
+            return "ISPExampleExt";
+        }
 
-    uint32_t getVersion() const override
-    {
-        return 1U;
-    }
+        uint32_t getVersion() const override
+        {
+            return 1U;
+        }
 
-    const char *getAuthor() const override
-    {
-        return "SPMod Development Team";
-    }
+        const char *getAuthor() const override
+        {
+            return "SPMod Development Team";
+        }
 
-    const char *getUrl() const override
-    {
-        return "https://github.com/Amaroq7/SPMod";
-    }
+        const char *getUrl() const override
+        {
+            return "https://github.com/Amaroq7/SPMod";
+        }
 
-    const char *getExtName() const override
-    {
-        return "SPMod Example Module";
-    }
+        const char *getExtName() const override
+        {
+            return "SPMod Example Module";
+        }
 
-    SPMod::IPluginMngr *getPluginMngr() const override
-    {
-        return &SPExtExample::gPluginMngr;
-    }
-};
+        SPMod::IPluginMngr *getPluginMngr() const override
+        {
+            return &SPExtExample::gPluginMngr;
+        }
+    };
+}
 
-extern ModuleInterface gModuleInterface;
 extern SPMod::ISPGlobal *gSPGlobal;
+extern SPMod::ILogger *gLogger;
+extern SPExtExample::Interface gInterface;

@@ -28,8 +28,8 @@ namespace SPMod
 
         enum class Type : std::uint8_t
         {
-            Client = 0,
-            Server = 1
+            Client,
+            Server
         };
 
         /**
@@ -47,9 +47,9 @@ namespace SPMod
         virtual const char *getInfo() const = 0;
 
         /**
-         * @brief Returns command's info.
+         * @brief Returns command's data.
          *
-         * @return Command's info.
+         * @return Command's data.
          */
         virtual void *getData() const = 0;
 

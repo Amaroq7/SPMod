@@ -20,18 +20,23 @@
 #include "ext.hpp"
 
 SPMod::ISPGlobal *gSPGlobal;
-ModuleInterface gModuleInterface;
+SPMod::ILogger *gLogger;
+SPExtExample::Interface gInterface;
 
 SPMOD_API SPMod::ExtQueryValue SPMod_Query(SPMod::ISPGlobal *spmodInstance)
 {
     gSPGlobal = spmodInstance;
-    gSPGlobal->registerInterface(&gModuleInterface);
+    gSPGlobal->registerInterface(&gInterface);
 
     return SPMod::ExtQueryValue::SPModExt;
 }
 
 SPMOD_API bool SPMod_Init()
 {
+    gLogger = gSPGlobal->getLoggerManager()->getLogger("SPExample");
+    gLogger->setLogLevel(SPMod::LogLevel::Info);
+    gLogger->logToBoth(SPMod::LogLevel::Info, "Logger initialized");
+
     return true;
 }
 
