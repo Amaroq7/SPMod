@@ -54,5 +54,5 @@ then
     sudo update-alternatives --install /usr/bin/g++ g++ ${GPP_COMPILER} 1000
 fi
 
-# setup python 3.7 as default
-sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1000
+# setup python 3.6 as default
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1000

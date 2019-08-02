@@ -5,23 +5,20 @@ branches:
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 sudo: required
 os: linux
-dist: xenial
+dist: bionic
 
 matrix:
   include:
     - addons:
         apt:
           sources:
-            - llvm-toolchain-xenial-7
-            - ubuntu-toolchain-r-test
-            - deadsnakes
-            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
+            - sourceline: 'ppa:ricotz/toolchain' #more recent meson version
           packages:
             - clang-7
             - lld-7
             - gcc-multilib
             - g++-multilib
-            - python3.7
+            - python3
             - meson
             - ninja-build
             - lib32z1-dev
@@ -35,16 +32,13 @@ matrix:
     - addons:
         apt:
           sources:
-            - llvm-toolchain-xenial-8
-            - ubuntu-toolchain-r-test
-            - deadsnakes
-            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
+            - sourceline: 'ppa:ricotz/toolchain' #more recent meson version
           packages:
             - clang-8
             - lld-8
             - gcc-multilib
             - g++-multilib
-            - python3.7
+            - python3
             - meson
             - ninja-build
             - lib32z1-dev
@@ -58,16 +52,13 @@ matrix:
     - addons:
         apt:
           sources:
-            - llvm-toolchain-xenial-8
-            - ubuntu-toolchain-r-test
-            - deadsnakes
-            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
+            - sourceline: 'ppa:ricotz/toolchain' #more recent meson version
           packages:
             - clang-8
             - lld-8
             - gcc-multilib
             - g++-multilib
-            - python3.7
+            - python3
             - meson
             - ninja-build
             - lib32z1-dev
@@ -81,37 +72,14 @@ matrix:
     - addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
-            - deadsnakes
-            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
-          packages:
-            - gcc-7
-            - g++-7
-            - gcc-7-multilib
-            - g++-7-multilib
-            - python3.7
-            - meson
-            - ninja-build
-            - lib32z1-dev
-            - lib32stdc++6
-            - libc6-dev-i386
-            - linux-libc-dev
-      env:
-        - GCC_VERSION=7 LINK_TYPE=static
-      compiler: gcc
-
-    - addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - deadsnakes
-            - sourceline: 'ppa:ricotz/toolchain' #meson & ninja
+            - sourceline: 'ppa:ubuntu-toolchain-r/test' # workaround for disallowed source
+            - sourceline: 'ppa:ricotz/toolchain' #more recent meson version
           packages:
             - gcc-8
             - g++-8
             - gcc-8-multilib
             - g++-8-multilib
-            - python3.7
+            - python3
             - meson
             - ninja-build
             - lib32z1-dev
@@ -119,21 +87,41 @@ matrix:
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - GCC_VERSION=8 LINK_TYPE=static CC_VERSION=8
+        - GCC_VERSION=8 LINK_TYPE=static
       compiler: gcc
 
     - addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
-            - deadsnakes
+            - sourceline: 'ppa:ubuntu-toolchain-r/test' # workaround for disallowed source
+            - sourceline: 'ppa:ricotz/toolchain' #more recent meson version
+          packages:
+            - gcc-9
+            - g++-9
+            - gcc-9-multilib
+            - g++-9-multilib
+            - python3
+            - meson
+            - ninja-build
+            - lib32z1-dev
+            - lib32stdc++6
+            - libc6-dev-i386
+            - linux-libc-dev
+      env:
+        - GCC_VERSION=9 LINK_TYPE=static CC_VERSION=9
+      compiler: gcc
+
+    - addons:
+        apt:
+          sources:
+            - sourceline: 'ppa:ubuntu-toolchain-r/test' # workaround for disallowed source
             - sourceline: 'ppa:ricotz/toolchain'
           packages:
-            - gcc-8
-            - g++-8
-            - gcc-8-multilib
-            - g++-8-multilib
-            - python3.7
+            - gcc-9
+            - g++-9
+            - gcc-9-multilib
+            - g++-9-multilib
+            - python3
             - meson
             - ninja-build
             - lib32z1-dev
@@ -141,7 +129,7 @@ matrix:
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - GCC_VERSION=8 LINK_TYPE=dynamic CC_VERSION=8
+        - GCC_VERSION=9 LINK_TYPE=dynamic CC_VERSION=9
       compiler: gcc
 
 before_script:
@@ -178,4 +166,4 @@ deploy:
     skip_cleanup: true
     on:
       branch: master
-      condition: $CLANG_VERSION = 8 || $GCC_VERSION = 8
+      condition: $CLANG_VERSION = 9 || $GCC_VERSION = 9

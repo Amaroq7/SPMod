@@ -27,9 +27,13 @@
 
 #if defined SP_POSIX
     #undef _vsnprintf
+#else
+    #define _vsnprintf(buffer, count, format, argptr) _vsnprintf_s(buffer, count, count, format, argptr)
 #endif
 
-#define ULONG typedefWorkaround
+#if defined SP_POSIX
+    #define ULONG typedefWorkaround
+#endif
 
 // ReHLDS
 #ifdef SP_CLANG

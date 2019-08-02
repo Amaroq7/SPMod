@@ -29,7 +29,6 @@
 
 #if !defined sqrt
     #include <cmath>
-    #define sqrt std::sqrt
 #endif
 
 #include <vector.h>

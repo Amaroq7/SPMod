@@ -5,7 +5,7 @@ branches:
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 pull_requests:
   do_not_increment_build_number: true
-image: Visual Studio 2017
+image: Visual Studio 2019
 platform: x64
 build:
   parallel: true
@@ -15,7 +15,7 @@ environment:
     - LINK_TYPE: dynamic
     - LINK_TYPE: static
 install:
-  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat"
   - set PATH=C:\Python37-x64;C:\Python37-x64\Scripts;C:\Program Files\Meson;%PATH%
   - git submodule update --init --recursive
   - mkdir dlls
@@ -37,7 +37,7 @@ install:
 #  - move compiler\spcomp\spcomp.exe ..\..\..\scripts
 #  - cd ..\..\..
 build_script:
-  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat"
   - mkdir build
   - cd build
   - meson .. . --buildtype plain -D windebug=false -D linktype=%LINK_TYPE%
