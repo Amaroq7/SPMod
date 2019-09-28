@@ -20,46 +20,26 @@
 std::unique_ptr<SPGlobal> gSPGlobal;
 
 SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_path()),
-                                        m_nativeManager(std::make_unique<NativeMngr>()),
-                                        m_pluginManager(std::make_unique<PluginMngr>()),
                                         m_forwardManager(std::make_unique<ForwardMngr>()),
                                         m_cvarManager(std::make_unique<CvarMngr>()),
-                                        m_loggingSystem(std::make_unique<Logger>()),
+                                        m_loggingSystem(std::make_unique<LoggerMngr>()),
                                         m_cmdManager(std::make_unique<CommandMngr>()),
                                         m_timerManager(std::make_unique<TimerMngr>()),
                                         m_menuManager(std::make_unique<MenuMngr>()),
                                         m_plrManager(std::make_unique<PlayerMngr>()),
                                         m_utils(std::make_unique<Utils>()),
-                                        m_modName(GET_GAME_INFO(PLID, GINFO_NAME)),
-                                        m_spFactory(nullptr)
+                                        m_modName(GET_GAME_INFO(PLID, GINFO_NAME))
 {
     // Sets default dirs
-    setScriptsDir("scripts");
+    setPluginsDir("plugins");
     setLogsDir("logs");
     setDllsDir("dlls");
-
-    // Initialize SourcePawn library
-    _initSourcePawn();
-
-    // Add definition spmod natives
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gCoreNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gCvarsNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gForwardsNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gStringNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gMessageNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gCmdsNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gTimerNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gMenuNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gFloatNatives);
-    m_nativeManager->addNatives(gSPModModuleDef.get(), gPlayerNatives);
-
-    // Sets up listener for debbugging
-    getSPEnvironment()->APIv2()->SetDebugListener(m_loggingSystem.get());
+    setExtDir("exts");
 }
 
-void SPGlobal::setScriptsDir(std::string_view folder)
+void SPGlobal::setPluginsDir(std::string_view folder)
 {
-    m_SPModScriptsDir = m_SPModDir / folder.data();
+    m_SPModPluginsDir = m_SPModDir / folder.data();
 }
 
 void SPGlobal::setLogsDir(std::string_view folder)
@@ -72,98 +52,152 @@ void SPGlobal::setDllsDir(std::string_view folder)
     m_SPModDllsDir = m_SPModDir / folder.data();
 }
 
-void SPGlobal::_initSourcePawn()
+void SPGlobal::setExtDir(std::string_view folder)
 {
-    fs::path SPDir(getDllsDirCore());
-    SPDir /= SPGlobal::sourcepawnLibrary;
-
-#ifdef SP_POSIX
-    void *libraryHandle = dlopen(SPDir.c_str(), RTLD_NOW);
-#else
-    HMODULE libraryHandle = LoadLibrary(SPDir.string().c_str());
-#endif
-
-    if (!libraryHandle)
-        throw std::runtime_error("Failed to open SourcePawn library");
-
-#ifdef SP_POSIX
-    auto getFactoryFunc = reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>
-                                (dlsym(libraryHandle, "GetSourcePawnFactory"));
-#else
-    auto getFactoryFunc = reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>
-                                (GetProcAddress(libraryHandle, "GetSourcePawnFactory"));
-#endif
-
-    if (!getFactoryFunc)
-    {
-#ifdef SP_POSIX
-        dlclose(libraryHandle);
-#else
-        FreeLibrary(libraryHandle);
-#endif
-        throw std::runtime_error("Cannot find SourcePawn factory function");
-    }
-
-    SourcePawn::ISourcePawnFactory *SPFactory = getFactoryFunc(SOURCEPAWN_API_VERSION);
-    if (!SPFactory)
-    {
-#ifdef SP_POSIX
-        dlclose(libraryHandle);
-#else
-        FreeLibrary(libraryHandle);
-#endif
-        throw std::runtime_error("Wrong SourcePawn library version");
-    }
-
-    m_SPLibraryHandle = libraryHandle;
-    m_spFactory = SPFactory;
-    m_spFactory->NewEnvironment();
-    getSPEnvironment()->APIv2()->SetJitEnabled(true);
+    m_SPModExtsDir = m_SPModDir / folder.data();
 }
 
-const char *SPGlobal::getHome() const
+std::size_t SPGlobal::loadExts()
 {
-    return m_SPModDir.string().c_str();
+    std::error_code errCode;
+    auto directoryIter = fs::directory_iterator(m_SPModExtsDir, errCode);
+    std::shared_ptr<Logger> logger = m_loggingSystem->getLoggerCore("SPMOD");
+
+    if (errCode)
+    {
+        logger->logToBothCore(LogLevel::Error, "Can't read extensions directory: ", errCode.message());
+        return 0u;
+    }
+
+    /* Querying extensions */
+    for (const auto &entry : directoryIter)
+    {
+        const fs::path &extPath = entry.path();
+        std::unique_ptr<Extension> extHandle;
+        try
+        {
+            extHandle = std::make_unique<Extension>(extPath);
+        }
+        catch (const std::runtime_error &e)
+        {
+            logger->logToBothCore(LogLevel::Error, e.what());
+            continue;
+        }
+
+        if (!extHandle->getQueryFunc())
+        {
+            logger->logToBothCore(LogLevel::Error, "Querying problem: ", extPath.filename());
+            continue;
+        }
+
+        ExtQueryValue result = extHandle->getQueryFunc()(gSPGlobal.get());
+        if (result == ExtQueryValue::DontLoad)
+        {
+            logger->logToBothCore(LogLevel::Error, "Can't be loaded: ", extPath.filename());
+            continue;
+        }
+
+        m_extHandles.push_back(std::move(extHandle));
+    }
+
+    /* Initialize extensions */
+    auto iter = m_extHandles.begin();
+    while (iter != m_extHandles.end())
+    {
+        std::unique_ptr<Extension> &ext = *iter;
+        if (!ext->getInitFunc() || !ext->getInitFunc()())
+        {
+            iter = m_extHandles.erase(iter);
+        }
+        else
+            ++iter;
+    }
+
+    return m_extHandles.size();
+}
+
+void SPGlobal::unloadExts()
+{
+    for (auto &ext : m_extHandles)
+    {
+        if (ext->getEndFunc())
+            ext->getEndFunc()();
+    }
+
+    m_extHandles.clear();
+}
+
+bool SPGlobal::canPluginsPrecache() const
+{
+    return m_canPluginsPrecache;
+}
+
+IPlugin *SPGlobal::getPlugin(const char *pluginname) const
+{
+    if (strlen(pluginname) < 4)
+    {
+        return nullptr;
+    }
+
+    std::string_view pluginExt(pluginname);
+    pluginExt = pluginExt.substr(pluginExt.length() - 4);
+    for (const auto &interface : m_interfaces)
+    {
+        IPluginMngr *pluginMngr = interface.second->getPluginMngr();
+
+        if (pluginExt != pluginMngr->getPluginsExt())
+            continue;
+
+        return pluginMngr->getPlugin(pluginname);
+    }
+
+    return nullptr;
+}
+
+void SPGlobal::allowPrecacheForPlugins(bool allow)
+{
+    m_canPluginsPrecache = allow;
+}
+
+const char *SPGlobal::getPath(DirType type) const
+{
+#if defined SP_POSIX
+    return getPathCore(type).c_str();
+#else
+    static std::string tempDir;
+    tempDir = getPathCore(type).string();
+    return tempDir.c_str();
+#endif
 }
 
 const char *SPGlobal::getModName() const
 {
-    return m_modName.c_str();
-}
-
-IPluginMngr *SPGlobal::getPluginManager() const
-{
-    return m_pluginManager.get();
+    return getModNameCore().data();
 }
 
 IForwardMngr *SPGlobal::getForwardManager() const
 {
-    return m_forwardManager.get();
+    return getForwardManagerCore().get();
 }
 
 ICvarMngr *SPGlobal::getCvarManager() const
 {
-    return m_cvarManager.get();
-}
-
-SourcePawn::ISourcePawnEnvironment *SPGlobal::getSPEnvironment() const
-{
-    return m_spFactory->CurrentEnvironment();
-}
-
-INativeMngr *SPGlobal::getNativeManager() const
-{
-    return m_nativeManager.get();
+    return getCvarManagerCore().get();
 }
 
 ITimerMngr *SPGlobal::getTimerManager() const
 {
-    return m_timerManager.get();
+    return getTimerManagerCore().get();
 }
 
 IMenuMngr *SPGlobal::getMenuManager() const
 {
     return m_menuManager.get();
+}
+
+ILoggerMngr *SPGlobal::getLoggerManager() const
+{
+    return getLoggerManagerCore().get();
 }
 
 IPlayerMngr *SPGlobal::getPlayerManager() const
@@ -173,5 +207,88 @@ IPlayerMngr *SPGlobal::getPlayerManager() const
 
 IUtils *SPGlobal::getUtils() const
 {
-    return m_utils.get();
+    return getUtilsCore().get();
+}
+
+INativeProxy *SPGlobal::getNativeProxy() const
+{
+    return getNativeProxyCore().get();
+}
+
+bool SPGlobal::registerInterface(IInterface *interface)
+{
+    return m_interfaces.try_emplace(interface->getName(), interface).second;
+}
+
+IInterface *SPGlobal::getInterface(const char *name) const
+{
+    if (auto iter = m_interfaces.find(name); iter != m_interfaces.end())
+        return iter->second;
+
+    return nullptr;
+}
+
+const fs::path &SPGlobal::getPathCore(DirType type) const
+{
+    static fs::path emptyPath;
+
+    switch(type)
+    {
+        case DirType::Home: return m_SPModDir;
+        case DirType::Dlls: return m_SPModDllsDir;
+        case DirType::Exts: return m_SPModExtsDir;
+        case DirType::Logs: return m_SPModLogsDir;
+        case DirType::Plugins: return m_SPModPluginsDir;
+        default: return emptyPath;
+    }
+}
+
+std::string_view SPGlobal::getModNameCore() const
+{
+    return m_modName;
+}
+
+const std::unique_ptr<ForwardMngr> &SPGlobal::getForwardManagerCore() const
+{
+    return m_forwardManager;
+}
+
+const std::unique_ptr<CvarMngr> &SPGlobal::getCvarManagerCore() const
+{
+    return m_cvarManager;
+}
+
+const std::unique_ptr<LoggerMngr> &SPGlobal::getLoggerManagerCore() const
+{
+    return m_loggingSystem;
+}
+
+const std::unique_ptr<CommandMngr> &SPGlobal::getCommandManagerCore() const
+{
+    return m_cmdManager;
+}
+
+const std::unique_ptr<TimerMngr> &SPGlobal::getTimerManagerCore() const
+{
+    return m_timerManager;
+}
+
+const std::unique_ptr<Utils> &SPGlobal::getUtilsCore() const
+{
+    return m_utils;
+}
+
+const std::unique_ptr<MenuMngr> &SPGlobal::getMenuManagerCore() const
+{
+    return m_menuManager;
+}
+
+const std::unique_ptr<PlayerMngr> &SPGlobal::getPlayerManagerCore() const
+{
+    return m_plrManager;
+}
+
+const std::unique_ptr<NativeProxy> &SPGlobal::getNativeProxyCore() const
+{
+    return m_nativeProxy;
 }

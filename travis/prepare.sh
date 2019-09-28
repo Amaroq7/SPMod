@@ -3,20 +3,20 @@
 if [[ ! -z "${CLANG_VERSION}" ]]
 then
     # Overwrite default compiler
-    if [ ${CLANG_VERSION} == 6 ]
-    then
-        export LDFLAGS=-fuse-ld=lld-6.0
-        BRANCH_NAME=release_60
-
-        CLANG_COMPILER=/usr/bin/clang-6.0
-        CLANGPP_COMPILER=/usr/bin/clang++-6.0
-    elif [ ${CLANG_VERSION} == 7 ]
+    if [ ${CLANG_VERSION} == 7 ]
     then
         export LDFLAGS=-fuse-ld=lld-7
         BRANCH_NAME=release_70
 
         CLANG_COMPILER=/usr/bin/clang-7
         CLANGPP_COMPILER=/usr/bin/clang++-7
+    elif [ ${CLANG_VERSION} == 8 ]
+    then
+        export LDFLAGS=-fuse-ld=lld-8
+        BRANCH_NAME=release_80
+
+        CLANG_COMPILER=/usr/bin/clang-8
+        CLANGPP_COMPILER=/usr/bin/clang++-8
     fi
 
     sudo update-alternatives --install /usr/bin/clang clang ${CLANG_COMPILER} 1000
@@ -54,5 +54,5 @@ then
     sudo update-alternatives --install /usr/bin/g++ g++ ${GPP_COMPILER} 1000
 fi
 
-# setup python 3.7 as default
-sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1000
+# setup python 3.6 as default
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1000

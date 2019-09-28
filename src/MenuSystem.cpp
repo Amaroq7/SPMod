@@ -20,69 +20,59 @@
 int gmsgShowMenu = 0;
 int gmsgVGUIMenu = 0;
 
-MenuItem::MenuItem(std::string_view name,
-                   std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> callback,
-                   std::variant<cell_t, void *> data,
-                   NavigationType type) : m_name(name),
-                                          m_callback(callback),
-                                          m_data(data),
-                                          m_type(type)
+Menu::Item::Item(std::string_view name,
+                 Callback callback,
+                 void *data,
+                 NavigationType type) : m_name(name),
+                                        m_callback(callback),
+                                        m_data(data),
+                                        m_type(type)
 {}
 
-const char *MenuItem::getName() const
+const char *Menu::Item::getName() const
 {
     return m_name.data();
 }
-void MenuItem::setName(const char *name)
+void Menu::Item::setName(const char *name)
 {
     setNameCore(name);
 }
 
-void *MenuItem::getData() const
+void *Menu::Item::getData() const
 {
-    return std::get<void *>(m_data);
-}
-void MenuItem::setData(void *data)
-{
-    setDataCore(data);
+    return m_data;
 }
 
-NavigationType MenuItem::getNavType() const
+void Menu::Item::setData(void *data)
+{
+    m_data = data;
+}
+
+NavigationType Menu::Item::getNavType() const
 {
     return m_type;
 }
 
-void MenuItem::setCallback(MenuItemCallback func)
+void Menu::Item::setCallback(Callback func)
 {
     m_callback = func;
 }
 
 // MenuItem
-std::string_view MenuItem::getNameCore() const
+std::string_view Menu::Item::getNameCore() const
 {
     return m_name;
 }
-void MenuItem::setNameCore(std::string_view name)
+void Menu::Item::setNameCore(std::string_view name)
 {
     m_name = name.data();
 }
 
-cell_t MenuItem::getDataCore() const
+Menu::Item::Status Menu::Item::execCallbackCore(Menu *menu,
+                                                std::shared_ptr<Item> item,
+                                                std::shared_ptr<Player> player) const
 {
-    return std::get<cell_t>(m_data);
-}
-void MenuItem::setDataCore(std::variant<cell_t, void *> &&data)
-{
-    m_data = data;
-}
-
-ItemStatus MenuItem::execCallbackCore(Menu *menu,
-                                      std::shared_ptr<MenuItem> item,
-                                      std::shared_ptr<Player> player) const
-{
-    ItemStatus result = ItemStatus::Enabled;
-    
-    try
+    /*try
     {
         auto *func = std::get<SourcePawn::IPluginFunction *>(m_callback);
         if(func && func->IsRunnable())
@@ -94,33 +84,23 @@ ItemStatus MenuItem::execCallbackCore(Menu *menu,
             func->PushCell(static_cast<cell_t>(player->getIndex()));
             func->Execute(reinterpret_cast<cell_t*>(&result));
         }
-    }
-    catch (const std::bad_variant_access &e [[maybe_unused]])
-    {
-        auto func = std::get<MenuItemCallback>(m_callback);
-        if(func)
-        {
-            result = func(menu, item.get(), player.get());
-        }
-    }
+    }*/
 
-    return result;
+    return (m_callback ? m_callback(menu, item.get(), player.get()) : Status::Enabled);
 }
 
-Menu::Menu(std::size_t id,
-           std::variant<SourcePawn::IPluginFunction *, MenuItemHandler, MenuTextHandler> &&handler,
-           MenuStyle style,
-           bool global) : m_id(id),
-                          m_style(style),
+Menu::Menu(std::variant<ItemHandler, TextHandler> &&handler,
+           IMenu::Style style,
+           bool global) : m_style(style),
                           m_global(global),
                           m_title(""),
                           m_numberFormat("\\r#num."),
                           m_time(-1),
                           m_itemsPerPage(7),
                           m_keys(0),
-                          m_nextItem(std::make_shared<MenuItem>("Next", MenuItemCallback{nullptr}, nullptr, NavigationType::Next)),
-                          m_backItem(std::make_shared<MenuItem>("Back", MenuItemCallback{nullptr}, nullptr, NavigationType::Back)),
-                          m_exitItem(std::make_shared<MenuItem>("Exit", MenuItemCallback{nullptr}, nullptr, NavigationType::Exit)),
+                          m_nextItem(std::make_shared<Item>("Next", Item::Callback{nullptr}, nullptr, NavigationType::Next)),
+                          m_backItem(std::make_shared<Item>("Back", Item::Callback{nullptr}, nullptr, NavigationType::Back)),
+                          m_exitItem(std::make_shared<Item>("Exit", Item::Callback{nullptr}, nullptr, NavigationType::Exit)),
                           m_handler(handler)
 {}
 
@@ -137,7 +117,7 @@ void Menu::displayCore(std::shared_ptr<Player> player, int page, int time)
     const std::unique_ptr<Utils> &utils = gSPGlobal->getUtilsCore();
     char buffer[512];
 
-    if(m_style == MenuStyle::Item)
+    if(m_style == IMenu::Style::Item)
     {
         // format and show menu
         int keys = 0;
@@ -155,7 +135,7 @@ void Menu::displayCore(std::shared_ptr<Player> player, int page, int time)
         {
             for(std::size_t j = 0; j < start; j++)
             {
-                if(m_items[j]->execCallbackCore(this, m_items[j], player) == ItemStatus::Hide)
+                if(m_items[j]->execCallbackCore(this, m_items[j], player) == Item::Status::Hide)
                     hidden++;
             }
             start += hidden;
@@ -171,11 +151,11 @@ void Menu::displayCore(std::shared_ptr<Player> player, int page, int time)
 
         std::size_t slot = 0;
 
-        auto addItem = [&](ItemStatus r, std::size_t s, std::string_view n)
+        auto addItem = [&](Item::Status r, std::size_t s, std::string_view n)
         {
             text << utils->strReplacedCore(m_numberFormat, "#num", std::to_string(s + 1 == 10 ? 0 : s + 1));
 
-            if(r == ItemStatus::Enabled)
+            if(r == Item::Status::Enabled)
             {
                 text << " \\w" << n << "\n";
                 keys |= (1 << s);
@@ -186,19 +166,20 @@ void Menu::displayCore(std::shared_ptr<Player> player, int page, int time)
             }
         };
 
-        ItemStatus ret = ItemStatus::Enabled;
+        auto ret = Item::Status::Enabled;
 
         std::size_t i = start;
         while(slot < m_itemsPerPage && i < m_items.size())
         {
-            std::shared_ptr<MenuItem> item = m_staticItems[slot] ? m_staticItems[slot] : m_items[i];
+            std::shared_ptr<Item> item = m_staticItems[slot] ? m_staticItems[slot] : m_items[i];
 
             ret = item->execCallbackCore(this, item, player);
 
-            if(ret == ItemStatus::Hide)
+            if(ret == Item::Status::Hide)
             {
                 if(!m_staticItems[slot])
                     ++i;
+
                 continue;
             }
 
@@ -218,10 +199,10 @@ void Menu::displayCore(std::shared_ptr<Player> player, int page, int time)
             // check for static
             if(m_staticItems[slot])
             {
-                std::shared_ptr<MenuItem> item = m_staticItems[slot];
+                std::shared_ptr<Item> item = m_staticItems[slot];
                 ret = item->execCallbackCore(this, item, player);
 
-                if(ret != ItemStatus::Hide)
+                if(ret != Item::Status::Hide)
                 {
                     addItem(ret, slot, item->getNameCore());
                     m_slots[slot] = item;
@@ -239,7 +220,7 @@ void Menu::displayCore(std::shared_ptr<Player> player, int page, int time)
 
         if(m_items.size() - hidden > i)
         {
-            addItem(ItemStatus::Enabled, slot, m_nextItem->getNameCore());
+            addItem(Item::Status::Enabled, slot, m_nextItem->getNameCore());
             m_slots[slot++] = m_nextItem;
         }
         else
@@ -250,7 +231,7 @@ void Menu::displayCore(std::shared_ptr<Player> player, int page, int time)
 
         if(page)
         {
-            addItem(ItemStatus::Enabled, slot, m_backItem->getNameCore());
+            addItem(Item::Status::Enabled, slot, m_backItem->getNameCore());
             m_slots[slot++] = m_backItem;
         }
         else
@@ -259,7 +240,7 @@ void Menu::displayCore(std::shared_ptr<Player> player, int page, int time)
             text << "\n";
         }
 
-        addItem(ItemStatus::Enabled, slot, m_exitItem->getNameCore());
+        addItem(Item::Status::Enabled, slot, m_exitItem->getNameCore());
         m_slots[slot] = m_exitItem;
 
         // TODO: add color autodetect (hl don't show colors)
@@ -286,7 +267,7 @@ bool Menu::getGlobal() const
     return m_global;
 }
 
-MenuStyle Menu::getStyle() const
+IMenu::Style Menu::getStyle() const
 {
     return m_style;
 }
@@ -337,65 +318,63 @@ int Menu::getKeys() const
     return m_keys;
 }
 
-std::shared_ptr<MenuItem> Menu::keyToItem(int key) const
+std::shared_ptr<Menu::Item> Menu::keyToItem(int key) const
 {
     return m_slots[key].lock();
 }
 
-void Menu::appendItem(const char *name,
-                      MenuItemCallback callback,
-                      void *data)
+IMenu::IItem *Menu::appendItem(const char *name,
+                               Item::Callback callback,
+                               void *data)
 {
-    appendItemCore(name, callback, data);
+    return appendItemCore(name, callback, data).get();
 }
 
-void Menu::appendItemCore(std::string_view name,
-                          std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                          std::variant<cell_t, void *> &&data)
+std::shared_ptr<Menu::Item> Menu::appendItemCore(std::string_view name,
+                                                 Item::Callback callback,
+                                                 void *data)
 {
-    _addItem(-1, name, std::move(callback), std::move(data));
+    return _addItem(-1, name, callback, data);
 }
 
-bool Menu::insertItem(std::size_t position,
-                      const char *name,
-                      MenuItemCallback callback,
-                      void *data)
+IMenu::IItem *Menu::insertItem(std::size_t position,
+                               const char *name,
+                               Item::Callback callback,
+                               void *data)
 {
-    return insertItemCore(position, name, callback, data);
+    return insertItemCore(position, name, callback, data).get();
 }
 
-bool Menu::insertItemCore(std::size_t position,
-                          std::string_view name,
-                          std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                          std::variant<cell_t, void *> &&data)
+std::shared_ptr<Menu::Item> Menu::insertItemCore(std::size_t position,
+                                                 std::string_view name,
+                                                 Item::Callback callback,
+                                                 void *data)
 {
     if(position >= m_items.size())
-        return false;
-    
-    _addItem(position, name, std::move(callback), std::move(data));
+        return nullptr;
 
-    return true;
+    return _addItem(position, name, callback, data);
 }
 
-bool Menu::setStaticItem(std::size_t position,
-                         const char *name,
-                         MenuItemCallback callback,
-                         void *data)
+IMenu::IItem *Menu::setStaticItem(std::size_t position,
+                                  const char *name,
+                                  Item::Callback callback,
+                                  void *data)
 {
-    return setStaticItemCore(position, name, callback, data);
+    return setStaticItemCore(position, name, callback, data).get();
 }
 
-bool Menu::setStaticItemCore(std::size_t position,
-                             std::string_view name,
-                             std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                             std::variant<cell_t, void *> &&data)
+std::shared_ptr<Menu::Item> Menu::setStaticItemCore(std::size_t position,
+                                                    std::string_view name,
+                                                    Item::Callback callback,
+                                                    void *data)
 {
     if(position >= m_itemsPerPage)
-        return false;
+        return nullptr;
     
-    m_staticItems[position] = std::make_shared<MenuItem>(name.data(), std::move(callback), std::move(data), NavigationType::None);
+    m_staticItems[position] = std::make_shared<Item>(name.data(), callback, data, NavigationType::None);
 
-    return true;
+    return m_staticItems[position];
 }
 
 bool Menu::removeItem(std::size_t position)
@@ -417,11 +396,12 @@ std::size_t Menu::getItems() const
     return m_items.size();
 }
 
-IMenuItem *Menu::getItem(std::size_t position) const
+IMenu::IItem *Menu::getItem(std::size_t position) const
 {
     return getItemCore(position).get();
 }
-std::shared_ptr<MenuItem> Menu::getItemCore(std::size_t position) const
+
+std::shared_ptr<Menu::Item> Menu::getItemCore(std::size_t position) const
 {
     if(position >= m_items.size() && position < m_items.size() + MAX_STATIC_ITEMS)
         return m_staticItems[position - m_items.size()];
@@ -430,7 +410,7 @@ std::shared_ptr<MenuItem> Menu::getItemCore(std::size_t position) const
     
     return nullptr;
 }
-int Menu::getItemIndex(std::shared_ptr<MenuItem> item) const
+int Menu::getItemIndex(std::shared_ptr<Item> item) const
 {
     for(std::size_t i = 0; i < MAX_STATIC_ITEMS; i++)
     {
@@ -448,52 +428,16 @@ int Menu::getItemIndex(std::shared_ptr<MenuItem> item) const
 void Menu::execTextHandler(std::shared_ptr<Player> player,
                            int key)
 {
-    try
-    {
-        auto *func = std::get<SourcePawn::IPluginFunction *>(m_handler);
-        if(func && func->IsRunnable())
-        {
-            func->PushCell(static_cast<cell_t>(m_id));
-            func->PushCell(static_cast<cell_t>(key));
-            func->PushCell(static_cast<cell_t>(player->getIndex()));
-            func->Execute(nullptr);
-        }
-    }
-    catch (const std::bad_variant_access &e [[maybe_unused]])
-    {
-        auto func = std::get<MenuTextHandler>(m_handler);
-        func(this, key, player.get());
-    }
+    auto func = std::get<TextHandler>(m_handler);
+    func(this, key, player.get());
 }
 
 void Menu::execItemHandler(std::shared_ptr<Player> player,
-                           std::shared_ptr<MenuItem> item)
+                           std::shared_ptr<Item> item)
 {
-    try
-    {
-        auto *func = std::get<SourcePawn::IPluginFunction *>(m_handler);
-        if(func && func->IsRunnable())
-        {
-            func->PushCell(static_cast<cell_t>(m_id));
-
-            if(item->getNavType() == NavigationType::None)
-            {
-                func->PushCell(static_cast<cell_t>(PACK_ITEM(m_id, getItemIndex(item))));
-            }
-            else
-            {
-                func->PushCell(-static_cast<cell_t>(item->getNavType()));
-            }
-
-            func->PushCell(static_cast<cell_t>(player->getIndex()));
-            func->Execute(nullptr);
-        }
-    }
-    catch (const std::bad_variant_access &e [[maybe_unused]])
-    {
-        auto func = std::get<MenuItemHandler>(m_handler);
-        func(this, item.get(), player.get());
-    }
+    
+    auto func = std::get<ItemHandler>(m_handler);
+    func(this, item.get(), player.get());
 }
 
 void Menu::execExitHandler(std::shared_ptr<Player> player)
@@ -501,17 +445,12 @@ void Menu::execExitHandler(std::shared_ptr<Player> player)
     execItemHandler(player, m_exitItem);
 }
 
-std::size_t Menu::getId() const
+std::shared_ptr<Menu::Item> Menu::_addItem(int position,
+                                           std::string_view name,
+                                           Item::Callback callback,
+                                           void *data)
 {
-    return m_id;
-}
-
-void Menu::_addItem(int position,
-                    std::string_view name,
-                    std::variant<SourcePawn::IPluginFunction *, MenuItemCallback> &&callback,
-                    std::variant<cell_t, void *> &&data)
-{
-    auto item = std::make_shared<MenuItem>(name.data(), std::move(callback), std::move(data), NavigationType::None);
+    auto item = std::make_shared<Item>(name.data(), callback, data, NavigationType::None);
     if(position == -1)
     {
         m_items.push_back(item);
@@ -520,31 +459,35 @@ void Menu::_addItem(int position,
     {
         m_items.insert(m_items.begin() + position, item);
     }
+
+    return item;
 }
 
-IMenu *MenuMngr::registerMenu(MenuItemHandler handler,
+IMenu *MenuMngr::registerMenu(IMenu::ItemHandler handler,
                               bool global)
 {
-    return registerMenuCore(handler, MenuStyle::Item, global).get();
+    return registerMenuCore(handler, IMenu::Style::Item, global).get();
 }
 
-IMenu *MenuMngr::registerMenu(MenuTextHandler handler,
+IMenu *MenuMngr::registerMenu(IMenu::TextHandler handler,
                               bool global)
 {
-    return registerMenuCore(handler, MenuStyle::Text, global).get();
+    return registerMenuCore(handler, IMenu::Style::Text, global).get();
 }
 
 void MenuMngr::destroyMenu(IMenu *menu)
 {
-    _destroyMenu(menu);
+    for (auto pmenu : m_menus)
+    {
+        if (pmenu.get() == menu)
+        {
+            destroyMenuCore(pmenu);
+            break;
+        }
+    }
 }
 
-void MenuMngr::destroyMenu(std::size_t index)
-{
-    _destroyMenu(findMenuCore(index).get());
-}
-
-void MenuMngr::_destroyMenu(IMenu *menu)
+void MenuMngr::destroyMenuCore(std::shared_ptr<Menu> menu)
 {
     // close menu for any player
     const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
@@ -556,7 +499,7 @@ void MenuMngr::_destroyMenu(IMenu *menu)
 
         if(!pPlayer->isInGame()
             || !pMenu
-            || pMenu.get() != menu)
+            || pMenu != menu)
         {
             continue;
         }
@@ -567,7 +510,7 @@ void MenuMngr::_destroyMenu(IMenu *menu)
     auto iter = m_menus.begin();
     while (iter != m_menus.end())
     {
-        if (iter->get() == menu)
+        if (*iter == menu)
         {
             m_menus.erase(iter);
             break;
@@ -576,20 +519,9 @@ void MenuMngr::_destroyMenu(IMenu *menu)
     }
 }
 
-std::shared_ptr<Menu> MenuMngr::findMenuCore(std::size_t index) const
-{
-    for(auto menu : m_menus)
-    {
-        if(menu->getId() == index)
-            return menu;
-    }
-    return nullptr;
-}
-
 void MenuMngr::clearMenus()
 {
     m_menus.clear();
-    m_mid = 0;
 }
 
 void MenuMngr::displayMenu(std::shared_ptr<Menu> menu,
@@ -614,7 +546,7 @@ void MenuMngr::closeMenu(std::shared_ptr<Player> player)
 
     player->setMenu(nullptr);
 
-    if(pMenu->getStyle() == MenuStyle::Item)
+    if(pMenu->getStyle() == IMenu::Style::Item)
         pMenu->execExitHandler(player);
 }
 
@@ -632,9 +564,9 @@ META_RES MenuMngr::ClientCommand(edict_t *pEntity)
     {
         pPlayer->setMenu(nullptr);
 
-        if(pMenu->getStyle() == MenuStyle::Item)
+        if(pMenu->getStyle() == IMenu::Style::Item)
         {
-            std::shared_ptr<MenuItem> item = pMenu->keyToItem(pressedKey);
+            std::shared_ptr<Menu::Item> item = pMenu->keyToItem(pressedKey);
 
             pMenu->execItemHandler(pPlayer, item);
 
@@ -648,7 +580,7 @@ META_RES MenuMngr::ClientCommand(edict_t *pEntity)
             }
             else if(!pMenu->getGlobal())
             {
-                destroyMenu(pMenu->getId());
+                destroyMenuCore(pMenu);
             }
         }
         else

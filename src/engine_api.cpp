@@ -21,14 +21,15 @@ static void ChangeLevel(const char *s1,
                         const char *s2[[maybe_unused]])
 {
     using def = ForwardMngr::FwdDefault;
+
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
     std::shared_ptr<Forward> fwdMapChange = fwdMngr->getDefaultForward(def::MapChange);
-    cell_t result;
+    int result;
 
     fwdMapChange->pushString(s1);
     fwdMapChange->execFunc(&result);
 
-    if (result == IForward::ReturnValue::PluginStop)
+    if (result == IForward::ReturnValue::Stop)
         RETURN_META(MRES_SUPERCEDE);
 
     RETURN_META(MRES_IGNORED);

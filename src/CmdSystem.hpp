@@ -1,5 +1,7 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018 SPMod Development Team
+ *
+ *  This file is part of SPMod.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,34 +21,43 @@
 
 #include "spmod.hpp"
 
+class Player;
+
 /*
- * @brief General command 
+ * @brief General command
  */
-class Command
+class Command : public ICommand
 {
 public:
-    virtual ~Command() {};
+    Command() = delete;
+    ~Command() = default;
+    Command(std::string_view cmd,
+            std::string_view info,
+            ICommand::Callback *cb,
+            void *data);
 
-    std::string_view getCmd() const;
-    std::string_view getInfo() const;
-    std::size_t getId() const;
-    SourcePawn::IPluginFunction *getFunc() const;
+    const char *getCmd() const override;
+    const char *getInfo() const override;
+    void *getData() const override;
 
-    virtual bool hasAccess(/*SPPlayer *player = nullptr*/) const = 0;
-    virtual uint32_t getAccess() const = 0;
+    std::string_view getCmdCore() const;
+    std::string_view getInfoCore() const;
+    ICommand::Callback *getCallback() const;
+
+    virtual bool hasAccessCore(std::shared_ptr<Player> player) const = 0;
 
 protected:
-    /* command id */
-    std::size_t m_id;
-
     /* name of command or regex */
     std::string m_cmd;
 
     /* info for cmd, example of usage etc. */
     std::string m_info;
 
-    /* func to be executed in plugin */
-    SourcePawn::IPluginFunction *m_func;
+    /* cmd callback */
+    ICommand::Callback *m_callback;
+
+    /* command data */
+    void *m_data;
 };
 
 /* @brief Represents client command */
@@ -54,15 +65,18 @@ class ClientCommand final : public Command
 {
 public:
     ClientCommand() = delete;
+    ClientCommand(const ClientCommand &other) = delete;
+    ClientCommand(ClientCommand &&other) = default;
     ~ClientCommand() = default;
 
-    ClientCommand(std::size_t id,
-                  std::string_view cmd,
+    ClientCommand(std::string_view cmd,
                   std::string_view info,
-                  SourcePawn::IPluginFunction *func,
-                  uint32_t flags);
+                  std::uint32_t flags,
+                  ICommand::Callback *cb,
+                  void *data);
 
-    bool hasAccess(/*SPPlayer *player*/) const override;
+    bool hasAccess(IPlayer *player) const override;
+    bool hasAccessCore(std::shared_ptr<Player> player) const override;
     uint32_t getAccess() const override;
 
 private:
@@ -75,53 +89,53 @@ class ServerCommand final : public Command
 {
 public:
     ServerCommand() = delete;
+    ServerCommand(const ServerCommand &other) = delete;
+    ServerCommand(ServerCommand &&other) = default;
     ~ServerCommand() = default;
 
-    ServerCommand(std::size_t id,
-                  std::string_view cmd,
+    ServerCommand(std::string_view cmd,
                   std::string_view info,
-                  SourcePawn::IPluginFunction *func);
+                  ICommand::Callback *cb,
+                  void *data);
 
-    bool hasAccess(/*SPPlayer *player [[maybe_unused]]*/) const override;
-    uint32_t getAccess() const override;
+    bool hasAccess(IPlayer *player) const override;
+    bool hasAccessCore(std::shared_ptr<Player> player) const override;
+    std::uint32_t getAccess() const override;
 };
 
-enum class CmdType : uint8_t
-{
-    Client = 0,
-    Server = 1
-};
-
-class CommandMngr final
+class CommandMngr final : public ICommandMngr
 {
 public:
     CommandMngr() = default;
     ~CommandMngr() = default;
 
+    ICommand *registerCommand(ICommand::Type type,
+                              const char *cmd,
+                              const char *info,
+                              std::uint32_t flags,
+                              ICommand::Callback *cb,
+                              void *data) override;
+
     template<typename T, typename ...Args, typename = std::enable_if_t<std::is_base_of_v<Command, T>>>
-    std::shared_ptr<Command> registerCommand(Args... args)
+    std::shared_ptr<Command> registerCommandCore(Args... args)
     {
-        auto cmd = std::make_shared<T>(m_cid++, std::forward<Args>(args)...);
+        auto cmd = std::make_shared<T>(std::forward<Args>(args)...);
 
         if constexpr (std::is_same_v<ClientCommand, T>)
             return m_clientCommands.emplace_back(cmd);
         else
             return m_serverCommands.emplace_back(cmd);
     }
-    
-    const auto &getCommandList(CmdType type) const
+
+    const auto &getCommandList(ICommand::Type type) const
     {
-        return (type == CmdType::Client ? m_clientCommands : m_serverCommands);
+        return (type == ICommand::Type::Client ? m_clientCommands : m_serverCommands);
     }
 
-    std::shared_ptr<Command> getCommand(std::size_t id);
-    std::size_t getCommandsNum(CmdType type);
+    std::size_t getCommandsNum(ICommand::Type type);
     void clearCommands();
 
 private:
-    /* keeps track of command ids */
-    std::size_t m_cid;
-
     std::vector<std::shared_ptr<Command>> m_clientCommands;
     std::vector<std::shared_ptr<Command>> m_serverCommands;
 };

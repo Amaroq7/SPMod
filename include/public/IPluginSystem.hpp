@@ -1,5 +1,7 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018 SPMod Development Team
+ *
+ *  This file is part of SPMod.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,12 +19,39 @@
 
 #pragma once
 
+#if defined SP_POSIX
+    #define _vsnprintf vsnprintf
+#endif
+
+#ifdef SP_CLANG
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wunused-parameter"
+#elif defined SP_GCC
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wunused-parameter"
+#elif defined SP_MSVC
+    #pragma warning(push)
+    #pragma warning(disable: 4100)
+    #pragma warning(disable: 4996)
+#endif
+#include <utlvector.h>
+#if defined SP_CLANG
+    #pragma clang diagnostic pop
+#elif defined SP_GCC
+    #pragma GCC diagnostic pop
+#elif defined SP_MSVC
+    #pragma warning(pop)
+#endif
+
+
 namespace SPMod
 {
-    class IPlugin SPMOD_FINAL
+    class IPluginMngr;
+    class IProxiedNative;
+
+    class IPlugin
     {
     public:
-
         /**
          * @brief Returns name of plugin.
          *
@@ -54,12 +83,11 @@ namespace SPMod
         /**
          * @brief Returns identity of plugin.
          *
-         * @note          It's the same as getFilename() except it doesn't contain extension.
-         *                For plugin named "example.smx" it returns "example".
+         * @note          It's the same as getFilename() except it doesn't contain file extension.
          *
          * @return        Plugin identity.
          */
-        virtual const char *getIndentity() const = 0;
+        virtual const char *getIdentity() const = 0;
 
         /**
          * @brief Returns filename of plugin.
@@ -69,51 +97,73 @@ namespace SPMod
         virtual const char *getFilename() const = 0;
 
         /**
-         * @brief Returns id of plugin.
-         *
-         * @return        Plugin id.
+         * @brief Gets plugin's plugin manager.
+         * 
+         * @return        Plugin manager.
          */
-        virtual size_t getId() const = 0;
+        virtual IPluginMngr *getPluginMngr() const = 0;
 
         /**
-         * @brief Returns SourcePawn runtime of plugin.
-         *
-         * @return        Plugin runtime.
+         * @brief Gets proxied param as int.
+         * 
+         * @param index   Param number.
+         * 
+         * @return        Param as int.
          */
-        virtual SourcePawn::IPluginRuntime *getRuntime() const = 0;
+        virtual int getProxiedParamAsInt(std::size_t index) const = 0;
+
+        /**
+         * @brief Gets proxied param as pointer to int.
+         * 
+         * @param index   Param number.
+         * 
+         * @return        Param as pointer to int.
+         */
+        virtual int *getProxiedParamAsIntAddr(std::size_t index) const = 0;
+
+        /**
+         * @brief Gets proxied param as float.
+         * 
+         * @param index   Param number.
+         * 
+         * @return        Param as float.
+         */
+        virtual float getProxiedParamAsFloat(std::size_t index) const = 0;
+
+        /**
+         * @brief Gets proxied param as pointer to float.
+         * 
+         * @param index   Param number.
+         * 
+         * @return        Param as pointer to float.
+         */
+        virtual float *getProxiedParamAsFloatAddr(std::size_t index) const = 0;
+
+        /**
+         * @brief Gets proxied param as string.
+         * 
+         * @param index   Param number.
+         * 
+         * @return        Param as string.
+         */
+        virtual char *getProxiedParamAsString(std::size_t index) const = 0;
+
+        /**
+         * @brief Gets proxied param as array.
+         * 
+         * @param index   Param number.
+         * 
+         * @return        Param as pointer to float.
+         */
+        virtual void *getProxiedParamAsArray(std::size_t index) const = 0;
 
     protected:
-        virtual ~IPlugin() {};
+        virtual ~IPlugin() = default;
     };
 
-    class IPluginMngr SPMOD_FINAL
+    class IPluginMngr
     {
     public:
-
-        /**
-         * @brief Loads a plugin.
-         *
-         * @note          Loads a plugin present in "scripts" folder.
-         *
-         * @param name    Filename to load, must contain ".smx" extension.
-         * @param error   Buffer to store an error message.
-         * @param size    Size of the buffer to store the message.
-         *
-         * @return        Plugin pointer, nullptr if loading failed.
-         */
-        virtual IPlugin *loadPlugin(const char *name,
-                                    char *error,
-                                    size_t size) = 0;
-
-        /**
-         * @brief Searches for plugin by specified id.
-         *
-         * @param index   Index to search for.
-         *
-         * @return        Plugin pointer, nullptr if not found.
-         */
-        virtual IPlugin *getPlugin(size_t index) = 0;
-
         /**
          * @brief Searches for plugin by specified identity.
          *
@@ -124,22 +174,58 @@ namespace SPMod
         virtual IPlugin *getPlugin(const char *name) = 0;
 
         /**
-         * @brief Searches for plugin by SourcePawn context.
+         * @brief Loads plugins.
          *
-         * @param ctx     Find plugin with exact SourcePawn context.
-         *
-         * @return        Plugin pointer, nullptr if not found.
+         * @noreturn
          */
-        virtual IPlugin *getPlugin(SourcePawn::IPluginContext *ctx) = 0;
+        virtual void loadPlugins() = 0;
+
+        /**
+         * @brief Binds natives created by other plugins.
+         *
+         * @noreturn
+         */
+        virtual void bindPluginsNatives() = 0;
+
+        /**
+         * @brief Unloads plugins.
+         *
+         * @noreturn
+         */
+        virtual void unloadPlugins() = 0;
+
+        /**
+         * @brief Called on proxied native.
+         * 
+         * @param native  Proxied native.
+         * @param plugin  Plugin which executed the native.
+         *
+         * @return        Native result.
+         */
+        virtual int proxyNativeCallback(const IProxiedNative *const native, const IPlugin *const plugin) = 0;
 
         /**
          * @brief Returns numbers of loaded plugins.
          *
          * @return        Number of loaded plugins.
          */
-        virtual size_t getPluginsNum() const = 0;
+        virtual std::size_t getPluginsNum() const = 0;
+
+        /**
+         * @brief Returns plugins extension.
+         *
+         * @return        Plugins extension.
+         */
+        virtual const char *getPluginsExt() const = 0;
+
+        /**
+         * @brief Returns list of the plugins.
+         *
+         * @return        Plugins list.
+         */
+        virtual const CUtlVector<IPlugin *> &getPluginsList() const = 0;
 
     protected:
-        virtual ~IPluginMngr() {};
+        virtual ~IPluginMngr() = default;
     };
 }

@@ -1,5 +1,7 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018 SPMod Development Team
+ *
+ *  This file is part of SPMod.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,107 +19,125 @@
 
 #pragma once
 
-#include <cstddef>
+#include <cinttypes>
 #include <IHelpers.hpp>
-
-#ifdef SP_CLANG
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wnon-virtual-dtor"
-    #pragma clang diagnostic ignored "-Wunused-parameter"
-#elif defined SP_GCC
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-    #pragma GCC diagnostic ignored "-Wunused-parameter"
-    #pragma GCC diagnostic ignored "-Wpedantic"
-#elif defined SP_MSVC
-    #pragma warning(push)
-    // Unreferenced formal parameter
-    #pragma warning(disable : 4100)
-#endif
-#include <sp_vm_api.h>
-#ifdef SP_CLANG
-    #pragma clang diagnostic pop
-#elif defined SP_GCC
-    #pragma GCC diagnostic pop
-#elif defined SP_MSVC
-    #pragma warning(pop)
-#endif
-
+#include <IInterface.hpp>
 #include <IForwardSystem.hpp>
-#include <IPluginSystem.hpp>
-#include <INativeSystem.hpp>
 #include <ICvarSystem.hpp>
 #include <ITimerSystem.hpp>
 #include <IMenuSystem.hpp>
 #include <IUtilsSystem.hpp>
 #include <IPlayerSystem.hpp>
+#include <ILoggerSystem.hpp>
+#include <ICmdSystem.hpp>
+#include <IPluginSystem.hpp>
+#include <INativeProxy.hpp>
 
 namespace SPMod
 {
-    using sp_api_t = unsigned long;
-    constexpr sp_api_t SPMOD_API_VERSION = 0;
+    enum class DirType : std::uint8_t
+    {
+        Home = 0,
+        Dlls,
+        Exts,
+        Plugins,
+        Logs
+    };
 
-    class IModuleInterface;
-
-    class ISPGlobal SPMOD_FINAL
+    class ISPGlobal : public ISPModInterface
     {
     public:
+        static constexpr std::uint16_t MAJOR_VERSION = 0;
+        static constexpr std::uint16_t MINOR_VERSION = 0;
+
+        static constexpr std::uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
+
+        /**
+         * @brief Gets interface's name.
+         *
+         * @return      Interface's name.
+         */
+        const char *getName() const override
+        {
+            return "ISPGlobal";
+        }
+
+        /**
+         * @brief Gets interface's version.
+         *
+         * @note The first 16 most significant bits represent major version, the rest represent minor version.
+         *
+         * @return      Interface's version.
+         */
+        std::uint32_t getVersion() const override
+        {
+            return VERSION;
+        }
 
         /**
          * @brief Returns home dir of SPMod.
          *
-         * @return        Home dir.
+         * @return              Home dir.
          */
-        virtual const char *getHome() const = 0;
+        virtual const char *getPath(DirType type) const = 0;
 
         /**
          * @brief Returns name of the mod.
          *
-         * @return        Mod name.
+         * @return              Mod name.
          */
         virtual const char *getModName() const = 0;
 
         /**
-         * @brief Returns SPMod plugin manager.
+         * @brief Checks if plugins can precache resources.
          *
-         * @return        Plugin manager.
+         * @return              True if they are allowed to, false otherwise.
          */
-        virtual IPluginMngr *getPluginManager() const = 0;
+        virtual bool canPluginsPrecache() const = 0;
 
         /**
-         * @brief Returns SPMod native manager.
+         * @brief Finds plugin.
          *
-         * @return              Native manager.
+         * @param pluginname    Plugin name to look up.
+         *
+         * @return              Plugin pointer or nullptr if not found.
          */
-        virtual INativeMngr *getNativeManager() const = 0;
+        virtual IPlugin *getPlugin(const char *pluginname) const = 0;
 
         /**
          * @brief Returns SPMod forward manager.
          *
-         * @return        Forward manager.
+         * @return              Forward manager.
          */
         virtual IForwardMngr *getForwardManager() const = 0;
 
         /**
         * @brief Returns SPMod cvar manager.
         *
-        * @return                cvar manager.
+        * @return               Cvar manager.
         */
         virtual ICvarMngr *getCvarManager() const = 0;
 
         /**
-         * @brief Return SPMod timer manager.
+         * @brief Returns SPMod timer manager.
          *
          * @return              Timer manager.
          */
         virtual ITimerMngr *getTimerManager() const = 0;
 
         /**
-         * @brief Return SPMod menu manager.
+         * @brief Returns SPMod menu manager.
          * 
          * @return              Menu manager.
          */
         virtual IMenuMngr *getMenuManager() const = 0;
+
+        /**
+         * @brief Returns SPMod logger manager.
+         *
+         * @return              Logger manager.
+         */
+        virtual ILoggerMngr *getLoggerManager() const = 0;
 
         /**
          * @brief Return SPMod player manager.
@@ -134,69 +154,61 @@ namespace SPMod
         virtual IUtils *getUtils() const = 0;
 
         /**
-         * @brief Returns current SourcePawn environment.
+         * @brief Return native proxy.
          *
-         * @return        SourcePawn environment.
+         * @return              Native proxy.
          */
-        virtual SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const = 0;
+        virtual INativeProxy *getNativeProxy() const = 0;
 
         /**
-         * @brief Formats a string according to the SPMod format rules.
+         * @brief Registers module's interface.
          *
-         * @param buffer        Destination buffer.
-         * @param length        Length of buffer.
-         * @param format        Formatting string.
-         * @param ctx           Plugin context.
-         * @param params        Params list passed by native.
-         * @param param         Index of param which contains first formatting argument.
+         * @param interface     Interface's address.
          *
-         * @return              Number of characters written.
+         * @return              True if registered successfully, false otherwise.
          */
-        virtual unsigned int formatString(char *buffer,
-                                        size_t length,
-                                        const char *format,
-                                        SourcePawn::IPluginContext *ctx,
-                                        const cell_t *params,
-                                        size_t param) const = 0;
+        virtual bool registerInterface(IInterface *interface) = 0;
+
+        /**
+         * @brief Gets a module's interface.
+         *
+         * @param name          Name of the interface to look up for.
+         *
+         * @return              True if registered successfully, false otherwise.
+         */
+        virtual IInterface *getInterface(const char *name) const = 0;
 
     protected:
-        virtual ~ISPGlobal() {};
+        virtual ~ISPGlobal() = default;
     };
 
-    using fnSPModQuery = int (*)(ISPGlobal *spmodInstance);
-
-   /**
-    * @brief Entry point for modules to obtain access to SPMod API.
-    */
-    SPMOD_API int SPMod_Query(ISPGlobal *spmodInstance);
-
-   /**
-    * @brief Interface for registering a module.
-    */
-    class IModuleInterface
+    enum class ExtQueryValue : uint8_t
     {
-    public:
-
-        /**
-         * @brief Returns SPMod API version used by module.
-         *
-         * @return        SPMod API version.
-         */
-        virtual sp_api_t getInterfaceVersion() const
-        {
-            return SPMOD_API_VERSION;
-        }
-
-        /**
-         * @brief Returns name of the module.
-         *
-         * @note        Must be implemented.
-         *
-         * @return      Module name.
-         */
-        virtual const char *getName() const = 0;
-
-    protected:
-        virtual ~IModuleInterface() {}
+        DontLoad = 0,
+        SPModExt = 1
     };
+
+    /**
+     * @brief Entry point for modules to obtain access to SPMod API.
+     *
+     * @return
+     */
+    SPMOD_API ExtQueryValue SPMod_Query(ISPGlobal *spmodInstance);
+    using fnSPModQuery = ExtQueryValue (*)(ISPGlobal *spmodInstance);
+
+    /**
+     * @brief Called after SPMod_Query().
+     *
+     * @note Here extension should ask for interfaces.
+     *
+     * @return True if extension should be loaded, false otherwise.
+     */
+    SPMOD_API bool SPMod_Init();
+    using fnSPModInit = bool (*)();
+
+    /**
+     * @brief Called on extension unloading. (mapchange, server shutdown)
+     */
+    SPMOD_API void SPMod_End();
+    using fnSPModEnd = void (*)();
 }

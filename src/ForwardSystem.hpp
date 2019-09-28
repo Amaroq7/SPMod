@@ -21,8 +21,6 @@
 
 #include "spmod.hpp"
 
-class Plugin;
-
 /* @brief General forward used in SPMod.
  *        It can be either SingleForward or MutliForward.
  *        To distinguish them between them value returned from getPluginCore() needs to be checked against nullptr
@@ -31,46 +29,63 @@ class Plugin;
 class Forward : public IForward
 {
 public:
+    Forward(std::string_view name,
+            std::array<IForward::Param::Type, IForward::MAX_EXEC_PARAMS> paramstypes,
+            std::size_t params,
+            const std::vector<ForwardCallback> &callbacks);
 
     /* name of the forward */
     const char *getName() const override;
 
-    /* id of the forward */
-    std::size_t getId() const override;
-
-    /* type of parameter */
-    ParamType getParamType(std::size_t id) const override;
-
     /* number of parameters */
     std::size_t getParamsNum() const override;
+
+    /* param of the forward */
+    const IForward::Param *getParam(std::size_t id) const override;
 
     /* name of the forward for use across SPMod */
     std::string_view getNameCore() const;
 
+    bool pushInt(int integer) override;
+    bool pushInt(int *integer,
+                 bool copyback) override;
+
+    bool pushFloat(float real) override;
+    bool pushFloat(float *real,
+                   bool copyback) override;
+
+    bool pushArray(void *array,
+                   std::size_t size,
+                   bool copyback) override;
+
+    bool pushString(const char *string) override;
+    bool pushString(char *buffer,
+                    std::size_t length,
+                    IForward::StringFlags sflags,
+                    bool copyback) override;
+
     bool isExecuted() const;
 
-    /* plugin which the function will be executed in */
-    virtual std::shared_ptr<Plugin> getPluginCore() const = 0;
+    void resetParams() override;
 
 protected:
-
     /* forward name */
     std::string m_name;
-
-    /* forward id */
-    std::size_t m_id;
-
-    /* parameters types */
-    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> m_paramTypes;
-
-    /* number of already pushed params */
-    std::size_t m_currentPos;
 
     /* number of parameters in forward */
     std::size_t m_paramsNum;
 
     /* true if forward is being executed */
     bool m_exec;
+
+    /* stores parameters */
+    std::array<IForward::Param, MAX_EXEC_PARAMS> m_params;
+
+    /* extensions' callbacks */
+    const std::vector<ForwardCallback> &m_callbacks;
+
+    /* number of already pushed params */
+    std::size_t m_currentPos;
 };
 
 /*
@@ -84,59 +99,25 @@ class MultiForward final : public Forward
 {
 public:
     MultiForward(std::string_view name,
-                 std::size_t id,
-                 std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
+                 std::array<IForward::Param::Type, MAX_EXEC_PARAMS> paramstypes,
                  std::size_t params,
-                 ExecType type);
+                 ExecType type,
+                 const std::vector<ForwardCallback> &callbacks);
 
     MultiForward() = delete;
+    MultiForward(const MultiForward &other) = delete;
+    MultiForward(MultiForward &&other) = default;
     ~MultiForward() = default;
 
     // IForward
     IPlugin *getPlugin() const override;
-    bool pushCell(cell_t cell) override;
-    bool pushCellPtr(cell_t *cell,
-                     bool copyback) override;
+    ExecType getExecType() const override;
 
-    bool pushFloat(float real) override;
-    bool pushFloatPtr(float *real,
-                      bool copyback) override;
-
-    bool pushArray(cell_t *array,
-                   std::size_t size,
-                   bool copyback) override;
-
-    bool pushString(const char *string) override;
-    bool pushStringEx(char *buffer,
-                      std::size_t length,
-                      IForward::StringFlags sflags,
-                      bool copyback) override;
-
-    bool execFunc(cell_t *result) override;
-    void resetParams() override;
-
-    // Forward
-    std::shared_ptr<Plugin> getPluginCore() const override;
+    bool execFunc(int *result) override;
 
 private:
-
-    /* helper function to push params to plugin function */
-    void pushParamsToFunction(SourcePawn::IPluginFunction *func);
-
-    /* defines how parameters are stored in cache */
-    struct ForwardParam
-    {
-        std::variant<cell_t, cell_t *, float, float *, const char *, char *> m_param;
-        bool m_copyback;
-        std::size_t m_size;
-        IForward::StringFlags m_stringFlags;
-    };
-
     /* exec type of forward */
     ExecType m_execType;
-
-    /* stores cached parameters */
-    std::array<ForwardParam, SP_MAX_EXEC_PARAMS> m_params;
 };
 
 /*
@@ -151,59 +132,38 @@ class SingleForward final : public Forward
 {
 public:
     SingleForward(std::string_view name,
-                  std::size_t id,
-                  std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> paramstypes,
+                  std::array<IForward::Param::Type, MAX_EXEC_PARAMS> paramstypes,
                   std::size_t params,
-                  std::shared_ptr<Plugin> plugin);
+                  IPlugin *plugin,
+                  const std::vector<ForwardCallback> &callbacks);
 
     SingleForward() = delete;
+    SingleForward(const SingleForward &other) = delete;
+    SingleForward(SingleForward &&other) = default;
     ~SingleForward() = default;
 
     // IForward
     IPlugin *getPlugin() const override;
-    bool pushCell(cell_t cell) override;
-    bool pushCellPtr(cell_t *cell,
-                     bool copyback) override;
-
-    bool pushFloat(float real) override;
-    bool pushFloatPtr(float *real,
-                      bool copyback) override;
-
-    bool pushArray(cell_t *array,
-                   std::size_t size,
-                   bool copyback) override;
-
-    bool pushString(const char *string) override;
-    bool pushStringEx(char *buffer,
-                      std::size_t length,
-                      IForward::StringFlags sflags,
-                      bool copyback) override;
-
-    bool execFunc(cell_t *result) override;
-    void resetParams() override;
-
-    // Forward
-    std::shared_ptr<Plugin> getPluginCore() const override;
+    ExecType getExecType() const override;
+    bool execFunc(int *result) override;
 
 private:
-
     /* plugin which the function will be executed in */
-    std::weak_ptr<Plugin> m_plugin;
-
-    /* plugin function which will be executed */
-    SourcePawn::IPluginFunction *m_pluginFunc;
+    IPlugin *m_plugin;
 };
-
 
 class ForwardMngr final : public IForwardMngr
 {
 public:
 
-    enum class FwdDefault : uint8_t
+    enum class FwdDefault : std::uint8_t
     {
         ClientConnect = 0,
+        ClientConnectPost,
         ClientDisconnect,
+        ClientDisconnectPost,
         ClientPutInServer,
+        ClientPutInServerPost,
         PluginsLoaded,
         PluginInit,
         PluginEnd,
@@ -217,23 +177,25 @@ public:
     static constexpr std::size_t defaultForwardsNum = static_cast<std::size_t>(FwdDefault::ForwardsNum);
 
     ForwardMngr() = default;
+    ForwardMngr(const ForwardMngr &other) = delete;
+    ForwardMngr(ForwardMngr &&other) = delete;
     ~ForwardMngr() = default;
+    ForwardMngr &operator=(const ForwardMngr &other) = delete;
+    ForwardMngr &operator=(ForwardMngr &&other) = delete;
 
     // IForwardMngr
     IForward *createForward(const char *name,
                             IForward::ExecType exec,
-                            std::size_t params,
-                            ...) override;
+                            std::size_t paramsnum,
+                            IForward::Param::Type *params) override;
 
     IForward *createForward(const char *name,
                             IPlugin *plugin,
-                            std::size_t params,
-                            ...) override;
+                            std::size_t paramsnum,
+                            IForward::Param::Type *params) override;
 
     void deleteForward(IForward *forward) override;
-    std::size_t getForwardsNum() const override;
-    const ForwardList *getForwardsList() const override;
-    void freeForwardsList(const ForwardList *list) const override;
+    void addForwardListener(ForwardCallback func) override;
 
     // ForwardMngr
     void clearForwards();
@@ -244,23 +206,19 @@ public:
 
     std::shared_ptr<Forward> createForwardCore(std::string_view name,
                                                IForward::ExecType exec,
-                                               std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> params,
+                                               std::array<IForward::Param::Type, IForward::MAX_EXEC_PARAMS> params,
                                                std::size_t paramsnum,
-                                               std::shared_ptr<Plugin> plugin = nullptr);
-
-    std::shared_ptr<Forward> findForward(std::size_t id) const;
+                                               IPlugin *plugin = nullptr);
 
 private:
-    std::shared_ptr<Forward> _createForwardVa(std::string_view name,
-                                              IForward::ExecType exec,
-                                              std::va_list params,
-                                              std::size_t paramsnum,
-                                              IPlugin *plugin = nullptr);
+    std::shared_ptr<Forward> _createForward(std::string_view name,
+                                            IForward::ExecType exec,
+                                            IForward::Param::Type *params,
+                                            std::size_t paramsnum,
+                                            IPlugin *plugin = nullptr);
 
-    std::unordered_map<std::string, std::shared_ptr<Forward>> m_forwards;
-
-    /* keeps track of forwards ids */ 
-    std::size_t m_id;
+    std::unordered_multimap<std::string, std::shared_ptr<Forward>> m_forwards;
+    std::vector<ForwardCallback> m_callbacks;
 
     /* cache for defaults forwards */
     std::array<std::weak_ptr<Forward>, defaultForwardsNum> m_defaultForwards;

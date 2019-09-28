@@ -17,62 +17,61 @@
 
 #include "spmod.hpp"
 
+static constexpr std::size_t nameWidth = 25;
+static constexpr std::size_t verWidth = 15;
+static constexpr std::size_t authWidth = 20;
+static constexpr std::size_t fileWidth = 15;
+
 void SPModInfoCommand()
 {
-    auto &logSystem = gSPGlobal->getLoggerCore();
-
+    std::shared_ptr<Logger> logger = gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD");
     // Print out available commands
     if (CMD_ARGC() == 1)
     {
-        std::stringstream msg;
-
-        msg << "\nUsage: spmod [command] [args]\n";
-        msg << "Command:\n";
-        msg << "version - displays currently version\n";
-        msg << "plugins - displays currently loaded plugins\n";
-        msg << "gpl - displays spmod license";
-
-        logSystem->LogConsoleCore(msg.str());
+        logger->sendMsgToConsoleCore("\nUsage: spmod [command] [args]\n \
+                                      Command:\n \
+                                      version - displays currently version\n \
+                                      plugins - displays currently loaded plugins\n \
+                                      gpl - displays spmod license");
     }
     else
     {
         std::string arg(CMD_ARGV(1));
 
-        static constexpr std::size_t nameWidth = 25;
-        static constexpr std::size_t verWidth = 15;
-        static constexpr std::size_t authWidth = 20;
-        static constexpr std::size_t fileWidth = 15;
-        
         if (arg == "plugins")
         {
-            logSystem->LogConsoleCore(std::left,
-                                      std::setw(7),
-                                      "\n",
-                                      std::setw(nameWidth),
-                                      "name",
-                                      std::setw(verWidth),
-                                      "version",
-                                       std::setw(authWidth),
-                                      "author",
-                                      "filename");
+            logger->sendMsgToConsoleCore(std::left,
+                                         std::setw(7),
+                                         "\n",
+                                         std::setw(nameWidth),
+                                         "name",
+                                         std::setw(verWidth),
+                                         "version",
+                                          std::setw(authWidth),
+                                         "author",
+                                         "filename");
             std::size_t pos = 1;
-            for (auto entry : gSPGlobal->getPluginManagerCore()->getPluginsList())
+
+            for (auto interface : gSPGlobal->getInterfacesList())
             {
-                logSystem->LogConsoleCore("[", std::right, std::setw(3), pos++, "] ", // right align for ordinal number
-                                        std::left, // left align for the rest
-                                        std::setw(nameWidth), // format rules for name
-                                        entry.second->getNameCore().substr(0, nameWidth - 1),
-                                        std::setw(verWidth), // format rules for version
-                                        entry.second->getVersionCore().substr(0, verWidth - 1),
-                                        std::setw(authWidth), // format rules for author
-                                        entry.second->getAuthorCore().substr(0, authWidth - 1),
-                                        entry.second->getFileNameCore().substr(0, fileWidth));
+                for (auto plugin : interface.second->getPluginMngr()->getPluginsList())
+                {
+                    logger->sendMsgToConsoleCore("[", std::right, std::setw(3), pos++, "] ", // right align for ordinal number
+                                                 std::left, // left align for the rest
+                                                 std::setw(nameWidth), // format rules for name
+                                                 std::string_view(plugin->getName()).substr(0, nameWidth - 1),
+                                                 std::setw(verWidth), // format rules for version
+                                                 std::string_view(plugin->getVersion()).substr(0, verWidth - 1),
+                                                 std::setw(authWidth), // format rules for author
+                                                 std::string_view(plugin->getAuthor()).substr(0, authWidth - 1),
+                                                 std::string_view(plugin->getFilename()).substr(0, fileWidth));
+                }
             }
         }
         else if (arg == "gpl")
         {
-            logSystem->LogConsoleCore("   SPMod - SourcePawn Scripting Engine for Half-Life\n \
-  Copyright (C) 2018  SPMod Development Team\n\n \
+            logger->sendMsgToConsoleCore("   SPMod - SourcePawn Scripting Engine for Half-Life\n \
+  Copyright (C) 2018-2019  SPMod Development Team\n\n \
   \
 This program is free software: you can redistribute it and/or modify\n \
   it under the terms of the GNU General Public License as published by\n \
@@ -87,11 +86,36 @@ This program is distributed in the hope that it will be useful,\n \
 You should have received a copy of the GNU General Public License\n \
   along with this program.  If not, see <https://www.gnu.org/licenses/>.");
         }
+        if (arg == "modules")
+        {
+            logger->sendMsgToConsoleCore(std::left,
+                                         std::setw(7),
+                                         '\n',
+                                         std::setw(nameWidth),
+                                         "name",
+                                         std::setw(verWidth),
+                                         "version",
+                                         std::setw(authWidth),
+                                         "author",
+                                         "filename");
+            std::size_t pos = 1;
+            for (auto entry : gSPGlobal->getInterfacesList())
+            {
+                logger->sendMsgToConsoleCore("[", std::right, std::setw(3), pos++, "] ", // right align for ordinal number
+                                             std::left, // left align for the rest
+                                             std::setw(nameWidth), // format rules for name
+                                             entry.second->getExtName(),
+                                             std::setw(verWidth), // format rules for version
+                                             entry.second->getVersion(),
+                                             std::setw(authWidth), // format rules for author
+                                             entry.second->getAuthor());
+            }
+        }
         else if(arg == "version")
         {
-            logSystem->LogConsoleCore("SPMod ", gSPModVersion, ", API ", SPMOD_API_VERSION, \
-                "\nSPMod build: ", __TIME__, " ", __DATE__, \
-                "\nSPMod from: ", APP_COMMIT_URL, APP_COMMIT_SHA);
+            logger->sendMsgToConsoleCore("SPMod ", gSPModVersion, ", API ", ISPGlobal::VERSION, '\n',
+                                         "SPMod build: " __TIME__, " " __DATE__, '\n',
+                                         "SPMod from: ", APP_COMMIT_URL, APP_COMMIT_SHA);
         }
     }
 }
@@ -100,15 +124,12 @@ void PluginSrvCmd()
 {
     const char *argv = CMD_ARGV(0);
 
-    for (const auto &cmd : gSPGlobal->getCommandManagerCore()->getCommandList(CmdType::Server))
+    for (const auto &cmd : gSPGlobal->getCommandManagerCore()->getCommandList(Command::Type::Server))
     {
-        if (!cmd->getCmd().compare(argv))
+        if (!cmd->getCmdCore().compare(argv))
         {
-            cell_t result;
-            SourcePawn::IPluginFunction *func = cmd->getFunc();
-            func->PushCell(cmd->getId());
-            func->Execute(&result);
-            break;
+            ICommand::Callback *func = cmd->getCallback();
+            (*func)(nullptr, cmd.get());
         }
     }
 }

@@ -25,6 +25,16 @@
 // Supress warning about redefining
 #undef MAX_PATH
 
+#if defined SP_POSIX
+    #undef _vsnprintf
+#else
+    #define _vsnprintf(buffer, count, format, argptr) _vsnprintf_s(buffer, count, count, format, argptr)
+#endif
+
+#if defined SP_POSIX
+    #define ULONG typedefWorkaround
+#endif
+
 // ReHLDS
 #ifdef SP_CLANG
     #pragma clang diagnostic push
@@ -36,6 +46,7 @@
 #endif
 
 #include <osconfig.h>
+#include <usercmd.h>
 #include <rehlds_api.h>
 
 #ifdef SP_CLANG
@@ -100,32 +111,20 @@ using namespace SPMod;
 // SPMod specific
 #include <SPConfig.hpp>
 #include "UtilsSystem.hpp"
-#include "SPModModuleDef.hpp"
 #include "LoggingSystem.hpp"
-#include "PluginSystem.hpp"
 #include "ForwardSystem.hpp"
-#include "NativeSystem.hpp"
 #include "CvarSystem.hpp"
 #include "CmdSystem.hpp"
 #include "TimerSystem.hpp"
 #include "MenuSystem.hpp"
 #include "PlayerSystem.hpp"
+#include "ExtensionSystem.hpp"
+#include "NativeProxy.hpp"
 #include "SPGlobal.hpp"
 
 constexpr auto gSPModAuthor = "SPMod Development Team";
 
-#define APP_COMMIT_URL "https://github.com/Amaroq7/SPMod/commits/"
-
-extern sp_nativeinfo_t gCoreNatives[];
-extern sp_nativeinfo_t gCvarsNatives[];
-extern sp_nativeinfo_t gForwardsNatives[];
-extern sp_nativeinfo_t gStringNatives[];
-extern sp_nativeinfo_t gMessageNatives[];
-extern sp_nativeinfo_t gCmdsNatives[];
-extern sp_nativeinfo_t gTimerNatives[];
-extern sp_nativeinfo_t gMenuNatives[];
-extern sp_nativeinfo_t gFloatNatives[];
-extern sp_nativeinfo_t gPlayerNatives[];
+constexpr const char *APP_COMMIT_URL = "https://github.com/Amaroq7/SPMod/commits/";
 
 extern int gmsgShowMenu;
 extern int gmsgVGUIMenu;

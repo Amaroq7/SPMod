@@ -23,9 +23,6 @@ mutil_funcs_t *gpMetaUtilFuncs;
 
 enginefuncs_t *gpEngineFuncs;
 
-// Core module definition
-std::unique_ptr<SPModModule> gSPModModuleDef;
-
 plugin_info_t Plugin_info =
 {
     META_INTERFACE_VERSION,
@@ -40,10 +37,9 @@ plugin_info_t Plugin_info =
 };
 
 C_DLLEXPORT int Meta_Query(char *interfaceVersion [[maybe_unused]],
-                            plugin_info_t **plinfo,
-                            mutil_funcs_t *pMetaUtilFuncs)
+                           plugin_info_t **plinfo,
+                           mutil_funcs_t *pMetaUtilFuncs)
 {
-
     *plinfo = &Plugin_info;
     gpMetaUtilFuncs = pMetaUtilFuncs;
 
@@ -70,9 +66,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
     gpMetaGlobals = pMGlobals;
     gpGamedllFuncs = pGamedllFuncs;
 
-    // Has to be created before global object
-    gSPModModuleDef = std::make_unique<SPModModule>();
-
     try
     {
         gSPGlobal = std::make_unique<SPGlobal>(GET_PLUGIN_PATH(PLID));
@@ -84,18 +77,18 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
         return 0;
     }
 
-    const std::unique_ptr<Logger> &logSystem = gSPGlobal->getLoggerCore();
-    logSystem->LogConsoleCore("\n   SPMod version ", gSPModVersion, " Copyright (c) 2018 ", gSPModAuthor, \
+    std::shared_ptr<Logger> logger = gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD");
+    logger->sendMsgToConsoleCore("\n   SPMod version ", gSPModVersion, " Copyright (c) 2018-2019 ", gSPModAuthor, \
 "\n   This program comes with ABSOLUTELY NO WARRANTY; for details type `spmod gpl' \
 \n   This is free software, and you are welcome to redistribute it\
 \n   under certain conditions; type `spmod gpl' for details.\n\
-    \nSPMod ", gSPModVersion, ", API ", SPMOD_API_VERSION, \
+    \nSPMod ", gSPModVersion, ", API ", ISPGlobal::VERSION, \
     "\nSPMod build: ", __TIME__, " ", __DATE__ \
     "\nSPMod from: ", APP_COMMIT_URL, APP_COMMIT_SHA, "\n");
 
     if (!initRehldsApi())
     {
-        logSystem->LogErrorCore("SPMod requires to have ReHLDS installed!");
+        logger->logToBothCore(LogLevel::Error, "SPMod requires to have ReHLDS installed!");
         return 0;
     }
     GET_HOOK_TABLES(PLID, &gpEngineFuncs, nullptr, nullptr);
@@ -111,12 +104,14 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now [[maybe_unused]],
 
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
     fwdMngr->getDefaultForward(def::PluginEnd)->execFunc(nullptr);
+    fwdMngr->clearForwards();
 
-    gSPGlobal->getPluginManagerCore()->clearPlugins();
+    /*const std::unique_ptr<PluginMngr> &plMngr = gSPGlobal->getPluginManagerCore();
+    plMngr->clearPlugins();
+    plMngr->clearNatives();*/
+
     gSPGlobal->getTimerManagerCore()->clearTimers();
     gSPGlobal->getCommandManagerCore()->clearCommands();
-    fwdMngr->clearForwards();
-    gSPGlobal->getNativeManagerCore()->clearNatives();
     gSPGlobal->getCvarManagerCore()->clearCvars();
     gSPGlobal->getMenuManagerCore()->clearMenus();
 

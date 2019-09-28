@@ -19,12 +19,10 @@
 
 #include "spmod.hpp"
 
-Timer::Timer(std::size_t id,
-             float interval,
-             std::variant<SourcePawn::IPluginFunction *, TimerCallback> &&func,
-             std::variant<cell_t, void *> &&data,
-             bool pause) : m_id(id),
-                           m_interval(interval),
+Timer::Timer(float interval,
+             TimerCallback func,
+             void *data,
+             bool pause) : m_interval(interval),
                            m_callback(func),
                            m_data(data),
                            m_paused(pause),
@@ -38,10 +36,7 @@ float Timer::getInterval() const
 {
     return m_interval;
 }
-std::size_t Timer::getId() const
-{
-    return m_id;
-}
+
 bool Timer::isPaused() const
 {
     return m_paused;
@@ -65,22 +60,7 @@ bool Timer::exec(float gltime)
 {
     m_lastExec = gltime;
 
-    // First check for plugin timer
-    try
-    {
-        cell_t result;
-        auto *func = std::get<SourcePawn::IPluginFunction *>(m_callback);
-        func->PushCell(m_id);
-        func->PushCell(std::get<cell_t>(m_data));
-        func->Execute(&result);
-
-        return result == IForward::ReturnValue::PluginIgnored;
-    }
-    catch (const std::bad_variant_access &e [[maybe_unused]])
-    {
-        auto func = std::get<TimerCallback>(m_callback);
-        return func(this, std::get<void *>(m_data));
-    }
+    return m_callback(this, m_data);
 }
 
 ITimer *TimerMngr::createTimer(float interval,
@@ -112,33 +92,18 @@ void TimerMngr::removeTimer(ITimer *timer)
     }
 }
 
-void TimerMngr::removeTimerCore(std::size_t id)
+void TimerMngr::removeTimerCore(std::shared_ptr<Timer> timer)
 {
     auto iter = m_timers.begin();
     while (iter != m_timers.end())
     {
-        if ((*iter)->getId() == id)
+        if (*iter == timer)
         {
             m_timers.erase(iter);
             break;
         }
         ++iter;
     }
-}
-
-std::shared_ptr<Timer> TimerMngr::getTimer(std::size_t id) const
-{
-    auto iter = m_timers.begin();
-    while (iter != m_timers.end())
-    {
-        if ((*iter)->getId() == id)
-        {
-            return *iter;
-        }
-        ++iter;
-    }
-
-    return nullptr;
 }
 
 void TimerMngr::execTimers(float gltime)
@@ -206,5 +171,4 @@ void TimerMngr::execTimer(ITimer *timer)
 void TimerMngr::clearTimers()
 {
     m_timers.clear();
-    m_id = 0;
 }

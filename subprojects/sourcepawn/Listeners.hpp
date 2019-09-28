@@ -1,5 +1,7 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018 SPMod Development Team
+ *
+ *  This file is part of SPMod.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,18 +19,13 @@
 
 #pragma once
 
-#include "spmod.hpp"
+#include "ExtMain.hpp"
 
-class SPModModule final : public IModuleInterface
+namespace SPExt::Listener
 {
-public:
-    SPModModule() = default;
-    ~SPModModule() = default;
-
-    const char *getName() const override
-    {
-        return "spmod";
-    }
-};
-
-extern std::unique_ptr<SPModModule> gSPModModuleDef;
+    int Forward(const SPMod::IForward *const fwd, int *result, bool *stop);
+    void Cvar(const ICvar *const cvar, const char *old_value, const char *new_value);
+    void Menu(SPMod::IMenu *const menu, SPMod::IMenuItem *const item, SPMod::IPlayer *const player);
+    void MenuText(SPMod::IMenu *const menu, int key, SPMod::IPlayer *const player);
+    ItemStatus MenuItemCallback(SPMod::IMenu *const menu, SPMod::IMenuItem *const item, SPMod::IPlayer *const player);
+}

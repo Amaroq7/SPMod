@@ -1,6 +1,6 @@
 project('SPMod', ['c', 'cpp'],
                   license : 'GPLv3',
-                  meson_version : '>=0.44.0',
+                  meson_version : '>=0.49.0',
                   version : '0.2.0-dev')
 
 gLinkArgs = []
@@ -11,7 +11,9 @@ find_program('ninja', required : true)
 git = find_program('git', required : false)
 cppCompiler = meson.get_compiler('cpp')
 
-llvmIncludesDir = []
+llvmIncludesDir = ''
+
+gExtsToBuild = get_option('extensions')
 
 if build_machine.system() == 'linux'
     gCppArgs += '-m32'
@@ -24,10 +26,19 @@ if build_machine.system() == 'linux'
         if cppCompiler.version() < minVersion
             warning('Clang v' + cppCompiler.version() + ' is not supported. Minimum version is ' + minVersion)
         endif
-        llvmIncludesDir += join_paths('include', 'llvm')
+
+        libcxxLibraryHeaderPaths = [
+                                    '-I/usr/lib/llvm-' + cppCompiler.version()[0] + '/include/c++/v1',
+                                    '-I/usr/include/c++/v1'
+                                   ]
+
+        # Check if include files already exist
+        if cppCompiler.has_header('__cxxabi_config.h', args : libcxxLibraryHeaderPaths) == false
+            llvmIncludesDir = join_paths('include', 'llvm')
+        endif
 
         # use LLVM linker if available
-        llvmLinker = find_program('lld-7', 'lld-6.0', 'lld', required : false)
+        llvmLinker = find_program('lld-8', 'lld-7', 'lld', required : false)
         if llvmLinker.found() == true
             gLinkArgs += '-fuse-ld=' + llvmLinker.path().split('/')[-1]
         endif
@@ -61,10 +72,10 @@ if build_machine.system() == 'linux'
         endif
 
         if get_option('linktype') == 'static'
-        gLinkArgs += [
-            '-static-libgcc',
-            '-static-libstdc++'
-        ]
+            gLinkArgs += [
+                '-static-libgcc',
+                '-static-libstdc++'
+            ]
         endif
         gLinkArgs += '-lstdc++fs'
 
@@ -102,10 +113,6 @@ elif build_machine.system() == 'windows'
         '/W4',  # Warning level 4
         '/TP',  # Treat files as c++ sources
         '/WX'   # Treat warnings as errors
-    ]
-    gLinkArgs += [
-        '/EXPORT:GiveFnptrsToDll=_GiveFnptrsToDll@8',
-        '/SECTION:.data,RW'
     ]
 
     # MSVC support is limited, we need to set compile options here for the time being
@@ -150,10 +157,6 @@ add_global_arguments(gCArgs, language : 'c')
 add_global_arguments(gCppArgs, language : 'cpp')
 add_global_link_arguments(gLinkArgs, language : [ 'c', 'cpp' ])
 
-spIncludesDir = [
-    join_paths('include', 'sourcepawn', 'include')
-]
-
 publicIncludesDir = [
     join_paths('include', 'public')
 ]
@@ -173,10 +176,23 @@ rehldsIncludesDir = [
 ]
 
 includeDirs = include_directories(publicIncludesDir,
-                                  spIncludesDir,
-                                  metamodIncludesDir,
                                   rehldsIncludesDir,
+                                  metamodIncludesDir,
                                   llvmIncludesDir,
                                   '.') #build directory
 
 subdir('src')
+
+if gExtsToBuild.length() != 0
+    if 'all' in gExtsToBuild
+        subproject('example')
+        subproject('sourcepawn')
+    else
+        if 'sorucepawn' in gExtsToBuild
+            subproject('sourcepawn')
+        endif
+        if 'example' in gExtsToBuild
+            subproject('example')
+        endif
+    endif
+endif

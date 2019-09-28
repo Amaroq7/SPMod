@@ -1,2 +1,3 @@
 option('windebug', type : 'boolean', value : true, description : 'Enable debug build (Windows only)')
 option('linktype', type : 'combo', choices : [ 'static', 'dynamic' ], value : 'static', description : 'Linking type')
+option('extensions', type : 'array', choices : ['all', 'sourcepawn', 'example'], value : ['example'], description : 'Extensions to be built')

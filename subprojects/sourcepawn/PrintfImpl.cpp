@@ -30,7 +30,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "spmod.hpp"
+#include "ExtMain.hpp"
 
 // ntoa conversion buffer size, this must be big enough to hold
 // one converted numeric number including padded zeros (created on stack)
@@ -293,12 +293,12 @@ static std::size_t _ftoa(double value,
     return idx;
 }
 
-unsigned int SPGlobal::formatString(char *buffer,
-                                    std::size_t buffer_len,
-                                    const char *format,
-                                    SourcePawn::IPluginContext *ctx,
-                                    const cell_t *params,
-                                    std::size_t param) const
+unsigned int formatString(char *buffer,
+                          std::size_t buffer_len,
+                          const char *format,
+                          SourcePawn::IPluginContext *ctx,
+                          const cell_t *params,
+                          std::size_t param)
 {
     unsigned int flags, width, precision, n;
     std::size_t idx = 0;

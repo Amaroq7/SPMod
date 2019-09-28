@@ -22,24 +22,9 @@ static qboolean ClientConnect(edict_t *pEntity,
                               const char *pszAddress,
                               char szRejectReason[128])
 {
-    using sflags = IForward::StringFlags;
-    using def = ForwardMngr::FwdDefault;
-
     const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
 
     if (!plrMngr->ClientConnect(pEntity, pszName, pszAddress, szRejectReason))
-        RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
-
-    cell_t result;
-    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnect);
-
-    forward->pushCell(plrMngr->getPlayerCore(pEntity)->getIndex());
-    forward->pushString(pszName);
-    forward->pushString(pszAddress);
-    forward->pushStringEx(szRejectReason, 128, sflags::Utf8 | sflags::Copy, true);
-    forward->execFunc(&result);
-
-    if (result == IForward::ReturnValue::PluginStop)
         RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
 
     RETURN_META_VALUE(MRES_IGNORED, TRUE);
@@ -50,16 +35,16 @@ static void ClientCommand(edict_t *pEntity)
     using def = ForwardMngr::FwdDefault;
 
     {
-        cell_t result;
+        int result;
         std::shared_ptr<Forward> fwdCmd = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientCommmand);
 
         if (!fwdCmd)
             RETURN_META(MRES_IGNORED);
 
-        fwdCmd->pushCell(ENTINDEX(pEntity));
+        fwdCmd->pushInt(ENTINDEX(pEntity));
         fwdCmd->execFunc(&result);
 
-        if (result == IForward::ReturnValue::PluginStop)
+        if (static_cast<IForward::ReturnValue>(result) == IForward::ReturnValue::Stop)
             RETURN_META(MRES_SUPERCEDE);
     }
 
@@ -68,7 +53,8 @@ static void ClientCommand(edict_t *pEntity)
     std::string strCmd(CMD_ARGV(0));
 
     const std::unique_ptr<CommandMngr> &cmdMngr = gSPGlobal->getCommandManagerCore();
-    if (cmdMngr->getCommandsNum(CmdType::Client))
+    std::shared_ptr<Player> player = gSPGlobal->getPlayerManagerCore()->getPlayerCore(pEntity);
+    if (cmdMngr->getCommandsNum(ICommand::Type::Client))
     {
         if (!strCmd.compare("say") || !strCmd.compare("say_team"))
         {
@@ -76,21 +62,19 @@ static void ClientCommand(edict_t *pEntity)
             strCmd += CMD_ARGV(1);
         }
 
-        for (const auto &cmd : cmdMngr->getCommandList(CmdType::Client))
+        for (const auto &cmd : cmdMngr->getCommandList(ICommand::Type::Client))
         {
-            std::regex cmdToMatch(cmd->getCmd().data());
-            if (std::regex_search(strCmd, cmdToMatch) && cmd->hasAccess())
+            std::regex cmdToMatch(cmd->getCmdCore().data());
+            if (std::regex_search(strCmd, cmdToMatch) && cmd->hasAccessCore(player))
             {
-                cell_t result;
-                SourcePawn::IPluginFunction *func = cmd->getFunc();
-                func->PushCell(ENTINDEX(pEntity));
-                func->PushCell(cmd->getId());
-                func->Execute(&result);
+                IForward::ReturnValue result = IForward::ReturnValue::Ignored;
+                ICommand::Callback *func = cmd->getCallback();
+                result = (*func)(player.get(), cmd.get());
 
-                if (result == IForward::ReturnValue::PluginStop || result == IForward::ReturnValue::PluginHandled)
+                if (result == IForward::ReturnValue::Stop || result == IForward::ReturnValue::Handled)
                 {
                     res = MRES_SUPERCEDE;
-                    if (result == IForward::ReturnValue::PluginStop)
+                    if (result == IForward::ReturnValue::Stop)
                         break;
                 }
             }
@@ -103,6 +87,11 @@ static void ClientCommand(edict_t *pEntity)
     }
 
     RETURN_META(res);
+}
+
+void ClientPutInServer(edict_t *pEntity)
+{
+    gSPGlobal->getPlayerManagerCore()->ClientPutInServer(pEntity);
 }
 
 DLL_FUNCTIONS gDllFunctionTable =
@@ -125,7 +114,7 @@ DLL_FUNCTIONS gDllFunctionTable =
     ClientConnect,              // pfnClientConnect
     nullptr,					// pfnClientDisconnect
     nullptr,					// pfnClientKill
-    nullptr,					// pfnClientPutInServer
+    ClientPutInServer,		    // pfnClientPutInServer
     ClientCommand,              // pfnClientCommand
     nullptr,					// pfnClientUserInfoChanged
     nullptr,                    // pfnServerActivate
@@ -163,33 +152,56 @@ static void ServerActivatePost(edict_t *pEdictList,
                                int edictCount [[maybe_unused]],
                                int clientMax)
 {
+    using DefFwd = ForwardMngr::FwdDefault;
+
     gSPGlobal->getPlayerManagerCore()->ServerActivatePost(pEdictList, clientMax);
 
-    gSPGlobal->getForwardManagerCore()->addDefaultsForwards();
+    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
+    fwdMngr->addDefaultsForwards();
 
-    const std::unique_ptr<PluginMngr> &pluginManager = gSPGlobal->getPluginManagerCore();
-    pluginManager->setPluginPrecache(true);
-    pluginManager->loadPlugins();
-    pluginManager->setPluginPrecache(false);
+    gSPGlobal->loadExts();
+    gSPGlobal->allowPrecacheForPlugins(true);
+
+    for (auto& interface : gSPGlobal->getInterfacesList())
+    {
+        interface.second->getPluginMngr()->loadPlugins();
+    }
+
+    // Allow plugins to add their natives
+    fwdMngr->getDefaultForward(DefFwd::PluginNatives)->execFunc(nullptr);
+
+    for (auto& interface : gSPGlobal->getInterfacesList())
+    {
+        interface.second->getPluginMngr()->bindPluginsNatives();
+    }
+
+    fwdMngr->getDefaultForward(DefFwd::PluginInit)->execFunc(nullptr);
+    fwdMngr->getDefaultForward(DefFwd::PluginsLoaded)->execFunc(nullptr);
+
+    gSPGlobal->allowPrecacheForPlugins(false);
+
     installRehldsHooks();
 }
 
 static void ServerDeactivatePost()
 {
-    using def = ForwardMngr::FwdDefault;
+    using DefFwd = ForwardMngr::FwdDefault;
 
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
+    fwdMngr->getDefaultForward(DefFwd::PluginEnd)->execFunc(nullptr);
 
-    fwdMngr->getDefaultForward(def::PluginEnd)->execFunc(nullptr);
+    for (auto& interface : gSPGlobal->getInterfacesList())
+    {
+        interface.second->getPluginMngr()->unloadPlugins();
+    }
 
-    gSPGlobal->getPluginManagerCore()->clearPlugins();
+    gSPGlobal->unloadExts();
+
     gSPGlobal->getTimerManagerCore()->clearTimers();
     gSPGlobal->getCommandManagerCore()->clearCommands();
     gSPGlobal->getCvarManagerCore()->clearCvarsCallback();
     gSPGlobal->getMenuManagerCore()->clearMenus();
     fwdMngr->clearForwards();
-    gSPGlobal->getLoggerCore()->resetErrorState();
-    gSPGlobal->getNativeManagerCore()->freeFakeNatives();
     uninstallRehldsHooks();
 }
 
@@ -205,21 +217,13 @@ static qboolean ClientConnectPost(edict_t *pEntity,
 {
     gSPGlobal->getPlayerManagerCore()->ClientConnectPost(pEntity, pszName, pszAddress);
 
-    // TODO: Add OnClientConnected(int client, const char[] name, const char[] ip) for plugins?
-
     RETURN_META_VALUE(MRES_IGNORED, TRUE);
 }
 
 static void ClientPutInServerPost(edict_t *pEntity)
 {
-    using def = ForwardMngr::FwdDefault;
-
     const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
     plrMngr->ClientPutInServerPost(pEntity);
-
-    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServer);
-    forward->pushCell(plrMngr->getPlayerCore(pEntity)->getIndex());
-    forward->execFunc(nullptr);
 }
 
 static void ClientUserInfoChangedPost(edict_t *pEntity,
@@ -304,22 +308,17 @@ NEW_DLL_FUNCTIONS gNewDllFunctionTable =
     nullptr,					//! pfnCvarValue2()
 };
 
-void GameShutdownPost()
-{
-    gSPGlobal->getSPEnvironment()->Shutdown();
-}
-
 NEW_DLL_FUNCTIONS gNewDllFunctionTablePost =
 {
     nullptr,					//! pfnOnFreeEntPrivateData()	Called right before the object's memory is freed.  Calls its destructor.
-    GameShutdownPost,			//! pfnGameShutdown()
+    nullptr,			        //! pfnGameShutdown()
     nullptr,					//! pfnShouldCollide()
     nullptr,					//! pfnCvarValue()
     nullptr,					//! pfnCvarValue2()
 };
 
 C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
-                                int *interfaceVersion)
+                              int *interfaceVersion)
 {
     if (!pFunctionTable)
         return 0;
@@ -335,7 +334,7 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
 }
 
 C_DLLEXPORT int GetEntityAPI2_Post(DLL_FUNCTIONS *pFunctionTable,
-                                    int *interfaceVersion)
+                                   int *interfaceVersion)
 {
     if (!pFunctionTable)
         return 0;
@@ -351,7 +350,7 @@ C_DLLEXPORT int GetEntityAPI2_Post(DLL_FUNCTIONS *pFunctionTable,
 }
 
 C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pNewFunctionTable,
-                                    int *interfaceVersion)
+                                   int *interfaceVersion)
 {
     if (!pNewFunctionTable)
         return 0;
@@ -367,7 +366,7 @@ C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pNewFunctionTable,
 }
 
 C_DLLEXPORT int GetNewDLLFunctions_Post(NEW_DLL_FUNCTIONS *pNewFunctionTable,
-                                            int *interfaceVersion)
+                                        int *interfaceVersion)
 {
     if (!pNewFunctionTable)
         return 0;

@@ -1,5 +1,7 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018 SPMod Development Team
+ *
+ *  This file is part of SPMod.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -44,11 +46,4 @@
     #else
         #define SPMOD_API	extern "C" __declspec(dllexport)
     #endif
-#endif
-
-// Forbid inheritance outside core
-#ifdef SPMOD_CORE
-    #define SPMOD_FINAL
-#else
-    #define SPMOD_FINAL final
 #endif

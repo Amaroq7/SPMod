@@ -19,30 +19,45 @@
 
 #include "spmod.hpp"
 
-#ifdef SP_CLANG
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wnon-virtual-dtor"
-#elif defined SP_GCC
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif
+class LoggerMngr;
 
-class Logger final : public SourcePawn::IDebugListener
+class Logger final : public ILogger
 {
+    friend class LoggerMngr;
+
 public:
-    Logger() = default;
+    Logger() = delete;
+    Logger(const Logger &other) = delete;
+    Logger &operator=(const Logger &other) = delete;
+    Logger &operator=(Logger &&other) = delete;
+    Logger(Logger &&other) = delete;
     ~Logger() = default;
 
-    // IDebugListener
-    void OnDebugSpew(const char *msg,
-                        ...) override;
+    Logger(std::string_view prefix);
 
-    void ReportError(const SourcePawn::IErrorReport &report,
-                        SourcePawn::IFrameIterator &iter) override;
+    // ILogger
+    void setFilename(const char *filename) override;
+    void logToConsole(LogLevel level,
+                      const char *format,
+                      ...) const override;
+
+    void logToFile(LogLevel level,
+                   const char *format,
+                   ...) const override;
+
+    void logToBoth(LogLevel level,
+                   const char *format,
+                   ...) const override;
+
+    void sendMsgToConsole(const char *format,
+                          ...) const override;
+
+    void setLogLevel(LogLevel logType) override;
+    LogLevel getLogLevel() const override;
 
     // Logger
     template <typename ...Args>
-    void LogConsoleCore(Args... args)
+    void sendMsgToConsoleCore(Args... args) const
     {
         std::stringstream messageToLog;
 
@@ -53,41 +68,82 @@ public:
     }
 
     template <typename ...Args>
-    void LogMessageCore(Args... args)
+    void logToConsoleCore(LogLevel level,
+                          Args... args) const
     {
+        if (level < m_logLevel)
+            return;
+
         std::stringstream messageToLog;
 
-        messageToLog << "[SPMOD] ";
+        messageToLog << '[' << m_prefix << "] ";
         (messageToLog << ... << args);
         messageToLog << '\n';
 
-        // TODO: logging to file
         SERVER_PRINT(messageToLog.str().c_str());
     }
 
     template <typename ...Args>
-    void LogErrorCore(Args... args)
+    void logToFileCore(LogLevel level,
+                       Args... args) const
     {
-        std::stringstream errorToLog;
+        if (level < m_logLevel)
+            return;
 
-        errorToLog << "[SPMOD] ";
-        (errorToLog << ... << args);
-        errorToLog << '\n';
+        if (m_filename.empty())
+            return;
 
-        _writeErrorToFile(errorToLog.str());
+        std::stringstream messageToLog;
 
-        SERVER_PRINT(errorToLog.str().c_str());
+        messageToLog << '[' << m_prefix << "] ";
+        (messageToLog << ... << args);
+        messageToLog << '\n';
+
+        _writeToFile(messageToLog.str());
     }
 
-    void resetErrorState();
+    template <typename ...Args>
+    void logToBothCore(LogLevel level,
+                       Args... args) const
+    {
+        if (level < m_logLevel)
+            return;
+
+        std::stringstream messageToLog;
+
+        messageToLog << '[' << m_prefix << "] ";
+        (messageToLog << ... << args);
+        messageToLog << '\n';
+
+        SERVER_PRINT(messageToLog.str().c_str());
+
+        if (m_filename.empty())
+            return;
+
+        _writeToFile(messageToLog.str());
+    }
 
 private:
-    void _writeErrorToFile(std::string_view errormsg);
-    bool m_alreadyReportedError;
+    std::string m_prefix;
+    std::string m_filename;
+    LogLevel m_logLevel;
+    void _writeToFile(std::string_view msg) const;
 };
 
-#ifdef SP_CLANG
-    #pragma clang diagnostic pop
-#elif defined SP_GCC
-    #pragma GCC diagnostic pop
-#endif
+class LoggerMngr final : public ILoggerMngr
+{
+public:
+    LoggerMngr() = default;
+    LoggerMngr(const LoggerMngr &other) = delete;
+    LoggerMngr(LoggerMngr &&other) = default;
+    ~LoggerMngr() = default;
+
+    // ILoggerMngr
+    ILogger *getLogger(const char *prefix) override;
+
+    // LoggerMngr
+    std::shared_ptr<Logger> getLoggerCore(std::string_view prefix);
+
+private:
+    std::unordered_map<std::string, std::shared_ptr<Logger>> m_loggers;
+};

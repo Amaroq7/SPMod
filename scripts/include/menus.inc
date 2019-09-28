@@ -29,7 +29,7 @@ enum Menu
 
 enum MenuStyle
 {
-    MenuItemStyle,
+    MenuItemStyle = 0,
     MenuTextStyle
 }
 
