@@ -38,7 +38,7 @@ Plugin::Plugin(std::size_t id,
 
     std::uint32_t infoVarIndex;
     if (plugin->FindPubvarByName("pluginInfo", &infoVarIndex) != SP_ERROR_NONE)
-        throw std::runtime_error("Can't find plugin info!");
+        throw std::runtime_error(path.filename().string() + " : Can't find plugin info!");
 
     sp_pubvar_t *infoVar;
     plugin->GetPubvarByIndex(infoVarIndex, &infoVar);
