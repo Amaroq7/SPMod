@@ -19,19 +19,13 @@
 
 #include "PluginSystem.hpp"
 
-Plugin::Plugin(std::size_t id,
-               std::string_view identity,
-               const fs::path &path,
-               std::shared_ptr<PluginMngr> pluginMngr) : m_id(id),
-                                                         m_identity(identity),
-                                                         m_filename(path.filename().string()),
-                                                         m_pluginMngr(pluginMngr)
+Plugin::Plugin(std::size_t id, std::string_view identity, const fs::path &path, std::shared_ptr<PluginMngr> pluginMngr)
+    : m_id(id), m_identity(identity), m_filename(path.filename().string()), m_pluginMngr(pluginMngr)
 {
     char errorSPMsg[256];
     SourcePawn::ISourcePawnEngine2 *spAPIv2 = gSPGlobal->getSPEnvironment()->APIv2();
-    SourcePawn::IPluginRuntime *plugin = spAPIv2->LoadBinaryFromFile(path.string().c_str(),
-                                                                     errorSPMsg,
-                                                                     sizeof(errorSPMsg));
+    SourcePawn::IPluginRuntime *plugin =
+        spAPIv2->LoadBinaryFromFile(path.string().c_str(), errorSPMsg, sizeof(errorSPMsg));
 
     if (!plugin)
         throw std::runtime_error(errorSPMsg);
@@ -43,8 +37,7 @@ Plugin::Plugin(std::size_t id,
     sp_pubvar_t *infoVar;
     plugin->GetPubvarByIndex(infoVarIndex, &infoVar);
 
-    auto gatherInfo = [plugin, infoVar](std::uint32_t field)
-    {
+    auto gatherInfo = [plugin, infoVar](std::uint32_t field) {
         char *infoField;
         plugin->GetDefaultContext()->LocalToString(*(infoVar->offs + field), &infoField);
         return infoField;
@@ -289,8 +282,7 @@ std::shared_ptr<Plugin> PluginMngr::getPluginCore(SPMod::IPlugin *plugin) const
     return nullptr;
 }
 
-std::shared_ptr<Plugin> PluginMngr::loadPlugin(const fs::path &path,
-                                               std::string &error)
+std::shared_ptr<Plugin> PluginMngr::loadPlugin(const fs::path &path, std::string &error)
 {
     std::size_t pluginId = m_plugins.size();
 
@@ -414,8 +406,7 @@ bool PluginMngr::addNatives(const sp_nativeinfo_t *natives)
     return true;
 }
 
-bool PluginMngr::addProxiedNative(std::string_view name,
-                                  SPMod::IProxiedNative *native)
+bool PluginMngr::addProxiedNative(std::string_view name, SPMod::IProxiedNative *native)
 {
     SourcePawn::ISourcePawnEngine2 *spAPIv2 = gSPGlobal->getSPEnvironment()->APIv2();
     SPVM_NATIVE_FUNC router = spAPIv2->CreateFakeNative(PluginMngr::proxyNativeRouter, native);
@@ -430,9 +421,7 @@ bool PluginMngr::addProxiedNative(std::string_view name,
     return true;
 }
 
-cell_t PluginMngr::proxyNativeRouter(SourcePawn::IPluginContext *ctx,
-                                     const cell_t *params,
-                                     void *data)
+cell_t PluginMngr::proxyNativeRouter(SourcePawn::IPluginContext *ctx, const cell_t *params, void *data)
 {
     if (params[0] > SP_MAX_CALL_ARGUMENTS)
     {
@@ -453,7 +442,8 @@ cell_t PluginMngr::proxyNativeRouter(SourcePawn::IPluginContext *ctx,
     for (std::size_t i = 0; i <= static_cast<std::size_t>(params[0]); i++)
         m_proxiedParams[i] = params[i];
 
-    cell_t result = gSPGlobal->getNativeProxy()->nativeExecNotify(reinterpret_cast<IProxiedNative *>(data), caller.get());
+    cell_t result =
+        gSPGlobal->getNativeProxy()->nativeExecNotify(reinterpret_cast<IProxiedNative *>(data), caller.get());
 
     return result;
 }

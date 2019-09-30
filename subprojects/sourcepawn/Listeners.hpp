@@ -28,4 +28,4 @@ namespace SPExt::Listener
     void Menu(SPMod::IMenu *const menu, SPMod::IMenuItem *const item, SPMod::IPlayer *const player);
     void MenuText(SPMod::IMenu *const menu, int key, SPMod::IPlayer *const player);
     ItemStatus MenuItemCallback(SPMod::IMenu *const menu, SPMod::IMenuItem *const item, SPMod::IPlayer *const player);
-}
+} // namespace SPExt::Listener

@@ -21,9 +21,7 @@
 
 namespace
 {
-    bool pushParamsToFunc(const IForward *const fwd,
-                          SourcePawn::IPluginFunction *func,
-                          cell_t *result)
+    bool pushParamsToFunc(const IForward *const fwd, SourcePawn::IPluginFunction *func, cell_t *result)
     {
         if (!func || !func->IsRunnable())
             return false;
@@ -33,12 +31,10 @@ namespace
             const IForward::Param *param = fwd->getParam(i);
             IForward::Param::Type paramType = param->m_type;
 
-            if (paramType & IForward::Param::Type::Int || 
-                paramType & IForward::Param::Type::Float)
+            if (paramType & IForward::Param::Type::Int || paramType & IForward::Param::Type::Float)
             {
                 if (paramType & IForward::Param::Type::Array)
-                    func->PushArray(reinterpret_cast<cell_t *>(param->m_data),
-                                    m_data->m_size,
+                    func->PushArray(reinterpret_cast<cell_t *>(param->m_data), m_data->m_size,
                                     (m_data->m_copyback ? SM_PARAM_COPYBACK : 0));
 
                 else if (paramType & IForward::Param::Type::Pointer)
@@ -48,7 +44,7 @@ namespace
                                             (m_data->m_copyback ? SM_PARAM_COPYBACK : 0));
                     else
                         func->PushFloatByRef(reinterpret_cast<float *>(param->m_data),
-                                            (m_data->m_copyback ? SM_PARAM_COPYBACK : 0));
+                                             (m_data->m_copyback ? SM_PARAM_COPYBACK : 0));
                 }
                 else
                 {
@@ -57,7 +53,6 @@ namespace
                     else
                         func->PushFloat(*reinterpret_cast<float *>(param->m_data));
                 }
-
             }
             else if (paramType & IForward::Param::Type::String)
             {
@@ -75,10 +70,8 @@ namespace
                     if (stringFlags & IForward::StringFlags::Binary)
                         spStringFlags |= SM_PARAM_STRING_BINARY;
 
-                    func->PushStringEx(reinterpret_cast<char *>(param->m_data),
-                                        param->m_size,
-                                        (m_data->m_copyback ? SM_PARAM_COPYBACK : 0),
-                                        spStringFlags);
+                    func->PushStringEx(reinterpret_cast<char *>(param->m_data), param->m_size,
+                                       (m_data->m_copyback ? SM_PARAM_COPYBACK : 0), spStringFlags);
                 }
                 else
                 {
@@ -89,13 +82,11 @@ namespace
 
         return func->Execute(&result) == SP_ERROR_NONE;
     }
-}
+} // namespace
 
 namespace SPExt::Listener
 {
-    int Forward(const IForward *const fwd,
-                int *result,
-                bool *stop)
+    int Forward(const IForward *const fwd, int *result, bool *stop)
     {
         // One plugin forward
         std::shared_ptr<Plugin> plugin = gModuleInterface->getPluginMngrCore()->getPluginCore(fwd->getPlugin());
@@ -139,9 +130,7 @@ namespace SPExt::Listener
         }
     }
 
-    void Cvar(const ICvar *const cvar,
-              const char *old_value,
-              const char *new_value)
+    void Cvar(const ICvar *const cvar, const char *old_value, const char *new_value)
     {
         auto range = gCvarPluginsCallbacks.equal_range(cvar);
         for (auto it = range.first; it != range.second; it++)
@@ -161,12 +150,12 @@ namespace SPExt::Listener
     void Menu(SPMod::IMenu *const menu, SPMod::IMenuItem *const item, SPMod::IPlayer *const player)
     {
         SourcePawn::IPluginFunction *func = gMenuPluginHandlers[menu];
-        if(func && func->IsRunnable())
+        if (func && func->IsRunnable())
         {
             std::size_t menuId = gMenuHandlers.getKey(menu);
             func->PushCell(menuId);
 
-            if(item->getNavType() == NavigationType::None)
+            if (item->getNavType() == NavigationType::None)
             {
                 func->PushCell(static_cast<cell_t>(menuPackItem(menuId, getItemIndex(item))));
             }
@@ -183,7 +172,7 @@ namespace SPExt::Listener
     void MenuText(SPMod::IMenu *const menu, int key, SPMod::IPlayer *const player)
     {
         SourcePawn::IPluginFunction *func = gMenuPluginHandlers[menu];
-        if(func && func->IsRunnable())
+        if (func && func->IsRunnable())
         {
             func->PushCell(static_cast<cell_t>(gMenuHandlers.getKey(menu)));
             func->PushCell(static_cast<cell_t>(key));
@@ -192,8 +181,5 @@ namespace SPExt::Listener
         }
     }
 
-    ItemStatus MenuItemCallback(SPMod::IMenu *const menu, SPMod::IMenuItem *const item, SPMod::IPlayer *const player)
-    {
-
-    }
-}
+    ItemStatus MenuItemCallback(SPMod::IMenu *const menu, SPMod::IMenuItem *const item, SPMod::IPlayer *const player) {}
+} // namespace SPExt::Listener

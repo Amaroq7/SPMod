@@ -47,22 +47,15 @@ public:
     std::string_view getNameCore() const;
 
     bool pushInt(int integer) override;
-    bool pushInt(int *integer,
-                 bool copyback) override;
+    bool pushInt(int *integer, bool copyback) override;
 
     bool pushFloat(float real) override;
-    bool pushFloat(float *real,
-                   bool copyback) override;
+    bool pushFloat(float *real, bool copyback) override;
 
-    bool pushArray(void *array,
-                   std::size_t size,
-                   bool copyback) override;
+    bool pushArray(void *array, std::size_t size, bool copyback) override;
 
     bool pushString(const char *string) override;
-    bool pushString(char *buffer,
-                    std::size_t length,
-                    IForward::StringFlags sflags,
-                    bool copyback) override;
+    bool pushString(char *buffer, std::size_t length, IForward::StringFlags sflags, bool copyback) override;
 
     bool isExecuted() const;
 
@@ -155,7 +148,6 @@ private:
 class ForwardMngr final : public IForwardMngr
 {
 public:
-
     enum class FwdDefault : std::uint8_t
     {
         ClientConnect = 0,
@@ -189,10 +181,8 @@ public:
                             std::size_t paramsnum,
                             IForward::Param::Type *params) override;
 
-    IForward *createForward(const char *name,
-                            IPlugin *plugin,
-                            std::size_t paramsnum,
-                            IForward::Param::Type *params) override;
+    IForward *
+        createForward(const char *name, IPlugin *plugin, std::size_t paramsnum, IForward::Param::Type *params) override;
 
     void deleteForward(IForward *forward) override;
     void addForwardListener(ForwardCallback func) override;

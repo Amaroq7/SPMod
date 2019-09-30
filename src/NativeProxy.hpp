@@ -29,10 +29,7 @@ public:
     ProxiedNative(ProxiedNative &&other) = default;
     ~ProxiedNative() = default;
 
-    ProxiedNative(std::size_t id,
-                  std::string_view name,
-                  void *data,
-                  const IPlugin *plugin);
+    ProxiedNative(std::size_t id, std::string_view name, void *data, const IPlugin *plugin);
 
     const char *getName() const override;
     void *getData() const override;
@@ -55,12 +52,9 @@ public:
     NativeProxy(NativeProxy &&other) = default;
     ~NativeProxy() = default;
 
-    bool registerNative(const char *name,
-                        void *data,
-                        const IPlugin *plugin) override;
+    bool registerNative(const char *name, void *data, const IPlugin *plugin) override;
 
-    int nativeExecNotify(const IProxiedNative *native,
-                         const IPlugin *const plugin) const override;
+    int nativeExecNotify(const IProxiedNative *native, const IPlugin *const plugin) const override;
 
     const IProxiedNative *getProxiedNative(std::size_t id) const override;
     std::size_t getNativesNum() const override;

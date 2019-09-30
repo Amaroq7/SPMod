@@ -78,14 +78,15 @@
 #if __has_include(<filesystem>)
     #include <filesystem>
     // As of GCC 8.1, Clang 7 and MSVC 2019 filesystem is no longer part of experimental
-    #if (defined SP_GCC && __GNUC__ >= 8) || (defined SP_CLANG && __clang_major__ >= 7) || (defined SP_MSVC && _MSC_VER >= 1920)
-        namespace fs = std::filesystem;
+    #if (defined SP_GCC && __GNUC__ >= 8) || (defined SP_CLANG && __clang_major__ >= 7) ||                             \
+        (defined SP_MSVC && _MSC_VER >= 1920)
+namespace fs = std::filesystem;
     #else // Some compilers still have filesystem within experimental namespace like MSVC 2017
-        namespace fs = std::experimental::filesystem;
+namespace fs = std::experimental::filesystem;
     #endif
 #elif __has_include(<experimental/filesystem>)
     #include <experimental/filesystem>
-    namespace fs = std::experimental::filesystem;
+namespace fs = std::experimental::filesystem;
 #else
     #error Filesystem header missing
 #endif

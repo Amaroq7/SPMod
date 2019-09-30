@@ -21,7 +21,7 @@
 
 #include "spmod.hpp"
 
-void UTIL_ShowMenu(edict_t* pEdict, int slots, int time, char *menu, int mlen);
+void UTIL_ShowMenu(edict_t *pEdict, int slots, int time, char *menu, int mlen);
 
 constexpr unsigned int MAX_STATIC_ITEMS = 10U;
 
@@ -33,11 +33,8 @@ public:
     class Item final : public IMenu::IItem
     {
     public:
-        Item(std::string_view name,
-             Callback callback,
-             void *data,
-             NavigationType type);
-        
+        Item(std::string_view name, Callback callback, void *data, NavigationType type);
+
         ~Item() = default;
 
         // IItem
@@ -50,14 +47,12 @@ public:
         NavigationType getNavType() const override;
 
         void setCallback(IMenu::IItem::Callback func) override;
-        
+
         // Item
         std::string_view getNameCore() const;
         void setNameCore(std::string_view name);
 
-        Item::Status execCallbackCore(Menu *menu,
-                                      std::shared_ptr<Item> item,
-                                      std::shared_ptr<Player> player) const;
+        Item::Status execCallbackCore(Menu *menu, std::shared_ptr<Item> item, std::shared_ptr<Player> player) const;
 
     private:
         std::string m_name;
@@ -66,22 +61,18 @@ public:
         NavigationType m_type;
     };
 
-    Menu(std::variant<ItemHandler, TextHandler> &&handler,
-         IMenu::Style style,
-         bool global);
+    Menu(std::variant<ItemHandler, TextHandler> &&handler, IMenu::Style style, bool global);
 
     ~Menu() = default;
 
     // IMenu
-    void display(IPlayer *player,
-                 int page,
-                 int time) override;
+    void display(IPlayer *player, int page, int time) override;
 
     bool getGlobal() const override;
     IMenu::Style getStyle() const override;
 
     void setText(const char *text) override;
-    
+
     void setKeys(int keys) override;
 
     void setTitle(const char *text) override;
@@ -93,68 +84,48 @@ public:
     int getTime() const override;
     int getKeys() const override;
 
-    IItem *appendItem(const char *name,
-                      Item::Callback callback,
-                      void *data) override;
+    IItem *appendItem(const char *name, Item::Callback callback, void *data) override;
 
-    IItem *insertItem(std::size_t position,
-                      const char *name,
-                      Item::Callback callback,
-                      void *data) override;
+    IItem *insertItem(std::size_t position, const char *name, Item::Callback callback, void *data) override;
 
-    IItem *setStaticItem(std::size_t position,
-                         const char *name,
-                         Item::Callback callback,
-                         void *data) override;
-    
+    IItem *setStaticItem(std::size_t position, const char *name, Item::Callback callback, void *data) override;
+
     bool removeItem(std::size_t position) override;
     void removeAllItems() override;
 
     IItem *getItem(std::size_t position) const override;
-    
+
     std::size_t getItems() const override;
 
     // Menu
-    void displayCore(std::shared_ptr<Player> player,
-                     int page,
-                     int time);
-    
+    void displayCore(std::shared_ptr<Player> player, int page, int time);
+
     std::shared_ptr<Item> keyToItem(int key) const;
 
     void setTextCore(std::string_view text);
 
-    std::shared_ptr<Item> appendItemCore(std::string_view name,
-                                         Item::Callback callback,
-                                         void *data);
+    std::shared_ptr<Item> appendItemCore(std::string_view name, Item::Callback callback, void *data);
 
-    std::shared_ptr<Item> insertItemCore(std::size_t position,
-                                         std::string_view name,
-                                         Item::Callback callback,
-                                         void *data);
+    std::shared_ptr<Item>
+        insertItemCore(std::size_t position, std::string_view name, Item::Callback callback, void *data);
 
-    std::shared_ptr<Item> setStaticItemCore(std::size_t position,
-                                            std::string_view name,
-                                            Item::Callback callback,
-                                            void *data);
-    
+    std::shared_ptr<Item>
+        setStaticItemCore(std::size_t position, std::string_view name, Item::Callback callback, void *data);
+
     std::shared_ptr<Item> getItemCore(std::size_t position) const;
     int getItemIndex(std::shared_ptr<Item> menu) const;
 
     void setNumberFormat(std::string_view format);
 
-    void execTextHandler(std::shared_ptr<Player> player,
-                         int key);
-    
-    void execItemHandler(std::shared_ptr<Player> player,
-                         std::shared_ptr<Item> item);
-    
+    void execTextHandler(std::shared_ptr<Player> player, int key);
+
+    void execItemHandler(std::shared_ptr<Player> player, std::shared_ptr<Item> item);
+
     void execExitHandler(std::shared_ptr<Player> player);
 
 private:
-    std::shared_ptr<Item> _addItem(int position,
-                                   std::string_view name,
-                                   Item::Callback callback,
-                                   void *data);
+    std::shared_ptr<Item> _addItem(int position, std::string_view name, Item::Callback callback, void *data);
+
 private:
     IMenu::Style m_style;
     bool m_global;
@@ -184,15 +155,13 @@ public:
     ~MenuMngr() = default;
 
     // IMenuMngr
-    IMenu *registerMenu(IMenu::ItemHandler handler,
-                        bool global) override;
-    IMenu *registerMenu(IMenu::TextHandler handler,
-                        bool global) override;
+    IMenu *registerMenu(IMenu::ItemHandler handler, bool global) override;
+    IMenu *registerMenu(IMenu::TextHandler handler, bool global) override;
 
     void destroyMenu(IMenu *menu) override;
 
     // MenuMngr
-    template<typename ...Args>
+    template<typename... Args>
     std::shared_ptr<Menu> registerMenuCore(Args... args)
     {
         return m_menus.emplace_back(std::make_shared<Menu>(std::forward<Args>(args)...));

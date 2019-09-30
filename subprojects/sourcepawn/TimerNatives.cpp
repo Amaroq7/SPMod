@@ -19,10 +19,16 @@
 
 #include "spmod.hpp"
 
-static cell_t TimerCtor(SourcePawn::IPluginContext *ctx,
-                        const cell_t *params)
+static cell_t TimerCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_interval = 1, arg_func, arg_data, arg_exec, arg_pause };
+    enum
+    {
+        arg_interval = 1,
+        arg_func,
+        arg_data,
+        arg_exec,
+        arg_pause
+    };
     const std::unique_ptr<TimerMngr> &timerMngr = gSPGlobal->getTimerManagerCore();
     SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_func]);
     std::shared_ptr<Timer> timer;
@@ -43,10 +49,12 @@ static cell_t TimerCtor(SourcePawn::IPluginContext *ctx,
     return timer->getId();
 }
 
-static cell_t PauseGet(SourcePawn::IPluginContext *ctx,
-                       const cell_t *params)
+static cell_t PauseGet(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum
+    {
+        arg_id = 1
+    };
     const std::unique_ptr<TimerMngr> &timerMngr = gSPGlobal->getTimerManagerCore();
     std::shared_ptr<Timer> timer = timerMngr->getTimer(params[arg_id]);
 
@@ -59,10 +67,12 @@ static cell_t PauseGet(SourcePawn::IPluginContext *ctx,
     return timer->isPaused();
 }
 
-static cell_t IntervalGet(SourcePawn::IPluginContext *ctx,
-                          const cell_t *params)
+static cell_t IntervalGet(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum
+    {
+        arg_id = 1
+    };
     const std::unique_ptr<TimerMngr> &timerMngr = gSPGlobal->getTimerManagerCore();
     std::shared_ptr<Timer> timer = timerMngr->getTimer(params[arg_id]);
 
@@ -75,10 +85,13 @@ static cell_t IntervalGet(SourcePawn::IPluginContext *ctx,
     return sp_ftoc(timer->getInterval());
 }
 
-static cell_t PauseSet(SourcePawn::IPluginContext *ctx,
-                       const cell_t *params)
+static cell_t PauseSet(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_pause };
+    enum
+    {
+        arg_id = 1,
+        arg_pause
+    };
     const std::unique_ptr<TimerMngr> &timerMngr = gSPGlobal->getTimerManagerCore();
     std::shared_ptr<Timer> timer = timerMngr->getTimer(params[arg_id]);
 
@@ -92,10 +105,13 @@ static cell_t PauseSet(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t IntervalSet(SourcePawn::IPluginContext *ctx,
-                          const cell_t *params)
+static cell_t IntervalSet(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_interval };
+    enum
+    {
+        arg_id = 1,
+        arg_interval
+    };
     const std::unique_ptr<TimerMngr> &timerMngr = gSPGlobal->getTimerManagerCore();
     std::shared_ptr<Timer> timer = timerMngr->getTimer(params[arg_id]);
 
@@ -116,10 +132,12 @@ static cell_t IntervalSet(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t Trigger(SourcePawn::IPluginContext *ctx,
-                      const cell_t *params)
+static cell_t Trigger(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum
+    {
+        arg_id = 1
+    };
     const std::unique_ptr<TimerMngr> &timerMngr = gSPGlobal->getTimerManagerCore();
     std::shared_ptr<Timer> timer = timerMngr->getTimer(params[arg_id]);
 
@@ -133,24 +151,23 @@ static cell_t Trigger(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t Remove(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                     const cell_t *params)
+static cell_t Remove(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum
+    {
+        arg_id = 1
+    };
     const std::unique_ptr<TimerMngr> &timerMngr = gSPGlobal->getTimerManagerCore();
 
     timerMngr->removeTimerCore(params[arg_id]);
     return 1;
 }
 
-sp_nativeinfo_t gTimerNatives[] =
-{
-    { "Timer.Timer",        TimerCtor   },
-    { "Timer.Paused.get",   PauseGet    },
-    { "Timer.Interval.get", IntervalGet },
-    { "Timer.Paused.set",   PauseSet    },
-    { "Timer.Interval.set", IntervalSet },
-    { "Timer.Trigger",      Trigger     },
-    { "Timer.Remove",       Remove      },
-    { nullptr,              nullptr     }
-};
+sp_nativeinfo_t gTimerNatives[] = {{"Timer.Timer", TimerCtor},
+                                   {"Timer.Paused.get", PauseGet},
+                                   {"Timer.Interval.get", IntervalGet},
+                                   {"Timer.Paused.set", PauseSet},
+                                   {"Timer.Interval.set", IntervalSet},
+                                   {"Timer.Trigger", Trigger},
+                                   {"Timer.Remove", Remove},
+                                   {nullptr, nullptr}};

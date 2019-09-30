@@ -31,8 +31,8 @@
     #pragma GCC diagnostic ignored "-Wunused-parameter"
 #elif defined SP_MSVC
     #pragma warning(push)
-    #pragma warning(disable: 4100)
-    #pragma warning(disable: 4996)
+    #pragma warning(disable : 4100)
+    #pragma warning(disable : 4996)
 #endif
 #include <utlvector.h>
 #if defined SP_CLANG
@@ -42,7 +42,6 @@
 #elif defined SP_MSVC
     #pragma warning(pop)
 #endif
-
 
 namespace SPMod
 {
@@ -98,61 +97,61 @@ namespace SPMod
 
         /**
          * @brief Gets plugin's plugin manager.
-         * 
+         *
          * @return        Plugin manager.
          */
         virtual IPluginMngr *getPluginMngr() const = 0;
 
         /**
          * @brief Gets proxied param as int.
-         * 
+         *
          * @param index   Param number.
-         * 
+         *
          * @return        Param as int.
          */
         virtual int getProxiedParamAsInt(std::size_t index) const = 0;
 
         /**
          * @brief Gets proxied param as pointer to int.
-         * 
+         *
          * @param index   Param number.
-         * 
+         *
          * @return        Param as pointer to int.
          */
         virtual int *getProxiedParamAsIntAddr(std::size_t index) const = 0;
 
         /**
          * @brief Gets proxied param as float.
-         * 
+         *
          * @param index   Param number.
-         * 
+         *
          * @return        Param as float.
          */
         virtual float getProxiedParamAsFloat(std::size_t index) const = 0;
 
         /**
          * @brief Gets proxied param as pointer to float.
-         * 
+         *
          * @param index   Param number.
-         * 
+         *
          * @return        Param as pointer to float.
          */
         virtual float *getProxiedParamAsFloatAddr(std::size_t index) const = 0;
 
         /**
          * @brief Gets proxied param as string.
-         * 
+         *
          * @param index   Param number.
-         * 
+         *
          * @return        Param as string.
          */
         virtual char *getProxiedParamAsString(std::size_t index) const = 0;
 
         /**
          * @brief Gets proxied param as array.
-         * 
+         *
          * @param index   Param number.
-         * 
+         *
          * @return        Param as pointer to float.
          */
         virtual void *getProxiedParamAsArray(std::size_t index) const = 0;
@@ -196,7 +195,7 @@ namespace SPMod
 
         /**
          * @brief Called on proxied native.
-         * 
+         *
          * @param native  Proxied native.
          * @param plugin  Plugin which executed the native.
          *
@@ -228,4 +227,4 @@ namespace SPMod
     protected:
         virtual ~IPluginMngr() = default;
     };
-}
+} // namespace SPMod

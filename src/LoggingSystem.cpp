@@ -19,9 +19,7 @@
 
 #include "LoggingSystem.hpp"
 
-Logger::Logger(std::string_view prefix) : m_prefix(prefix)
-{
-}
+Logger::Logger(std::string_view prefix) : m_prefix(prefix) {}
 
 ILogger *LoggerMngr::getLogger(const char *prefix)
 {
@@ -38,9 +36,7 @@ void Logger::setFilename(const char *filename)
     m_filename = filename;
 }
 
-void Logger::logToConsole(LogLevel level,
-                          const char *format,
-                          ...) const
+void Logger::logToConsole(LogLevel level, const char *format, ...) const
 {
     if (level < m_logLevel)
         return;
@@ -55,9 +51,7 @@ void Logger::logToConsole(LogLevel level,
     logToConsoleCore(level, logMsg);
 }
 
-void Logger::logToFile(LogLevel level,
-                       const char *format,
-                       ...) const
+void Logger::logToFile(LogLevel level, const char *format, ...) const
 {
     if (level < m_logLevel)
         return;

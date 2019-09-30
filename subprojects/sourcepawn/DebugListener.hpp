@@ -36,11 +36,9 @@ public:
     ~DebugListener() = default;
 
     // IDebugListener
-    void OnDebugSpew(const char *msg,
-                     ...) override;
+    void OnDebugSpew(const char *msg, ...) override;
 
-    void ReportError(const SourcePawn::IErrorReport &report,
-                     SourcePawn::IFrameIterator &iter) override;
+    void ReportError(const SourcePawn::IErrorReport &report, SourcePawn::IFrameIterator &iter) override;
 };
 
 #ifdef SP_CLANG

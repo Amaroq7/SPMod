@@ -113,10 +113,10 @@ namespace SPMod
         virtual IForwardMngr *getForwardManager() const = 0;
 
         /**
-        * @brief Returns SPMod cvar manager.
-        *
-        * @return               Cvar manager.
-        */
+         * @brief Returns SPMod cvar manager.
+         *
+         * @return               Cvar manager.
+         */
         virtual ICvarMngr *getCvarManager() const = 0;
 
         /**
@@ -128,7 +128,7 @@ namespace SPMod
 
         /**
          * @brief Returns SPMod menu manager.
-         * 
+         *
          * @return              Menu manager.
          */
         virtual IMenuMngr *getMenuManager() const = 0;
@@ -240,4 +240,4 @@ namespace SPMod
      */
     SPMOD_API void SPMod_End();
     using fnSPModEnd = void (*)();
-}
+} // namespace SPMod

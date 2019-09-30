@@ -24,7 +24,7 @@
 #include <archtypes.h>
 
 #if !defined vec_t
-    using vec_t = float;
+using vec_t = float;
 #endif
 
 #if !defined sqrt
@@ -38,11 +38,11 @@
 #endif
 
 #if !defined string_t
-    using string_t = unsigned int;
+using string_t = unsigned int;
 #endif
 
 #if !defined byte
-    using byte = unsigned char;
+using byte = unsigned char;
 #endif
 
 #include <const.h>
@@ -179,4 +179,4 @@ namespace SPMod
     protected:
         virtual ~IPlayerMngr() = default;
     };
-}
+} // namespace SPMod

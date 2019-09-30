@@ -1,36 +1,36 @@
 /*
-*
-*    This program is free software; you can redistribute it and/or modify it
-*    under the terms of the GNU General Public License as published by the
-*    Free Software Foundation; either version 2 of the License, or (at
-*    your option) any later version.
-*
-*    This program is distributed in the hope that it will be useful, but
-*    WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-*    General Public License for more details.
-*
-*    You should have received a copy of the GNU General Public License
-*    along with this program; if not, write to the Free Software Foundation,
-*    Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*    In addition, as a special exception, the author gives permission to
-*    link the code of this program with the Half-Life Game Engine ("HL
-*    Engine") and Modified Game Libraries ("MODs") developed by Valve,
-*    L.L.C ("Valve").  You must obey the GNU General Public License in all
-*    respects for all of the code used other than the HL Engine and MODs
-*    from Valve.  If you modify this file, you may extend this exception
-*    to your version of the file, but you are not obligated to do so.  If
-*    you do not wish to do so, delete this exception statement from your
-*    version.
-*
-*/
+ *
+ *    This program is free software; you can redistribute it and/or modify it
+ *    under the terms of the GNU General Public License as published by the
+ *    Free Software Foundation; either version 2 of the License, or (at
+ *    your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful, but
+ *    WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *    General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program; if not, write to the Free Software Foundation,
+ *    Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ *    In addition, as a special exception, the author gives permission to
+ *    link the code of this program with the Half-Life Game Engine ("HL
+ *    Engine") and Modified Game Libraries ("MODs") developed by Valve,
+ *    L.L.C ("Valve").  You must obey the GNU General Public License in all
+ *    respects for all of the code used other than the HL Engine and MODs
+ *    from Valve.  If you modify this file, you may extend this exception
+ *    to your version of the file, but you are not obligated to do so.  If
+ *    you do not wish to do so, delete this exception statement from your
+ *    version.
+ *
+ */
 
 #include "spmod.hpp"
 
 #ifdef SP_WINDOWS
-	#define WIN32_LEAN_AND_MEAN
-	#include "windows.h"
+    #define WIN32_LEAN_AND_MEAN
+    #include "windows.h"
 #endif // SP_WINDOWS
 
 // InterfaceReg
@@ -38,9 +38,9 @@ InterfaceReg *InterfaceReg::s_pInterfaceRegs = nullptr;
 
 InterfaceReg::InterfaceReg(InstantiateInterfaceFn fn, const char *pName) : m_pName(pName)
 {
-	m_CreateFn = fn;
-	m_pNext = s_pInterfaceRegs;
-	s_pInterfaceRegs = this;
+    m_CreateFn = fn;
+    m_pNext = s_pInterfaceRegs;
+    s_pInterfaceRegs = this;
 }
 
 // This is the primary exported function by a dll, referenced by name via dynamic binding
@@ -54,62 +54,62 @@ InterfaceReg::InterfaceReg(InstantiateInterfaceFn fn, const char *pName) : m_pNa
 // function for CreateInterface again getting the dll specific symbol we need.
 EXPORT_FUNCTION IBaseInterface *CreateInterface(const char *pName, int *pReturnCode)
 {
-	InterfaceReg *pCur;
-	for (pCur = InterfaceReg::s_pInterfaceRegs; pCur; pCur = pCur->m_pNext)
-	{
-		if (strcmp(pCur->m_pName, pName) == 0)
-		{
-			if (pReturnCode)
-			{
-				*pReturnCode = IFACE_OK;
-			}
+    InterfaceReg *pCur;
+    for (pCur = InterfaceReg::s_pInterfaceRegs; pCur; pCur = pCur->m_pNext)
+    {
+        if (strcmp(pCur->m_pName, pName) == 0)
+        {
+            if (pReturnCode)
+            {
+                *pReturnCode = IFACE_OK;
+            }
 
-			return pCur->m_CreateFn();
-		}
-	}
+            return pCur->m_CreateFn();
+        }
+    }
 
-	if (pReturnCode)
-	{
-		*pReturnCode = IFACE_FAILED;
-	}
+    if (pReturnCode)
+    {
+        *pReturnCode = IFACE_FAILED;
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 #ifndef SP_WINDOWS
 // Linux doesn't have this function so this emulates its functionality
 void *GetModuleHandle(const char *name)
 {
-	void *handle;
-	if (name == nullptr)
-	{
-		// hmm, how can this be handled under linux....
-		// is it even needed?
-		return nullptr;
-	}
+    void *handle;
+    if (name == nullptr)
+    {
+        // hmm, how can this be handled under linux....
+        // is it even needed?
+        return nullptr;
+    }
 
-	if ((handle = dlopen(name, RTLD_NOW)) == nullptr)
-	{
-		//printf("Error:%s\n",dlerror());
-		// couldn't open this file
-		return nullptr;
-	}
+    if ((handle = dlopen(name, RTLD_NOW)) == nullptr)
+    {
+        // printf("Error:%s\n",dlerror());
+        // couldn't open this file
+        return nullptr;
+    }
 
-	// read "man dlopen" for details
-	// in short dlopen() inc a ref count
-	// so dec the ref count by performing the close
-	dlclose(handle);
-	return handle;
+    // read "man dlopen" for details
+    // in short dlopen() inc a ref count
+    // so dec the ref count by performing the close
+    dlclose(handle);
+    return handle;
 }
 #endif // SP_WINDOWS
 
 // Purpose: returns a pointer to a function, given a module
 // Input  : pModuleName - module name
 //			*pName - proc name
-//static hlds_run wants to use this function
+// static hlds_run wants to use this function
 void *Sys_GetProcAddress(const char *pModuleName, const char *pName)
 {
-	return GetProcAddress(GetModuleHandle(pModuleName), pName);
+    return GetProcAddress(GetModuleHandle(pModuleName), pName);
 }
 
 // Purpose: returns a pointer to a function, given a module
@@ -118,7 +118,7 @@ void *Sys_GetProcAddress(const char *pModuleName, const char *pName)
 // hlds_run wants to use this function
 void *Sys_GetProcAddress(void *pModuleHandle, const char *pName)
 {
-	return GetProcAddress((HMODULE)pModuleHandle, pName);
+    return GetProcAddress((HMODULE)pModuleHandle, pName);
 }
 
 // Purpose: Loads a DLL/component from disk and returns a handle to it
@@ -127,37 +127,37 @@ void *Sys_GetProcAddress(void *pModuleHandle, const char *pName)
 CSysModule *Sys_LoadModule(const char *pModuleName)
 {
 #ifdef SP_WINDOWS
-	HMODULE hDLL = LoadLibrary(pModuleName);
+    HMODULE hDLL = LoadLibrary(pModuleName);
 #else
-	HMODULE hDLL  = nullptr;
-	char szAbsoluteModuleName[1024];
-	if (pModuleName[0] != '/')
-	{
-		snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s", fs::current_path().c_str(), pModuleName);
-		hDLL = dlopen(szAbsoluteModuleName, RTLD_NOW);
-	}
-	else
-	{
-		snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s", pModuleName);
-		hDLL = dlopen(pModuleName, RTLD_NOW);
-	}
+    HMODULE hDLL = nullptr;
+    char szAbsoluteModuleName[1024];
+    if (pModuleName[0] != '/')
+    {
+        snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s", fs::current_path().c_str(), pModuleName);
+        hDLL = dlopen(szAbsoluteModuleName, RTLD_NOW);
+    }
+    else
+    {
+        snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s", pModuleName);
+        hDLL = dlopen(pModuleName, RTLD_NOW);
+    }
 #endif // SP_WINDOWS
 
-	if (!hDLL)
-	{
-		char str[1028];
+    if (!hDLL)
+    {
+        char str[1028];
 
 #if defined SP_MSVC
-		_snprintf_s(str, sizeof(str), _TRUNCATE, "%s.dll", pModuleName);
-		hDLL = LoadLibrary(str);
+        _snprintf_s(str, sizeof(str), _TRUNCATE, "%s.dll", pModuleName);
+        hDLL = LoadLibrary(str);
 #else
-		printf("Error: %s\n", dlerror());
-		snprintf(str, sizeof(str), "%s.so", szAbsoluteModuleName);
-		hDLL = dlopen(str, RTLD_NOW);
+        printf("Error: %s\n", dlerror());
+        snprintf(str, sizeof(str), "%s.so", szAbsoluteModuleName);
+        hDLL = dlopen(str, RTLD_NOW);
 #endif
-	}
+    }
 
-	return reinterpret_cast<CSysModule *>(hDLL);
+    return reinterpret_cast<CSysModule *>(hDLL);
 }
 
 // Purpose: Unloads a DLL/component from
@@ -165,15 +165,15 @@ CSysModule *Sys_LoadModule(const char *pModuleName)
 // Output : opaque handle to the module (hides system dependency)
 void Sys_UnloadModule(CSysModule *pModule)
 {
-	if (!pModule)
-		return;
+    if (!pModule)
+        return;
 
-	HMODULE hDLL = reinterpret_cast<HMODULE>(pModule);
+    HMODULE hDLL = reinterpret_cast<HMODULE>(pModule);
 
 #ifdef SP_WINDOWS
-	FreeLibrary(hDLL);
+    FreeLibrary(hDLL);
 #else
-	dlclose(hDLL);
+    dlclose(hDLL);
 #endif // SP_WINDOWS
 }
 
@@ -183,17 +183,17 @@ void Sys_UnloadModule(CSysModule *pModule)
 // Output : factory for this module
 CreateInterfaceFn Sys_GetFactory(CSysModule *pModule)
 {
-	if (!pModule)
-		return nullptr;
+    if (!pModule)
+        return nullptr;
 
-	return reinterpret_cast<CreateInterfaceFn>(Sys_GetProcAddress(pModule, CREATEINTERFACE_PROCNAME));
+    return reinterpret_cast<CreateInterfaceFn>(Sys_GetProcAddress(pModule, CREATEINTERFACE_PROCNAME));
 }
 
 // Purpose: returns the instance of this module
 // Output : CreateInterfaceFn
 CreateInterfaceFn Sys_GetFactoryThis()
 {
-	return CreateInterface;
+    return CreateInterface;
 }
 
 // Purpose: returns the instance of the named module
@@ -201,27 +201,27 @@ CreateInterfaceFn Sys_GetFactoryThis()
 // Output : CreateInterfaceFn - instance of that module
 CreateInterfaceFn Sys_GetFactory(const char *pModuleName)
 {
-	return reinterpret_cast<CreateInterfaceFn>(Sys_GetProcAddress(pModuleName, CREATEINTERFACE_PROCNAME));
+    return reinterpret_cast<CreateInterfaceFn>(Sys_GetProcAddress(pModuleName, CREATEINTERFACE_PROCNAME));
 }
 
 // Purpose: finds a particular interface in the factory set
 void *InitializeInterface(char const *interfaceName, CreateInterfaceFn *factoryList, int numFactories)
 {
-	void *retval;
+    void *retval;
 
-	for (int i = 0; i < numFactories; i++)
-	{
-		CreateInterfaceFn factory = factoryList[ i ];
-		if (!factory)
-			continue;
+    for (int i = 0; i < numFactories; i++)
+    {
+        CreateInterfaceFn factory = factoryList[i];
+        if (!factory)
+            continue;
 
-		retval = factory(interfaceName, nullptr);
-		if (retval)
-			return retval;
-	}
+        retval = factory(interfaceName, nullptr);
+        if (retval)
+            return retval;
+    }
 
-	// No provider for requested interface!!!
-	// assert(!"No provider for requested interface!!!");
+    // No provider for requested interface!!!
+    // assert(!"No provider for requested interface!!!");
 
-	return nullptr;
+    return nullptr;
 }

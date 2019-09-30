@@ -22,10 +22,16 @@
 TypeHandler<SPMod::IForward> gForwardHandlers;
 
 // Forward(const char[] name, ExecType exectype, const char[] plgname, ParamType ...)
-static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx,
-                          const cell_t *params)
+static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { args_num = 0, arg_name, arg_exec, arg_pluginname, arg_paramstypes };
+    enum
+    {
+        args_num = 0,
+        arg_name,
+        arg_exec,
+        arg_pluginname,
+        arg_paramstypes
+    };
 
     auto execType = static_cast<IForward::ExecType>(params[arg_exec]);
     SPMod::IForwardMngr *fwdMngr = gSPGlobal->getForwardManager();
@@ -90,10 +96,13 @@ static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx,
 }
 
 // bool PushCell(any cell)
-static cell_t PushCell(SourcePawn::IPluginContext *ctx,
-                       const cell_t *params)
+static cell_t PushCell(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_cell };
+    enum
+    {
+        arg_id = 1,
+        arg_cell
+    };
 
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
@@ -101,7 +110,7 @@ static cell_t PushCell(SourcePawn::IPluginContext *ctx,
         ctx->ReportError("Invalid forward");
         return 0;
     }
-    
+
     SPMod::IForward *forward = gForwardHandlers.get(fwdId);
     if (!forward)
     {
@@ -113,10 +122,13 @@ static cell_t PushCell(SourcePawn::IPluginContext *ctx,
 }
 
 // bool PushCellRef(any &cell)
-static cell_t PushCellRef(SourcePawn::IPluginContext *ctx,
-                          const cell_t *params)
+static cell_t PushCellRef(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_cellref };
+    enum
+    {
+        arg_id = 1,
+        arg_cellref
+    };
 
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
@@ -139,10 +151,13 @@ static cell_t PushCellRef(SourcePawn::IPluginContext *ctx,
 }
 
 // bool PushFloat(float real)
-static cell_t PushFloat(SourcePawn::IPluginContext *ctx,
-                        const cell_t *params)
+static cell_t PushFloat(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_float };
+    enum
+    {
+        arg_id = 1,
+        arg_float
+    };
 
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
@@ -162,10 +177,13 @@ static cell_t PushFloat(SourcePawn::IPluginContext *ctx,
 }
 
 // bool PushFloatRef(float &real)
-static cell_t PushFloatRef(SourcePawn::IPluginContext *ctx,
-                           const cell_t *params)
+static cell_t PushFloatRef(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_floatref };
+    enum
+    {
+        arg_id = 1,
+        arg_floatref
+    };
 
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
@@ -181,8 +199,7 @@ static cell_t PushFloatRef(SourcePawn::IPluginContext *ctx,
         return 0;
     }
 
-    union
-    {
+    union {
         cell_t *cellptr;
         float *floatptr;
     } floatHolder;
@@ -193,10 +210,13 @@ static cell_t PushFloatRef(SourcePawn::IPluginContext *ctx,
 }
 
 // bool PushString(const char[] string)
-static cell_t PushString(SourcePawn::IPluginContext *ctx,
-                         const cell_t *params)
+static cell_t PushString(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_string };
+    enum
+    {
+        arg_id = 1,
+        arg_string
+    };
 
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
@@ -219,10 +239,14 @@ static cell_t PushString(SourcePawn::IPluginContext *ctx,
 }
 
 // bool PushArray(const any[] array, int size)
-static cell_t PushArray(SourcePawn::IPluginContext *ctx,
-                        const cell_t *params)
+static cell_t PushArray(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_array, arg_size };
+    enum
+    {
+        arg_id = 1,
+        arg_array,
+        arg_size
+    };
 
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
@@ -245,10 +269,16 @@ static cell_t PushArray(SourcePawn::IPluginContext *ctx,
 }
 
 // bool PushStringEx(char[] string, int length, StringFlags sflags, bool copyback)
-static cell_t PushStringEx(SourcePawn::IPluginContext *ctx,
-                           const cell_t *params)
+static cell_t PushStringEx(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_string, arg_length, arg_sflags, arg_copyback };
+    enum
+    {
+        arg_id = 1,
+        arg_string,
+        arg_length,
+        arg_sflags,
+        arg_copyback
+    };
 
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
@@ -272,10 +302,15 @@ static cell_t PushStringEx(SourcePawn::IPluginContext *ctx,
 }
 
 // bool PushArrayEx(any[] array, int size, int cpflags)
-static cell_t PushArrayEx(SourcePawn::IPluginContext *ctx,
-                          const cell_t *params)
+static cell_t PushArrayEx(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_array, arg_size, arg_cpflags };
+    enum
+    {
+        arg_id = 1,
+        arg_array,
+        arg_size,
+        arg_cpflags
+    };
 
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
@@ -298,10 +333,13 @@ static cell_t PushArrayEx(SourcePawn::IPluginContext *ctx,
 }
 
 // bool PushExec(any &result = 0)
-static cell_t PushExec(SourcePawn::IPluginContext *ctx,
-                       const cell_t *params)
+static cell_t PushExec(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_resultref };
+    enum
+    {
+        arg_id = 1,
+        arg_resultref
+    };
 
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
@@ -324,10 +362,12 @@ static cell_t PushExec(SourcePawn::IPluginContext *ctx,
 }
 
 // bool PushCancel()
-static cell_t PushCancel(SourcePawn::IPluginContext *ctx,
-                         const cell_t *params)
+static cell_t PushCancel(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum
+    {
+        arg_id = 1
+    };
 
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
@@ -348,10 +388,12 @@ static cell_t PushCancel(SourcePawn::IPluginContext *ctx,
 }
 
 // bool Remove()
-static cell_t ForwardRemove(SourcePawn::IPluginContext *ctx,
-                            const cell_t *params)
+static cell_t ForwardRemove(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum
+    {
+        arg_id = 1
+    };
 
     cell_t fwdId = params[arg_id];
     if (fwdId == -1)
@@ -372,19 +414,16 @@ static cell_t ForwardRemove(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-sp_nativeinfo_t gForwardsNatives[] =
-{
-    {  "Forward.Forward",        ForwardCtor         },
-    {  "Forward.PushCell",       PushCell            },
-    {  "Forward.PushCellRef",    PushCellRef         },
-    {  "Forward.PushFloat",      PushFloat           },
-    {  "Forward.PushFloatRef",   PushFloatRef        },
-    {  "Forward.PushString",     PushString          },
-    {  "Forward.PushArray",      PushArray           },
-    {  "Forward.PushStringEx",   PushStringEx        },
-    {  "Forward.PushArrayEx",    PushArrayEx         },
-    {  "Forward.PushExec",       PushExec            },
-    {  "Forward.PushCancel",     PushCancel          },
-    {  "Forward.Remove",         ForwardRemove       },
-    {  nullptr,                  nullptr             }
-};
+sp_nativeinfo_t gForwardsNatives[] = {{"Forward.Forward", ForwardCtor},
+                                      {"Forward.PushCell", PushCell},
+                                      {"Forward.PushCellRef", PushCellRef},
+                                      {"Forward.PushFloat", PushFloat},
+                                      {"Forward.PushFloatRef", PushFloatRef},
+                                      {"Forward.PushString", PushString},
+                                      {"Forward.PushArray", PushArray},
+                                      {"Forward.PushStringEx", PushStringEx},
+                                      {"Forward.PushArrayEx", PushArrayEx},
+                                      {"Forward.PushExec", PushExec},
+                                      {"Forward.PushCancel", PushCancel},
+                                      {"Forward.Remove", ForwardRemove},
+                                      {nullptr, nullptr}};

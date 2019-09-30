@@ -20,10 +20,14 @@
 #include "spmod.hpp"
 
 // int Player.GetName(char[] buffer, int size)
-static cell_t GetName(SourcePawn::IPluginContext *ctx,
-                      const cell_t *params)
+static cell_t GetName(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_buffer, arg_size };
+    enum
+    {
+        arg_id = 1,
+        arg_buffer,
+        arg_size
+    };
 
     std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_id]);
 
@@ -40,10 +44,15 @@ static cell_t GetName(SourcePawn::IPluginContext *ctx,
 }
 
 // int Player.GetIP(char[] buffer, int size, bool port = false)
-static cell_t GetIP(SourcePawn::IPluginContext *ctx,
-                    const cell_t *params)
+static cell_t GetIP(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_buffer, arg_size, arg_port };
+    enum
+    {
+        arg_id = 1,
+        arg_buffer,
+        arg_size,
+        arg_port
+    };
 
     std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_id]);
 
@@ -69,10 +78,14 @@ static cell_t GetIP(SourcePawn::IPluginContext *ctx,
 }
 
 // int Player.GetSteamID(char[] buffer, int size)
-static cell_t GetSteamID(SourcePawn::IPluginContext *ctx,
-                         const cell_t *params)
+static cell_t GetSteamID(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_buffer, arg_size };
+    enum
+    {
+        arg_id = 1,
+        arg_buffer,
+        arg_size
+    };
 
     std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_id]);
 
@@ -89,10 +102,12 @@ static cell_t GetSteamID(SourcePawn::IPluginContext *ctx,
 }
 
 // int Player.Index.get()
-static cell_t GetIndex(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                       const cell_t *params)
+static cell_t GetIndex(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum
+    {
+        arg_id = 1
+    };
 
     std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_id]);
 
@@ -106,10 +121,12 @@ static cell_t GetIndex(SourcePawn::IPluginContext *ctx [[maybe_unused]],
 }
 
 // int Player.UserID.get()
-static cell_t GetUserID(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                        const cell_t *params)
+static cell_t GetUserID(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum
+    {
+        arg_id = 1
+    };
 
     std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_id]);
 
@@ -123,10 +140,12 @@ static cell_t GetUserID(SourcePawn::IPluginContext *ctx [[maybe_unused]],
 }
 
 // bool Player.Alive.get()
-static cell_t AliveGet(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                       const cell_t *params)
+static cell_t AliveGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum
+    {
+        arg_id = 1
+    };
 
     std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_id]);
 
@@ -140,10 +159,12 @@ static cell_t AliveGet(SourcePawn::IPluginContext *ctx [[maybe_unused]],
 }
 
 // bool Player.Connected.get()
-static cell_t ConnectedGet(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                           const cell_t *params)
+static cell_t ConnectedGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum
+    {
+        arg_id = 1
+    };
 
     std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_id]);
 
@@ -157,10 +178,12 @@ static cell_t ConnectedGet(SourcePawn::IPluginContext *ctx [[maybe_unused]],
 }
 
 // bool Player.Fake.get()
-static cell_t FakeGet(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                      const cell_t *params)
+static cell_t FakeGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum
+    {
+        arg_id = 1
+    };
 
     std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_id]);
 
@@ -174,10 +197,12 @@ static cell_t FakeGet(SourcePawn::IPluginContext *ctx [[maybe_unused]],
 }
 
 // bool Player.HLTV.get()
-static cell_t HLTVGet(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                      const cell_t *params)
+static cell_t HLTVGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum
+    {
+        arg_id = 1
+    };
 
     std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_id]);
 
@@ -191,10 +216,12 @@ static cell_t HLTVGet(SourcePawn::IPluginContext *ctx [[maybe_unused]],
 }
 
 // bool Player.InGame.get()
-static cell_t InGame(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                     const cell_t *params)
+static cell_t InGame(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum
+    {
+        arg_id = 1
+    };
 
     std::shared_ptr<Player> plr = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_id]);
 
@@ -207,17 +234,14 @@ static cell_t InGame(SourcePawn::IPluginContext *ctx [[maybe_unused]],
     return plr->isInGame();
 }
 
-sp_nativeinfo_t gPlayerNatives[] =
-{
-    { "Player.GetName",         GetName      },
-    { "Player.GetIP",           GetIP        },
-    { "Player.GetSteamID",      GetSteamID   },
-    { "Player.Index.get",       GetIndex     },
-    { "Player.UserID.get",      GetUserID    },
-    { "Player.Alive.get",       AliveGet     },
-    { "Player.Connected.get",   ConnectedGet },
-    { "Player.Fake.get",        FakeGet      },
-    { "Player.HLTV.get",        HLTVGet      },
-    { "Player.InGame.get",      InGame       },
-    { nullptr,                  nullptr      }
-};
+sp_nativeinfo_t gPlayerNatives[] = {{"Player.GetName", GetName},
+                                    {"Player.GetIP", GetIP},
+                                    {"Player.GetSteamID", GetSteamID},
+                                    {"Player.Index.get", GetIndex},
+                                    {"Player.UserID.get", GetUserID},
+                                    {"Player.Alive.get", AliveGet},
+                                    {"Player.Connected.get", ConnectedGet},
+                                    {"Player.Fake.get", FakeGet},
+                                    {"Player.HLTV.get", HLTVGet},
+                                    {"Player.InGame.get", InGame},
+                                    {nullptr, nullptr}};

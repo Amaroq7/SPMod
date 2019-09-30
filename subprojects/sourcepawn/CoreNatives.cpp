@@ -20,8 +20,7 @@
 #include "ExtMain.hpp"
 
 // native void PrintToServer(const char[] text, any ...)
-static cell_t PrintToServer(SourcePawn::IPluginContext *ctx,
-                            const cell_t *params)
+static cell_t PrintToServer(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     char *formatString;
     char bufferOutput[1024];
@@ -38,8 +37,7 @@ static cell_t PrintToServer(SourcePawn::IPluginContext *ctx,
 }
 
 // native int PrecacheModel(const char[] model)
-static cell_t PrecacheModel(SourcePawn::IPluginContext *ctx,
-                            const cell_t *params)
+static cell_t PrecacheModel(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!gSPGlobal->canPluginPrecache())
     {
@@ -54,8 +52,7 @@ static cell_t PrecacheModel(SourcePawn::IPluginContext *ctx,
 }
 
 // native int PrecacheSound(const char[] sound)
-static cell_t PrecacheSound(SourcePawn::IPluginContext *ctx,
-                            const cell_t *params)
+static cell_t PrecacheSound(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!gSPGlobal->canPluginPrecache())
     {
@@ -70,8 +67,7 @@ static cell_t PrecacheSound(SourcePawn::IPluginContext *ctx,
 }
 
 // native int PrecacheGeneric(const char[] generic)
-static cell_t PrecacheGeneric(SourcePawn::IPluginContext *ctx,
-                              const cell_t *params)
+static cell_t PrecacheGeneric(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!gSPGlobal->canPluginPrecache())
     {
@@ -86,8 +82,7 @@ static cell_t PrecacheGeneric(SourcePawn::IPluginContext *ctx,
 }
 
 // native bool NativeRegister(const char[] name, PluginNative func)
-static cell_t NativeRegister(SourcePawn::IPluginContext *ctx,
-                             const cell_t *params)
+static cell_t NativeRegister(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     char *nativeName;
     ctx->LocalToString(params[1], &nativeName);
@@ -97,8 +92,7 @@ static cell_t NativeRegister(SourcePawn::IPluginContext *ctx,
 }
 
 // native int NativeGetInt(int param)
-static cell_t NativeGetInt(SourcePawn::IPluginContext *ctx,
-                           const cell_t *params)
+static cell_t NativeGetInt(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!PluginMngr::m_callerPlugin)
     {
@@ -119,8 +113,7 @@ static cell_t NativeGetInt(SourcePawn::IPluginContext *ctx,
 }
 
 // native int NativeGetIntRef(int param)
-static cell_t NativeGetIntRef(SourcePawn::IPluginContext *ctx,
-                              const cell_t *params)
+static cell_t NativeGetIntRef(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!PluginMngr::m_callerPlugin)
     {
@@ -140,8 +133,7 @@ static cell_t NativeGetIntRef(SourcePawn::IPluginContext *ctx,
 }
 
 // native float NativeGetFloat(int param)
-static cell_t NativeGetFloat(SourcePawn::IPluginContext *ctx,
-                             const cell_t *params)
+static cell_t NativeGetFloat(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!PluginMngr::m_callerPlugin)
     {
@@ -162,8 +154,7 @@ static cell_t NativeGetFloat(SourcePawn::IPluginContext *ctx,
 }
 
 // native float NativeGetFloatRef(int param)
-static cell_t NativeGetFloatRef(SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
+static cell_t NativeGetFloatRef(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!PluginMngr::m_callerPlugin)
     {
@@ -183,8 +174,7 @@ static cell_t NativeGetFloatRef(SourcePawn::IPluginContext *ctx,
 }
 
 // native int NativeGetString(int param, char[] buffer, int size)
-static cell_t NativeGetString(SourcePawn::IPluginContext *ctx,
-                              const cell_t *params)
+static cell_t NativeGetString(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!PluginMngr::m_callerPlugin)
     {
@@ -209,8 +199,7 @@ static cell_t NativeGetString(SourcePawn::IPluginContext *ctx,
 }
 
 // native bool NativeGetArrayInt(int param, int[] buffer, int size)
-static cell_t NativeGetArrayInt(SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
+static cell_t NativeGetArrayInt(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!PluginMngr::m_callerPlugin)
     {
@@ -236,8 +225,7 @@ static cell_t NativeGetArrayInt(SourcePawn::IPluginContext *ctx,
 }
 
 // native bool NativeGetArrayFloat(int param, float[] buffer, int size)
-static cell_t NativeGetArrayFloat(SourcePawn::IPluginContext *ctx,
-                                  const cell_t *params)
+static cell_t NativeGetArrayFloat(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!PluginMngr::m_callerPlugin)
     {
@@ -266,8 +254,7 @@ static cell_t NativeGetArrayFloat(SourcePawn::IPluginContext *ctx,
 }
 
 // native bool NativeSetIntRef(int param, int value)
-static cell_t NativeSetIntRef(SourcePawn::IPluginContext *ctx,
-                              const cell_t *params)
+static cell_t NativeSetIntRef(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!PluginMngr::m_callerPlugin)
     {
@@ -288,8 +275,7 @@ static cell_t NativeSetIntRef(SourcePawn::IPluginContext *ctx,
 }
 
 // native bool NativeSetFloatRef(int param, float value)
-static cell_t NativeSetFloatRef(SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
+static cell_t NativeSetFloatRef(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!PluginMngr::m_callerPlugin)
     {
@@ -310,8 +296,7 @@ static cell_t NativeSetFloatRef(SourcePawn::IPluginContext *ctx,
 }
 
 // native int NativeSetString(int param, const char[] string, int size)
-static cell_t NativeSetString(SourcePawn::IPluginContext *ctx,
-                              const cell_t *params)
+static cell_t NativeSetString(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!PluginMngr::m_callerPlugin)
     {
@@ -339,8 +324,7 @@ static cell_t NativeSetString(SourcePawn::IPluginContext *ctx,
 }
 
 // native bool NativeSetArrayInt(int param, const int[] buffer, int size)
-static cell_t NativeSetArrayInt(SourcePawn::IPluginContext *ctx,
-                                const cell_t *params)
+static cell_t NativeSetArrayInt(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!PluginMngr::m_callerPlugin)
     {
@@ -366,8 +350,7 @@ static cell_t NativeSetArrayInt(SourcePawn::IPluginContext *ctx,
 }
 
 // native bool NativeSetArrayFloat(int param, const float[] buffer, int size)
-static cell_t NativeSetArrayFloat(SourcePawn::IPluginContext *ctx,
-                                  const cell_t *params)
+static cell_t NativeSetArrayFloat(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     if (!PluginMngr::m_callerPlugin)
     {
@@ -396,10 +379,12 @@ static cell_t NativeSetArrayFloat(SourcePawn::IPluginContext *ctx,
 }
 
 // void ChangeLevel(const char[] map)
-static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx,
-                          const cell_t *params)
+static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_map = 1 };
+    enum
+    {
+        arg_map = 1
+    };
 
     char *newMap;
     ctx->LocalToString(params[arg_map], &newMap);
@@ -408,62 +393,60 @@ static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-// float GetGameTime() 
-static cell_t GetGameTime(SourcePawn::IPluginContext *ctx [[maybe_unused]], 
-                          const cell_t *params [[maybe_unused]])
+// float GetGameTime()
+static cell_t GetGameTime(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params [[maybe_unused]])
 {
     return sp_ftoc(gpGlobals->time);
 }
 
 // native void ServerCmd(const char[] command, any ...)
-static cell_t ServerCmd(SourcePawn::IPluginContext *ctx,
-                        const cell_t *params)
+static cell_t ServerCmd(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_buffer = 1, arg_params };
+    enum
+    {
+        arg_buffer = 1,
+        arg_params
+    };
 
     char *formatString;
     char bufferOutput[1024];
 
     ctx->LocalToString(params[arg_buffer], &formatString);
     std::size_t res = formatString(bufferOutput, sizeof(bufferOutput) - 2, formatString, ctx, params, arg_params);
-  
+
     bufferOutput[res++] = '\n';
     bufferOutput[res] = '\0';
-  
+
     SERVER_COMMAND(bufferOutput);
 
     return 1;
 }
 
 // native void ServerExec()
-static cell_t ServerExec(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                         const cell_t *params [[maybe_unused]])
+static cell_t ServerExec(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params [[maybe_unused]])
 {
     SERVER_EXECUTE();
     return 1;
 }
 
-sp_nativeinfo_t gCoreNatives[] =
-{
-    {  "PrintToServer",          PrintToServer       },
-    {  "PrecacheModel",          PrecacheModel       },
-    {  "PrecacheSound",          PrecacheSound       },
-    {  "PrecacheGeneric",        PrecacheGeneric     },
-    {  "NativeRegister",         NativeRegister      },
-    {  "NativeGetInt",           NativeGetInt        },
-    {  "NativeGetIntRef",        NativeGetIntRef     },
-    {  "NativeGetFloat",         NativeGetInt        },
-    {  "NativeGetFloatRef",      NativeGetIntRef     },
-    {  "NativeGetString",        NativeGetString     },
-    {  "NativeGetArray",         NativeGetArray      },
-    {  "NativeSetIntRef",        NativeSetIntRef     },
-    {  "NativeSetFloatRef",      NativeSetFloatRef   },
-    {  "NativeSetString",        NativeSetString     },
-    {  "NativeSetArrayInt",      NativeSetArrayInt   },
-    {  "NativeSetArrayFloat",    NativeSetArrayFloat },
-    {  "ChangeLevel",            ChangeLevel         },
-    {  "GetGameTime",            GetGameTime         },
-    {  "ServerCmd",              ServerCmd           },
-    {  "ServerExec",             ServerExec          },
-    {  nullptr,                  nullptr             }
-};
+sp_nativeinfo_t gCoreNatives[] = {{"PrintToServer", PrintToServer},
+                                  {"PrecacheModel", PrecacheModel},
+                                  {"PrecacheSound", PrecacheSound},
+                                  {"PrecacheGeneric", PrecacheGeneric},
+                                  {"NativeRegister", NativeRegister},
+                                  {"NativeGetInt", NativeGetInt},
+                                  {"NativeGetIntRef", NativeGetIntRef},
+                                  {"NativeGetFloat", NativeGetInt},
+                                  {"NativeGetFloatRef", NativeGetIntRef},
+                                  {"NativeGetString", NativeGetString},
+                                  {"NativeGetArray", NativeGetArray},
+                                  {"NativeSetIntRef", NativeSetIntRef},
+                                  {"NativeSetFloatRef", NativeSetFloatRef},
+                                  {"NativeSetString", NativeSetString},
+                                  {"NativeSetArrayInt", NativeSetArrayInt},
+                                  {"NativeSetArrayFloat", NativeSetArrayFloat},
+                                  {"ChangeLevel", ChangeLevel},
+                                  {"GetGameTime", GetGameTime},
+                                  {"ServerCmd", ServerCmd},
+                                  {"ServerExec", ServerExec},
+                                  {nullptr, nullptr}};
