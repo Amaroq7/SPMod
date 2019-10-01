@@ -46,6 +46,10 @@ public:
     ILoggerMngr *getLoggerManager() const override;
     IPlayerMngr *getPlayerManager() const override;
     INativeProxy *getNativeProxy() const override;
+    ICommandMngr *getCommandManager() const override;
+    IEngineFuncs *getEngineFuncs() const override;
+    IEngineFuncsHooked *getEngineHookedFuncs() const override;
+    IEngineGlobals *getEngineGlobals() const override;
     IUtils *getUtils() const override;
 
     bool registerInterface(IInterface *interface) override;
@@ -95,6 +99,9 @@ private:
     std::unique_ptr<PlayerMngr> m_plrManager;
     std::unique_ptr<NativeProxy> m_nativeProxy;
     std::unique_ptr<Utils> m_utils;
+    std::unique_ptr<EngineFuncs> m_engineFuncs;
+    std::unique_ptr<EngineFuncsHooked> m_engineFuncsHooked;
+    std::unique_ptr<EngineGlobals> m_engineGlobals;
 
     std::string m_modName;
     std::unordered_map<std::string, IInterface *> m_interfaces;

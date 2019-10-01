@@ -28,6 +28,9 @@ SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_p
                                         m_menuManager(std::make_unique<MenuMngr>()),
                                         m_plrManager(std::make_unique<PlayerMngr>()),
                                         m_utils(std::make_unique<Utils>()),
+                                        m_engineFuncs(std::make_unique<EngineFuncs>()),
+                                        m_engineFuncsHooked(std::make_unique<EngineFuncsHooked>()),
+                                        m_engineGlobals(std::make_unique<EngineGlobals>()),
                                         m_modName(GET_GAME_INFO(PLID, GINFO_NAME))
 {
     // Sets default dirs
@@ -205,6 +208,11 @@ IPlayerMngr *SPGlobal::getPlayerManager() const
     return m_plrManager.get();
 }
 
+ICommandMngr *SPGlobal::getCommandManager() const
+{
+    return getCommandManagerCore().get();
+}
+
 IUtils *SPGlobal::getUtils() const
 {
     return getUtilsCore().get();
@@ -213,6 +221,21 @@ IUtils *SPGlobal::getUtils() const
 INativeProxy *SPGlobal::getNativeProxy() const
 {
     return getNativeProxyCore().get();
+}
+
+IEngineFuncs *SPGlobal::getEngineFuncs() const
+{
+    return m_engineFuncs.get();
+}
+
+IEngineFuncsHooked *SPGlobal::getEngineHookedFuncs() const
+{
+    return m_engineFuncsHooked.get();
+}
+
+IEngineGlobals *SPGlobal::getEngineGlobals() const
+{
+    return m_engineGlobals.get();
 }
 
 bool SPGlobal::registerInterface(IInterface *interface)

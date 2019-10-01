@@ -32,6 +32,7 @@
 #include <ICmdSystem.hpp>
 #include <IPluginSystem.hpp>
 #include <INativeProxy.hpp>
+#include <IEngineFuncs.hpp>
 
 namespace SPMod
 {
@@ -159,6 +160,34 @@ namespace SPMod
          * @return              Native proxy.
          */
         virtual INativeProxy *getNativeProxy() const = 0;
+
+        /**
+         * @brief Returns SPMod command manager.
+         * 
+         * @return              Command manager.
+         */
+        virtual ICommandMngr *getCommandManager() const = 0;
+
+        /**
+         * @brief Returns engine funcs.
+         * 
+         * @return              Engine functions.
+         */
+        virtual IEngineFuncs *getEngineFuncs() const = 0;
+
+        /**
+         * @brief Returns engine hooked funcs.
+         * 
+         * @return              Engine hooked functions.
+         */
+        virtual IEngineFuncsHooked *getEngineHookedFuncs() const = 0;
+
+        /**
+         * @brief Returns engine globals.
+         * 
+         * @return              Engine globals.
+         */
+        virtual IEngineGlobals *getEngineGlobals() const = 0;
 
         /**
          * @brief Registers module's interface.
