@@ -28,7 +28,6 @@
     - [Naming conventions](#naming-conventions)
       - [Variables & functions](#variables--functions)
       - [Classes, structures, filenames, unions](#classes-structures-filenames-unions)
-    - [Function's parameters](#functions-parameters)
     - [Brackets](#brackets)
     - [auto keyword](#auto-keyword)
       - [Type can be easily determined](#type-can-be-easily-determined)
@@ -61,24 +60,24 @@ If you get call for "rebase" your PR by a maintainer, it means a lot of code has
 
 # Getting started
 ### Submitting contribution
-1. Create your own fork of the project
-2. Do the changes in your fork
+1. Create your own fork of the project.
+2. Do the changes in your fork.
 3. If you like the change and think the project could use it:
     * Be sure you have followed the code style for the project,
     * Be sure you have not introduced any new bugs or regressions,
     * Document your changes,
     * Tests your changes.
-4. Create a pull request using [template](https://github.com/Amaroq7/SPMod/blob/master/PULL_REQUEST_TEMPLATE.md)
+4. Create a pull request using [template](https://github.com/Amaroq7/SPMod/blob/master/PULL_REQUEST_TEMPLATE.md).
 
 # How to report a bug
 ### Security issues
-If you find a security vulnerability, do not open an issue. Email karolsz9898@gmail.com instead.
+If you find a security vulnerability, do not open an issue. Inform any of the maintainers.
 
 In order to determine whether you are dealing with a security issue, ask yourself these two questions:
 * Can I access something that is not mine, or something I should not have access to?
 * Can I disable something for other people?
 
-If the answer to one of those two questions is "yes", it is highly likely that is a security issue. Even though if the answer is "no" to them, it still may be a security issue, so should you have any doubts, email karolsz9898@gmail.com.
+If the answer to one of those two questions is "yes", it is highly likely that is a security issue. Even though if the answer is "no" to them, it still may be a security issue, so should you have any doubts, feel free to ask any of the maintainers.
 
 ### Before filing a bug report
 - Make sure if your bug is really a bug
@@ -86,7 +85,7 @@ If the answer to one of those two questions is "yes", it is highly likely that i
 - Make sure you are using up to date version
 - Test under what conditions the bug is reproducible
 
-If you have done all steps above, you can file a bug report. To do so, fill out the [issue template](https://github.com/Amaroq7/SPMod/blob/master/ISSUE_TEMPLATE.md).
+If you have done all steps above, you can file a bug report.
 
 ### The same bug has already been reported
 If that is the case, please check the report and ensure if every piece of information has been provided. If you believe there is something missing, please share your thoughts with us, it may help us fix the issue or speed up finding the cause of it.
@@ -95,8 +94,8 @@ If that is the case, please check the report and ensure if every piece of inform
 ### Goals
 - Ease server's administration
 - Provide API for modules
-- Provide API for plugins using [SourcePawn](https://github.com/alliedmodders/sourcepawn) to work with C(++) structures, classes, functions
-- Be written using C11 and C++17 standards
+- Provide API for plugins using various scritping languages to work with C(++) structures, classes, functions
+- Be written using C11 and C++17 and later standards
 
 ### Process for suggesting a feature
 
@@ -124,9 +123,9 @@ Every contributor who has made non-trivial changes to the project will be added 
 TC consists of collaborators which are nominated by other collaborators. TC uses its consensus seeking process to accept or rejected a nominee for TC as for issues which have been passed on it. TC tries to find resolution which has no objections among the members of the group. If reaching consensus is impossible then majority wins vote is called, but that is the last-resort option.
 
 # Community
-The core team is [@Amaroq7](https://github.com/Amaroq7). Everyone is welcomed to participate in SPMod's development.
+The core team is [@Amaroq7](https://github.com/Amaroq7), [@Mistrick](https://github.com/Mistrick), [@Garey27](https://github.com/Garey27). Everyone is welcomed to participate in SPMod's development.
 
-You can chat with the core team on https://gitter.im/SPMod.
+You can chat with the core team on [Telegram group](https://t.me/joinchat/FEbDvUcxLWeJQhtCO5tegA).
 
 # Extra notes
 
@@ -148,6 +147,7 @@ You can chat with the core team on https://gitter.im/SPMod.
   - **windows** - Related to the SPMod running on Windows
   - **api** - Related to SPMod's public API
   - **meson** - Related to build system
+  - **module: sourcepawn** - Related to SourcePawn extension
 - Pull requests
   - **work-in-progress** - Not complete PR, the work on it is still pending
   - **needs-review** - PR needs to be reviewed and approved by collaborators
@@ -232,26 +232,6 @@ struct nativeDef
 {
     // ...
 };
-```
-
-#### Function's parameters
-
-If function has more then 2 parameters, then each of them should be placed in a new line.
-
-###### Examples
-```cpp
-// Good
-int foo(size_t a,
-        std::string b)
-{
-    // ...
-}
-
-// Bad
-int foo(size_t a, std::string b)
-{
-    // ...
-}
 ```
 
 #### Brackets
