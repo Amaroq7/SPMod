@@ -44,9 +44,9 @@ then
     mv build/libc++abi.so.1 libs
     mv build/libc++.so.1 libs
 
-    tar -cJvf $ARCHIVE_NAME dlls scripts libs
+    tar -cJvf $ARCHIVE_NAME dlls scripting libs
 else
-    tar -cJvf $ARCHIVE_NAME dlls scripts
+    tar -cJvf $ARCHIVE_NAME dlls scripting
 fi
 
 mkdir upload
