@@ -47,7 +47,7 @@ private:
 class NativeProxy final : public INativeProxy
 {
 public:
-    NativeProxy() = delete;
+    NativeProxy() = default;
     NativeProxy(const NativeProxy &other) = delete;
     NativeProxy(NativeProxy &&other) = default;
     ~NativeProxy() = default;

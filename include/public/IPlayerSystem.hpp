@@ -21,33 +21,6 @@
 
 #include <cstddef>
 
-#include <archtypes.h>
-
-#if !defined vec_t
-using vec_t = float;
-#endif
-
-#if !defined sqrt
-    #include <cmath>
-#endif
-
-#include <vector.h>
-
-#if !defined vec3_t
-    #define vec3_t Vector
-#endif
-
-#if !defined string_t
-using string_t = unsigned int;
-#endif
-
-#if !defined byte
-using byte = unsigned char;
-#endif
-
-#include <const.h>
-#include <edict.h>
-
 namespace SPMod
 {
     /**
@@ -55,7 +28,10 @@ namespace SPMod
      */
     constexpr unsigned int MAX_PLAYERS = 32U;
 
-    class IPlayer
+    class IEdict;
+    class IMenu;
+
+    class IPlayer : public virtual IEdict
     {
     public:
         /**
@@ -78,20 +54,6 @@ namespace SPMod
          * @return      Player's SteamID.
          */
         virtual const char *getSteamID() const = 0;
-
-        /**
-         * @brief Returns the player's edict_t structure.
-         *
-         * @return      Player's edict_t structure.
-         */
-        virtual edict_t *getEdict() const = 0;
-
-        /**
-         * @brief Returns the player's index.
-         *
-         * @return      Player's index.
-         */
-        virtual unsigned int getIndex() const = 0;
 
         /**
          * @brief Returns the player's userid.
@@ -135,13 +97,43 @@ namespace SPMod
          */
         virtual bool isInGame() const = 0;
 
+        virtual IMenu *getMenu() const = 0;
+        virtual int getMenuPage() const = 0;
+        virtual void closeMenu() = 0;
+
     protected:
         virtual ~IPlayer() = default;
     };
 
-    class IPlayerMngr
+    class IPlayerMngr : public ISPModInterface
     {
     public:
+        static constexpr std::uint16_t MAJOR_VERSION = 0;
+        static constexpr std::uint16_t MINOR_VERSION = 0;
+
+        static constexpr std::uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
+        /**
+         * @brief Gets interface's name.
+         *
+         * @return        Interface's name.
+         */
+        const char *getName() const override
+        {
+            return "IPlayerMngr";
+        }
+
+        /**
+         * @brief Gets interface's version.
+         *
+         * @note The first 16 most significant bits represent major version, the rest represent minor version.
+         *
+         * @return        Interface's version.
+         */
+        std::uint32_t getVersion() const override
+        {
+            return VERSION;
+        }
+
         /**
          * @brief Returns IPlayer object by its client index.
          *
@@ -160,7 +152,7 @@ namespace SPMod
          *
          * @return          IPlayer object, nullptr if out of range.
          */
-        virtual IPlayer *getPlayer(edict_t *edict) const = 0;
+        virtual IPlayer *getPlayer(IEdict *edict) const = 0;
 
         /**
          * @brief Returns the maximum number of clients.

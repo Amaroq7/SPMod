@@ -1,5 +1,3 @@
-add_project_arguments('-DSPMOD_CORE', language : [ 'c', 'cpp' ])
-
 if build_machine.system() == 'linux'
     add_project_link_arguments('-ldl', language : [ 'c', 'cpp'])
 elif build_machine.system() == 'windows'
@@ -29,6 +27,8 @@ sourceFiles = files('h_export.cpp',
                     'ValveInterface.cpp',
                     'UtilsSystem.cpp',
                     'NativeProxy.cpp',
-                    'EngineFuncs.cpp')
+                    'EngineFuncs.cpp',
+                    'MetaFuncs.cpp',
+                    'Edict.cpp')
 
 shared_library('spmod_mm', sourceFiles, include_directories : includeDirs, gnu_symbol_visibility : 'hidden')

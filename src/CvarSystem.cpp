@@ -147,7 +147,7 @@ int Cvar::asInt() const
 {
     try
     {
-        return std::stoi(m_value, nullptr, 0);
+        return std::stoi(m_value);
     }
     catch (const std::exception &e [[maybe_unused]])
     {

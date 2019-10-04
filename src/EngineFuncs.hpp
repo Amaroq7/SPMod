@@ -39,6 +39,16 @@ public:
     void serverCommand(const char* cmd) const override;
     void serverExecute() const override;
     void registerSrvCommand(const char *cmd) const override;
+    void messageBegin(int msgDest, int msgType, const float *pOrigin, IEdict *pEdict) const override;
+    void messageEnd() const override;
+    void writeByte(int byteArg) const override;
+    void writeChar(int charArg) const override;
+    void writeShort(int shortArg) const override;
+    void writeLong(int longArg) const override;
+    void writeEntity(int entArg) const override;
+    void writeAngle(float angleArg) const override;
+    void writeCoord(float coordArg) const override;
+    void writeString(const char *strArg) const override;
 };
 
 class EngineFuncsHooked : public IEngineFuncsHooked
@@ -59,6 +69,16 @@ public:
     void serverCommand(const char* cmd) const override;
     void serverExecute() const override;
     void registerSrvCommand(const char *cmd) const override;
+    void messageBegin(int msgDest, int msgType, const float *pOrigin, IEdict *pEdict) const override;
+    void messageEnd() const override;
+    void writeByte(int byteArg) const override;
+    void writeChar(int charArg) const override;
+    void writeShort(int shortArg) const override;
+    void writeLong(int longArg) const override;
+    void writeEntity(int entArg) const override;
+    void writeAngle(float angleArg) const override;
+    void writeCoord(float coordArg) const override;
+    void writeString(const char *strArg) const override;
 };
 
 class EngineGlobals : public IEngineGlobals
@@ -67,6 +87,6 @@ public:
     EngineGlobals() = default;
     ~EngineGlobals() = default;
     
-
     float getTime() const override;
+    const char *getMapName() const override;
 };

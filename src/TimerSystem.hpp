@@ -35,7 +35,7 @@ public:
         return m_timers.emplace_back(std::make_shared<Timer>(std::forward<Args>(args)...));
     }
 
-    ITimer *createTimer(float interval, TimerCallback func, void *data, bool pause) override;
+    ITimer *createTimer(float interval, TimerCallback callback, void *cbData, void *data, bool pause) override;
 
     void removeTimer(ITimer *timer) override;
     void execTimer(ITimer *timer) override;
@@ -63,12 +63,13 @@ public:
     Timer(Timer &&other) = default;
     ~Timer() = default;
 
-    Timer(float interval, TimerCallback func, void *data, bool pause);
+    Timer(float interval, TimerCallback func, void *cbData, void *data, bool pause);
 
     float getInterval() const override;
     bool isPaused() const override;
     void setInterval(float newint) override;
     void setPause(bool pause) override;
+    void *getData() const override;
 
 private:
     bool exec(float time);
@@ -80,6 +81,9 @@ private:
     TimerCallback m_callback;
 
     /* callback data */
+    void *m_cbData;
+
+    /* plugin data */
     void *m_data;
 
     /* Pause state */

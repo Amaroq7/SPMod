@@ -39,10 +39,10 @@ static void ChangeLevel(const char *s1, const char *s2 [[maybe_unused]])
 static void
     MessageBegin_Pre(int msg_dest [[maybe_unused]], int msg_type, const float *pOrigin [[maybe_unused]], edict_t *ed)
 {
+    std::shared_ptr<Player> spPlayer = gSPGlobal->getPlayerManagerCore()->getPlayerCore(ENTINDEX(ed));
     if (msg_type == gmsgShowMenu || msg_type == gmsgVGUIMenu)
     {
-        std::shared_ptr<Player> pPlayer = gSPGlobal->getPlayerManagerCore()->getPlayerCore(ed);
-        gSPGlobal->getMenuManagerCore()->closeMenu(pPlayer);
+        spPlayer->closeMenu();
     }
     RETURN_META(MRES_IGNORED);
 }

@@ -32,7 +32,7 @@ static qboolean ClientConnect(edict_t *pEntity, const char *pszName, const char 
 static void ClientCommand(edict_t *pEntity)
 {
     using def = ForwardMngr::FwdDefault;
-
+    std::shared_ptr<Edict> spEdict = gSPGlobal->getEdictCore(ENTINDEX(pEntity));
     {
         int result;
         std::shared_ptr<Forward> fwdCmd = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientCommmand);
@@ -50,12 +50,18 @@ static void ClientCommand(edict_t *pEntity)
     META_RES res = MRES_IGNORED;
 
     std::string strCmd(CMD_ARGV(0));
+    
+    if (strCmd == "menuselect")
+    {
+        res = gSPGlobal->getMenuManagerCore()->ClientCommand(pEntity);
+        RETURN_META(res);
+    }
 
     const std::unique_ptr<CommandMngr> &cmdMngr = gSPGlobal->getCommandManagerCore();
-    std::shared_ptr<Player> player = gSPGlobal->getPlayerManagerCore()->getPlayerCore(pEntity);
+    std::shared_ptr<Player> player = gSPGlobal->getPlayerManagerCore()->getPlayerCore(spEdict);
     if (cmdMngr->getCommandsNum(ICommand::Type::Client))
     {
-        if (!strCmd.compare("say") || !strCmd.compare("say_team"))
+        if (strCmd == "say" || strCmd == "say_team")
         {
             strCmd += ' ';
             strCmd += CMD_ARGV(1);
@@ -67,8 +73,8 @@ static void ClientCommand(edict_t *pEntity)
             if (std::regex_search(strCmd, cmdToMatch) && cmd->hasAccessCore(player))
             {
                 IForward::ReturnValue result = IForward::ReturnValue::Ignored;
-                ICommand::Callback *func = cmd->getCallback();
-                result = (*func)(player.get(), cmd.get());
+                ICommand::Callback func = cmd->getCallback();
+                result = func(player.get(), cmd.get(), cmd->getCallbackData());
 
                 if (result == IForward::ReturnValue::Stop || result == IForward::ReturnValue::Handled)
                 {
@@ -78,11 +84,6 @@ static void ClientCommand(edict_t *pEntity)
                 }
             }
         }
-    }
-
-    if (!strCmd.compare("menuselect"))
-    {
-        res = gSPGlobal->getMenuManagerCore()->ClientCommand(pEntity);
     }
 
     RETURN_META(res);
@@ -150,6 +151,7 @@ static void ServerActivatePost(edict_t *pEdictList, int edictCount [[maybe_unuse
 {
     using DefFwd = ForwardMngr::FwdDefault;
 
+    gSPGlobal->clearEdicts();
     gSPGlobal->getPlayerManagerCore()->ServerActivatePost(pEdictList, clientMax);
 
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();

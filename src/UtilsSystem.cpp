@@ -29,13 +29,15 @@ std::size_t Utils::strCopyCore(char *buffer, std::size_t size, std::string_view 
     #endif // SP_MSVC
 #else
     std::strncpy(buffer, src.data(), size);
-    buffer[size - 1] = '\0';
 #endif // __STDC_LIB_EXT1__ || defined SP_MSVC
 
     std::size_t writtenChars = size - 1;
     if (src.length() < writtenChars)
         writtenChars = src.length();
 
+#if !defined SP_MSVC
+    buffer[writtenChars] = '\0';
+#endif
     return writtenChars;
 }
 
@@ -58,4 +60,29 @@ std::size_t
     Utils::strReplaced(char *buffer, std::size_t size, const char *source, const char *from, const char *to) const
 {
     return strCopyCore(buffer, size, strReplacedCore(source, from, to));
+}
+
+void Utils::ShowMenu(std::shared_ptr<Edict> pEdict, int slots, int time, const char *menu, std::size_t menuLength)
+{
+    static constexpr std::size_t bufferSize = 175;
+
+    if (!gmsgShowMenu)
+        return; // some games don't support ShowMenu (Firearms)
+
+    std::size_t currentPos = 0;
+    static char bufferOutput[bufferSize] = {};
+
+    do
+    {
+        std::size_t writtenChars = strCopyCore(bufferOutput, bufferSize, std::string_view(menu, currentPos));
+        currentPos += writtenChars;
+        menuLength -= writtenChars;
+
+        MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, nullptr, pEdict->getInternalEdict());
+        WRITE_SHORT(slots);
+        WRITE_CHAR(time);
+        WRITE_BYTE((menuLength > 0) ? true : false);
+        WRITE_STRING(bufferOutput);
+        MESSAGE_END();
+    } while (menuLength > 0);
 }

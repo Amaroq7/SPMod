@@ -56,6 +56,13 @@ namespace SPMod
          */
         virtual void setPause(bool pause) = 0;
 
+        /**
+         * @brief Gets timer's data.
+         *
+         * @return        Timer's data.
+         */
+        virtual void *getData() const = 0;
+
     protected:
         virtual ~ITimer() = default;
     };
@@ -102,12 +109,17 @@ namespace SPMod
          *
          * @param interval    Time interval.
          * @param func        Callback function.
-         * @param data        Data that is passed to timer callback.
+         * @param cbData      Data that is passed to timer callback.
+         * @param data        Data that is passed to the plugin.
          * @param pause       True if timer should be paused after creation, false otherwise.
          *
          * @return            Created timer.
          */
-        virtual ITimer *createTimer(float interval, TimerCallback func, void *data = nullptr, bool pause = false) = 0;
+        virtual ITimer *createTimer(float interval,
+                                    TimerCallback func,
+                                    void *cbData = nullptr,
+                                    void *data = nullptr,
+                                    bool pause = false) = 0;
 
         /**
          * @brief Removes a timer.

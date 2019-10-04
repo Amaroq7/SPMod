@@ -23,25 +23,26 @@
 
 class Menu;
 
-class Player : public IPlayer
+class Player : public Edict, public IPlayer
 {
 public:
     Player() = delete;
     ~Player() = default;
-    Player(edict_t *edict, unsigned int index);
+    Player(std::shared_ptr<Edict> edict);
 
     // IPlayer
     const char *getName() const override;
     const char *getIPAddress() const override;
     const char *getSteamID() const override;
-    edict_t *getEdict() const override;
-    unsigned int getIndex() const override;
     int getUserId() const override;
     bool isAlive() const override;
     bool isConnected() const override;
     bool isFake() const override;
     bool isHLTV() const override;
     bool isInGame() const override;
+    void closeMenu() override;
+    IMenu *getMenu() const override;
+    int getMenuPage() const override;
 
     // Player
     std::string_view getNameCore() const;
@@ -49,9 +50,8 @@ public:
     std::string_view getSteamIDCore() const;
     void setName(std::string_view newname);
 
-    std::weak_ptr<Menu> getMenu() const;
+    std::weak_ptr<Menu> getMenuCore() const;
     void setMenu(std::shared_ptr<Menu> menu);
-    int getMenuPage() const;
     void setMenuPage(int page);
 
     void connect(std::string_view name, std::string_view ip);
@@ -60,9 +60,10 @@ public:
     void putInServer();
     void authorize(std::string_view authid);
 
+    void setOwnInstance(std::shared_ptr<Player> instance);
+
 private:
-    edict_t *m_edict;
-    unsigned int m_index;
+    std::weak_ptr<Player> m_ownInstance;
     bool m_connected;
     bool m_inGame;
     int m_userID;
@@ -82,13 +83,15 @@ public:
 
     // IPlayerManager
     IPlayer *getPlayer(int index) const override;
-    IPlayer *getPlayer(edict_t *edict) const override;
+    IPlayer *getPlayer(IEdict *edict) const override;
     unsigned int getMaxClients() const override;
     unsigned int getNumPlayers() const override;
 
     // PlayerManager
     std::shared_ptr<Player> getPlayerCore(int index) const;
+    std::shared_ptr<Player> getPlayerCore(std::shared_ptr<Edict> edict) const;
     std::shared_ptr<Player> getPlayerCore(edict_t *edict) const;
+    std::shared_ptr<Player> getPlayerCore(IPlayer *player) const;
 
     bool ClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128]);
 

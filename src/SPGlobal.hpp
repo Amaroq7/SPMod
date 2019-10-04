@@ -52,6 +52,8 @@ public:
     IEngineFuncs *getEngineFuncs() const override;
     IEngineFuncsHooked *getEngineHookedFuncs() const override;
     IEngineGlobals *getEngineGlobals() const override;
+    IMetaFuncs *getMetaFuncs() const override;
+    IEdict *getEdict(int index) override;
     IUtils *getUtils() const override;
 
     bool registerInterface(IInterface *interface) override;
@@ -70,6 +72,8 @@ public:
     const std::unique_ptr<LoggerMngr> &getLoggerManagerCore() const;
     const std::unique_ptr<PlayerMngr> &getPlayerManagerCore() const;
     const std::unique_ptr<NativeProxy> &getNativeProxyCore() const;
+    std::shared_ptr<Edict> getEdictCore(int index);
+    void clearEdicts();
     const auto &getInterfacesList() const
     {
         return m_interfaces;
@@ -100,15 +104,17 @@ private:
     std::unique_ptr<MenuMngr> m_menuManager;
     std::unique_ptr<PlayerMngr> m_plrManager;
     std::unique_ptr<NativeProxy> m_nativeProxy;
-    std::unique_ptr<Utils> m_utils;
     std::unique_ptr<EngineFuncs> m_engineFuncs;
     std::unique_ptr<EngineFuncsHooked> m_engineFuncsHooked;
     std::unique_ptr<EngineGlobals> m_engineGlobals;
+    std::unique_ptr<MetaFuncs> m_metaFuncs;
+    std::unique_ptr<Utils> m_utils;
 
     std::string m_modName;
     std::unordered_map<std::string, IInterface *> m_interfaces;
     std::vector<std::unique_ptr<Extension>> m_extHandles;
     std::vector<IPluginMngr *> m_pluginManagers;
+    std::unordered_map<int, std::shared_ptr<Edict>> m_edicts;
 
     bool m_canPluginsPrecache;
 };

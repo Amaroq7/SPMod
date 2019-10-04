@@ -116,8 +116,8 @@ void PluginSrvCmd()
     {
         if (!cmd->getCmdCore().compare(argv))
         {
-            ICommand::Callback *func = cmd->getCallback();
-            (*func)(nullptr, cmd.get());
+            ICommand::Callback func = cmd->getCallback();
+            func(nullptr, cmd.get(), cmd->getCallbackData());
         }
     }
 }

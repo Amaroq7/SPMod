@@ -26,7 +26,7 @@ namespace SPMod
     class ICommand
     {
     public:
-        using Callback = IForward::ReturnValue (*)(IPlayer *const player, const ICommand *const cmd);
+        using Callback = IForward::ReturnValue (*)(IPlayer *const player, const ICommand *const cmd, void *data);
 
         enum class Type : std::uint8_t
         {
@@ -47,13 +47,6 @@ namespace SPMod
          * @return Command's info.
          */
         virtual const char *getInfo() const = 0;
-
-        /**
-         * @brief Returns command's data.
-         *
-         * @return Command's data.
-         */
-        virtual void *getData() const = 0;
 
         /**
          * @brief Checks if player can execute the command.
@@ -121,7 +114,7 @@ namespace SPMod
                                           const char *cmd,
                                           const char *info,
                                           std::uint32_t flags,
-                                          ICommand::Callback *cb,
+                                          ICommand::Callback cb,
                                           void *data) = 0;
 
     protected:

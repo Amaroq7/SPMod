@@ -57,9 +57,9 @@ public:
     bool pushString(const char *string) override;
     bool pushString(char *buffer, std::size_t length, IForward::StringFlags sflags, bool copyback) override;
 
-    bool isExecuted() const;
-
     void resetParams() override;
+
+    bool isExecuted() const;
 
 protected:
     /* forward name */
@@ -184,12 +184,13 @@ public:
     IForward *
         createForward(const char *name, IPlugin *plugin, std::size_t paramsnum, IForward::Param::Type *params) override;
 
-    void deleteForward(IForward *forward) override;
+    bool deleteForward(IForward *forward) override;
     void addForwardListener(ForwardCallback func) override;
 
     // ForwardMngr
     void clearForwards();
-    void deleteForwardCore(std::shared_ptr<Forward> fwd);
+    bool deleteForwardCore(std::shared_ptr<Forward> fwd);
+    bool deleteForwardCore(const std::unordered_multimap<std::string, std::shared_ptr<Forward>>::iterator &iter);
     std::shared_ptr<Forward> getDefaultForward(ForwardMngr::FwdDefault fwd) const;
 
     void addDefaultsForwards();
