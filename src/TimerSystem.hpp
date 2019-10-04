@@ -71,6 +71,9 @@ public:
     void setPause(bool pause) override;
     void *getData() const override;
 
+    // Timer
+    void *getCallbackData() const;
+
 private:
     bool exec(float time);
 
