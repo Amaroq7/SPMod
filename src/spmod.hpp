@@ -1,7 +1,9 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018 SPMod Development Team
  *
- *  This program is free software: you can redistribute it and/or modify
+ *  This file is part of SPMod.
+ *
+ *  SPMod is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -13,7 +15,7 @@
 
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ */
 
 #pragma once
 
@@ -75,10 +77,10 @@
 
 #if __has_include(<filesystem>)
     #include <filesystem>
-    // As of GCC 8.1 and Clang 7 filesystem is no longer part of experimental
-    #if (defined SP_GCC && __GNUC__ >= 8) || (defined SP_CLANG && __clang_major__ >= 7)
+    // As of GCC 8.1, Clang 7 and MSVC 2019 filesystem is no longer part of experimental
+    #if (defined SP_GCC && __GNUC__ >= 8) || (defined SP_CLANG && __clang_major__ >= 7) || (defined SP_MSVC && _MSC_VER >= 1920)
         namespace fs = std::filesystem;
-    #else // Some compilers still have filesystem within experimental namespace like MSVC
+    #else // Some compilers still have filesystem within experimental namespace like MSVC 2017
         namespace fs = std::experimental::filesystem;
     #endif
 #elif __has_include(<experimental/filesystem>)
