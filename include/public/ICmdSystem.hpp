@@ -26,7 +26,7 @@ namespace SPMod
     class ICommand
     {
     public:
-        using Callback = IForward::ReturnValue (*)(IPlayer *player, const ICommand *const cmd);
+        using Callback = IForward::ReturnValue (*)(IPlayer *const player, const ICommand *const cmd);
 
         enum class Type : std::uint8_t
         {
@@ -43,7 +43,7 @@ namespace SPMod
 
         /**
          * @brief Returns command's info.
-         * 
+         *
          * @return Command's info.
          */
         virtual const char *getInfo() const = 0;
@@ -57,7 +57,9 @@ namespace SPMod
 
         /**
          * @brief Checks if player can execute the command.
-         * 
+         *
+         * @param player          Player to check access.
+         *
          * @return True if player has access, false otherwise.
          */
         virtual bool hasAccess(IPlayer *player) const = 0;

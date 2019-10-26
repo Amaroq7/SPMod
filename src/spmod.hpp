@@ -122,6 +122,7 @@ using namespace SPMod;
 #include "PlayerSystem.hpp"
 #include "ExtensionSystem.hpp"
 #include "NativeProxy.hpp"
+#include "EngineFuncs.hpp"
 #include "SPGlobal.hpp"
 
 constexpr auto gSPModAuthor = "SPMod Development Team";
