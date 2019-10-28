@@ -31,32 +31,12 @@ SPGlobal::SPGlobal(fs::path &&dllDir)
       m_utils(std::make_unique<Utils>()), m_modName(GET_GAME_INFO(PLID, GINFO_NAME))
 {
     // Sets default dirs
-    setPluginsDir("plugins");
-    setLogsDir("logs");
-    setDllsDir("dlls");
-    setExtDir("exts");
+    setPath(DirType::Plugins, "plugins");
+    setPath(DirType::Logs, "logs");
+    setPath(DirType::Dlls, "dlls");
+    setPath(DirType::Exts, "exts");
 
     m_edicts.reserve(2048);
-}
-
-void SPGlobal::setPluginsDir(std::string_view folder)
-{
-    m_SPModPluginsDir = m_SPModDir / folder.data();
-}
-
-void SPGlobal::setLogsDir(std::string_view folder)
-{
-    m_SPModLogsDir = m_SPModDir / folder.data();
-}
-
-void SPGlobal::setDllsDir(std::string_view folder)
-{
-    m_SPModDllsDir = m_SPModDir / folder.data();
-}
-
-void SPGlobal::setExtDir(std::string_view folder)
-{
-    m_SPModExtsDir = m_SPModDir / folder.data();
 }
 
 std::size_t SPGlobal::loadExts()
@@ -127,7 +107,7 @@ void SPGlobal::unloadExts()
     }
 
     m_extHandles.clear();
-    m_interfaces.clear();
+    m_modulesInterfaces.clear();
 }
 
 bool SPGlobal::canPluginsPrecache() const
@@ -144,7 +124,7 @@ IPlugin *SPGlobal::getPlugin(const char *pluginname) const
 
     std::string_view pluginExt(pluginname);
     pluginExt = pluginExt.substr(pluginExt.length() - 4);
-    for (const auto &interface : m_interfaces)
+    for (const auto &interface : m_adaptersInterfaces)
     {
         IPluginMngr *pluginMngr = interface.second->getPluginMngr();
 
@@ -248,17 +228,51 @@ IEdict *SPGlobal::getEdict(int index)
     return getEdictCore(index).get();
 }
 
-bool SPGlobal::registerInterface(IInterface *interface)
+bool SPGlobal::registerAdapter(IAdapterInterface *interface)
 {
-    return m_interfaces.try_emplace(interface->getName(), interface).second;
+    return m_adaptersInterfaces.try_emplace(interface->getName(), interface).second;
 }
 
-IInterface *SPGlobal::getInterface(const char *name) const
+bool SPGlobal::registerModule(IModuleInterface *interface)
 {
-    if (auto iter = m_interfaces.find(name); iter != m_interfaces.end())
+    return m_modulesInterfaces.try_emplace(interface->getName(), interface).second;
+}
+
+IModuleInterface *SPGlobal::getInterface(const char *name) const
+{
+    if (auto iter = m_modulesInterfaces.find(name); iter != m_modulesInterfaces.end())
         return iter->second;
 
     return nullptr;
+}
+
+void SPGlobal::setPath(DirType type, std::string_view path)
+{
+    switch (type)
+    {
+        case DirType::Dlls:
+        {
+            m_SPModDllsDir = m_SPModDir / path;
+            break;
+        }
+        case DirType::Exts:
+        {
+            m_SPModExtsDir = m_SPModDir / path;
+            break;
+        }
+        case DirType::Logs:
+        {
+            m_SPModLogsDir = m_SPModDir / path;
+            break;
+        }
+        case DirType::Plugins:
+        {
+            m_SPModPluginsDir = m_SPModDir / path;
+            break;
+        }
+        default:
+            return;
+    }
 }
 
 const fs::path &SPGlobal::getPathCore(DirType type) const

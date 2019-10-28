@@ -50,7 +50,7 @@ static void ClientCommand(edict_t *pEntity)
     META_RES res = MRES_IGNORED;
 
     std::string strCmd(CMD_ARGV(0));
-    
+
     if (strCmd == "menuselect")
     {
         res = gSPGlobal->getMenuManagerCore()->ClientCommand(pEntity);
@@ -132,7 +132,7 @@ static void ServerActivatePost(edict_t *pEdictList, int edictCount [[maybe_unuse
     gSPGlobal->loadExts();
     gSPGlobal->allowPrecacheForPlugins(true);
 
-    for (auto &interface : gSPGlobal->getInterfacesList())
+    for (auto &interface : gSPGlobal->getAdaptersInterfaces())
     {
         interface.second->getPluginMngr()->loadPlugins();
     }
@@ -140,7 +140,7 @@ static void ServerActivatePost(edict_t *pEdictList, int edictCount [[maybe_unuse
     // Allow plugins to add their natives
     fwdMngr->getDefaultForward(DefFwd::PluginNatives)->execFunc(nullptr);
 
-    for (auto &interface : gSPGlobal->getInterfacesList())
+    for (auto &interface : gSPGlobal->getAdaptersInterfaces())
     {
         interface.second->getPluginMngr()->bindPluginsNatives();
     }
@@ -160,7 +160,7 @@ static void ServerDeactivatePost()
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
     fwdMngr->getDefaultForward(DefFwd::PluginEnd)->execFunc(nullptr);
 
-    for (auto &interface : gSPGlobal->getInterfacesList())
+    for (auto &interface : gSPGlobal->getAdaptersInterfaces())
     {
         interface.second->getPluginMngr()->unloadPlugins();
     }

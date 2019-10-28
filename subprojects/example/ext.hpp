@@ -24,7 +24,7 @@
 
 namespace SPExtExample
 {
-    class Interface final : public SPMod::IInterface
+    class Interface final : public SPMod::IAdapterInterface
     {
         const char *getName() const override
         {

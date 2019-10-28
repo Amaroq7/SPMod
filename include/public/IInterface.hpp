@@ -23,7 +23,68 @@ namespace SPMod
 {
     class IPluginMngr;
 
-    class IInterface
+    class IModuleInterface
+    {
+    public:
+        /**
+         * @brief Gets interface's name.
+         *
+         * @return              Interface's name.
+         */
+        virtual const char *getName() const = 0;
+
+        /**
+         * @brief Gets interface's version.
+         *
+         * @return              Interface's version.
+         */
+        virtual std::uint32_t getVersion() const = 0;
+
+        /**
+         * @brief Gets interface's author.
+         *
+         * @return              Interface's author.
+         */
+        virtual const char *getAuthor() const = 0;
+
+        /**
+         * @brief Gets interface's url.
+         *
+         * @return              Interface's url.
+         */
+        virtual const char *getUrl() const = 0;
+
+        /**
+         * @brief Gets name of the extension that implements the interface.
+         *
+         * @return              Extension's name.
+         */
+        virtual const char *getExtName() const = 0;
+
+        /**
+         * @brief Check if requested version is compatible.
+         *
+         * @param reqversion    Version to be checked.
+         *
+         * @return              True if is compatible, false otherwise.
+         */
+        virtual bool isVersionCompatible(std::uint32_t reqversion) const
+        {
+            return (reqversion > getVersion() ? false : true);
+        }
+
+        /**
+         * @brief Gets interface's implementation.
+         *
+         * @return              Interface's implementation.
+         */
+        virtual void *getImplementation() const = 0;
+
+    protected:
+        virtual ~IModuleInterface() = default;
+    };
+
+    class IAdapterInterface
     {
     public:
         /**
@@ -81,45 +142,39 @@ namespace SPMod
         virtual IPluginMngr *getPluginMngr() const = 0;
 
     protected:
-        virtual ~IInterface() = default;
+        virtual ~IAdapterInterface() = default;
     };
 
-    class ISPModInterface : public IInterface
+    class ISPModInterface
     {
     public:
-        const char *getAuthor() const override final
+        virtual const char *getName() const = 0;
+        virtual std::uint32_t getVersion() const = 0;
+
+        virtual const char *getAuthor() const final
         {
             return "SPMod Development Team";
         }
 
-        const char *getUrl() const override final
+        virtual const char *getUrl() const final
         {
             return "https://github.com/Amaroq7/SPMod";
         }
 
-        const char *getExtName() const override final
+        virtual const char *getExtName() const final
         {
             return "SPMod";
         }
 
-        bool isVersionCompatible(std::uint32_t reqversion) const override final
+        virtual bool isVersionCompatible(std::uint32_t reqversion) const final
         {
-            std::uint16_t majorReqVer = reqversion >> 16;
-
-            if (majorReqVer != (getVersion() >> 16))
+            if (std::uint16_t majorReqVer = reqversion >> 16; majorReqVer != (getVersion() >> 16))
                 return false;
 
-            std::uint16_t minorReqVer = reqversion & 0xFFFF;
-
-            if (minorReqVer > (getVersion() & 0xFFFF))
+            if (std::uint16_t minorReqVer = reqversion & 0xFFFF; minorReqVer > (getVersion() & 0xFFFF))
                 return false;
 
             return true;
-        }
-
-        IPluginMngr *getPluginMngr() const final
-        {
-            return nullptr;
         }
 
     protected:

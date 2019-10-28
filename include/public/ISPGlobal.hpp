@@ -210,29 +210,39 @@ namespace SPMod
         /**
          * @brief Registers module's interface.
          *
-         * @param interface     Interface's address.
+         * @param interface     Interface's implementation.
          *
          * @return              True if registered successfully, false otherwise.
          */
-        virtual bool registerInterface(IInterface *interface) = 0;
+        virtual bool registerModule(IModuleInterface *interface) = 0;
+
+        /**
+         * @brief Registers adapter's interface.
+         *
+         * @param interface     Adapter's implementation.
+         *
+         * @return              True if registered successfully, false otherwise.
+         */
+        virtual bool registerAdapter(IAdapterInterface *interface) = 0;
 
         /**
          * @brief Gets a module's interface.
          *
          * @param name          Name of the interface to look up for.
          *
-         * @return              True if registered successfully, false otherwise.
+         * @return              Interface's implementation.
          */
-        virtual IInterface *getInterface(const char *name) const = 0;
+        virtual IModuleInterface *getInterface(const char *name) const = 0;
 
     protected:
         virtual ~ISPGlobal() = default;
     };
 
-    enum class ExtQueryValue : uint8_t
+    enum class ExtQueryValue : std::uint8_t
     {
         DontLoad = 0,
-        SPModExt = 1
+        SPModAdapter = 1,
+        SPModModule = 2
     };
 
     /**

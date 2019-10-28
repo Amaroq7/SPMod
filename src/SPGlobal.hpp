@@ -56,8 +56,9 @@ public:
     IEdict *getEdict(int index) override;
     IUtils *getUtils() const override;
 
-    bool registerInterface(IInterface *interface) override;
-    IInterface *getInterface(const char *name) const override;
+    bool registerModule(IModuleInterface *interface) override;
+    bool registerAdapter(IAdapterInterface *interface) override;
+    IModuleInterface *getInterface(const char *name) const override;
 
     // SPGlobal
     const fs::path &getPathCore(DirType type) const;
@@ -74,15 +75,16 @@ public:
     const std::unique_ptr<NativeProxy> &getNativeProxyCore() const;
     std::shared_ptr<Edict> getEdictCore(int index);
     void clearEdicts();
-    const auto &getInterfacesList() const
+    const auto &getModulesInterfaces() const
     {
-        return m_interfaces;
+        return m_modulesInterfaces;
+    }
+    const auto &getAdaptersInterfaces() const
+    {
+        return m_adaptersInterfaces;
     }
 
-    void setPluginsDir(std::string_view folder);
-    void setLogsDir(std::string_view folder);
-    void setDllsDir(std::string_view folder);
-    void setExtDir(std::string_view folder);
+    void setPath(DirType type, std::string_view path);
 
     std::size_t loadExts();
     void unloadExts();
@@ -111,7 +113,8 @@ private:
     std::unique_ptr<Utils> m_utils;
 
     std::string m_modName;
-    std::unordered_map<std::string, IInterface *> m_interfaces;
+    std::unordered_map<std::string, IModuleInterface *> m_modulesInterfaces;
+    std::unordered_map<std::string, IAdapterInterface *> m_adaptersInterfaces;
     std::vector<std::unique_ptr<Extension>> m_extHandles;
     std::vector<IPluginMngr *> m_pluginManagers;
     std::unordered_map<int, std::shared_ptr<Edict>> m_edicts;

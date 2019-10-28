@@ -46,7 +46,7 @@ void SPModInfoCommand()
                                          std::setw(verWidth), "version", std::setw(authWidth), "author", "filename");
             std::size_t pos = 1;
 
-            for (auto interface : gSPGlobal->getInterfacesList())
+            for (auto interface : gSPGlobal->getAdaptersInterfaces())
             {
                 for (auto plugin : interface.second->getPluginMngr()->getPluginsList())
                 {
@@ -86,7 +86,7 @@ You should have received a copy of the GNU General Public License\n \
             logger->sendMsgToConsoleCore(std::left, std::setw(7), '\n', std::setw(nameWidth), "name",
                                          std::setw(verWidth), "version", std::setw(authWidth), "author", "filename");
             std::size_t pos = 1;
-            for (auto entry : gSPGlobal->getInterfacesList())
+            for (auto entry : gSPGlobal->getAdaptersInterfaces())
             {
                 logger->sendMsgToConsoleCore("[", std::right, std::setw(3), pos++,
                                              "] ",                 // right align for ordinal number
