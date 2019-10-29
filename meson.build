@@ -162,12 +162,16 @@ if gExtsToBuild.length() != 0
     if 'all' in gExtsToBuild
         subproject('example')
         subproject('sourcepawn')
+        subproject('lua')
     else
-        if 'sorucepawn' in gExtsToBuild
+        if 'sourcepawn' in gExtsToBuild
             subproject('sourcepawn')
         endif
         if 'example' in gExtsToBuild
             subproject('example')
+        endif
+        if 'lua' in gExtsToBuild
+            subproject('lua')
         endif
     endif
 endif
