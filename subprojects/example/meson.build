@@ -45,6 +45,6 @@ includeDirs = include_directories(publicIncludesDir,
                                   rehldsIncludesDir,
                                   metamodIncludesDir,
                                   llvmIncludesDir,
-                                  '.') #build directory
+                                  is_system: true)
 
-shared_library('example', sourceFiles, include_directories : includeDirs)
+shared_library('example', sourceFiles, include_directories : includeDirs, gnu_symbol_visibility : 'hidden')

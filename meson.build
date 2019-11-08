@@ -58,10 +58,12 @@ if build_machine.system() == 'linux'
             ]
         endif
 
-        if (cppCompiler.version() >= '7.0.0')
-            gLinkArgs += '-lc++fs'
-        else
-            gLinkArgs += '-lc++experimental'
+        if (cppCompiler.version() < '9.0.0')
+            if (cppCompiler.version() >= '7.0.0')
+                gLinkArgs += '-lc++fs'
+            else
+                gLinkArgs += '-lc++experimental'
+            endif
         endif
 
     elif cppCompiler.get_id() == 'gcc'
@@ -77,26 +79,14 @@ if build_machine.system() == 'linux'
                 '-static-libstdc++'
             ]
         endif
-        gLinkArgs += '-lstdc++fs'
+
+        if cppCompiler.version() < '9.0.0'
+            gLinkArgs += '-lstdc++fs'
+        endif
 
     else
         error('Either Clang or GCC is supported.')
     endif
-
-    # If standard is not set, set the minimum one
-    if get_option('c_std') == 'none'
-        gCArgs += '-std=c11'
-    endif
-    if get_option('cpp_std') == 'none'
-        gCppArgs += '-std=c++17'
-    endif
-
-    #-Wall and -Wextra are set by warning_level option
-    gCppArgs += [
-        '-Wno-unknown-pragmas',
-        '-fvisibility=hidden',
-        '-Werror'
-    ]
 elif build_machine.system() == 'windows'
     if cppCompiler.get_id() != 'msvc'
         error('Only MSVC is supported.')
@@ -104,40 +94,9 @@ elif build_machine.system() == 'windows'
 
     gLinkArgs += '/MACHINE:X86'
 
-    # At the time of writing MSVC support is not mature enough
-    if get_option('buildtype') != 'plain'
-        warning('Configure build dir with "meson .. . --buildtype plain"')
-    endif
-
     gCppArgs += [
-        '/W4',  # Warning level 4
-        '/TP',  # Treat files as c++ sources
-        '/WX'   # Treat warnings as errors
+        '/TP'  # Treat files as c++ sources
     ]
-
-    # MSVC support is limited, we need to set compile options here for the time being
-    gCppArgs += '/std:c++17'
-    if get_option('windebug') == true
-        gCppArgs += '/RTC1'  # runtime checks
-
-        if get_option('linktype') == 'dynamic'
-            gCppArgs += '/MDd'
-        endif
-    else
-        gCppArgs += [
-            '/O2',    # optimization fast code
-            '/GL'     # whole program optimization
-        ]
-
-        if get_option('linktype') == 'dynamic'
-            gCppArgs += '/MD'
-        endif
-
-        gLinkArgs += [
-            '/LTCG',   # linker optimization
-            '/DEBUG:NONE' # Meson adds /DEBUG by default, we need to override it
-        ]
-    endif
 endif
 
 # Generate SPConfig.hpp
@@ -179,7 +138,23 @@ includeDirs = include_directories(publicIncludesDir,
                                   rehldsIncludesDir,
                                   metamodIncludesDir,
                                   llvmIncludesDir,
-                                  '.') #build directory
+                                  is_system: true)
+
+# clang workaround, remove when no longer needed
+if cppCompiler.get_id() == 'clang'
+    includeDirs = include_directories(publicIncludesDir,
+                                      rehldsIncludesDir,
+                                      metamodIncludesDir,
+                                      llvmIncludesDir,
+                                      '.',
+                                      is_system: true)
+else
+    includeDirs = include_directories(publicIncludesDir,
+                                      rehldsIncludesDir,
+                                      metamodIncludesDir,
+                                      llvmIncludesDir,
+                                      is_system: true)
+endif
 
 subdir('src')
 
