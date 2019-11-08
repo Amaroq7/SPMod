@@ -14,11 +14,10 @@ matrix:
           sources:
             - sourceline: 'ppa:ricotz/toolchain' #more recent meson version
           packages:
-            - clang-7
-            - lld-7
+            - clang-8
+            - lld-8
             - gcc-multilib
             - g++-multilib
-            - python3
             - meson
             - ninja-build
             - lib32z1-dev
@@ -26,19 +25,20 @@ matrix:
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - CLANG_VERSION=7 LINK_TYPE=static
+        - CLANG_VERSION=8 LINK_TYPE=static
       compiler: clang
 
     - addons:
         apt:
           sources:
             - sourceline: 'ppa:ricotz/toolchain' #more recent meson version
+            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
-            - clang-8
-            - lld-8
+            - clang-9
+            - lld-9
             - gcc-multilib
             - g++-multilib
-            - python3
             - meson
             - ninja-build
             - lib32z1-dev
@@ -46,19 +46,20 @@ matrix:
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - CLANG_VERSION=8 LINK_TYPE=static CC_VERSION=8
+        - CLANG_VERSION=9 LINK_TYPE=static CC_VERSION=9
       compiler: clang
 
     - addons:
         apt:
           sources:
             - sourceline: 'ppa:ricotz/toolchain' #more recent meson version
+            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
-            - clang-8
-            - lld-8
+            - clang-9
+            - lld-9
             - gcc-multilib
             - g++-multilib
-            - python3
             - meson
             - ninja-build
             - lib32z1-dev
@@ -66,7 +67,7 @@ matrix:
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - CLANG_VERSION=8 LINK_TYPE=dynamic CC_VERSION=8
+        - CLANG_VERSION=9 LINK_TYPE=dynamic CC_VERSION=9
       compiler: clang
 
     - addons:
@@ -154,7 +155,7 @@ deploy:
     on:
       tags: true
       branch: /^v\d+\.\d+(\.\d+)?(-\S*)?$/
-      condition: $CLANG_VERSION = 8 || $GCC_VERSION = 8
+      condition: $CLANG_VERSION = 9 || $GCC_VERSION = 9
   - provider: s3
     local-dir: upload
     access_key_id: 

@@ -3,20 +3,20 @@
 if [[ ! -z "${CLANG_VERSION}" ]]
 then
     # Overwrite default compiler
-    if [ ${CLANG_VERSION} == 7 ]
-    then
-        export LDFLAGS=-fuse-ld=lld-7
-        BRANCH_NAME=release_70
-
-        CLANG_COMPILER=/usr/bin/clang-7
-        CLANGPP_COMPILER=/usr/bin/clang++-7
-    elif [ ${CLANG_VERSION} == 8 ]
+    if [ ${CLANG_VERSION} == 8 ]
     then
         export LDFLAGS=-fuse-ld=lld-8
         BRANCH_NAME=release_80
 
         CLANG_COMPILER=/usr/bin/clang-8
         CLANGPP_COMPILER=/usr/bin/clang++-8
+    elif [ ${CLANG_VERSION} == 9 ]
+    then
+        export LDFLAGS=-fuse-ld=lld-9
+        BRANCH_NAME=release_90
+
+        CLANG_COMPILER=/usr/bin/clang-9
+        CLANGPP_COMPILER=/usr/bin/clang++-9
     fi
 
     sudo update-alternatives --install /usr/bin/clang clang ${CLANG_COMPILER} 1000
