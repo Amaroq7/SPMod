@@ -125,4 +125,4 @@ namespace SPMod
     protected:
         virtual ~ISPModInterface() = default;
     };
-}
+} // namespace SPMod

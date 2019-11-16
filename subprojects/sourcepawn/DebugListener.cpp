@@ -17,8 +17,7 @@
 
 #include "DebugListener.hpp"
 
-void Logger::OnDebugSpew(const char *msg,
-                         ...)
+void Logger::OnDebugSpew(const char *msg, ...)
 {
     char debugMsg[512];
     va_list paramsList;
@@ -30,12 +29,10 @@ void Logger::OnDebugSpew(const char *msg,
     LogConsoleCore("[SPMOD] ", debugMsg);
 }
 
-void Logger::ReportError(const SourcePawn::IErrorReport &report,
-                         SourcePawn::IFrameIterator &iter)
+void Logger::ReportError(const SourcePawn::IErrorReport &report, SourcePawn::IFrameIterator &iter)
 {
     auto *spErrorMsg = gSPGlobal->getSPEnvironment()->APIv2()->GetErrorString(report.Code());
-    auto getPluginIdentity = [](SourcePawn::IPluginContext *ctx)
-    {
+    auto getPluginIdentity = [](SourcePawn::IPluginContext *ctx) {
         char *pluginIdentity;
         ctx->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
         return pluginIdentity;
@@ -80,13 +77,9 @@ void Logger::ReportError(const SourcePawn::IErrorReport &report,
             else
                 pluginIdentity = "???";
 
-            LogErrorCore("   [", entryPos, "] ", pluginIdentity, "::",
-                                                                    funcName,
-                                                                    " (line ",
-                                                                    iter.LineNumber(),
-                                                                    ")");
+            LogErrorCore("   [", entryPos, "] ", pluginIdentity, "::", funcName, " (line ", iter.LineNumber(), ")");
         }
-        else if(iter.IsNativeFrame())
+        else if (iter.IsNativeFrame())
             LogErrorCore("   [", entryPos, "] ", funcName);
 
         ++entryPos;

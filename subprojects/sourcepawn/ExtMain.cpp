@@ -29,7 +29,8 @@ SPMOD_API SPMod::ExtQueryValue SPMod_Query(SPMod::ISPGlobal *spmodInstance)
     gSPGlobal = spmodInstance;
     gModuleInterface = std::make_unique<ModuleInterface>(gSPGlobal->getPath(DirType::Exts));
 
-    return (gSPGlobal->registerInterface(gModuleInterface.get()) ? SPMod::ExtQueryValue::SPModExt : SPMod::ExtQueryValue::DontLoad);
+    return (gSPGlobal->registerInterface(gModuleInterface.get()) ? SPMod::ExtQueryValue::SPModExt
+                                                                 : SPMod::ExtQueryValue::DontLoad);
 }
 
 SPMOD_API bool SPMod_Init()
@@ -38,6 +39,4 @@ SPMOD_API bool SPMod_Init()
     return true;
 }
 
-SPMOD_API void SPMod_End()
-{
-}
+SPMOD_API void SPMod_End() {}

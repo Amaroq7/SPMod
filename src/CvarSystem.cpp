@@ -19,16 +19,12 @@
 
 #include "CvarSystem.hpp"
 
-ICvar *CvarMngr::registerCvar(const char *name, 
-                              const char *value,
-                              ICvar::Flags flags)
+ICvar *CvarMngr::registerCvar(const char *name, const char *value, ICvar::Flags flags)
 {
     return registerCvarCore(name, value, flags).get();
 }
 
-std::shared_ptr<Cvar> CvarMngr::registerCvarCore(std::string_view name,
-                                                 std::string_view value,
-                                                 ICvar::Flags flags)
+std::shared_ptr<Cvar> CvarMngr::registerCvarCore(std::string_view name, std::string_view value, ICvar::Flags flags)
 {
     if (auto cvar = findCvarCore(name, true))
     {
@@ -39,7 +35,7 @@ std::shared_ptr<Cvar> CvarMngr::registerCvarCore(std::string_view name,
     cvar_t *pcvar = nullptr;
     std::shared_ptr<Cvar> cvar;
     pcvar = CVAR_GET_POINTER(name.data());
-    
+
     if (pcvar)
     {
         cvar = std::make_shared<Cvar>(name, pcvar->string, static_cast<ICvar::Flags>(pcvar->flags), pcvar);
@@ -76,8 +72,7 @@ ICvar *CvarMngr::findCvar(const char *name)
     return findCvarCore(name, false).get();
 }
 
-std::shared_ptr<Cvar> CvarMngr::findCvarCore(std::string_view name,
-                                             bool cacheonly)
+std::shared_ptr<Cvar> CvarMngr::findCvarCore(std::string_view name, bool cacheonly)
 {
     auto pair = m_cvars.find(name.data());
     if (pair != m_cvars.end())
@@ -90,7 +85,8 @@ std::shared_ptr<Cvar> CvarMngr::findCvarCore(std::string_view name,
     pcvar = CVAR_GET_POINTER(name.data());
     if (pcvar)
     {
-        std::shared_ptr<Cvar> cvar = std::make_shared<Cvar>(name, pcvar->string, static_cast<ICvar::Flags>(pcvar->flags), pcvar);
+        std::shared_ptr<Cvar> cvar =
+            std::make_shared<Cvar>(name, pcvar->string, static_cast<ICvar::Flags>(pcvar->flags), pcvar);
         // Always add to cache
         m_cvars.emplace(name, cvar);
 
@@ -111,14 +107,9 @@ void CvarMngr::clearCvarsCallback()
         pair.second->clearCallback();
 }
 
-Cvar::Cvar(std::string_view name,
-           std::string_view value,
-           ICvar::Flags flags, 
-           cvar_t *pcvar) : m_flags(flags),
-                            m_name(name),
-                            m_value(value),
-                            m_cvar(pcvar)
-{ 
+Cvar::Cvar(std::string_view name, std::string_view value, ICvar::Flags flags, cvar_t *pcvar)
+    : m_flags(flags), m_name(name), m_value(value), m_cvar(pcvar)
+{
 }
 
 const char *Cvar::getName() const
@@ -199,8 +190,7 @@ void Cvar::addCallback(CvarCallback callback)
     m_callbacks.push_back(callback);
 }
 
-void Cvar::runCallbacks(std::string_view old_value,
-                        std::string_view new_value)
+void Cvar::runCallbacks(std::string_view old_value, std::string_view new_value)
 
 {
     for (auto callback : m_callbacks)

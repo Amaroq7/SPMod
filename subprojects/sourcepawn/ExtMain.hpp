@@ -21,13 +21,13 @@
     #include <filesystem>
     // As of GCC 8.1 and Clang 7 filesystem is no longer part of experimental
     #if (defined SP_GCC && __GNUC__ >= 8) || (defined SP_CLANG && __clang_major__ >= 7)
-        namespace fs = std::filesystem;
+namespace fs = std::filesystem;
     #else // Some compilers still have filesystem within experimental namespace like MSVC
-        namespace fs = std::experimental::filesystem;
+namespace fs = std::experimental::filesystem;
     #endif
 #elif __has_include(<experimental/filesystem>)
     #include <experimental/filesystem>
-    namespace fs = std::experimental::filesystem;
+namespace fs = std::experimental::filesystem;
 #else
     #error Filesystem header missing
 #endif

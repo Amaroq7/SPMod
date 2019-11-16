@@ -21,19 +21,14 @@
 
 std::unique_ptr<SPGlobal> gSPGlobal;
 
-SPGlobal::SPGlobal(fs::path &&dllDir) : m_SPModDir(dllDir.parent_path().parent_path()),
-                                        m_forwardManager(std::make_unique<ForwardMngr>()),
-                                        m_cvarManager(std::make_unique<CvarMngr>()),
-                                        m_loggingSystem(std::make_unique<LoggerMngr>()),
-                                        m_cmdManager(std::make_unique<CommandMngr>()),
-                                        m_timerManager(std::make_unique<TimerMngr>()),
-                                        m_menuManager(std::make_unique<MenuMngr>()),
-                                        m_plrManager(std::make_unique<PlayerMngr>()),
-                                        m_utils(std::make_unique<Utils>()),
-                                        m_engineFuncs(std::make_unique<EngineFuncs>()),
-                                        m_engineFuncsHooked(std::make_unique<EngineFuncsHooked>()),
-                                        m_engineGlobals(std::make_unique<EngineGlobals>()),
-                                        m_modName(GET_GAME_INFO(PLID, GINFO_NAME))
+SPGlobal::SPGlobal(fs::path &&dllDir)
+    : m_SPModDir(dllDir.parent_path().parent_path()), m_forwardManager(std::make_unique<ForwardMngr>()),
+      m_cvarManager(std::make_unique<CvarMngr>()), m_loggingSystem(std::make_unique<LoggerMngr>()),
+      m_cmdManager(std::make_unique<CommandMngr>()), m_timerManager(std::make_unique<TimerMngr>()),
+      m_menuManager(std::make_unique<MenuMngr>()), m_plrManager(std::make_unique<PlayerMngr>()),
+      m_utils(std::make_unique<Utils>()), m_engineFuncs(std::make_unique<EngineFuncs>()),
+      m_engineFuncsHooked(std::make_unique<EngineFuncsHooked>()), m_engineGlobals(std::make_unique<EngineGlobals>()),
+      m_modName(GET_GAME_INFO(PLID, GINFO_NAME))
 {
     // Sets default dirs
     setPluginsDir("plugins");
@@ -257,14 +252,20 @@ const fs::path &SPGlobal::getPathCore(DirType type) const
 {
     static fs::path emptyPath;
 
-    switch(type)
+    switch (type)
     {
-        case DirType::Home: return m_SPModDir;
-        case DirType::Dlls: return m_SPModDllsDir;
-        case DirType::Exts: return m_SPModExtsDir;
-        case DirType::Logs: return m_SPModLogsDir;
-        case DirType::Plugins: return m_SPModPluginsDir;
-        default: return emptyPath;
+        case DirType::Home:
+            return m_SPModDir;
+        case DirType::Dlls:
+            return m_SPModDllsDir;
+        case DirType::Exts:
+            return m_SPModExtsDir;
+        case DirType::Logs:
+            return m_SPModLogsDir;
+        case DirType::Plugins:
+            return m_SPModPluginsDir;
+        default:
+            return emptyPath;
     }
 }
 

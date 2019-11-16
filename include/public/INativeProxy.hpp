@@ -46,7 +46,7 @@ namespace SPMod
          * @return      Native's plugin.
          */
         virtual const IPlugin *getPlugin() const = 0;
-    
+
     protected:
         ~IProxiedNative() = default;
     };
@@ -83,31 +83,28 @@ namespace SPMod
 
         /**
          * @brief Registers proxied native.
-         * 
+         *
          * @param name      Native name.
          * @param data      Native data.
          * @param plugin    Plugin which native belongs to.
          *
          * @return          True if registration succeed, false otherwise.
          */
-        virtual bool registerNative(const char *name,
-                                    void *data,
-                                    const IPlugin *plugin) = 0;
+        virtual bool registerNative(const char *name, void *data, const IPlugin *plugin) = 0;
 
         /**
          * @brief Notifies extension about executed native.
-         * 
+         *
          * @param native    Executed native.
          * @param plugin    Plugin which has executed the native.
          *
          * @return          Native result.
          */
-        virtual int nativeExecNotify(const IProxiedNative *native,
-                                     const IPlugin *const plugin) const = 0;
+        virtual int nativeExecNotify(const IProxiedNative *native, const IPlugin *const plugin) const = 0;
 
         /**
          * @brief Gets proxied native.
-         * 
+         *
          * @param native    Native's id.
          *
          * @return          Proxied native or nullptr if invalid id.
@@ -121,4 +118,4 @@ namespace SPMod
          */
         virtual std::size_t getNativesNum() const = 0;
     };
-}
+} // namespace SPMod

@@ -22,10 +22,14 @@
 TypeHandler<SPMod::ICvar> gCvarsHandlers;
 std::unordered_multimap<SPMod::ICvar *, SourcePawn::IPluginFunction *> gCvarPluginsCallbacks;
 
-static cell_t CvarRegister(SourcePawn::IPluginContext *ctx, 
-                           const cell_t *params)
-{	
-    enum { arg_name = 1, arg_value, arg_flags };
+static cell_t CvarRegister(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    enum
+    {
+        arg_name = 1,
+        arg_value,
+        arg_flags
+    };
 
     SPMod::ICvarMngr *cvarMngr = gSPGlobal->getCvarManager();
     char *cvarName, *cvarValue;
@@ -44,10 +48,14 @@ static cell_t CvarRegister(SourcePawn::IPluginContext *ctx,
     return gCvarsHandlers.create(plCvar);
 }
 
-static cell_t CvarGetName(SourcePawn::IPluginContext *ctx,
-                          const cell_t *params)
+static cell_t CvarGetName(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_index = 1, arg_buffer, arg_size };
+    enum
+    {
+        arg_index = 1,
+        arg_buffer,
+        arg_size
+    };
 
     cell_t cvarId = params[arg_index];
     if (cvarId < 0)
@@ -69,11 +77,12 @@ static cell_t CvarGetName(SourcePawn::IPluginContext *ctx,
     return gSPGlobal->getUtils()->strCopy(destBuffer, params[arg_size], cvar->getName());
 }
 
-
-static cell_t CvarGetFloat(SourcePawn::IPluginContext *ctx,
-                           const cell_t *params)
+static cell_t CvarGetFloat(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_index = 1 };
+    enum
+    {
+        arg_index = 1
+    };
 
     cell_t cvarId = params[arg_index];
     if (cvarId < 0)
@@ -88,17 +97,21 @@ static cell_t CvarGetFloat(SourcePawn::IPluginContext *ctx,
         ctx->ReportError("Cvar not found");
         return 0;
     }
-    
+
     return sp_ftoc(cvar->asFloat());
 }
 
-static cell_t CvarGetString(SourcePawn::IPluginContext *ctx,
-                            const cell_t *params)
-{    
-    enum { arg_index = 1, arg_buffer, arg_size };
+static cell_t CvarGetString(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    enum
+    {
+        arg_index = 1,
+        arg_buffer,
+        arg_size
+    };
 
     cell_t cvarId = params[arg_index];
-    if (cvarId  < 0)
+    if (cvarId < 0)
     {
         ctx->ReportError("Invalid cvar pointer");
         return 0;
@@ -117,10 +130,12 @@ static cell_t CvarGetString(SourcePawn::IPluginContext *ctx,
     return gSPGlobal->getUtils()->strCopy(destBuffer, params[arg_size], cvar->asString());
 }
 
-static cell_t CvarGetInt(SourcePawn::IPluginContext *ctx,
-                         const cell_t *params)
+static cell_t CvarGetInt(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_index = 1 };
+    enum
+    {
+        arg_index = 1
+    };
 
     cell_t cvarId = params[arg_index];
     if (cvarId < 0)
@@ -139,13 +154,15 @@ static cell_t CvarGetInt(SourcePawn::IPluginContext *ctx,
     return cvar->asInt();
 }
 
-static cell_t CvarGetFlags(SourcePawn::IPluginContext *ctx,
-                           const cell_t *params)
+static cell_t CvarGetFlags(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_index = 1 };
+    enum
+    {
+        arg_index = 1
+    };
 
     cell_t cvarId = params[arg_index];
-    if (cvarId  < 0)
+    if (cvarId < 0)
     {
         ctx->ReportError("Invalid cvar pointer");
         return 0;
@@ -161,10 +178,13 @@ static cell_t CvarGetFlags(SourcePawn::IPluginContext *ctx,
     return static_cast<cell_t>(cvar->getFlags());
 }
 
-static cell_t CvarSetFloat(SourcePawn::IPluginContext *ctx,
-                           const cell_t *params)
+static cell_t CvarSetFloat(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_index = 1, arg_value };
+    enum
+    {
+        arg_index = 1,
+        arg_value
+    };
 
     cell_t cvarId = params[arg_index];
     if (cvarId < 0)
@@ -184,14 +204,17 @@ static cell_t CvarSetFloat(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t CvarSetString(SourcePawn::IPluginContext *ctx,
-                            const cell_t *params)
+static cell_t CvarSetString(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_index = 1, arg_value };
+    enum
+    {
+        arg_index = 1,
+        arg_value
+    };
 
     char *cvarValue;
     ctx->LocalToString(params[arg_value], &cvarValue);
-    
+
     cell_t cvarId = params[arg_index];
     if (cvarId < 0)
     {
@@ -210,10 +233,13 @@ static cell_t CvarSetString(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t CvarSetInt(SourcePawn::IPluginContext *ctx,
-                         const cell_t *params)
+static cell_t CvarSetInt(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_index = 1, arg_value };
+    enum
+    {
+        arg_index = 1,
+        arg_value
+    };
 
     cell_t cvarId = params[arg_index];
     if (cvarId < 0)
@@ -233,10 +259,13 @@ static cell_t CvarSetInt(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t CvarAddCallback(SourcePawn::IPluginContext *ctx,
-                              const cell_t *params)
+static cell_t CvarAddCallback(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_index = 1, cvar_callback };
+    enum
+    {
+        arg_index = 1,
+        cvar_callback
+    };
 
     cell_t cvarId = params[arg_index];
     if (cvarId < 0)
@@ -264,13 +293,16 @@ static cell_t CvarAddCallback(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t CvarSetFlags(SourcePawn::IPluginContext *ctx,
-                           const cell_t *params)
+static cell_t CvarSetFlags(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_index = 1, arg_flags };
+    enum
+    {
+        arg_index = 1,
+        arg_flags
+    };
 
     cell_t cvarId = params[arg_index];
-    if (cvarId  < 0)
+    if (cvarId < 0)
     {
         ctx->ReportError("Invalid cvar pointer");
         return 0;
@@ -287,10 +319,12 @@ static cell_t CvarSetFlags(SourcePawn::IPluginContext *ctx,
     return 1;
 }
 
-static cell_t CvarFind(SourcePawn::IPluginContext *ctx,
-                       const cell_t *params)
+static cell_t CvarFind(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_name = 1 };
+    enum
+    {
+        arg_name = 1
+    };
 
     SPMod::ICvarMngr *cvarMngr = gSPGlobal->getCvarManager();
 
@@ -310,28 +344,25 @@ static cell_t CvarFind(SourcePawn::IPluginContext *ctx,
     return gCvarsHandlers.create(plCvar);
 }
 
-sp_nativeinfo_t gCvarsNatives[] =
-{
-    { "Cvar.Cvar",              CvarRegister    },
-    { "Cvar.GetName",           CvarGetName     },
-    { "Cvar.GetFloat",          CvarGetFloat    },
-    { "Cvar.GetString",         CvarGetString   },
-    { "Cvar.GetInt",            CvarGetInt      },
-    { "Cvar.GetFlags",          CvarGetFlags    },
-    { "Cvar.SetFloat",          CvarSetFloat    },
-    { "Cvar.SetString",         CvarSetString   },
-    { "Cvar.SetInt",            CvarSetInt      },
-    { "Cvar.SetFlags",          CvarSetFlags    },
+sp_nativeinfo_t gCvarsNatives[] = {{"Cvar.Cvar", CvarRegister},
+                                   {"Cvar.GetName", CvarGetName},
+                                   {"Cvar.GetFloat", CvarGetFloat},
+                                   {"Cvar.GetString", CvarGetString},
+                                   {"Cvar.GetInt", CvarGetInt},
+                                   {"Cvar.GetFlags", CvarGetFlags},
+                                   {"Cvar.SetFloat", CvarSetFloat},
+                                   {"Cvar.SetString", CvarSetString},
+                                   {"Cvar.SetInt", CvarSetInt},
+                                   {"Cvar.SetFlags", CvarSetFlags},
 
-    { "Cvar.FloatValue.get",    CvarGetFloat    },
-    { "Cvar.FloatValue.set",    CvarSetFloat    },
-    { "Cvar.IntValue.get",      CvarGetInt      },
-    { "Cvar.IntValue.set",      CvarSetInt      },
-    { "Cvar.Flags.get",         CvarGetFlags    },
-    { "Cvar.Flags.set",         CvarSetFlags    },
+                                   {"Cvar.FloatValue.get", CvarGetFloat},
+                                   {"Cvar.FloatValue.set", CvarSetFloat},
+                                   {"Cvar.IntValue.get", CvarGetInt},
+                                   {"Cvar.IntValue.set", CvarSetInt},
+                                   {"Cvar.Flags.get", CvarGetFlags},
+                                   {"Cvar.Flags.set", CvarSetFlags},
 
-    { "Cvar.AddHookOnChange",   CvarAddCallback },
+                                   {"Cvar.AddHookOnChange", CvarAddCallback},
 
-    { "FindCvar",               CvarFind        },
-    { nullptr,                  nullptr         }
-};
+                                   {"FindCvar", CvarFind},
+                                   {nullptr, nullptr}};

@@ -34,11 +34,11 @@
 
 // ntoa conversion buffer size, this must be big enough to hold
 // one converted numeric number including padded zeros (created on stack)
-#define PRINTF_NTOA_BUFFER_SIZE    32U
+#define PRINTF_NTOA_BUFFER_SIZE 32U
 
 // ftoa conversion buffer size, this must be big enough to hold
 // one converted float number including padded zeros (created on stack)
-#define PRINTF_FTOA_BUFFER_SIZE    32U
+#define PRINTF_FTOA_BUFFER_SIZE 32U
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -54,14 +54,14 @@
 
 // internal itoa format
 static std::size_t _ntoa_format(char *buffer,
-                        char *buf,
-                        std::size_t len,
-                        bool negative,
-                        unsigned int base,
-                        std::size_t maxlen,
-                        unsigned int prec,
-                        unsigned int width,
-                        unsigned int flags)
+                                char *buf,
+                                std::size_t len,
+                                bool negative,
+                                unsigned int base,
+                                std::size_t maxlen,
+                                unsigned int prec,
+                                unsigned int width,
+                                unsigned int flags)
 {
     if (!maxlen)
         return 0;
@@ -105,7 +105,7 @@ static std::size_t _ntoa_format(char *buffer,
             buf[len++] = '-';
 
         else if (flags & FLAGS_PLUS)
-            buf[len++] = '+';  // ignore the space if the '+' exists
+            buf[len++] = '+'; // ignore the space if the '+' exists
 
         else if (flags & FLAGS_SPACE)
             buf[len++] = ' ';
@@ -133,13 +133,13 @@ static std::size_t _ntoa_format(char *buffer,
 
 // internal itoa for 'long' type
 static std::size_t _ntoa_long(char *buffer,
-                        unsigned long value,
-                        bool negative,
-                        unsigned long base,
-                        std::size_t maxlen,
-                        unsigned int prec,
-                        unsigned int width,
-                        unsigned int flags)
+                              unsigned long value,
+                              bool negative,
+                              unsigned long base,
+                              std::size_t maxlen,
+                              unsigned int prec,
+                              unsigned int width,
+                              unsigned int flags)
 {
     char buf[PRINTF_NTOA_BUFFER_SIZE];
     std::size_t len = 0;
@@ -158,15 +158,11 @@ static std::size_t _ntoa_long(char *buffer,
     return _ntoa_format(buffer, buf, len, negative, base, maxlen, prec, width, flags);
 }
 
-static std::size_t _ftoa(double value,
-                    char *buffer,
-                    std::size_t maxlen,
-                    unsigned int prec,
-                    unsigned int width,
-                    unsigned int flags)
+static std::size_t
+    _ftoa(double value, char *buffer, std::size_t maxlen, unsigned int prec, unsigned int width, unsigned int flags)
 {
     char buf[PRINTF_FTOA_BUFFER_SIZE];
-    std::size_t len  = 0;
+    std::size_t len = 0;
     double diff = 0.0;
 
     // if input is larger than thres_max, revert to exponential
@@ -182,7 +178,7 @@ static std::size_t _ftoa(double value,
 
     // limit precision
     if (!(flags & FLAGS_PRECISION))
-        prec = 6;  // by default, precesion is 6
+        prec = 6; // by default, precesion is 6
 
     // precision of >= 10 can lead to overflow errors
     if (prec > 9)
@@ -207,8 +203,9 @@ static std::size_t _ftoa(double value,
     else if (diff == 0.5 && (!frac || frac & 1))
         ++frac;
 
-    // TBD: for very large numbers switch back to native sprintf for exponentials. anyone want to write code to replace this?
-    // normal printf behavior is to print EVERY whole number digit which can be 100s of characters overflowing your buffers == bad
+    // TBD: for very large numbers switch back to native sprintf for exponentials. anyone want to write code to replace
+    // this? normal printf behavior is to print EVERY whole number digit which can be 100s of characters overflowing
+    // your buffers == bad
     if (value > thres_max)
         return 0;
 
@@ -265,7 +262,7 @@ static std::size_t _ftoa(double value,
             buf[len++] = '-';
 
         else if (flags & FLAGS_PLUS)
-            buf[len++] = '+';  // ignore the space if the '+' exists
+            buf[len++] = '+'; // ignore the space if the '+' exists
 
         else if (flags & FLAGS_SPACE)
             buf[len++] = ' ';
@@ -308,8 +305,7 @@ unsigned int formatString(char *buffer,
         return 0;
 
     // Check for bounds
-    auto checkArgs = [ctx, params](std::size_t paramCheck)
-    {
+    auto checkArgs = [ctx, params](std::size_t paramCheck) {
         if (static_cast<std::size_t>(params[0]) < paramCheck)
         {
             ctx->ReportError("String formatted incorrectly - parameter %u (total %u)", paramCheck, params[0]);
@@ -336,12 +332,34 @@ unsigned int formatString(char *buffer,
         {
             switch (*format)
             {
-                case '0': flags |= FLAGS_ZEROPAD; format++; n = 1; break;
-                case '-': flags |= FLAGS_LEFT;    format++; n = 1; break;
-                case '+': flags |= FLAGS_PLUS;    format++; n = 1; break;
-                case ' ': flags |= FLAGS_SPACE;   format++; n = 1; break;
-                case '#': flags |= FLAGS_HASH;    format++; n = 1; break;
-                default :                                   n = 0; break;
+                case '0':
+                    flags |= FLAGS_ZEROPAD;
+                    format++;
+                    n = 1;
+                    break;
+                case '-':
+                    flags |= FLAGS_LEFT;
+                    format++;
+                    n = 1;
+                    break;
+                case '+':
+                    flags |= FLAGS_PLUS;
+                    format++;
+                    n = 1;
+                    break;
+                case ' ':
+                    flags |= FLAGS_SPACE;
+                    format++;
+                    n = 1;
+                    break;
+                case '#':
+                    flags |= FLAGS_HASH;
+                    format++;
+                    n = 1;
+                    break;
+                default:
+                    n = 0;
+                    break;
             }
         } while (n);
 
@@ -362,7 +380,7 @@ unsigned int formatString(char *buffer,
             ctx->LocalToPhysAddr(params[param++], &w);
             if (*w < 0)
             {
-                flags |= FLAGS_LEFT;    // reverse padding
+                flags |= FLAGS_LEFT; // reverse padding
                 width = -*w;
             }
             else
@@ -418,12 +436,12 @@ unsigned int formatString(char *buffer,
                 else if (*format == 'b')
                 {
                     base = 2;
-                    flags &= ~FLAGS_HASH;   // no hash for bin format
+                    flags &= ~FLAGS_HASH; // no hash for bin format
                 }
                 else
                 {
                     base = 10;
-                    flags &= ~FLAGS_HASH;   // no hash for dec format
+                    flags &= ~FLAGS_HASH; // no hash for dec format
                 }
                 // uppercase
                 if (*format == 'X')
@@ -443,26 +461,13 @@ unsigned int formatString(char *buffer,
                 if (*format == 'i' || *format == 'd')
                 {
                     // signed
-                    idx += _ntoa_long(&buffer[idx],
-                                    (*value > 0 ? *value : -*value),
-                                    *value < 0,
-                                    base,
-                                    buffer_len - idx,
-                                    precision,
-                                    width,
-                                    flags);
+                    idx += _ntoa_long(&buffer[idx], (*value > 0 ? *value : -*value), *value < 0, base, buffer_len - idx,
+                                      precision, width, flags);
                 }
                 else
                 {
                     // unsigned
-                    idx += _ntoa_long(&buffer[idx],
-                                    *value,
-                                    false,
-                                    base,
-                                    buffer_len - idx,
-                                    precision,
-                                    width,
-                                    flags);
+                    idx += _ntoa_long(&buffer[idx], *value, false, base, buffer_len - idx, precision, width, flags);
                 }
                 format++;
                 break;

@@ -39,7 +39,7 @@ namespace SPMod
          *
          * @note The base path is the logs dir.
          * @note If file doesn't exist it will be created.
-         * 
+         *
          * @param filename        Name of the file to log messages to.
          *
          * @noreturn
@@ -55,13 +55,11 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void logToConsole(LogLevel level,
-                                  const char *format,
-                                  ...) const = 0;
+        virtual void logToConsole(LogLevel level, const char *format, ...) const = 0;
 
         /**
          * @brief Logs to the file.
-         * 
+         *
          * @note The base path is SPMod logs directory.
          * @note If file does not exist, it will be created.
          * @note setFilename() has to be called at least once before executing this function.
@@ -72,22 +70,18 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void logToFile(LogLevel level,
-                               const char *format,
-                               ...) const = 0;
+        virtual void logToFile(LogLevel level, const char *format, ...) const = 0;
 
         /**
          * @brief Logs to the console and the file.
-         * 
+         *
          * @param level         Level of the log.
          * @param format        Formatting string.
          * @param ...           Formatting parameters.
          *
          * @noreturn
          */
-        virtual void logToBoth(LogLevel level,
-                               const char *format,
-                               ...) const = 0;
+        virtual void logToBoth(LogLevel level, const char *format, ...) const = 0;
 
         /**
          * @brief Sends message to the console.
@@ -97,8 +91,7 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void sendMsgToConsole(const char *format,
-                                      ...) const = 0;
+        virtual void sendMsgToConsole(const char *format, ...) const = 0;
 
         /**
          * @brief Sets log level.
@@ -154,7 +147,7 @@ namespace SPMod
          * @brief Creates a new logger.
          *
          * @note If logger with provided prefix doesn't exist, it will be created.
-         * 
+         *
          * @param prefix          Logger's prefix.
          *
          * @return      Logger's instance.
@@ -164,4 +157,4 @@ namespace SPMod
     protected:
         virtual ~ILoggerMngr() = default;
     };
-}
+} // namespace SPMod

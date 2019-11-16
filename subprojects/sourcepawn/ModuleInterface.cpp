@@ -19,9 +19,9 @@
 
 #include "ExtMain.hpp"
 
-ModuleInterface::ModuleInterface(fs::path &&path) : m_sourcePawnAPI(std::make_unique<SourcePawnAPI>(std::move(path))),
-                                                    m_pluginMngr(std::make_unique<PluginMngr>()),
-                                                    m_debugListener(std::make_unique<DebugListener>())
+ModuleInterface::ModuleInterface(fs::path &&path)
+    : m_sourcePawnAPI(std::make_unique<SourcePawnAPI>(std::move(path))), m_pluginMngr(std::make_unique<PluginMngr>()),
+      m_debugListener(std::make_unique<DebugListener>())
 {
     m_sourcePawnAPI->getSPEnvironment()->APIv2()->setDebugListener(m_debugListener.get());
 }

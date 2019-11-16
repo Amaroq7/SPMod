@@ -54,8 +54,7 @@ public:
     int getMenuPage() const;
     void setMenuPage(int page);
 
-    void connect(std::string_view name,
-                 std::string_view ip);
+    void connect(std::string_view name, std::string_view ip);
 
     void disconnect();
     void putInServer();
@@ -91,22 +90,15 @@ public:
     std::shared_ptr<Player> getPlayerCore(int index) const;
     std::shared_ptr<Player> getPlayerCore(edict_t *edict) const;
 
-    bool ClientConnect(edict_t *pEntity,
-                       const char *pszName,
-                       const char *pszAddress,
-                       char szRejectReason[128]);
+    bool ClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128]);
 
-    void ClientConnectPost(edict_t *pEntity,
-                           const char *pszName,
-                           const char *pszAddress);
+    void ClientConnectPost(edict_t *pEntity, const char *pszName, const char *pszAddress);
 
     void ClientPutInServer(edict_t *pEntity);
     void ClientPutInServerPost(edict_t *pEntity);
-    void ClientUserInfoChangedPost(edict_t *pEntity,
-                                   char *infobuffer);
+    void ClientUserInfoChangedPost(edict_t *pEntity, char *infobuffer);
     void StartFramePost();
-    void ServerActivatePost(edict_t *pEdictList,
-                            int clientMax);
+    void ServerActivatePost(edict_t *pEdictList, int clientMax);
 
     static inline unsigned int m_playersNum;
 

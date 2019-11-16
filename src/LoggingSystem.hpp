@@ -39,26 +39,19 @@ public:
 
     // ILogger
     void setFilename(const char *filename) override;
-    void logToConsole(LogLevel level,
-                      const char *format,
-                      ...) const override;
+    void logToConsole(LogLevel level, const char *format, ...) const override;
 
-    void logToFile(LogLevel level,
-                   const char *format,
-                   ...) const override;
+    void logToFile(LogLevel level, const char *format, ...) const override;
 
-    void logToBoth(LogLevel level,
-                   const char *format,
-                   ...) const override;
+    void logToBoth(LogLevel level, const char *format, ...) const override;
 
-    void sendMsgToConsole(const char *format,
-                          ...) const override;
+    void sendMsgToConsole(const char *format, ...) const override;
 
     void setLogLevel(LogLevel logType) override;
     LogLevel getLogLevel() const override;
 
     // Logger
-    template <typename ...Args>
+    template<typename... Args>
     void sendMsgToConsoleCore(Args... args) const
     {
         std::stringstream messageToLog;
@@ -69,9 +62,8 @@ public:
         SERVER_PRINT(messageToLog.str().c_str());
     }
 
-    template <typename ...Args>
-    void logToConsoleCore(LogLevel level,
-                          Args... args) const
+    template<typename... Args>
+    void logToConsoleCore(LogLevel level, Args... args) const
     {
         if (level < m_logLevel)
             return;
@@ -85,9 +77,8 @@ public:
         SERVER_PRINT(messageToLog.str().c_str());
     }
 
-    template <typename ...Args>
-    void logToFileCore(LogLevel level,
-                       Args... args) const
+    template<typename... Args>
+    void logToFileCore(LogLevel level, Args... args) const
     {
         if (level < m_logLevel)
             return;
@@ -104,9 +95,8 @@ public:
         _writeToFile(messageToLog.str());
     }
 
-    template <typename ...Args>
-    void logToBothCore(LogLevel level,
-                       Args... args) const
+    template<typename... Args>
+    void logToBothCore(LogLevel level, Args... args) const
     {
         if (level < m_logLevel)
             return;

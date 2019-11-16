@@ -25,10 +25,7 @@ IRehldsHookchains *gRehldsHookchains;
 IRehldsServerStatic *gRehldsServerStatic;
 IRehldsServerData *gRehldsServerData;
 
-static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain,
-                              IGameClient *client,
-                              bool crash,
-                              const char *string)
+static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain, IGameClient *client, bool crash, const char *string)
 {
     using def = ForwardMngr::FwdDefault;
 
@@ -53,9 +50,7 @@ static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain,
     forward->execFunc(nullptr);
 }
 
-static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain,
-                               cvar_t *cvar,
-                               const char *value)
+static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain, cvar_t *cvar, const char *value)
 {
     auto cachedCvar = gSPGlobal->getCvarManagerCore()->findCvarCore(cvar->name, true);
     // If cached cvar is the same, do not update cached value
@@ -67,8 +62,7 @@ static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain,
     chain->callNext(cvar, value);
 }
 
-static bool _initRehldsApi(CSysModule *module,
-                            std::string *error = nullptr)
+static bool _initRehldsApi(CSysModule *module, std::string *error = nullptr)
 {
     if (!module)
     {

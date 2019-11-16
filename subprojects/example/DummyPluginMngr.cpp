@@ -103,17 +103,11 @@ namespace SPExtExample
         return &dummy;
     }
 
-    void PluginMngr::loadPlugins()
-    {
-    }
+    void PluginMngr::loadPlugins() {}
 
-    void PluginMngr::bindPluginsNatives()
-    {
-    }
+    void PluginMngr::bindPluginsNatives() {}
 
-    void PluginMngr::unloadPlugins()
-    {
-    }
+    void PluginMngr::unloadPlugins() {}
 
     const char *PluginMngr::getPluginsExt() const
     {
@@ -138,4 +132,4 @@ namespace SPExtExample
 
         return pluginsList;
     }
-}
+} // namespace SPExtExample

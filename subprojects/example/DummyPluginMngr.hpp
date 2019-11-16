@@ -55,4 +55,4 @@ namespace SPExtExample
     };
 
     extern PluginMngr gPluginMngr;
-}
+} // namespace SPExtExample

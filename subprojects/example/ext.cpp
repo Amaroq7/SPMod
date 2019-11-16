@@ -40,6 +40,4 @@ SPMOD_API bool SPMod_Init()
     return true;
 }
 
-SPMOD_API void SPMod_End()
-{
-}
+SPMOD_API void SPMod_End() {}

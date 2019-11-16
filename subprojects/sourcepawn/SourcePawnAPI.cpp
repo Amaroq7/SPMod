@@ -33,11 +33,11 @@ SourcePawnAPI::SourcePawnAPI(fs::path libraryDir)
         throw std::runtime_error("Failed to open SourcePawn library");
 
 #if defined SP_POSIX
-    auto getFactoryFunc = reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>
-                                (dlsym(libraryHandle, "GetSourcePawnFactory"));
+    auto getFactoryFunc =
+        reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>(dlsym(libraryHandle, "GetSourcePawnFactory"));
 #else
-    auto getFactoryFunc = reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>
-                                (GetProcAddress(libraryHandle, "GetSourcePawnFactory"));
+    auto getFactoryFunc =
+        reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>(GetProcAddress(libraryHandle, "GetSourcePawnFactory"));
 #endif
 
     if (!getFactoryFunc)

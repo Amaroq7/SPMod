@@ -61,7 +61,7 @@ namespace SPMod
             virtual NavigationType getNavType() const = 0;
 
             virtual void setCallback(Callback func) = 0;
-        
+
         protected:
             virtual ~IItem() = default;
         };
@@ -69,9 +69,7 @@ namespace SPMod
         using ItemHandler = void (*)(IMenu *const menu, IItem *const item, IPlayer *const player);
         using TextHandler = void (*)(IMenu *const menu, int key, IPlayer *const player);
 
-        virtual void display(IPlayer *const player,
-                            int page,
-                            int time) = 0;
+        virtual void display(IPlayer *const player, int page, int time) = 0;
         virtual bool getGlobal() const = 0;
         virtual Style getStyle() const = 0;
 
@@ -86,20 +84,12 @@ namespace SPMod
         virtual int getTime() const = 0;
         virtual int getKeys() const = 0;
 
-        virtual IItem *appendItem(const char *name,
-                                  IItem::Callback callback,
-                                  void *data) = 0;
-        
-        virtual IItem *insertItem(std::size_t position,
-                                  const char *name,
-                                  IItem::Callback callback,
-                                  void *data) = 0;
-        
-        virtual IItem *setStaticItem(std::size_t position,
-                                     const char *name,
-                                     IItem::Callback callback,
-                                     void *data) = 0;
-        
+        virtual IItem *appendItem(const char *name, IItem::Callback callback, void *data) = 0;
+
+        virtual IItem *insertItem(std::size_t position, const char *name, IItem::Callback callback, void *data) = 0;
+
+        virtual IItem *setStaticItem(std::size_t position, const char *name, IItem::Callback callback, void *data) = 0;
+
         virtual bool removeItem(std::size_t position) = 0;
         virtual void removeAllItems() = 0;
 
@@ -121,5 +111,4 @@ namespace SPMod
     protected:
         virtual ~IMenuMngr() = default;
     };
-}
-
+} // namespace SPMod

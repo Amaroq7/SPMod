@@ -19,11 +19,7 @@
 
 #include "spmod.hpp"
 
-Player::Player(edict_t *edict,
-               unsigned int index) : m_edict(edict),
-                                     m_index(index),
-                                     m_connected(false),
-                                     m_inGame(false)
+Player::Player(edict_t *edict, unsigned int index) : m_edict(edict), m_index(index), m_connected(false), m_inGame(false)
 {
 }
 
@@ -67,8 +63,7 @@ void Player::setMenuPage(int page)
     m_menuPage = page;
 }
 
-void Player::connect(std::string_view name,
-                     std::string_view ip)
+void Player::connect(std::string_view name, std::string_view ip)
 {
     m_name = name;
     m_ip = ip;
@@ -208,10 +203,7 @@ void PlayerMngr::_setMaxClients(int maxClients)
     m_maxClients = maxClients;
 }
 
-bool PlayerMngr::ClientConnect(edict_t *pEntity,
-                               const char *pszName,
-                               const char *pszAddress,
-                               char szRejectReason[128])
+bool PlayerMngr::ClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128])
 {
     using def = ForwardMngr::FwdDefault;
     using sf = IForward::StringFlags;
@@ -231,9 +223,7 @@ bool PlayerMngr::ClientConnect(edict_t *pEntity,
     return true;
 }
 
-void PlayerMngr::ClientConnectPost(edict_t *pEntity,
-                                   const char *pszName,
-                                   const char *pszAddress)
+void PlayerMngr::ClientConnectPost(edict_t *pEntity, const char *pszName, const char *pszAddress)
 {
     using def = ForwardMngr::FwdDefault;
 
@@ -250,7 +240,8 @@ void PlayerMngr::ClientConnectPost(edict_t *pEntity,
     else
         plr->authorize(authid);
 
-    std::shared_ptr<Forward> fwdPlrConnectPost = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnectPost);
+    std::shared_ptr<Forward> fwdPlrConnectPost =
+        gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnectPost);
     fwdPlrConnectPost->pushInt(ENTINDEX(pEntity));
     fwdPlrConnectPost->pushString(pszName);
     fwdPlrConnectPost->pushString(pszAddress);
@@ -275,13 +266,13 @@ void PlayerMngr::ClientPutInServerPost(edict_t *pEntity)
     std::shared_ptr<Player> plr = getPlayerCore(pEntity);
     plr->putInServer();
 
-    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServerPost);
+    std::shared_ptr<Forward> forward =
+        gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServerPost);
     forward->pushInt(plr->getIndex());
     forward->execFunc(nullptr);
 }
 
-void PlayerMngr::ClientUserInfoChangedPost(edict_t *pEntity,
-                                           char *infobuffer)
+void PlayerMngr::ClientUserInfoChangedPost(edict_t *pEntity, char *infobuffer)
 {
     std::shared_ptr<Player> plr = getPlayerCore(pEntity);
     plr->setName(INFOKEY_VALUE(infobuffer, "name"));
@@ -309,8 +300,7 @@ void PlayerMngr::StartFramePost()
     }
 }
 
-void PlayerMngr::ServerActivatePost(edict_t *pEdictList,
-                                    int clientMax)
+void PlayerMngr::ServerActivatePost(edict_t *pEdictList, int clientMax)
 {
     _setMaxClients(clientMax);
     _initPlayers(pEdictList);
