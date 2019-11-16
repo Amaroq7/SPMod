@@ -31,10 +31,7 @@ class Command : public ICommand
 public:
     Command() = delete;
     ~Command() = default;
-    Command(std::string_view cmd,
-            std::string_view info,
-            ICommand::Callback *cb,
-            void *data);
+    Command(std::string_view cmd, std::string_view info, ICommand::Callback *cb, void *data);
 
     const char *getCmd() const override;
     const char *getInfo() const override;
@@ -69,11 +66,7 @@ public:
     ClientCommand(ClientCommand &&other) = default;
     ~ClientCommand() = default;
 
-    ClientCommand(std::string_view cmd,
-                  std::string_view info,
-                  std::uint32_t flags,
-                  ICommand::Callback *cb,
-                  void *data);
+    ClientCommand(std::string_view cmd, std::string_view info, std::uint32_t flags, ICommand::Callback *cb, void *data);
 
     bool hasAccess(IPlayer *player) const override;
     bool hasAccessCore(std::shared_ptr<Player> player) const override;
@@ -93,10 +86,7 @@ public:
     ServerCommand(ServerCommand &&other) = default;
     ~ServerCommand() = default;
 
-    ServerCommand(std::string_view cmd,
-                  std::string_view info,
-                  ICommand::Callback *cb,
-                  void *data);
+    ServerCommand(std::string_view cmd, std::string_view info, ICommand::Callback *cb, void *data);
 
     bool hasAccess(IPlayer *player) const override;
     bool hasAccessCore(std::shared_ptr<Player> player) const override;
@@ -116,7 +106,7 @@ public:
                               ICommand::Callback *cb,
                               void *data) override;
 
-    template<typename T, typename ...Args, typename = std::enable_if_t<std::is_base_of_v<Command, T>>>
+    template<typename T, typename... Args, typename = std::enable_if_t<std::is_base_of_v<Command, T>>>
     std::shared_ptr<Command> registerCommandCore(Args... args)
     {
         auto cmd = std::make_shared<T>(std::forward<Args>(args)...);

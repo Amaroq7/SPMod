@@ -19,14 +19,8 @@
 
 #include "spmod.hpp"
 
-Timer::Timer(float interval,
-             TimerCallback func,
-             void *data,
-             bool pause) : m_interval(interval),
-                           m_callback(func),
-                           m_data(data),
-                           m_paused(pause),
-                           m_lastExec(gpGlobals->time)
+Timer::Timer(float interval, TimerCallback func, void *data, bool pause)
+    : m_interval(interval), m_callback(func), m_data(data), m_paused(pause), m_lastExec(gpGlobals->time)
 {
     if (m_interval <= 0.0f)
         throw std::runtime_error("Interval lesser or equal to 0");
@@ -63,10 +57,7 @@ bool Timer::exec(float gltime)
     return m_callback(this, m_data);
 }
 
-ITimer *TimerMngr::createTimer(float interval,
-                               TimerCallback func,
-                               void *data,
-                               bool pause)
+ITimer *TimerMngr::createTimer(float interval, TimerCallback func, void *data, bool pause)
 {
     try
     {
@@ -163,7 +154,7 @@ void TimerMngr::execTimer(ITimer *timer)
 
         if (!task->exec(curTime))
             m_timers.erase(iter);
-        
+
         break;
     }
 }

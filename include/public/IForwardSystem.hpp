@@ -76,8 +76,8 @@ namespace SPMod
             };
 
             void *m_data;
-            std::size_t m_size; /* Array or string length */
-            bool m_copyback; /* True if data is meant to be overwritten */
+            std::size_t m_size;        /* Array or string length */
+            bool m_copyback;           /* True if data is meant to be overwritten */
             StringFlags m_stringFlags; /* String flags */
             Type m_dataType;
         };
@@ -151,8 +151,7 @@ namespace SPMod
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushInt(int *integer,
-                             bool copyback) = 0;
+        virtual bool pushInt(int *integer, bool copyback) = 0;
 
         /*
          * @brief Pushes real to the current call.
@@ -171,8 +170,7 @@ namespace SPMod
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushFloat(float *real,
-                               bool copyback) = 0;
+        virtual bool pushFloat(float *real, bool copyback) = 0;
 
         /*
          * @brief Pushes array to the current call.
@@ -183,9 +181,7 @@ namespace SPMod
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushArray(void *array,
-                               std::size_t size,
-                               bool copyback) = 0;
+        virtual bool pushArray(void *array, std::size_t size, bool copyback) = 0;
 
         /*
          * @brief Pushes string to the current call.
@@ -206,10 +202,7 @@ namespace SPMod
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushString(char *buffer,
-                                std::size_t length,
-                                StringFlags sflags,
-                                bool copyback) = 0;
+        virtual bool pushString(char *buffer, std::size_t length, StringFlags sflags, bool copyback) = 0;
 
         /*
          * @brief Pushes string to the current call.
@@ -236,11 +229,11 @@ namespace SPMod
 
     /**
      * @brief Callback gets executed when forward is being executed.
-     * 
+     *
      * @param fwd      Forward that is being executed.
      * @param result   Result of executing where it should be written to.
      * @param stop     Should be set to true if further callbacks should not be called. (multi forward only)
-     * 
+     *
      * @noreturn
      */
     using ForwardCallback = void (*)(const IForward *const fwd, int *result, bool *stop);
@@ -305,10 +298,8 @@ namespace SPMod
          *
          * @return          Forward pointer, nullptr if failed.
          */
-        virtual IForward *createForward(const char *name,
-                                        IPlugin *plugin,
-                                        std::size_t paramsnum,
-                                        IForward::Param::Type *params) = 0;
+        virtual IForward *
+            createForward(const char *name, IPlugin *plugin, std::size_t paramsnum, IForward::Param::Type *params) = 0;
 
         /*
          * @brief Deletes forward.
@@ -333,24 +324,21 @@ namespace SPMod
     };
 
     template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline bool hasEnumFlag(const T type,
-                            const T flag)
+    inline bool hasEnumFlag(const T type, const T flag)
     {
         return static_cast<bool>(static_cast<std::underlying_type_t<T>>(type) &
                                  static_cast<std::underlying_type_t<T>>(flag));
     }
 
     template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline T operator &(const T lhs,
-                        const T rhs)
+    inline T operator&(const T lhs, const T rhs)
     {
         return static_cast<T>(static_cast<std::underlying_type_t<T>>(lhs) &
                               static_cast<std::underlying_type_t<T>>(rhs));
     }
 
     template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline T operator &=(const T lhs,
-                         const T rhs)
+    inline T operator&=(const T lhs, const T rhs)
     {
         auto returnVal = static_cast<std::underlying_type_t<T>>(lhs);
         returnVal &= static_cast<std::underlying_type_t<T>>(rhs);
@@ -359,16 +347,14 @@ namespace SPMod
     }
 
     template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline T operator |(const T lhs,
-                        const T rhs)
+    inline T operator|(const T lhs, const T rhs)
     {
         return static_cast<T>(static_cast<std::underlying_type_t<T>>(lhs) |
                               static_cast<std::underlying_type_t<T>>(rhs));
     }
 
     template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline T operator |=(const T lhs,
-                         const T rhs)
+    inline T operator|=(const T lhs, const T rhs)
     {
         auto returnVal = static_cast<std::underlying_type_t<T>>(lhs);
         returnVal |= static_cast<std::underlying_type_t<T>>(rhs);
@@ -377,16 +363,14 @@ namespace SPMod
     }
 
     template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline T operator ^(const T lhs,
-                        const T rhs)
+    inline T operator^(const T lhs, const T rhs)
     {
         return static_cast<T>(static_cast<std::underlying_type_t<T>>(lhs) ^
                               static_cast<std::underlying_type_t<T>>(rhs));
     }
 
     template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline T operator ^=(const T lhs,
-                         const T rhs)
+    inline T operator^=(const T lhs, const T rhs)
     {
         auto returnVal = static_cast<std::underlying_type_t<T>>(lhs);
         returnVal ^= static_cast<std::underlying_type_t<T>>(rhs);
@@ -395,30 +379,26 @@ namespace SPMod
     }
 
     template<typename T, typename S, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline bool operator ==(const T lhs,
-                            const S rhs)
+    inline bool operator==(const T lhs, const S rhs)
     {
         return static_cast<std::underlying_type_t<T>>(lhs) == rhs;
     }
 
     template<typename T, typename S, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline bool operator ==(const S lhs,
-                            const T rhs)
+    inline bool operator==(const S lhs, const T rhs)
     {
         return lhs == static_cast<std::underlying_type_t<T>>(rhs);
     }
 
     template<typename T, typename S, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline bool operator !=(const T lhs,
-                            const S rhs)
+    inline bool operator!=(const T lhs, const S rhs)
     {
         return static_cast<std::underlying_type_t<T>>(lhs) != rhs;
     }
 
     template<typename T, typename S, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline bool operator !=(const S lhs,
-                            const T rhs)
+    inline bool operator!=(const S lhs, const T rhs)
     {
         return lhs != static_cast<std::underlying_type_t<T>>(rhs);
     }
-}
+} // namespace SPMod

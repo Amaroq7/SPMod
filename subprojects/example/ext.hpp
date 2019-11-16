@@ -56,7 +56,7 @@ namespace SPExtExample
             return &SPExtExample::gPluginMngr;
         }
     };
-}
+} // namespace SPExtExample
 
 extern SPMod::ISPGlobal *gSPGlobal;
 extern SPMod::ILogger *gLogger;

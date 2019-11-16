@@ -19,13 +19,8 @@
 
 #include "spmod.hpp"
 
-ProxiedNative::ProxiedNative(std::size_t id,
-                             std::string_view name,
-                             void *data,
-                             const IPlugin *plugin) : m_id(id),
-                                                      m_plugin(plugin),
-                                                      m_name(name),
-                                                      m_data(data)
+ProxiedNative::ProxiedNative(std::size_t id, std::string_view name, void *data, const IPlugin *plugin)
+    : m_id(id), m_plugin(plugin), m_name(name), m_data(data)
 {
 }
 

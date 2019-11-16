@@ -42,24 +42,17 @@ void SPModInfoCommand()
 
         if (arg == "plugins")
         {
-            logger->sendMsgToConsoleCore(std::left,
-                                         std::setw(7),
-                                         "\n",
-                                         std::setw(nameWidth),
-                                         "name",
-                                         std::setw(verWidth),
-                                         "version",
-                                          std::setw(authWidth),
-                                         "author",
-                                         "filename");
+            logger->sendMsgToConsoleCore(std::left, std::setw(7), "\n", std::setw(nameWidth), "name",
+                                         std::setw(verWidth), "version", std::setw(authWidth), "author", "filename");
             std::size_t pos = 1;
 
             for (auto interface : gSPGlobal->getInterfacesList())
             {
                 for (auto plugin : interface.second->getPluginMngr()->getPluginsList())
                 {
-                    logger->sendMsgToConsoleCore("[", std::right, std::setw(3), pos++, "] ", // right align for ordinal number
-                                                 std::left, // left align for the rest
+                    logger->sendMsgToConsoleCore("[", std::right, std::setw(3), pos++,
+                                                 "] ",                 // right align for ordinal number
+                                                 std::left,            // left align for the rest
                                                  std::setw(nameWidth), // format rules for name
                                                  std::string_view(plugin->getName()).substr(0, nameWidth - 1),
                                                  std::setw(verWidth), // format rules for version
@@ -90,21 +83,14 @@ You should have received a copy of the GNU General Public License\n \
         }
         if (arg == "modules")
         {
-            logger->sendMsgToConsoleCore(std::left,
-                                         std::setw(7),
-                                         '\n',
-                                         std::setw(nameWidth),
-                                         "name",
-                                         std::setw(verWidth),
-                                         "version",
-                                         std::setw(authWidth),
-                                         "author",
-                                         "filename");
+            logger->sendMsgToConsoleCore(std::left, std::setw(7), '\n', std::setw(nameWidth), "name",
+                                         std::setw(verWidth), "version", std::setw(authWidth), "author", "filename");
             std::size_t pos = 1;
             for (auto entry : gSPGlobal->getInterfacesList())
             {
-                logger->sendMsgToConsoleCore("[", std::right, std::setw(3), pos++, "] ", // right align for ordinal number
-                                             std::left, // left align for the rest
+                logger->sendMsgToConsoleCore("[", std::right, std::setw(3), pos++,
+                                             "] ",                 // right align for ordinal number
+                                             std::left,            // left align for the rest
                                              std::setw(nameWidth), // format rules for name
                                              entry.second->getExtName(),
                                              std::setw(verWidth), // format rules for version
@@ -113,11 +99,11 @@ You should have received a copy of the GNU General Public License\n \
                                              entry.second->getAuthor());
             }
         }
-        else if(arg == "version")
+        else if (arg == "version")
         {
             logger->sendMsgToConsoleCore("SPMod ", gSPModVersion, ", API ", ISPGlobal::VERSION, '\n',
-                                         "SPMod build: " __TIME__, " " __DATE__, '\n',
-                                         "SPMod from: ", APP_COMMIT_URL, APP_COMMIT_SHA);
+                                         "SPMod build: " __TIME__, " " __DATE__, '\n', "SPMod from: ", APP_COMMIT_URL,
+                                         APP_COMMIT_SHA);
         }
     }
 }

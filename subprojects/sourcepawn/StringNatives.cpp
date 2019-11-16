@@ -20,10 +20,14 @@
 #include "spmod.hpp"
 
 // int NumToString(int num, char[] buffer, int size)
-static cell_t NumToString(SourcePawn::IPluginContext *ctx,
-                          const cell_t *params)
+static cell_t NumToString(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_int = 1, arg_buffer, arg_size };
+    enum
+    {
+        arg_int = 1,
+        arg_buffer,
+        arg_size
+    };
 
     auto numToConvert = params[arg_int];
     auto numConverted = std::to_string(numToConvert);
@@ -33,10 +37,14 @@ static cell_t NumToString(SourcePawn::IPluginContext *ctx,
 }
 
 // int RealToString(float real, char[] buffer, int size)
-static cell_t RealToString(SourcePawn::IPluginContext *ctx,
-                           const cell_t *params)
+static cell_t RealToString(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_real = 1, arg_buffer, arg_size };
+    enum
+    {
+        arg_real = 1,
+        arg_buffer,
+        arg_size
+    };
 
     auto realToConvert = sp_ctof(params[arg_real]);
     auto realConverted = std::to_string(realToConvert);
@@ -46,10 +54,14 @@ static cell_t RealToString(SourcePawn::IPluginContext *ctx,
 }
 
 // int CopyString(char[] buffer, int size, const char[] source)
-static cell_t CopyString(SourcePawn::IPluginContext *ctx,
-                         const cell_t *params)
+static cell_t CopyString(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_buffer = 1, arg_size, arg_source };
+    enum
+    {
+        arg_buffer = 1,
+        arg_size,
+        arg_source
+    };
 
     char *destArray, *stringToCopy;
     ctx->LocalToString(params[arg_buffer], &destArray);
@@ -58,10 +70,7 @@ static cell_t CopyString(SourcePawn::IPluginContext *ctx,
     return gSPGlobal->getUtilsCore()->strCopy(destArray, params[arg_size], stringToCopy);
 }
 
-sp_nativeinfo_t gStringNatives[] =
-{
-    {  "NumToString",            NumToString         },
-    {  "RealToString",           RealToString        },
-    {  "CopyString",             CopyString          },
-    {  nullptr,                  nullptr             }
-};
+sp_nativeinfo_t gStringNatives[] = {{"NumToString", NumToString},
+                                    {"RealToString", RealToString},
+                                    {"CopyString", CopyString},
+                                    {nullptr, nullptr}};

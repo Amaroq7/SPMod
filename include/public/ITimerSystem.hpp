@@ -107,10 +107,7 @@ namespace SPMod
          *
          * @return            Created timer.
          */
-        virtual ITimer *createTimer(float interval,
-                                    TimerCallback func,
-                                    void *data = nullptr,
-                                    bool pause = false) = 0;
+        virtual ITimer *createTimer(float interval, TimerCallback func, void *data = nullptr, bool pause = false) = 0;
 
         /**
          * @brief Removes a timer.
@@ -137,4 +134,4 @@ namespace SPMod
     protected:
         virtual ~ITimerMngr() = default;
     };
-}
+} // namespace SPMod

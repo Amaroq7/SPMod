@@ -25,22 +25,18 @@ mutil_funcs_t *gpMetaUtilFuncs;
 
 enginefuncs_t *gpEngineFuncs;
 
-plugin_info_t Plugin_info =
-{
-    META_INTERFACE_VERSION,
-    "SPMod",
-    gSPModVersion,
-    __DATE__,
-    gSPModAuthor,
-    "https://github.com/Amaroq7/SPMod",
-    "SPMOD",
-    PT_STARTUP,
-    PT_ANYTIME
-};
+plugin_info_t Plugin_info = {META_INTERFACE_VERSION,
+                             "SPMod",
+                             gSPModVersion,
+                             __DATE__,
+                             gSPModAuthor,
+                             "https://github.com/Amaroq7/SPMod",
+                             "SPMOD",
+                             PT_STARTUP,
+                             PT_ANYTIME};
 
-C_DLLEXPORT int Meta_Query(char *interfaceVersion [[maybe_unused]],
-                           plugin_info_t **plinfo,
-                           mutil_funcs_t *pMetaUtilFuncs)
+C_DLLEXPORT int
+    Meta_Query(char *interfaceVersion [[maybe_unused]], plugin_info_t **plinfo, mutil_funcs_t *pMetaUtilFuncs)
 {
     *plinfo = &Plugin_info;
     gpMetaUtilFuncs = pMetaUtilFuncs;
@@ -48,17 +44,14 @@ C_DLLEXPORT int Meta_Query(char *interfaceVersion [[maybe_unused]],
     return 1;
 }
 
-META_FUNCTIONS gMetaFunctionTable =
-{
-    nullptr,
-    nullptr,
-    GetEntityAPI2,
-    GetEntityAPI2_Post,
-    GetNewDLLFunctions,
-    GetNewDLLFunctions_Post,
-    GetEngineFunctions,
-    GetEngineFunctions_Post
-};
+META_FUNCTIONS gMetaFunctionTable = {nullptr,
+                                     nullptr,
+                                     GetEntityAPI2,
+                                     GetEntityAPI2_Post,
+                                     GetNewDLLFunctions,
+                                     GetNewDLLFunctions_Post,
+                                     GetEngineFunctions,
+                                     GetEngineFunctions_Post};
 
 C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
                             META_FUNCTIONS *pFunctionTable,
@@ -80,13 +73,13 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
     }
 
     std::shared_ptr<Logger> logger = gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD");
-    logger->sendMsgToConsoleCore("\n   SPMod version ", gSPModVersion, " Copyright (c) 2018-2019 ", gSPModAuthor, \
-"\n   This program comes with ABSOLUTELY NO WARRANTY; for details type `spmod gpl' \
+    logger->sendMsgToConsoleCore("\n   SPMod version ", gSPModVersion, " Copyright (c) 2018-2019 ", gSPModAuthor,
+                                 "\n   This program comes with ABSOLUTELY NO WARRANTY; for details type `spmod gpl' \
 \n   This is free software, and you are welcome to redistribute it\
 \n   under certain conditions; type `spmod gpl' for details.\n\
-    \nSPMod ", gSPModVersion, ", API ", ISPGlobal::VERSION, \
-    "\nSPMod build: ", __TIME__, " ", __DATE__ \
-    "\nSPMod from: ", APP_COMMIT_URL, APP_COMMIT_SHA, "\n");
+    \nSPMod ",
+                                 gSPModVersion, ", API ", ISPGlobal::VERSION, "\nSPMod build: ", __TIME__, " ",
+                                 __DATE__ "\nSPMod from: ", APP_COMMIT_URL, APP_COMMIT_SHA, "\n");
 
     if (!initRehldsApi())
     {
@@ -99,8 +92,7 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
     return 1;
 }
 
-C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now [[maybe_unused]],
-                            PL_UNLOAD_REASON reason [[maybe_unused]])
+C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now [[maybe_unused]], PL_UNLOAD_REASON reason [[maybe_unused]])
 {
     using def = ForwardMngr::FwdDefault;
 

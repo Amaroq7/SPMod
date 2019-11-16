@@ -31,10 +31,7 @@ namespace SPExt
         static constexpr std::uint32_t FIELD_AUTHOR = 2;
         static constexpr std::uint32_t FIELD_URL = 3;
 
-        Plugin(std::size_t id,
-            std::string_view identity,
-            const fs::path &path,
-            std::shared_ptr<PluginMngr> pluginMngr);
+        Plugin(std::size_t id, std::string_view identity, const fs::path &path, std::shared_ptr<PluginMngr> pluginMngr);
 
         Plugin() = delete;
         ~Plugin() = default;
@@ -113,21 +110,16 @@ namespace SPExt
         SPVM_NATIVE_FUNC findNative(std::string_view name);
 
         // Proxied natives
-        bool addProxiedNative(std::string_view name,
-                              SPMod::IProxiedNative *native);
+        bool addProxiedNative(std::string_view name, SPMod::IProxiedNative *native);
 
-        static cell_t proxyNativeRouter(SourcePawn::IPluginContext *ctx,
-                                        const cell_t *params,
-                                        void *data);
+        static cell_t proxyNativeRouter(SourcePawn::IPluginContext *ctx, const cell_t *params, void *data);
 
         static inline SPMod::IPlugin *m_callerPlugin;
 
     private:
-        std::shared_ptr<Plugin> _loadPlugin(const fs::path &path,
-                                            std::string &error);
+        std::shared_ptr<Plugin> _loadPlugin(const fs::path &path, std::string &error);
 
-        bool _addNative(std::string_view name,
-                        SPVM_NATIVE_FUNC func);
+        bool _addNative(std::string_view name, SPVM_NATIVE_FUNC func);
 
         std::unordered_map<std::string, std::shared_ptr<Plugin>> m_plugins;
         std::unordered_map<std::string, SPVM_NATIVE_FUNC> m_natives;
@@ -135,4 +127,4 @@ namespace SPExt
         // Routers to be freed on the map change
         std::vector<SPVM_NATIVE_FUNC> m_routers;
     };
-}
+} // namespace SPExt

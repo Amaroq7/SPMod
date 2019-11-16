@@ -26,10 +26,7 @@ class Plugin;
 class Cvar final : public ICvar
 {
 public:
-    Cvar(std::string_view name,
-         std::string_view value,
-         ICvar::Flags flags, 
-         cvar_t *pcvar);
+    Cvar(std::string_view name, std::string_view value, ICvar::Flags flags, cvar_t *pcvar);
 
     Cvar() = delete;
     ~Cvar() = default;
@@ -46,20 +43,18 @@ public:
     std::string_view asStringCore() const;
     std::string_view getNameCore() const;
     void addCallback(CvarCallback callback) override;
-    void runCallbacks(std::string_view old_value,
-                      std::string_view new_value);
+    void runCallbacks(std::string_view old_value, std::string_view new_value);
 
     void clearCallback();
     void setValueCore(std::string_view val);
 
 private:
-    Flags       m_flags;
+    Flags m_flags;
     std::string m_name;
     std::string m_value;
-    cvar_t      *m_cvar;
+    cvar_t *m_cvar;
     std::vector<CvarCallback> m_callbacks;
 };
-
 
 class CvarMngr final : public ICvarMngr
 {
@@ -67,17 +62,12 @@ public:
     CvarMngr() = default;
     ~CvarMngr() = default;
 
-    ICvar *registerCvar(const char *name,
-                        const char *value,
-                        ICvar::Flags flags) override;
+    ICvar *registerCvar(const char *name, const char *value, ICvar::Flags flags) override;
 
     ICvar *findCvar(const char *name) override;
-    std::shared_ptr<Cvar> registerCvarCore(std::string_view name,
-                                           std::string_view value,
-                                           ICvar::Flags flags);
+    std::shared_ptr<Cvar> registerCvarCore(std::string_view name, std::string_view value, ICvar::Flags flags);
 
-    std::shared_ptr<Cvar> findCvarCore(std::string_view name,
-                                       bool cacheonly);
+    std::shared_ptr<Cvar> findCvarCore(std::string_view name, bool cacheonly);
 
     void clearCvars();
     void clearCvarsCallback();

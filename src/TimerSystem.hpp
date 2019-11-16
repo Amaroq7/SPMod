@@ -29,16 +29,13 @@ public:
     TimerMngr() = default;
     ~TimerMngr() = default;
 
-    template<typename ...Args>
+    template<typename... Args>
     std::shared_ptr<Timer> createTimerCore(Args... args)
     {
         return m_timers.emplace_back(std::make_shared<Timer>(std::forward<Args>(args)...));
     }
 
-    ITimer *createTimer(float interval,
-                        TimerCallback func,
-                        void *data,
-                        bool pause) override;
+    ITimer *createTimer(float interval, TimerCallback func, void *data, bool pause) override;
 
     void removeTimer(ITimer *timer) override;
     void execTimer(ITimer *timer) override;
@@ -66,10 +63,7 @@ public:
     Timer(Timer &&other) = default;
     ~Timer() = default;
 
-    Timer(float interval,
-          TimerCallback func,
-          void *data,
-          bool pause);
+    Timer(float interval, TimerCallback func, void *data, bool pause);
 
     float getInterval() const override;
     bool isPaused() const override;

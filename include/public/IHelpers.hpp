@@ -42,8 +42,8 @@
 
 #ifndef SPMOD_API
     #ifdef SP_POSIX
-        #define SPMOD_API	extern "C" __attribute__((visibility("default")))
+        #define SPMOD_API extern "C" __attribute__((visibility("default")))
     #else
-        #define SPMOD_API	extern "C" __declspec(dllexport)
+        #define SPMOD_API extern "C" __declspec(dllexport)
     #endif
 #endif

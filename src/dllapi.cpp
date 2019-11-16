@@ -19,10 +19,7 @@
 
 #include "spmod.hpp"
 
-static qboolean ClientConnect(edict_t *pEntity,
-                              const char *pszName,
-                              const char *pszAddress,
-                              char szRejectReason[128])
+static qboolean ClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128])
 {
     const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
 
@@ -96,63 +93,60 @@ void ClientPutInServer(edict_t *pEntity)
     gSPGlobal->getPlayerManagerCore()->ClientPutInServer(pEntity);
 }
 
-DLL_FUNCTIONS gDllFunctionTable =
-{
-    nullptr,					// pfnGameInit
-    nullptr,               		// pfnSpawn
-    nullptr,					// pfnThink
-    nullptr,					// pfnUse
-    nullptr,					// pfnTouch
-    nullptr,					// pfnBlocked
-    nullptr,					// pfnKeyValue
-    nullptr,					// pfnSave
-    nullptr,					// pfnRestore
-    nullptr,					// pfnSetAbsBox
-    nullptr,					// pfnSaveWriteFields
-    nullptr,					// pfnSaveReadFields
-    nullptr,					// pfnSaveGlobalState
-    nullptr,					// pfnRestoreGlobalState
-    nullptr,					// pfnResetGlobalState
-    ClientConnect,              // pfnClientConnect
-    nullptr,					// pfnClientDisconnect
-    nullptr,					// pfnClientKill
-    ClientPutInServer,		    // pfnClientPutInServer
-    ClientCommand,              // pfnClientCommand
-    nullptr,					// pfnClientUserInfoChanged
-    nullptr,                    // pfnServerActivate
-    nullptr,	                // pfnServerDeactivate
-    nullptr,					// pfnPlayerPreThink
-    nullptr,					// pfnPlayerPostThink
-    nullptr,					// pfnStartFrame
-    nullptr,					// pfnParmsNewLevel
-    nullptr,					// pfnParmsChangeLevel
-    nullptr,					// pfnGetGameDescription
-    nullptr,					// pfnPlayerCustomization
-    nullptr,					// pfnSpectatorConnect
-    nullptr,					// pfnSpectatorDisconnect
-    nullptr,					// pfnSpectatorThink
-    nullptr,					// pfnSys_Error
-    nullptr,					// pfnPM_Move
-    nullptr,					// pfnPM_Init
-    nullptr,					// pfnPM_FindTextureType
-    nullptr,					// pfnSetupVisibility
-    nullptr,					// pfnUpdateClientData
-    nullptr,					// pfnAddToFullPack
-    nullptr,					// pfnCreateBaseline
-    nullptr,					// pfnRegisterEncoders
-    nullptr,					// pfnGetWeaponData
-    nullptr,					// pfnCmdStart
-    nullptr,					// pfnCmdEnd
-    nullptr,					// pfnConnectionlessPacket
-    nullptr,					// pfnGetHullBounds
-    nullptr,					// pfnCreateInstancedBaselines
-    nullptr,					// pfnInconsistentFile
-    nullptr,					// pfnAllowLagCompensation
+DLL_FUNCTIONS gDllFunctionTable = {
+    nullptr,           // pfnGameInit
+    nullptr,           // pfnSpawn
+    nullptr,           // pfnThink
+    nullptr,           // pfnUse
+    nullptr,           // pfnTouch
+    nullptr,           // pfnBlocked
+    nullptr,           // pfnKeyValue
+    nullptr,           // pfnSave
+    nullptr,           // pfnRestore
+    nullptr,           // pfnSetAbsBox
+    nullptr,           // pfnSaveWriteFields
+    nullptr,           // pfnSaveReadFields
+    nullptr,           // pfnSaveGlobalState
+    nullptr,           // pfnRestoreGlobalState
+    nullptr,           // pfnResetGlobalState
+    ClientConnect,     // pfnClientConnect
+    nullptr,           // pfnClientDisconnect
+    nullptr,           // pfnClientKill
+    ClientPutInServer, // pfnClientPutInServer
+    ClientCommand,     // pfnClientCommand
+    nullptr,           // pfnClientUserInfoChanged
+    nullptr,           // pfnServerActivate
+    nullptr,           // pfnServerDeactivate
+    nullptr,           // pfnPlayerPreThink
+    nullptr,           // pfnPlayerPostThink
+    nullptr,           // pfnStartFrame
+    nullptr,           // pfnParmsNewLevel
+    nullptr,           // pfnParmsChangeLevel
+    nullptr,           // pfnGetGameDescription
+    nullptr,           // pfnPlayerCustomization
+    nullptr,           // pfnSpectatorConnect
+    nullptr,           // pfnSpectatorDisconnect
+    nullptr,           // pfnSpectatorThink
+    nullptr,           // pfnSys_Error
+    nullptr,           // pfnPM_Move
+    nullptr,           // pfnPM_Init
+    nullptr,           // pfnPM_FindTextureType
+    nullptr,           // pfnSetupVisibility
+    nullptr,           // pfnUpdateClientData
+    nullptr,           // pfnAddToFullPack
+    nullptr,           // pfnCreateBaseline
+    nullptr,           // pfnRegisterEncoders
+    nullptr,           // pfnGetWeaponData
+    nullptr,           // pfnCmdStart
+    nullptr,           // pfnCmdEnd
+    nullptr,           // pfnConnectionlessPacket
+    nullptr,           // pfnGetHullBounds
+    nullptr,           // pfnCreateInstancedBaselines
+    nullptr,           // pfnInconsistentFile
+    nullptr,           // pfnAllowLagCompensation
 };
 
-static void ServerActivatePost(edict_t *pEdictList,
-                               int edictCount [[maybe_unused]],
-                               int clientMax)
+static void ServerActivatePost(edict_t *pEdictList, int edictCount [[maybe_unused]], int clientMax)
 {
     using DefFwd = ForwardMngr::FwdDefault;
 
@@ -164,7 +158,7 @@ static void ServerActivatePost(edict_t *pEdictList,
     gSPGlobal->loadExts();
     gSPGlobal->allowPrecacheForPlugins(true);
 
-    for (auto& interface : gSPGlobal->getInterfacesList())
+    for (auto &interface : gSPGlobal->getInterfacesList())
     {
         interface.second->getPluginMngr()->loadPlugins();
     }
@@ -172,7 +166,7 @@ static void ServerActivatePost(edict_t *pEdictList,
     // Allow plugins to add their natives
     fwdMngr->getDefaultForward(DefFwd::PluginNatives)->execFunc(nullptr);
 
-    for (auto& interface : gSPGlobal->getInterfacesList())
+    for (auto &interface : gSPGlobal->getInterfacesList())
     {
         interface.second->getPluginMngr()->bindPluginsNatives();
     }
@@ -192,7 +186,7 @@ static void ServerDeactivatePost()
     const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
     fwdMngr->getDefaultForward(DefFwd::PluginEnd)->execFunc(nullptr);
 
-    for (auto& interface : gSPGlobal->getInterfacesList())
+    for (auto &interface : gSPGlobal->getInterfacesList())
     {
         interface.second->getPluginMngr()->unloadPlugins();
     }
@@ -215,7 +209,7 @@ static void GameInitPost()
 static qboolean ClientConnectPost(edict_t *pEntity,
                                   const char *pszName,
                                   const char *pszAddress,
-                                  char szRejectReason [[maybe_unused]] [128])
+                                  char szRejectReason [[maybe_unused]][128])
 {
     gSPGlobal->getPlayerManagerCore()->ClientConnectPost(pEntity, pszName, pszAddress);
 
@@ -228,8 +222,7 @@ static void ClientPutInServerPost(edict_t *pEntity)
     plrMngr->ClientPutInServerPost(pEntity);
 }
 
-static void ClientUserInfoChangedPost(edict_t *pEntity,
-                                      char *infobuffer)
+static void ClientUserInfoChangedPost(edict_t *pEntity, char *infobuffer)
 {
     gSPGlobal->getPlayerManagerCore()->ClientUserInfoChangedPost(pEntity, infobuffer);
 }
@@ -247,80 +240,76 @@ static void StartFramePost()
     RETURN_META(MRES_IGNORED);
 }
 
-DLL_FUNCTIONS gDllFunctionTablePost =
-{
-    GameInitPost,				// pfnGameInit
-    nullptr,					// pfnSpawn
-    nullptr,					// pfnThink
-    nullptr,					// pfnUse
-    nullptr,					// pfnTouch
-    nullptr,					// pfnBlocked
-    nullptr,					// pfnKeyValue
-    nullptr,					// pfnSave
-    nullptr,					// pfnRestore
-    nullptr,					// pfnSetAbsBox
-    nullptr,					// pfnSaveWriteFields
-    nullptr,					// pfnSaveReadFields
-    nullptr,					// pfnSaveGlobalState
-    nullptr,					// pfnRestoreGlobalState
-    nullptr,					// pfnResetGlobalState
-    ClientConnectPost,          // pfnClientConnect
-    nullptr,					// pfnClientDisconnect
-    nullptr,					// pfnClientKill
-    ClientPutInServerPost,      // pfnClientPutInServer
-    nullptr,					// pfnClientCommand
-    ClientUserInfoChangedPost,  // pfnClientUserInfoChanged
-    ServerActivatePost,			// pfnServerActivate
-    ServerDeactivatePost,       // pfnServerDeactivate
-    nullptr,					// pfnPlayerPreThink
-    nullptr,					// pfnPlayerPostThink
-    StartFramePost,             // pfnStartFrame
-    nullptr,					// pfnParmsNewLevel
-    nullptr,					// pfnParmsChangeLevel
-    nullptr,					// pfnGetGameDescription
-    nullptr,					// pfnPlayerCustomization
-    nullptr,					// pfnSpectatorConnect
-    nullptr,					// pfnSpectatorDisconnect
-    nullptr,					// pfnSpectatorThink
-    nullptr,					// pfnSys_Error
-    nullptr,					// pfnPM_Move
-    nullptr,					// pfnPM_Init
-    nullptr,					// pfnPM_FindTextureType
-    nullptr,					// pfnSetupVisibility
-    nullptr,					// pfnUpdateClientData
-    nullptr,					// pfnAddToFullPack
-    nullptr,					// pfnCreateBaseline
-    nullptr,					// pfnRegisterEncoders
-    nullptr,					// pfnGetWeaponData
-    nullptr,					// pfnCmdStart
-    nullptr,					// pfnCmdEnd
-    nullptr,					// pfnConnectionlessPacket
-    nullptr,					// pfnGetHullBounds
-    nullptr,					// pfnCreateInstancedBaselines
-    nullptr,					// pfnInconsistentFile
-    nullptr,					// pfnAllowLagCompensation
+DLL_FUNCTIONS gDllFunctionTablePost = {
+    GameInitPost,              // pfnGameInit
+    nullptr,                   // pfnSpawn
+    nullptr,                   // pfnThink
+    nullptr,                   // pfnUse
+    nullptr,                   // pfnTouch
+    nullptr,                   // pfnBlocked
+    nullptr,                   // pfnKeyValue
+    nullptr,                   // pfnSave
+    nullptr,                   // pfnRestore
+    nullptr,                   // pfnSetAbsBox
+    nullptr,                   // pfnSaveWriteFields
+    nullptr,                   // pfnSaveReadFields
+    nullptr,                   // pfnSaveGlobalState
+    nullptr,                   // pfnRestoreGlobalState
+    nullptr,                   // pfnResetGlobalState
+    ClientConnectPost,         // pfnClientConnect
+    nullptr,                   // pfnClientDisconnect
+    nullptr,                   // pfnClientKill
+    ClientPutInServerPost,     // pfnClientPutInServer
+    nullptr,                   // pfnClientCommand
+    ClientUserInfoChangedPost, // pfnClientUserInfoChanged
+    ServerActivatePost,        // pfnServerActivate
+    ServerDeactivatePost,      // pfnServerDeactivate
+    nullptr,                   // pfnPlayerPreThink
+    nullptr,                   // pfnPlayerPostThink
+    StartFramePost,            // pfnStartFrame
+    nullptr,                   // pfnParmsNewLevel
+    nullptr,                   // pfnParmsChangeLevel
+    nullptr,                   // pfnGetGameDescription
+    nullptr,                   // pfnPlayerCustomization
+    nullptr,                   // pfnSpectatorConnect
+    nullptr,                   // pfnSpectatorDisconnect
+    nullptr,                   // pfnSpectatorThink
+    nullptr,                   // pfnSys_Error
+    nullptr,                   // pfnPM_Move
+    nullptr,                   // pfnPM_Init
+    nullptr,                   // pfnPM_FindTextureType
+    nullptr,                   // pfnSetupVisibility
+    nullptr,                   // pfnUpdateClientData
+    nullptr,                   // pfnAddToFullPack
+    nullptr,                   // pfnCreateBaseline
+    nullptr,                   // pfnRegisterEncoders
+    nullptr,                   // pfnGetWeaponData
+    nullptr,                   // pfnCmdStart
+    nullptr,                   // pfnCmdEnd
+    nullptr,                   // pfnConnectionlessPacket
+    nullptr,                   // pfnGetHullBounds
+    nullptr,                   // pfnCreateInstancedBaselines
+    nullptr,                   // pfnInconsistentFile
+    nullptr,                   // pfnAllowLagCompensation
 };
 
-NEW_DLL_FUNCTIONS gNewDllFunctionTable =
-{
-    nullptr,					//! pfnOnFreeEntPrivateData()	Called right before the object's memory is freed.  Calls its destructor.
-    nullptr,					//! pfnGameShutdown()
-    nullptr,					//! pfnShouldCollide()
-    nullptr,					//! pfnCvarValue()
-    nullptr,					//! pfnCvarValue2()
+NEW_DLL_FUNCTIONS gNewDllFunctionTable = {
+    nullptr, //! pfnOnFreeEntPrivateData()	Called right before the object's memory is freed.  Calls its destructor.
+    nullptr, //! pfnGameShutdown()
+    nullptr, //! pfnShouldCollide()
+    nullptr, //! pfnCvarValue()
+    nullptr, //! pfnCvarValue2()
 };
 
-NEW_DLL_FUNCTIONS gNewDllFunctionTablePost =
-{
-    nullptr,					//! pfnOnFreeEntPrivateData()	Called right before the object's memory is freed.  Calls its destructor.
-    nullptr,			        //! pfnGameShutdown()
-    nullptr,					//! pfnShouldCollide()
-    nullptr,					//! pfnCvarValue()
-    nullptr,					//! pfnCvarValue2()
+NEW_DLL_FUNCTIONS gNewDllFunctionTablePost = {
+    nullptr, //! pfnOnFreeEntPrivateData()	Called right before the object's memory is freed.  Calls its destructor.
+    nullptr, //! pfnGameShutdown()
+    nullptr, //! pfnShouldCollide()
+    nullptr, //! pfnCvarValue()
+    nullptr, //! pfnCvarValue2()
 };
 
-C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
-                              int *interfaceVersion)
+C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion)
 {
     if (!pFunctionTable)
         return 0;
@@ -335,8 +324,7 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
     return 1;
 }
 
-C_DLLEXPORT int GetEntityAPI2_Post(DLL_FUNCTIONS *pFunctionTable,
-                                   int *interfaceVersion)
+C_DLLEXPORT int GetEntityAPI2_Post(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion)
 {
     if (!pFunctionTable)
         return 0;
@@ -351,8 +339,7 @@ C_DLLEXPORT int GetEntityAPI2_Post(DLL_FUNCTIONS *pFunctionTable,
     return 1;
 }
 
-C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pNewFunctionTable,
-                                   int *interfaceVersion)
+C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pNewFunctionTable, int *interfaceVersion)
 {
     if (!pNewFunctionTable)
         return 0;
@@ -367,8 +354,7 @@ C_DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pNewFunctionTable,
     return 1;
 }
 
-C_DLLEXPORT int GetNewDLLFunctions_Post(NEW_DLL_FUNCTIONS *pNewFunctionTable,
-                                        int *interfaceVersion)
+C_DLLEXPORT int GetNewDLLFunctions_Post(NEW_DLL_FUNCTIONS *pNewFunctionTable, int *interfaceVersion)
 {
     if (!pNewFunctionTable)
         return 0;

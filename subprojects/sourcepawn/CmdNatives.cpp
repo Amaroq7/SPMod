@@ -20,10 +20,16 @@
 #include "spmod.hpp"
 
 // Command Command(const char[] cmd, ConCallback func, const char[] info = "", bool server = false, int flags = 0)
-static cell_t CommandCtor(SourcePawn::IPluginContext *ctx,
-                          const cell_t *params)
+static cell_t CommandCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_cmd = 1, arg_func, arg_info, arg_server, arg_flags };
+    enum
+    {
+        arg_cmd = 1,
+        arg_func,
+        arg_info,
+        arg_server,
+        arg_flags
+    };
 
     const std::unique_ptr<CommandMngr> &cmdMngr = gSPGlobal->getCommandManagerCore();
     SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_func]);
@@ -44,10 +50,14 @@ static cell_t CommandCtor(SourcePawn::IPluginContext *ctx,
 }
 
 // int GetInfo(char[] buffer, int size)
-static cell_t GetInfo(SourcePawn::IPluginContext *ctx,
-                      const cell_t *params)
+static cell_t GetInfo(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_buffer, arg_size };
+    enum
+    {
+        arg_id = 1,
+        arg_buffer,
+        arg_size
+    };
 
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
@@ -62,10 +72,12 @@ static cell_t GetInfo(SourcePawn::IPluginContext *ctx,
 }
 
 // property int Access.get()
-static cell_t GetAccess(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                        const cell_t *params)
+static cell_t GetAccess(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
-    enum { arg_id = 1 };
+    enum
+    {
+        arg_id = 1
+    };
 
     const std::unique_ptr<CommandMngr> &cmdMngr = gSPGlobal->getCommandManagerCore();
     std::shared_ptr<Command> pCmd = cmdMngr->getCommand(params[arg_id]);
@@ -76,10 +88,14 @@ static cell_t GetAccess(SourcePawn::IPluginContext *ctx [[maybe_unused]],
 }
 
 // int CmdGetArgv(int arg, char[] buffer, int size)
-static cell_t CmdGetArgv(SourcePawn::IPluginContext *ctx,
-                         const cell_t *params)
+static cell_t CmdGetArgv(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_id = 1, arg_buffer, arg_size };
+    enum
+    {
+        arg_id = 1,
+        arg_buffer,
+        arg_size
+    };
 
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
@@ -93,10 +109,13 @@ static cell_t CmdGetArgv(SourcePawn::IPluginContext *ctx,
 }
 
 // int CmdGetArgs(char[] buffer, int size)
-static cell_t CmdGetArgs(SourcePawn::IPluginContext *ctx,
-                         const cell_t *params)
+static cell_t CmdGetArgs(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    enum { arg_buffer = 1, arg_size };
+    enum
+    {
+        arg_buffer = 1,
+        arg_size
+    };
 
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
@@ -110,19 +129,15 @@ static cell_t CmdGetArgs(SourcePawn::IPluginContext *ctx,
 }
 
 // int CmdGetArgsNum()
-static cell_t CmdGetArgsNum(SourcePawn::IPluginContext *ctx [[maybe_unused]],
-                            const cell_t *params [[maybe_unused]])
+static cell_t CmdGetArgsNum(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params [[maybe_unused]])
 {
     return CMD_ARGC();
 }
 
-sp_nativeinfo_t gCmdsNatives[] =
-{
-    { "Command.Command",    CommandCtor   },
-    { "Command.GetInfo",    GetInfo       },
-    { "Command.Access.get", GetAccess     },
-    { "CmdGetArgv",         CmdGetArgv    },
-    { "CmdGetArgs",         CmdGetArgs    },
-    { "CmdGetArgsNum",      CmdGetArgsNum },
-    { nullptr,              nullptr       }
-};
+sp_nativeinfo_t gCmdsNatives[] = {{"Command.Command", CommandCtor},
+                                  {"Command.GetInfo", GetInfo},
+                                  {"Command.Access.get", GetAccess},
+                                  {"CmdGetArgv", CmdGetArgv},
+                                  {"CmdGetArgs", CmdGetArgs},
+                                  {"CmdGetArgsNum", CmdGetArgsNum},
+                                  {nullptr, nullptr}};
