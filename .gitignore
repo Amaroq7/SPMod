@@ -47,3 +47,10 @@ include/llvm/*
 
 # Visual Studio Code
 .vscode/
+
+# Visual studio
+**/.vs/
+**/msvc/Debug/
+**/msvc/Release/
+*.vcxproj.user
+*.pdb
