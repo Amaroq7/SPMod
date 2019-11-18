@@ -30,7 +30,7 @@ then
     cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-m32 -DLIBCXXABI_HERMETIC_STATIC_LIBRARY=ON -DLIBCXXABI_LIBCXX_INCLUDES=../libcxx/include ../libcxxabi/
     ninja
     cd ../libcxx_build
-    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_HERMETIC_STATIC_LIBRARY=ON -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../libcxxabi/include -DLIBCXX_BUILD_32_BITS=ON -DCMAKE_SHARED_LINKER_FLAGS="-L../libcxxabi_build/lib" ../libcxx/
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLIBCXX_CXX_ABI=libcxxabi -DCMAKE_CXX_FLAGS=-fPIC -DLIBCXX_HERMETIC_STATIC_LIBRARY=ON -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../libcxxabi/include -DLIBCXX_BUILD_32_BITS=ON -DCMAKE_SHARED_LINKER_FLAGS="-L../libcxxabi_build/lib" ../libcxx/
     ninja
 
     # Copy built files to build dir
