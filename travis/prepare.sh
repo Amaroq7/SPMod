@@ -3,20 +3,20 @@
 if [[ ! -z "${CLANG_VERSION}" ]]
 then
     # Overwrite default compiler
-    if [ ${CLANG_VERSION} == 7 ]
-    then
-        export LDFLAGS=-fuse-ld=lld-7
-        BRANCH_NAME=release_70
-
-        CLANG_COMPILER=/usr/bin/clang-7
-        CLANGPP_COMPILER=/usr/bin/clang++-7
-    elif [ ${CLANG_VERSION} == 8 ]
+    if [ ${CLANG_VERSION} == 8 ]
     then
         export LDFLAGS=-fuse-ld=lld-8
         BRANCH_NAME=release_80
 
         CLANG_COMPILER=/usr/bin/clang-8
         CLANGPP_COMPILER=/usr/bin/clang++-8
+    elif [ ${CLANG_VERSION} == 9 ]
+    then
+        export LDFLAGS=-fuse-ld=lld-9
+        BRANCH_NAME=release_90
+
+        CLANG_COMPILER=/usr/bin/clang-9
+        CLANGPP_COMPILER=/usr/bin/clang++-9
     fi
 
     sudo update-alternatives --install /usr/bin/clang clang ${CLANG_COMPILER} 1000
@@ -27,10 +27,10 @@ then
     git clone --depth=1 -b ${BRANCH_NAME} https://github.com/llvm-mirror/libcxxabi.git ../libcxxabi
     mkdir ../libcxx_build ../libcxxabi_build
     cd ../libcxxabi_build
-    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-m32 -DLIBCXXABI_LIBCXX_INCLUDES=../libcxx/include ../libcxxabi/
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-m32 -DLIBCXXABI_HERMETIC_STATIC_LIBRARY=ON -DLIBCXXABI_LIBCXX_INCLUDES=../libcxx/include ../libcxxabi/
     ninja
     cd ../libcxx_build
-    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../libcxxabi/include -DLIBCXX_BUILD_32_BITS=ON -DCMAKE_SHARED_LINKER_FLAGS="-L../libcxxabi_build/lib" ../libcxx/
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLIBCXX_CXX_ABI=libcxxabi -DCMAKE_CXX_FLAGS=-fPIC -DLIBCXX_HERMETIC_STATIC_LIBRARY=ON -DLIBCXX_CXX_ABI_INCLUDE_PATHS=../libcxxabi/include -DLIBCXX_BUILD_32_BITS=ON -DCMAKE_SHARED_LINKER_FLAGS="-L../libcxxabi_build/lib" ../libcxx/
     ninja
 
     # Copy built files to build dir

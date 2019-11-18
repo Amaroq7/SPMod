@@ -54,7 +54,7 @@ if build_machine.system() == 'linux'
             gLinkArgs += [
                 '-l:libc++.a',
                 '-l:libc++abi.a',
-                '-pthread',
+                '-pthread'
             ]
         endif
 
