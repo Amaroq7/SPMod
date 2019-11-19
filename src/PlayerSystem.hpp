@@ -23,6 +23,10 @@
 
 class Menu;
 
+#if defined SP_MSVC
+    #pragma warning(push)
+    #pragma warning(disable : 4250) // inheritance via dominance warning
+#endif
 class Player : public Edict, public IPlayer
 {
 public:
@@ -74,6 +78,9 @@ private:
     std::weak_ptr<Menu> m_menu;
     int m_menuPage;
 };
+#if defined SP_MSVC
+    #pragma warning(pop)
+#endif
 
 class PlayerMngr : public IPlayerMngr
 {
