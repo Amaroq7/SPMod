@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2019 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -7,19 +7,19 @@
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *  This program is distributed in the hope that it will be useful,
+ *
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
+ *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "ExtMain.hpp"
 
-TypeHandler<IMenu> gMenuHandlers;
-std::unordered_map<SPMod::IMenu *, SourcePawn::IPluginFunction *> gMenuPluginHandlers;
-std::unordered_map<SPMod::IMenuItem *, SourcePawn::IPluginFunction *> gMenuItemPluginHandlers;
+TypeHandler<SPMod::IMenu> gMenuHandlers;
 
 // native Menu(MenuHandler handler, MenuStyle style = MenuItemStyle, bool global = false);
 static cell_t MenuCreate(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -36,19 +36,19 @@ static cell_t MenuCreate(SourcePawn::IPluginContext *ctx, const cell_t *params)
 
     if (static_cast<SPMod::IMenu::Style>(params[arg_style]) == SPMod::IMenu::Style::Item)
     {
-        pMenu = menuManager->registerMenu(SPExt::Listener::Menu, SPMod::IMenu::Style::Item, params[arg_global]);
+        pMenu = menuManager->registerMenu(SPExt::Listener::Menu, ctx->GetFunctionById(params[arg_handler]),
+                                          params[arg_global]);
     }
     else
     {
-        pMenu = menuManager->registerMenu(SPExt::Listener::Menu, SPMod::IMenu::Style::Text, params[arg_global]);
+        pMenu = menuManager->registerMenu(SPExt::Listener::MenuText, ctx->GetFunctionById(params[arg_handler]),
+                                          params[arg_global]);
     }
 
     if (!pMenu)
         return -1;
 
-    gMenuPluginHandlers.emplace(pMenu, ctx->GetFunctionById(params[arg_handler]));
-
-    return gMenuPluginHandlers.create(pMenu);
+    return gMenuHandlers.create(pMenu);
 }
 
 // native void SetTitle(const char title[]);
@@ -74,7 +74,7 @@ static cell_t MenuSetTitle(SourcePawn::IPluginContext *ctx, const cell_t *params
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native");
         return 0;
@@ -113,7 +113,7 @@ static cell_t MenuAddItem(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native");
         return 0;
@@ -122,12 +122,12 @@ static cell_t MenuAddItem(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *name;
     ctx->LocalToString(params[arg_name], &name);
 
-    SPMod::IMenuItem *item = pMenu->appendItem(name, SPExt::Listener::MenuItemCallback, params[arg_data]);
+    SPMod::IMenu::IItem *item =
+        pMenu->appendItem(name, SPExt::Listener::MenuItemCallback, ctx->GetFunctionById(params[arg_callback]),
+                          const_cast<cell_t *>(&params[arg_data]));
 
     if (!item)
         return 0;
-
-    gMenuItemPluginHandlers[item] = ctx->GetFunctionById(params[arg_callback]);
 
     return 1;
 }
@@ -151,16 +151,14 @@ static cell_t MenuAddStaticItem(SourcePawn::IPluginContext *ctx, const cell_t *p
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -169,8 +167,8 @@ static cell_t MenuAddStaticItem(SourcePawn::IPluginContext *ctx, const cell_t *p
     char *name;
     ctx->LocalToString(params[arg_name], &name);
 
-    pMenu->setStaticItemCore(static_cast<size_t>(params[arg_position]), name,
-                             ctx->GetFunctionById(params[arg_callback]), params[arg_data]);
+    pMenu->setStaticItem(static_cast<size_t>(params[arg_position]), name, SPExt::Listener::MenuItemCallback,
+                         ctx->GetFunctionById(params[arg_callback]), const_cast<cell_t *>(&params[arg_data]));
 
     return 1;
 }
@@ -194,16 +192,14 @@ static cell_t MenuInsertItem(SourcePawn::IPluginContext *ctx, const cell_t *para
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -212,8 +208,8 @@ static cell_t MenuInsertItem(SourcePawn::IPluginContext *ctx, const cell_t *para
     char *name;
     ctx->LocalToString(params[arg_name], &name);
 
-    pMenu->insertItemCore(static_cast<size_t>(params[arg_position]), name, ctx->GetFunctionById(params[arg_callback]),
-                          params[arg_data]);
+    pMenu->insertItem(static_cast<size_t>(params[arg_position]), name, SPExt::Listener::MenuItemCallback,
+                      ctx->GetFunctionById(params[arg_callback]), const_cast<cell_t *>(&params[arg_data]));
 
     return 1;
 }
@@ -234,16 +230,14 @@ static cell_t MenuRemoveItem(SourcePawn::IPluginContext *ctx, const cell_t *para
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -269,16 +263,14 @@ static cell_t MenuRemoveAllItems(SourcePawn::IPluginContext *ctx, const cell_t *
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -307,18 +299,16 @@ static cell_t MenuDisplay(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    std::shared_ptr<Player> pPlayer = gSPGlobal->getPlayerManagerCore()->getPlayerCore(params[arg_player]);
+    SPMod::IPlayer *pPlayer = gSPGlobal->getPlayerManager()->getPlayer(params[arg_player]);
 
-    menuManager->displayMenu(pMenu, pPlayer, params[arg_page], params[arg_time]);
+    pMenu->display(pPlayer, params[arg_page], params[arg_time]);
 
     return 1;
 }
@@ -338,22 +328,20 @@ static cell_t MenuDestroy(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
     }
 
-    menuManager->destroyMenu(pMenu->getId());
+    gSPGlobal->getMenuManager()->destroyMenu(pMenu);
 
     return 1;
 }
@@ -373,16 +361,14 @@ static cell_t MenuItemsGet(SourcePawn::IPluginContext *ctx, const cell_t *params
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -407,16 +393,14 @@ static cell_t MenuItemsPerPageSet(SourcePawn::IPluginContext *ctx, const cell_t 
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -442,16 +426,14 @@ static cell_t MenuItemsPerPageGet(SourcePawn::IPluginContext *ctx, const cell_t 
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -482,16 +464,14 @@ static cell_t MenuSetProp(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -528,16 +508,14 @@ static cell_t MenuSetText(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() != MenuStyle::Text)
+    if (pMenu->getStyle() != SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("ItemStyle menu can't use this native!");
         return 0;
@@ -567,16 +545,14 @@ static cell_t MenuSetKeys(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() != MenuStyle::Text)
+    if (pMenu->getStyle() != SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("ItemStyle menu can't use this native!");
         return 0;
@@ -597,18 +573,15 @@ static cell_t MenuClose(SourcePawn::IPluginContext *ctx, const cell_t *params)
 
     int player = params[arg_player];
 
-    if (player < 0 || player > gpGlobals->maxClients)
+    if (player < 0 || static_cast<unsigned int>(player) > gSPGlobal->getPlayerManager()->getMaxClients())
     {
         ctx->ReportError("Invalid player index! %d", player);
         return 0;
     }
 
-    std::shared_ptr<Player> pPlayer = gSPGlobal->getPlayerManagerCore()->getPlayerCore(player);
     // TODO: make loop if player == 0
-    gSPGlobal->getMenuManagerCore()->closeMenu(pPlayer);
-
-    char menu[] = "\n";
-    UTIL_ShowMenu(pPlayer->getEdict(), 0, 0, menu, strlen(menu));
+    SPMod::IPlayer *spPlayer = gSPGlobal->getPlayerManager()->getPlayer(player);
+    spPlayer->closeMenu();
 
     return 1;
 }
@@ -629,7 +602,7 @@ static cell_t MenuItemSetName(SourcePawn::IPluginContext *ctx, const cell_t *par
         return 0;
 
     cell_t menuId, itemId;
-    UNPACK_ITEM(packedItem, menuId, itemId);
+    menuUnpackItem(packedItem, menuId, itemId);
 
     if (menuId < 0)
     {
@@ -637,16 +610,14 @@ static cell_t MenuItemSetName(SourcePawn::IPluginContext *ctx, const cell_t *par
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -655,10 +626,10 @@ static cell_t MenuItemSetName(SourcePawn::IPluginContext *ctx, const cell_t *par
     char *name;
     ctx->LocalToString(params[arg_name], &name);
 
-    std::shared_ptr<MenuItem> pItem = pMenu->getItemCore(itemId);
+    SPMod::IMenu::IItem *pItem = pMenu->getItem(itemId);
 
     // TODO: check item?
-    pItem->setNameCore(name);
+    pItem->setName(name);
 
     return 1;
 }
@@ -681,7 +652,7 @@ static cell_t MenuItemGetName(SourcePawn::IPluginContext *ctx, const cell_t *par
         return 0;
 
     cell_t menuId, itemId;
-    UNPACK_ITEM(packedItem, menuId, itemId);
+    menuUnpackItem(packedItem, menuId, itemId);
 
     if (menuId < 0)
     {
@@ -689,16 +660,14 @@ static cell_t MenuItemGetName(SourcePawn::IPluginContext *ctx, const cell_t *par
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
@@ -707,9 +676,9 @@ static cell_t MenuItemGetName(SourcePawn::IPluginContext *ctx, const cell_t *par
     char *name;
     ctx->LocalToString(params[arg_name], &name);
 
-    std::shared_ptr<MenuItem> pItem = pMenu->getItemCore(itemId);
+    SPMod::IMenu::IItem *pItem = pMenu->getItem(itemId);
 
-    return gSPGlobal->getUtilsCore()->strCopyCore(name, params[arg_size], pItem->getNameCore());
+    return gSPGlobal->getUtils()->strCopy(name, params[arg_size], pItem->getName());
 }
 
 // native void MenuItem.SetData(any data);
@@ -728,7 +697,7 @@ static cell_t MenuItemSetData(SourcePawn::IPluginContext *ctx, const cell_t *par
         return 0;
 
     cell_t menuId, itemId;
-    UNPACK_ITEM(packedItem, menuId, itemId);
+    menuUnpackItem(packedItem, menuId, itemId);
 
     if (menuId < 0)
     {
@@ -736,24 +705,22 @@ static cell_t MenuItemSetData(SourcePawn::IPluginContext *ctx, const cell_t *par
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
     }
 
-    std::shared_ptr<MenuItem> pItem = pMenu->getItemCore(itemId);
+    SPMod::IMenu::IItem *pItem = pMenu->getItem(itemId);
 
-    pItem->setDataCore(params[arg_data]);
+    pItem->setData(const_cast<cell_t *>(&params[arg_data]));
 
     return 1;
 }
@@ -774,7 +741,7 @@ static cell_t MenuItemGetData(SourcePawn::IPluginContext *ctx, const cell_t *par
         return 0;
 
     cell_t menuId, itemId;
-    UNPACK_ITEM(packedItem, menuId, itemId);
+    menuUnpackItem(packedItem, menuId, itemId);
 
     if (menuId < 0)
     {
@@ -782,24 +749,22 @@ static cell_t MenuItemGetData(SourcePawn::IPluginContext *ctx, const cell_t *par
         return 0;
     }
 
-    const std::unique_ptr<MenuMngr> &menuManager = gSPGlobal->getMenuManagerCore();
-    std::shared_ptr<Menu> pMenu = menuManager->findMenuCore(menuId);
-
+    SPMod::IMenu *pMenu = gMenuHandlers.get(menuId);
     if (!pMenu)
     {
         ctx->ReportError("Menu(%d) not found!", menuId);
         return 0;
     }
 
-    if (pMenu->getStyle() == MenuStyle::Text)
+    if (pMenu->getStyle() == SPMod::IMenu::Style::Text)
     {
         ctx->ReportError("TextStyle menu can't use this native!");
         return 0;
     }
 
-    std::shared_ptr<MenuItem> pItem = pMenu->getItemCore(itemId);
+    SPMod::IMenu::IItem *pItem = pMenu->getItem(itemId);
 
-    return pItem->getDataCore();
+    return *static_cast<cell_t *>(pItem->getData());
 }
 
 sp_nativeinfo_t gMenuNatives[] = {{"Menu.Menu", MenuCreate},

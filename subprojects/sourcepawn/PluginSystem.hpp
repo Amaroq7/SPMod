@@ -1,21 +1,21 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2019 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
- *  This program is free software: you can redistribute it and/or modify
+ *  SPMod is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
-
- *  This program is distributed in the hope that it will be useful,
+ *
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
-
+ *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #pragma once
 
@@ -23,15 +23,22 @@
 
 namespace SPExt
 {
+    class PluginMngr;
+
     class Plugin final : public SPMod::IPlugin
     {
+        friend class PluginMngr;
+
     public:
         static constexpr std::uint32_t FIELD_NAME = 0;
         static constexpr std::uint32_t FIELD_VERSION = 1;
         static constexpr std::uint32_t FIELD_AUTHOR = 2;
         static constexpr std::uint32_t FIELD_URL = 3;
 
-        Plugin(std::size_t id, std::string_view identity, const fs::path &path, std::shared_ptr<PluginMngr> pluginMngr);
+        Plugin(std::size_t id,
+               std::string_view identity,
+               const fs::path &path,
+               const std::unique_ptr<PluginMngr> &pluginMngr);
 
         Plugin() = delete;
         ~Plugin() = default;
@@ -63,15 +70,15 @@ namespace SPExt
         void setProxyContext(SourcePawn::IPluginContext *ctx);
 
     private:
-        std::weak_ptr<PluginMngr> m_pluginMngr;
-        SourcePawn::IPluginRuntime *m_runtime;
+        std::size_t m_id;
         std::string m_identity;
         std::string m_filename;
+        const std::unique_ptr<PluginMngr> &m_pluginMngr;
+        SourcePawn::IPluginRuntime *m_runtime;
         std::string m_name;
         std::string m_version;
         std::string m_author;
         std::string m_url;
-        std::size_t m_id;
         std::array<cell_t, SP_MAX_CALL_ARGUMENTS> m_proxiedParams;
         SourcePawn::IPluginContext *m_proxyContext;
     };
@@ -90,10 +97,11 @@ namespace SPExt
         void loadPlugins() override;
         void bindPluginsNatives() override;
         void unloadPlugins() override;
-        const char *getPluginsExt() override;
+        const char *getPluginsExt() const override;
+        const CUtlVector<SPMod::IPlugin *> &getPluginsList() const override;
 
         // PluginMngr
-        const auto &getPluginsList() const
+        const auto &getPluginsListCore() const
         {
             return m_plugins;
         }
@@ -110,11 +118,11 @@ namespace SPExt
         SPVM_NATIVE_FUNC findNative(std::string_view name);
 
         // Proxied natives
-        bool addProxiedNative(std::string_view name, SPMod::IProxiedNative *native);
-
+        int proxyNativeCallback(const SPMod::IProxiedNative *const native, const SPMod::IPlugin *const plugin) override;
+        bool addProxiedNative(std::string_view name, const SPMod::IProxiedNative *native);
         static cell_t proxyNativeRouter(SourcePawn::IPluginContext *ctx, const cell_t *params, void *data);
 
-        static inline SPMod::IPlugin *m_callerPlugin;
+        static inline const SPMod::IPlugin *m_callerPlugin;
 
     private:
         std::shared_ptr<Plugin> _loadPlugin(const fs::path &path, std::string &error);
@@ -122,6 +130,7 @@ namespace SPExt
         bool _addNative(std::string_view name, SPVM_NATIVE_FUNC func);
 
         std::unordered_map<std::string, std::shared_ptr<Plugin>> m_plugins;
+        CUtlVector<SPMod::IPlugin *> m_exportedPlugins;
         std::unordered_map<std::string, SPVM_NATIVE_FUNC> m_natives;
 
         // Routers to be freed on the map change

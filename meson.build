@@ -163,7 +163,7 @@ if gExtsToBuild.length() != 0
         subproject('example')
         subproject('sourcepawn')
     else
-        if 'sorucepawn' in gExtsToBuild
+        if 'sourcepawn' in gExtsToBuild
             subproject('sourcepawn')
         endif
         if 'example' in gExtsToBuild
