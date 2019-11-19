@@ -127,3 +127,36 @@ void CommandMngr::clearCommands()
     m_clientCommands.clear();
     m_serverCommands.clear();
 }
+
+META_RES CommandMngr::ClientCommandMeta(std::shared_ptr<Edict> entity, std::string&& clCmd)
+{
+    std::shared_ptr<Player> player = gSPGlobal->getPlayerManagerCore()->getPlayerCore(entity);
+    META_RES metaResult = MRES_IGNORED;
+    if (getCommandsNum(ICommand::Type::Client))
+    {
+        if (clCmd == "say" || clCmd == "say_team")
+        {
+            clCmd += ' ';
+            clCmd += CMD_ARGV(1);
+        }
+
+        for (const auto &cmd : getCommandList(ICommand::Type::Client))
+        {
+            std::regex cmdToMatch(cmd->getCmdCore().data());
+            if (std::regex_search(clCmd, cmdToMatch) && cmd->hasAccessCore(player))
+            {
+                IForward::ReturnValue result = IForward::ReturnValue::Ignored;
+                ICommand::Callback func = cmd->getCallback();
+                result = func(player.get(), cmd.get(), cmd->getCallbackData());
+
+                if (result == IForward::ReturnValue::Stop || result == IForward::ReturnValue::Handled)
+                {
+                    metaResult = MRES_SUPERCEDE;
+                    if (result == IForward::ReturnValue::Stop)
+                        break;
+                }
+            }
+        }
+    }
+    return metaResult;
+}

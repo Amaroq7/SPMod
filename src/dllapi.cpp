@@ -58,35 +58,7 @@ static void ClientCommand(edict_t *pEntity)
     }
 
     const std::unique_ptr<CommandMngr> &cmdMngr = gSPGlobal->getCommandManagerCore();
-    std::shared_ptr<Player> player = gSPGlobal->getPlayerManagerCore()->getPlayerCore(spEdict);
-    if (cmdMngr->getCommandsNum(ICommand::Type::Client))
-    {
-        if (strCmd == "say" || strCmd == "say_team")
-        {
-            strCmd += ' ';
-            strCmd += CMD_ARGV(1);
-        }
-
-        for (const auto &cmd : cmdMngr->getCommandList(ICommand::Type::Client))
-        {
-            std::regex cmdToMatch(cmd->getCmdCore().data());
-            if (std::regex_search(strCmd, cmdToMatch) && cmd->hasAccessCore(player))
-            {
-                IForward::ReturnValue result = IForward::ReturnValue::Ignored;
-                ICommand::Callback func = cmd->getCallback();
-                result = func(player.get(), cmd.get(), cmd->getCallbackData());
-
-                if (result == IForward::ReturnValue::Stop || result == IForward::ReturnValue::Handled)
-                {
-                    res = MRES_SUPERCEDE;
-                    if (result == IForward::ReturnValue::Stop)
-                        break;
-                }
-            }
-        }
-    }
-
-    RETURN_META(res);
+    RETURN_META(cmdMngr->ClientCommandMeta(spEdict, std::move(strCmd)));
 }
 
 void ClientPutInServer(edict_t *pEntity)

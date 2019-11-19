@@ -125,6 +125,8 @@ public:
     std::size_t getCommandsNum(ICommand::Type type);
     void clearCommands();
 
+    META_RES ClientCommandMeta(std::shared_ptr<Edict> entity, std::string&& cmd);
+
 private:
     std::vector<std::shared_ptr<Command>> m_clientCommands;
     std::vector<std::shared_ptr<Command>> m_serverCommands;
