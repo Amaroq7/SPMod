@@ -74,6 +74,56 @@ void EngineFuncs::registerSrvCommand(const char *cmd) const
     REG_SVR_COMMAND(cmd, PluginSrvCmd);
 }
 
+void EngineFuncs::messageBegin(int msgDest, int msgType, const float *pOrigin, IEdict *pEdict) const
+{
+    MESSAGE_BEGIN(msgDest, msgType, pOrigin, INDEXENT(pEdict->getIndex()));
+}
+
+void EngineFuncs::messageEnd() const
+{
+    MESSAGE_END();
+}
+
+void EngineFuncs::writeByte(int byteArg) const
+{
+    WRITE_BYTE(byteArg);
+}
+
+void EngineFuncs::writeChar(int charArg) const
+{
+    WRITE_CHAR(charArg);
+}
+
+void EngineFuncs::writeShort(int shortArg) const
+{
+    WRITE_SHORT(shortArg);
+}
+
+void EngineFuncs::writeLong(int longArg) const
+{
+    WRITE_LONG(longArg);
+}
+
+void EngineFuncs::writeEntity(int entArg) const
+{
+    WRITE_ENTITY(entArg);
+}
+
+void EngineFuncs::writeAngle(float angleArg) const
+{
+    WRITE_ANGLE(angleArg);
+}
+
+void EngineFuncs::writeCoord(float coordArg) const
+{
+    WRITE_COORD(coordArg);
+}
+
+void EngineFuncs::writeString(const char *strArg) const
+{
+    WRITE_STRING(strArg);
+}
+
 const char *EngineFuncsHooked::getArg(int arg) const
 {
     return gpEngineFuncs->pfnCmd_Argv(arg);
@@ -129,7 +179,62 @@ void EngineFuncsHooked::registerSrvCommand(const char *cmd) const
     gpEngineFuncs->pfnAddServerCommand(cmd, PluginSrvCmd);
 }
 
+void EngineFuncsHooked::messageBegin(int msgDest, int msgType, const float *pOrigin, IEdict *pEdict) const
+{
+    gpEngineFuncs->pfnMessageBegin(msgDest, msgType, pOrigin, INDEXENT(pEdict->getIndex()));
+}
+
+void EngineFuncsHooked::messageEnd() const
+{
+    gpEngineFuncs->pfnMessageEnd();
+}
+
+void EngineFuncsHooked::writeByte(int byteArg) const
+{
+    gpEngineFuncs->pfnWriteByte(byteArg);
+}
+
+void EngineFuncsHooked::writeChar(int charArg) const
+{
+    gpEngineFuncs->pfnWriteChar(charArg);
+}
+
+void EngineFuncsHooked::writeShort(int shortArg) const
+{
+    gpEngineFuncs->pfnWriteShort(shortArg);
+}
+
+void EngineFuncsHooked::writeLong(int longArg) const
+{
+    gpEngineFuncs->pfnWriteLong(longArg);
+}
+
+void EngineFuncsHooked::writeEntity(int entArg) const
+{
+    gpEngineFuncs->pfnWriteEntity(entArg);
+}
+
+void EngineFuncsHooked::writeAngle(float angleArg) const
+{
+    gpEngineFuncs->pfnWriteAngle(angleArg);
+}
+
+void EngineFuncsHooked::writeCoord(float coordArg) const
+{
+    gpEngineFuncs->pfnWriteCoord(coordArg);
+}
+
+void EngineFuncsHooked::writeString(const char *strArg) const
+{
+    gpEngineFuncs->pfnWriteString(strArg);
+}
+
 float EngineGlobals::getTime() const
 {
     return gpGlobals->time;
+}
+
+const char *EngineGlobals::getMapName() const
+{
+    return STRING(gpGlobals->mapname);
 }

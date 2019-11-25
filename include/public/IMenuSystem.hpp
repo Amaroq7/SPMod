@@ -19,10 +19,10 @@
 
 #pragma once
 
-#include "IPlayerSystem.hpp"
-
 namespace SPMod
 {
+    class IPlayer;
+
     enum class NavigationType : int8_t
     {
         None = 0,
@@ -50,7 +50,7 @@ namespace SPMod
                 Hide
             };
 
-            using Callback = Status (*)(IMenu *const menu, IItem *const item, IPlayer *const player);
+            using Callback = Status (*)(IMenu *const menu, IItem *const item, IPlayer *const player, void *data);
 
             virtual const char *getName() const = 0;
             virtual void setName(const char *name) = 0;
@@ -60,14 +60,14 @@ namespace SPMod
 
             virtual NavigationType getNavType() const = 0;
 
-            virtual void setCallback(Callback func) = 0;
+            virtual void setCallback(Callback func, void *data) = 0;
 
         protected:
             virtual ~IItem() = default;
         };
 
-        using ItemHandler = void (*)(IMenu *const menu, IItem *const item, IPlayer *const player);
-        using TextHandler = void (*)(IMenu *const menu, int key, IPlayer *const player);
+        using ItemHandler = void (*)(IMenu *const menu, IItem *const item, IPlayer *const player, void *data);
+        using TextHandler = void (*)(IMenu *const menu, int key, IPlayer *const player, void *data);
 
         virtual void display(IPlayer *const player, int page, int time) = 0;
         virtual bool getGlobal() const = 0;
@@ -84,16 +84,23 @@ namespace SPMod
         virtual int getTime() const = 0;
         virtual int getKeys() const = 0;
 
-        virtual IItem *appendItem(const char *name, IItem::Callback callback, void *data) = 0;
+        virtual IItem *appendItem(const char *name, IItem::Callback callback, void *cbData, void *data) = 0;
 
-        virtual IItem *insertItem(std::size_t position, const char *name, IItem::Callback callback, void *data) = 0;
+        virtual IItem *
+            insertItem(std::size_t position, const char *name, IItem::Callback callback, void *cbData, void *data) = 0;
 
-        virtual IItem *setStaticItem(std::size_t position, const char *name, IItem::Callback callback, void *data) = 0;
+        virtual IItem *setStaticItem(std::size_t position,
+                                     const char *name,
+                                     IItem::Callback callback,
+                                     void *cbData,
+                                     void *data) = 0;
 
         virtual bool removeItem(std::size_t position) = 0;
         virtual void removeAllItems() = 0;
 
         virtual IItem *getItem(std::size_t position) const = 0;
+        virtual int getItemIndex(const IItem *item) const = 0;
+        virtual void setNumberFormat(const char *format) = 0;
 
         virtual std::size_t getItems() const = 0;
 
@@ -101,11 +108,37 @@ namespace SPMod
         virtual ~IMenu() = default;
     };
 
-    class IMenuMngr
+    class IMenuMngr : public ISPModInterface
     {
     public:
-        virtual IMenu *registerMenu(IMenu::ItemHandler handler, bool global) = 0;
-        virtual IMenu *registerMenu(IMenu::TextHandler handler, bool global) = 0;
+        static constexpr std::uint16_t MAJOR_VERSION = 0;
+        static constexpr std::uint16_t MINOR_VERSION = 0;
+
+        static constexpr std::uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
+        /**
+         * @brief Gets interface's name.
+         *
+         * @return        Interface's name.
+         */
+        const char *getName() const override
+        {
+            return "IMenuMngr";
+        }
+
+        /**
+         * @brief Gets interface's version.
+         *
+         * @note The first 16 most significant bits represent major version, the rest represent minor version.
+         *
+         * @return        Interface's version.
+         */
+        std::uint32_t getVersion() const override
+        {
+            return VERSION;
+        }
+
+        virtual IMenu *registerMenu(IMenu::ItemHandler handler, void *data, bool global) = 0;
+        virtual IMenu *registerMenu(IMenu::TextHandler handler, void *data, bool global) = 0;
         virtual void destroyMenu(IMenu *menu) = 0;
 
     protected:

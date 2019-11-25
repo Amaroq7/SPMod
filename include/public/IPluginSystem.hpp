@@ -23,23 +23,13 @@
     #define _vsnprintf vsnprintf
 #endif
 
-#ifdef SP_CLANG
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wunused-parameter"
-#elif defined SP_GCC
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wunused-parameter"
-#elif defined SP_MSVC
+#if defined SP_MSVC
     #pragma warning(push)
     #pragma warning(disable : 4100)
     #pragma warning(disable : 4996)
 #endif
 #include <utlvector.h>
-#if defined SP_CLANG
-    #pragma clang diagnostic pop
-#elif defined SP_GCC
-    #pragma GCC diagnostic pop
-#elif defined SP_MSVC
+#if defined SP_MSVC
     #pragma warning(pop)
 #endif
 

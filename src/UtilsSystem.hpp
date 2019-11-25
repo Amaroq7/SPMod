@@ -37,4 +37,6 @@ public:
     std::size_t strCopyCore(char *buffer, std::size_t size, std::string_view src) const;
 
     std::string strReplacedCore(std::string_view source, std::string_view from, std::string_view to) const;
+
+    void ShowMenu(std::shared_ptr<Edict> pEdict, int slots, int time, const char *menu, std::size_t menuLength);
 };

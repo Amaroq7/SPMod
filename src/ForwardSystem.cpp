@@ -448,9 +448,10 @@ std::shared_ptr<Forward>
     return forward;
 }
 
-void ForwardMngr::deleteForward(IForward *forward)
+bool ForwardMngr::deleteForward(IForward *forward)
 {
-    m_forwards.erase(forward->getName());
+    auto iter = m_forwards.find(forward->getName());
+    return deleteForwardCore(iter);
 }
 
 void ForwardMngr::addForwardListener(ForwardCallback func)
@@ -461,11 +462,27 @@ void ForwardMngr::addForwardListener(ForwardCallback func)
 void ForwardMngr::clearForwards()
 {
     m_forwards.clear();
+    m_callbacks.clear();
 }
 
-void ForwardMngr::deleteForwardCore(std::shared_ptr<Forward> fwd)
+bool ForwardMngr::deleteForwardCore(std::shared_ptr<Forward> fwd)
 {
-    m_forwards.erase(fwd->getNameCore().data());
+    if (!fwd->isExecuted())
+    {
+        m_forwards.erase(fwd->getNameCore().data());
+        return true;
+    }
+    return false;
+}
+
+bool ForwardMngr::deleteForwardCore(const std::unordered_multimap<std::string, std::shared_ptr<Forward>>::iterator &iter)
+{
+    if (!iter->second->isExecuted())
+    {
+        m_forwards.erase(iter);
+        return true;
+    }
+    return false;
 }
 
 std::shared_ptr<Forward> ForwardMngr::getDefaultForward(ForwardMngr::FwdDefault fwd) const

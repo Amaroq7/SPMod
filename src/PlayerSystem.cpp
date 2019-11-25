@@ -19,9 +19,7 @@
 
 #include "spmod.hpp"
 
-Player::Player(edict_t *edict, unsigned int index) : m_edict(edict), m_index(index), m_connected(false), m_inGame(false)
-{
-}
+Player::Player(std::shared_ptr<Edict> edict) : Edict(edict->getInternalEdict()), m_connected(false), m_inGame(false) {}
 
 std::string_view Player::getNameCore() const
 {
@@ -43,9 +41,30 @@ void Player::setName(std::string_view newname)
     m_name = newname;
 }
 
-std::weak_ptr<Menu> Player::getMenu() const
+IMenu *Player::getMenu() const
+{
+    return getMenuCore().lock().get();
+}
+
+std::weak_ptr<Menu> Player::getMenuCore() const
 {
     return m_menu;
+}
+
+void Player::closeMenu()
+{
+    std::shared_ptr<Menu> pMenu = getMenuCore().lock();
+
+    if (!pMenu)
+        return;
+
+    setMenu(nullptr);
+
+    if (pMenu->getStyle() == IMenu::Style::Item)
+        pMenu->execExitHandler(m_ownInstance.lock());
+
+    static char menu[] = "\n";
+    gSPGlobal->getUtilsCore()->ShowMenu(m_ownInstance.lock(), 0, 0, menu, strlen(menu));
 }
 
 void Player::setMenu(std::shared_ptr<Menu> menu)
@@ -106,14 +125,9 @@ const char *Player::getSteamID() const
     return getSteamIDCore().data();
 }
 
-edict_t *Player::getEdict() const
+void Player::setOwnInstance(std::shared_ptr<Player> instance)
 {
-    return m_edict;
-}
-
-unsigned int Player::getIndex() const
-{
-    return m_index;
+    m_ownInstance = instance;
 }
 
 int Player::getUserId() const
@@ -151,9 +165,10 @@ IPlayer *PlayerMngr::getPlayer(int index) const
     return getPlayerCore(index).get();
 }
 
-IPlayer *PlayerMngr::getPlayer(edict_t *edict) const
+IPlayer *PlayerMngr::getPlayer(IEdict *edict) const
 {
-    return getPlayerCore(edict).get();
+    std::shared_ptr<Edict> spEdict = gSPGlobal->getEdictCore(edict->getIndex());
+    return getPlayerCore(spEdict).get();
 }
 
 unsigned int PlayerMngr::getMaxClients() const
@@ -170,7 +185,9 @@ void PlayerMngr::_initPlayers(edict_t *edictList)
 {
     for (size_t i = 1; i <= m_maxClients; i++)
     {
-        m_players.at(i) = std::make_shared<Player>(edictList + i, i);
+        std::shared_ptr<Edict> spEdict = gSPGlobal->getEdictCore(ENTINDEX(edictList + i));
+        m_players.at(i) = std::make_shared<Player>(spEdict);
+        m_players.at(i)->setOwnInstance(m_players.at(i));
     }
 }
 
@@ -186,11 +203,35 @@ std::shared_ptr<Player> PlayerMngr::getPlayerCore(int index) const
     }
 }
 
+std::shared_ptr<Player> PlayerMngr::getPlayerCore(std::shared_ptr<Edict> edict) const
+{
+    try
+    {
+        return m_players.at(edict->getIndex());
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
+        return nullptr;
+    }
+}
+
 std::shared_ptr<Player> PlayerMngr::getPlayerCore(edict_t *edict) const
 {
     try
     {
         return m_players.at(ENTINDEX(edict));
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
+        return nullptr;
+    }
+}
+
+std::shared_ptr<Player> PlayerMngr::getPlayerCore(IPlayer *player) const
+{
+    try
+    {
+        return m_players.at(player->getIndex());
     }
     catch (const std::out_of_range &e [[maybe_unused]])
     {
@@ -227,8 +268,7 @@ void PlayerMngr::ClientConnectPost(edict_t *pEntity, const char *pszName, const 
 {
     using def = ForwardMngr::FwdDefault;
 
-    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
-    std::shared_ptr<Player> plr = plrMngr->getPlayerCore(pEntity);
+    std::shared_ptr<Player> plr = getPlayerCore(pEntity);
     plr->connect(pszName, pszAddress);
 
     PlayerMngr::m_playersNum++;
@@ -288,7 +328,7 @@ void PlayerMngr::StartFramePost()
         while (iter != m_playersToAuth.end())
         {
             std::shared_ptr<Player> plr = *iter;
-            std::string_view authid(GETPLAYERAUTHID(plr->getEdict()));
+            std::string_view authid(GETPLAYERAUTHID(plr->getInternalEdict()));
             if (!authid.empty() && authid.compare("STEAM_ID_PENDING"))
             {
                 plr->authorize(authid);

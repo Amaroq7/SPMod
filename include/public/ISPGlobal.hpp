@@ -26,6 +26,7 @@
 #include <ICvarSystem.hpp>
 #include <ITimerSystem.hpp>
 #include <IMenuSystem.hpp>
+#include <IEdict.hpp>
 #include <IUtilsSystem.hpp>
 #include <IPlayerSystem.hpp>
 #include <ILoggerSystem.hpp>
@@ -33,6 +34,7 @@
 #include <IPluginSystem.hpp>
 #include <INativeProxy.hpp>
 #include <IEngineFuncs.hpp>
+#include <IMetaFuncs.hpp>
 
 namespace SPMod
 {
@@ -95,6 +97,15 @@ namespace SPMod
          * @return              True if they are allowed to, false otherwise.
          */
         virtual bool canPluginsPrecache() const = 0;
+
+        /**
+         * @brief Gets edict.
+         *
+         * @param index         Edict's index.
+         *
+         * @return              Edict.
+         */
+        virtual IEdict *getEdict(int index) = 0;
 
         /**
          * @brief Finds plugin.
@@ -163,31 +174,38 @@ namespace SPMod
 
         /**
          * @brief Returns SPMod command manager.
-         * 
+         *
          * @return              Command manager.
          */
         virtual ICommandMngr *getCommandManager() const = 0;
 
         /**
          * @brief Returns engine funcs.
-         * 
+         *
          * @return              Engine functions.
          */
         virtual IEngineFuncs *getEngineFuncs() const = 0;
 
         /**
          * @brief Returns engine hooked funcs.
-         * 
+         *
          * @return              Engine hooked functions.
          */
         virtual IEngineFuncsHooked *getEngineHookedFuncs() const = 0;
 
         /**
          * @brief Returns engine globals.
-         * 
+         *
          * @return              Engine globals.
          */
         virtual IEngineGlobals *getEngineGlobals() const = 0;
+
+        /**
+         * @brief Returns engine globals.
+         *
+         * @return              Engine globals.
+         */
+        virtual IMetaFuncs *getMetaFuncs() const = 0;
 
         /**
          * @brief Registers module's interface.

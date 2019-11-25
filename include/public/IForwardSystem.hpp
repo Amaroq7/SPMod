@@ -304,11 +304,13 @@ namespace SPMod
         /*
          * @brief Deletes forward.
          *
+         * @note Forward will not be deleted if it is being executed.
+         *
          * @param forward   Forward to remove.
          *
-         * @noreturn
+         * @return          True if forward has been successfully deleted, false otherwise.
          */
-        virtual void deleteForward(IForward *forward) = 0;
+        virtual bool deleteForward(IForward *forward) = 0;
 
         /*
          * @brief Adds listener.

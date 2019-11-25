@@ -31,15 +31,15 @@ class Command : public ICommand
 public:
     Command() = delete;
     ~Command() = default;
-    Command(std::string_view cmd, std::string_view info, ICommand::Callback *cb, void *data);
+    Command(std::string_view cmd, std::string_view info, ICommand::Callback cb, void *data);
 
     const char *getCmd() const override;
     const char *getInfo() const override;
-    void *getData() const override;
 
     std::string_view getCmdCore() const;
     std::string_view getInfoCore() const;
-    ICommand::Callback *getCallback() const;
+    ICommand::Callback getCallback() const;
+    void *getCallbackData() const;
 
     virtual bool hasAccessCore(std::shared_ptr<Player> player) const = 0;
 
@@ -51,9 +51,9 @@ protected:
     std::string m_info;
 
     /* cmd callback */
-    ICommand::Callback *m_callback;
+    ICommand::Callback m_callback;
 
-    /* command data */
+    /* callback data */
     void *m_data;
 };
 
@@ -66,7 +66,7 @@ public:
     ClientCommand(ClientCommand &&other) = default;
     ~ClientCommand() = default;
 
-    ClientCommand(std::string_view cmd, std::string_view info, std::uint32_t flags, ICommand::Callback *cb, void *data);
+    ClientCommand(std::string_view cmd, std::string_view info, std::uint32_t flags, ICommand::Callback cb, void *data);
 
     bool hasAccess(IPlayer *player) const override;
     bool hasAccessCore(std::shared_ptr<Player> player) const override;
@@ -86,7 +86,7 @@ public:
     ServerCommand(ServerCommand &&other) = default;
     ~ServerCommand() = default;
 
-    ServerCommand(std::string_view cmd, std::string_view info, ICommand::Callback *cb, void *data);
+    ServerCommand(std::string_view cmd, std::string_view info, ICommand::Callback cb, void *data);
 
     bool hasAccess(IPlayer *player) const override;
     bool hasAccessCore(std::shared_ptr<Player> player) const override;
@@ -103,7 +103,7 @@ public:
                               const char *cmd,
                               const char *info,
                               std::uint32_t flags,
-                              ICommand::Callback *cb,
+                              ICommand::Callback cb,
                               void *data) override;
 
     template<typename T, typename... Args, typename = std::enable_if_t<std::is_base_of_v<Command, T>>>
@@ -124,6 +124,8 @@ public:
 
     std::size_t getCommandsNum(ICommand::Type type);
     void clearCommands();
+
+    META_RES ClientCommandMeta(std::shared_ptr<Edict> entity, std::string&& cmd);
 
 private:
     std::vector<std::shared_ptr<Command>> m_clientCommands;

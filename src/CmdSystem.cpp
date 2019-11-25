@@ -19,7 +19,7 @@
 
 #include "spmod.hpp"
 
-Command::Command(std::string_view cmd, std::string_view info, ICommand::Callback *cb, void *data)
+Command::Command(std::string_view cmd, std::string_view info, ICommand::Callback cb, void *data)
     : m_cmd(cmd), m_info(info), m_callback(cb), m_data(data)
 {
 }
@@ -34,12 +34,12 @@ const char *Command::getInfo() const
     return getInfoCore().data();
 }
 
-ICommand::Callback *Command::getCallback() const
+ICommand::Callback Command::getCallback() const
 {
     return m_callback;
 }
 
-void *Command::getData() const
+void *Command::getCallbackData() const
 {
     return m_data;
 }
@@ -57,7 +57,7 @@ std::string_view Command::getInfoCore() const
 ClientCommand::ClientCommand(std::string_view cmd,
                              std::string_view info,
                              std::uint32_t flags,
-                             ICommand::Callback *cb,
+                             ICommand::Callback cb,
                              void *data)
     : Command(cmd, info, cb, data), m_flags(flags)
 {
@@ -79,7 +79,7 @@ uint32_t ClientCommand::getAccess() const
     return m_flags;
 }
 
-ServerCommand::ServerCommand(std::string_view cmd, std::string_view info, ICommand::Callback *cb, void *data)
+ServerCommand::ServerCommand(std::string_view cmd, std::string_view info, ICommand::Callback cb, void *data)
     : Command(cmd, info, cb, data)
 {
 }
@@ -103,7 +103,7 @@ ICommand *CommandMngr::registerCommand(ICommand::Type type,
                                        const char *cmd,
                                        const char *info,
                                        std::uint32_t flags,
-                                       ICommand::Callback *cb,
+                                       ICommand::Callback cb,
                                        void *data)
 {
     switch (type)
@@ -126,4 +126,37 @@ void CommandMngr::clearCommands()
 {
     m_clientCommands.clear();
     m_serverCommands.clear();
+}
+
+META_RES CommandMngr::ClientCommandMeta(std::shared_ptr<Edict> entity, std::string&& clCmd)
+{
+    std::shared_ptr<Player> player = gSPGlobal->getPlayerManagerCore()->getPlayerCore(entity);
+    META_RES metaResult = MRES_IGNORED;
+    if (getCommandsNum(ICommand::Type::Client))
+    {
+        if (clCmd == "say" || clCmd == "say_team")
+        {
+            clCmd += ' ';
+            clCmd += CMD_ARGV(1);
+        }
+
+        for (const auto &cmd : getCommandList(ICommand::Type::Client))
+        {
+            std::regex cmdToMatch(cmd->getCmdCore().data());
+            if (std::regex_search(clCmd, cmdToMatch) && cmd->hasAccessCore(player))
+            {
+                IForward::ReturnValue result = IForward::ReturnValue::Ignored;
+                ICommand::Callback func = cmd->getCallback();
+                result = func(player.get(), cmd.get(), cmd->getCallbackData());
+
+                if (result == IForward::ReturnValue::Stop || result == IForward::ReturnValue::Handled)
+                {
+                    metaResult = MRES_SUPERCEDE;
+                    if (result == IForward::ReturnValue::Stop)
+                        break;
+                }
+            }
+        }
+    }
+    return metaResult;
 }

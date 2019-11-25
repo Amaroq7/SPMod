@@ -26,15 +26,17 @@ SPGlobal::SPGlobal(fs::path &&dllDir)
       m_cvarManager(std::make_unique<CvarMngr>()), m_loggingSystem(std::make_unique<LoggerMngr>()),
       m_cmdManager(std::make_unique<CommandMngr>()), m_timerManager(std::make_unique<TimerMngr>()),
       m_menuManager(std::make_unique<MenuMngr>()), m_plrManager(std::make_unique<PlayerMngr>()),
-      m_utils(std::make_unique<Utils>()), m_engineFuncs(std::make_unique<EngineFuncs>()),
+      m_nativeProxy(std::make_unique<NativeProxy>()), m_engineFuncs(std::make_unique<EngineFuncs>()),
       m_engineFuncsHooked(std::make_unique<EngineFuncsHooked>()), m_engineGlobals(std::make_unique<EngineGlobals>()),
-      m_modName(GET_GAME_INFO(PLID, GINFO_NAME))
+      m_utils(std::make_unique<Utils>()), m_modName(GET_GAME_INFO(PLID, GINFO_NAME))
 {
     // Sets default dirs
     setPluginsDir("plugins");
     setLogsDir("logs");
     setDllsDir("dlls");
     setExtDir("exts");
+
+    m_edicts.reserve(2048);
 }
 
 void SPGlobal::setPluginsDir(std::string_view folder)
@@ -125,6 +127,7 @@ void SPGlobal::unloadExts()
     }
 
     m_extHandles.clear();
+    m_interfaces.clear();
 }
 
 bool SPGlobal::canPluginsPrecache() const
@@ -192,7 +195,7 @@ ITimerMngr *SPGlobal::getTimerManager() const
 
 IMenuMngr *SPGlobal::getMenuManager() const
 {
-    return m_menuManager.get();
+    return getMenuManagerCore().get();
 }
 
 ILoggerMngr *SPGlobal::getLoggerManager() const
@@ -202,7 +205,7 @@ ILoggerMngr *SPGlobal::getLoggerManager() const
 
 IPlayerMngr *SPGlobal::getPlayerManager() const
 {
-    return m_plrManager.get();
+    return getPlayerManagerCore().get();
 }
 
 ICommandMngr *SPGlobal::getCommandManager() const
@@ -233,6 +236,16 @@ IEngineFuncsHooked *SPGlobal::getEngineHookedFuncs() const
 IEngineGlobals *SPGlobal::getEngineGlobals() const
 {
     return m_engineGlobals.get();
+}
+
+IMetaFuncs *SPGlobal::getMetaFuncs() const
+{
+    return m_metaFuncs.get();
+}
+
+IEdict *SPGlobal::getEdict(int index)
+{
+    return getEdictCore(index).get();
 }
 
 bool SPGlobal::registerInterface(IInterface *interface)
@@ -317,4 +330,27 @@ const std::unique_ptr<PlayerMngr> &SPGlobal::getPlayerManagerCore() const
 const std::unique_ptr<NativeProxy> &SPGlobal::getNativeProxyCore() const
 {
     return m_nativeProxy;
+}
+
+std::shared_ptr<Edict> SPGlobal::getEdictCore(int index)
+{
+    try
+    {
+        return m_edicts.at(index);
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
+        // check if edict is valid and register it
+        if (edict_t *edict = INDEXENT(index); edict)
+        {
+            auto resultIter = m_edicts.emplace(index, std::make_shared<Edict>(index)).first;
+            return (*resultIter).second;
+        }
+        return nullptr;
+    }
+}
+
+void SPGlobal::clearEdicts()
+{
+    m_edicts.clear();
 }

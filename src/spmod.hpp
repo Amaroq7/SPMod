@@ -38,24 +38,9 @@
 #endif
 
 // ReHLDS
-#ifdef SP_CLANG
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wnon-virtual-dtor"
-#elif defined SP_GCC
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-    #pragma GCC diagnostic ignored "-Wpedantic"
-#endif
-
 #include <osconfig.h>
 #include <usercmd.h>
 #include <rehlds_api.h>
-
-#ifdef SP_CLANG
-    #pragma clang diagnostic pop
-#elif defined SP_GCC
-    #pragma GCC diagnostic pop
-#endif
 
 #undef max
 #undef min
@@ -113,6 +98,7 @@ using namespace SPMod;
 
 // SPMod specific
 #include <SPConfig.hpp>
+#include "Edict.hpp"
 #include "UtilsSystem.hpp"
 #include "LoggingSystem.hpp"
 #include "ForwardSystem.hpp"
@@ -124,6 +110,7 @@ using namespace SPMod;
 #include "ExtensionSystem.hpp"
 #include "NativeProxy.hpp"
 #include "EngineFuncs.hpp"
+#include "MetaFuncs.hpp"
 #include "SPGlobal.hpp"
 
 constexpr auto gSPModAuthor = "SPMod Development Team";
