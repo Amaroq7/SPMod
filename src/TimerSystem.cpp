@@ -63,11 +63,6 @@ void *Timer::getData() const
     return m_data;
 }
 
-void *Timer::getCallbackData() const
-{
-    return m_cbData;
-}
-
 ITimer *TimerMngr::createTimer(float interval, TimerCallback func, void *cbData, void *data, bool pause)
 {
     try
