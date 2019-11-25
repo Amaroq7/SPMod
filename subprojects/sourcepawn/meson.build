@@ -72,3 +72,9 @@ includeThirdPartyDirs = include_directories(publicIncludesDir,
                                             is_system: true)
 
 shared_library('sourcepawn', sourceFiles, include_directories : includeThirdPartyDirs, gnu_symbol_visibility: 'hidden')
+
+if build_machine.system() == 'linux'
+    run_command('build_sourcepawnlib.sh', check: true)
+else
+    run_command('build_sourcepawnlib.ps1', check: true)
+endif
