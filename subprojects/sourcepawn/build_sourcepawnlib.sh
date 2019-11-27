@@ -8,7 +8,7 @@ mkdir -p "$SOURCEPAWN_DEPS_DIR"
 git clone -q --depth=1 https://github.com/alliedmodders/ambuild.git "$SOURCEPAWN_DEPS_DIR/ambuild"
 
 # Patch to build sourcepawn lib without -g3 switch (Clang only)
-if [[ $CLANG_VERSION ]]
+if [[ $CLANG_VERSION || $CC == *"clang"* || $CXX == *"clang"* ]]
 then
     patch --verbose -d "$SOURCEPAWN_DEPS_DIR/ambuild/ambuild2/frontend/v2_1/cpp" < "$MESON_SOURCE_ROOT/patches/gcc-nodbg-clang.patch"
 fi
@@ -28,9 +28,9 @@ ambuild
 
 if [[ $CI ]]
 then
-    mkdir -p "$MESON_SOURCE_ROOT/upload/dlls"
+    mkdir -p "$MESON_SOURCE_ROOT/upload/exts"
     mkdir -p "$MESON_SOURCE_ROOT/upload/scripting"
 
-    cp "$SOURCEPAWN_DEPS_DIR/sourcepawn_build/vm/sourcepawn.jit.x86/sourcepawn.jit.x86.so" "$MESON_SOURCE_ROOT/upload/dlls"
+    cp "$SOURCEPAWN_DEPS_DIR/sourcepawn_build/vm/sourcepawn.jit.x86/sourcepawn.jit.x86.so" "$MESON_SOURCE_ROOT/upload/exts"
     cp "$SOURCEPAWN_DEPS_DIR/sourcepawn_build/compiler/spcomp/spcomp" "$MESON_SOURCE_ROOT/upload/scripting"
 fi

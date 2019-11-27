@@ -19,9 +19,9 @@ python $env:MESON_SOURCE_ROOT\$env:MESON_SUBDIR\sourcepawn\configure.py --enable
 ambuild
 
 if ($env:CI -ne $null) {
-    new-item $env:MESON_SOURCE_ROOT\upload\dlls -itemtype directory -Force | Out-Null
+    new-item $env:MESON_SOURCE_ROOT\upload\exts -itemtype directory -Force | Out-Null
     new-item $env:MESON_SOURCE_ROOT\upload\scripting -itemtype directory -Force | Out-Null
 
-    Copy-Item -Path $SOURCEPAWN_DEPS_DIR\sourcepawn_build\vm\sourcepawn.jit.x86\sourcepawn.jit.x86.so -Destination $env:MESON_SOURCE_ROOT\upload\dlls
-    Copy-Item -Path $SOURCEPAWN_DEPS_DIR\sourcepawn_build\compiler\spcomp\spcomp -Destination $env:MESON_SOURCE_ROOT\upload\scripting
+    Copy-Item -Path $SOURCEPAWN_DEPS_DIR\sourcepawn_build\vm\sourcepawn.jit.x86\sourcepawn.jit.x86.dll -Destination $env:MESON_SOURCE_ROOT\upload\exts
+    Copy-Item -Path $SOURCEPAWN_DEPS_DIR\sourcepawn_build\compiler\spcomp\spcomp.exe -Destination $env:MESON_SOURCE_ROOT\upload\scripting
 }
