@@ -125,6 +125,7 @@ namespace SPExt
         }
         catch (const std::out_of_range &e)
         {
+            (void)e;
             return 0;
         }
     }
@@ -141,6 +142,7 @@ namespace SPExt
         }
         catch (const std::out_of_range &e)
         {
+            (void)e;
             return nullptr;
         }
     }
@@ -153,6 +155,7 @@ namespace SPExt
         }
         catch (const std::out_of_range &e)
         {
+            (void)e;
             return 0;
         }
     }
@@ -169,6 +172,7 @@ namespace SPExt
         }
         catch (const std::out_of_range &e)
         {
+            (void)e;
             return nullptr;
         }
     }
@@ -185,6 +189,7 @@ namespace SPExt
         }
         catch (const std::out_of_range &e)
         {
+            (void)e;
             return nullptr;
         }
     }
@@ -201,6 +206,7 @@ namespace SPExt
         }
         catch (const std::out_of_range &e)
         {
+            (void)e;
             return nullptr;
         }
     }

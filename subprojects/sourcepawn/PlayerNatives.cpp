@@ -238,7 +238,7 @@ static cell_t HealthGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
         return 0;
     }
 
-    return plr->getHealth();
+    return static_cast<cell_t>(plr->getHealth());
 }
 
 // void Player.Health.set(int health)
@@ -257,7 +257,7 @@ static cell_t HealthSet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
         return 0;
     }
 
-    plr->setHealth(params[arg_health]);
+    plr->setHealth(static_cast<float>(params[arg_health]));
     return 1;
 }
 

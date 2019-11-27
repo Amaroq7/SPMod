@@ -50,6 +50,7 @@ public:
         }
         catch (const std::out_of_range &e)
         {
+            (void)e;
             return nullptr;
         }
     }
@@ -62,7 +63,7 @@ public:
                 return handler.first;
         }
 
-        return -1;
+        return static_cast<std::size_t>(-1);
     }
 
     void free(std::size_t id)

@@ -74,7 +74,10 @@ includeThirdPartyDirs = include_directories(publicIncludesDir,
 shared_library('sourcepawn', sourceFiles, include_directories : includeThirdPartyDirs, gnu_symbol_visibility: 'hidden')
 
 if build_machine.system() == 'linux'
-    run_command('build_sourcepawnlib.sh', check: true)
+    run_command(meson.current_source_dir() + '/build_sourcepawnlib.sh', check: true)
 else
-    run_command('build_sourcepawnlib.ps1', check: true)
+    currentPolicy = run_command('powershell', 'Get-ExecutionPolicy -Scope CurrentUser').stdout().strip()
+    run_command('powershell', 'Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope CurrentUser', check: true)
+    run_command('powershell', '-File', meson.current_source_dir() + '\\build_sourcepawnlib.ps1', check: true)
+    run_command('powershell', 'Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy ' + currentPolicy, check: true)
 endif

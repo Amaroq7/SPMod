@@ -41,7 +41,9 @@ namespace fs = std::experimental::filesystem;
 #include <array>
 #include <vector>
 
-#include <dlfcn.h>
+#if defined SP_POSIX
+    #include <dlfcn.h>
+#endif
 
 #include "SourcePawnAPI.hpp"
 #include "DebugListener.hpp"

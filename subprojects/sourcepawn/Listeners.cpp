@@ -90,10 +90,13 @@ namespace SPExt::Listener
     void Forward(const SPMod::IForward *const fwd, int *result, bool *stop)
     {
         // One plugin forward
-        std::shared_ptr<Plugin> plugin = gModuleInterface->getPluginMngrCore()->getPluginCore(fwd->getPlugin());
-        if (plugin)
+        std::shared_ptr<Plugin> fwdPlugin = gModuleInterface->getPluginMngrCore()->getPluginCore(fwd->getPlugin());
+        if (fwdPlugin)
         {
-            SourcePawn::IPluginFunction *func = plugin->getRuntime()->GetFunctionByName(fwd->getName());
+            SourcePawn::IPluginFunction *func = fwdPlugin->getRuntime()->GetFunctionByName(fwd->getName());
+
+            if (!func || !func->IsRunnable())
+                return;
 
             cell_t fwdResult = 0;
             pushParamsToFunc(fwd, func, &fwdResult);
@@ -109,6 +112,9 @@ namespace SPExt::Listener
                 std::shared_ptr<Plugin> plugin = pair.second;
 
                 SourcePawn::IPluginFunction *func = plugin->getRuntime()->GetFunctionByName(fwd->getName());
+
+                if (!func || !func->IsRunnable())
+                    continue;
 
                 cell_t fwdResult = 0;
                 bool succeed = pushParamsToFunc(fwd, func, &fwdResult);
