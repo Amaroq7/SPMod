@@ -230,6 +230,7 @@ namespace SPExt::Listener
             cell_t result = 0;
             func->PushCell(gTimerHandlers.getKey(timer));
             func->PushCell(*reinterpret_cast<cell_t *>(timer->getData()));
+            func->Execute(&result);
 
             return static_cast<SPMod::IForward::ReturnValue>(result) != SPMod::IForward::ReturnValue::Stop;
         }
