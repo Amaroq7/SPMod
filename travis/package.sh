@@ -20,7 +20,7 @@ else
     ARCHIVE_NAME="spmod-$TRAVIS_OS_NAME-$COMMIT_NUM-$COMMIT_SHORT_SHA-$CC$CC_VERSION-$LINK_TYPE.tar.xz"
 fi
 
-cp -r "$TRAVIS_BUILD_DIR/scripting/*" "$TRAVIS_BUILD_DIR/upload/scripting"
+cp -r "$TRAVIS_BUILD_DIR/scripting" "$TRAVIS_BUILD_DIR/upload/scripting"
 
 cd "$TRAVIS_BUILD_DIR/upload" || exit
 if [[ $LINK_TYPE == "dynamic" && ! -z $CLANG_VERSION ]]
