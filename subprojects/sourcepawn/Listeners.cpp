@@ -1,77 +1,78 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2019 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
- *  This program is free software: you can redistribute it and/or modify
+ *  SPMod is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
-
- *  This program is distributed in the hope that it will be useful,
+ *
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
-
+ *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #include "ExtMain.hpp"
 
 namespace
 {
-    bool pushParamsToFunc(const IForward *const fwd, SourcePawn::IPluginFunction *func, cell_t *result)
+    bool pushParamsToFunc(const SPMod::IForward *const fwd, SourcePawn::IPluginFunction *func, cell_t *result)
     {
         if (!func || !func->IsRunnable())
             return false;
 
         for (std::size_t i = 0; i < fwd->getParamsNum(); i++)
         {
-            const IForward::Param *param = fwd->getParam(i);
-            IForward::Param::Type paramType = param->m_type;
+            const SPMod::IForward::Param *param = fwd->getParam(i);
+            SPMod::IForward::Param::Type paramType = param->m_dataType;
 
-            if (paramType & IForward::Param::Type::Int || paramType & IForward::Param::Type::Float)
+            if (hasEnumFlag(paramType, SPMod::IForward::Param::Type::Int) ||
+                hasEnumFlag(paramType, SPMod::IForward::Param::Type::Float))
             {
-                if (paramType & IForward::Param::Type::Array)
-                    func->PushArray(reinterpret_cast<cell_t *>(param->m_data), m_data->m_size,
-                                    (m_data->m_copyback ? SM_PARAM_COPYBACK : 0));
+                if (hasEnumFlag(paramType, SPMod::IForward::Param::Type::Array))
+                    func->PushArray(reinterpret_cast<cell_t *>(param->m_data), param->m_size,
+                                    (param->m_copyback ? SM_PARAM_COPYBACK : 0));
 
-                else if (paramType & IForward::Param::Type::Pointer)
+                else if (hasEnumFlag(paramType, SPMod::IForward::Param::Type::Pointer))
                 {
-                    if (paramType & IForward::Param::Type::Int)
+                    if (hasEnumFlag(paramType, SPMod::IForward::Param::Type::Int))
                         func->PushCellByRef(reinterpret_cast<cell_t *>(param->m_data),
-                                            (m_data->m_copyback ? SM_PARAM_COPYBACK : 0));
+                                            (param->m_copyback ? SM_PARAM_COPYBACK : 0));
                     else
                         func->PushFloatByRef(reinterpret_cast<float *>(param->m_data),
-                                             (m_data->m_copyback ? SM_PARAM_COPYBACK : 0));
+                                             (param->m_copyback ? SM_PARAM_COPYBACK : 0));
                 }
                 else
                 {
-                    if (paramType & IForward::Param::Type::Int)
+                    if (hasEnumFlag(paramType, SPMod::IForward::Param::Type::Int))
                         func->PushCell(*reinterpret_cast<cell_t *>(param->m_data));
                     else
                         func->PushFloat(*reinterpret_cast<float *>(param->m_data));
                 }
             }
-            else if (paramType & IForward::Param::Type::String)
+            else if (hasEnumFlag(paramType, SPMod::IForward::Param::Type::String))
             {
-                if (param->m_copyback || param->m_stringFlags)
+                if (param->m_copyback || param->m_stringFlags != SPMod::IForward::StringFlags::None)
                 {
                     int spStringFlags = 0;
-                    IForward::StringFlags stringFlags = IForward::StringFlags::None;
+                    SPMod::IForward::StringFlags stringFlags = SPMod::IForward::StringFlags::None;
 
-                    if (stringFlags & IForward::StringFlags::Utf8)
+                    if (hasEnumFlag(stringFlags, SPMod::IForward::StringFlags::Utf8))
                         spStringFlags |= SM_PARAM_STRING_UTF8;
 
-                    if (stringFlags & IForward::StringFlags::Copy)
+                    if (hasEnumFlag(stringFlags, SPMod::IForward::StringFlags::Copy))
                         spStringFlags |= SM_PARAM_STRING_COPY;
 
-                    if (stringFlags & IForward::StringFlags::Binary)
+                    if (hasEnumFlag(stringFlags, SPMod::IForward::StringFlags::Binary))
                         spStringFlags |= SM_PARAM_STRING_BINARY;
 
                     func->PushStringEx(reinterpret_cast<char *>(param->m_data), param->m_size,
-                                       (m_data->m_copyback ? SM_PARAM_COPYBACK : 0), spStringFlags);
+                                       (param->m_copyback ? SM_PARAM_COPYBACK : 0), spStringFlags);
                 }
                 else
                 {
@@ -80,19 +81,22 @@ namespace
             }
         }
 
-        return func->Execute(&result) == SP_ERROR_NONE;
+        return func->Execute(result) == SP_ERROR_NONE;
     }
 } // namespace
 
 namespace SPExt::Listener
 {
-    int Forward(const IForward *const fwd, int *result, bool *stop)
+    void Forward(const SPMod::IForward *const fwd, int *result, bool *stop)
     {
         // One plugin forward
-        std::shared_ptr<Plugin> plugin = gModuleInterface->getPluginMngrCore()->getPluginCore(fwd->getPlugin());
-        if (plugin)
+        std::shared_ptr<Plugin> fwdPlugin = gModuleInterface->getPluginMngrCore()->getPluginCore(fwd->getPlugin());
+        if (fwdPlugin)
         {
-            SourcePawn::IPluginFunction *func = plugin->getRuntime()->GetFunctionByName(fwd->getName());
+            SourcePawn::IPluginFunction *func = fwdPlugin->getRuntime()->GetFunctionByName(fwd->getName());
+
+            if (!func || !func->IsRunnable())
+                return;
 
             cell_t fwdResult = 0;
             pushParamsToFunc(fwd, func, &fwdResult);
@@ -101,26 +105,30 @@ namespace SPExt::Listener
         }
         else
         {
-            IForward::ExecType execType = fwd->getExecType();
+            SPMod::IForward::ExecType execType = fwd->getExecType();
 
-            for (const auto &pair : gModuleInterface->getPluginMngrCore()->getPluginsList())
+            for (const auto &pair : gModuleInterface->getPluginMngrCore()->getPluginsListCore())
             {
                 std::shared_ptr<Plugin> plugin = pair.second;
 
                 SourcePawn::IPluginFunction *func = plugin->getRuntime()->GetFunctionByName(fwd->getName());
 
-                cell_t fwdResult;
+                if (!func || !func->IsRunnable())
+                    continue;
+
+                cell_t fwdResult = 0;
                 bool succeed = pushParamsToFunc(fwd, func, &fwdResult);
 
-                if (!succeed || hasEnumFlag(execType, ExecType::Ignore))
+                if (!succeed || hasEnumFlag(execType, SPMod::IForward::ExecType::Ignore))
                     continue;
 
                 if (*result < fwdResult)
                     *result = fwdResult;
 
-                if (hasEnumFlag(execType, ExecType::Stop) && fwdResult == static_cast<cell_t>(ReturnValue::PluginStop))
+                if (hasEnumFlag(execType, SPMod::IForward::ExecType::Stop) &&
+                    fwdResult == static_cast<cell_t>(SPMod::IForward::ReturnValue::Stop))
                 {
-                    if (!hasEnumFlag(execType, ExecType::Highest))
+                    if (!hasEnumFlag(execType, SPMod::IForward::ExecType::Highest))
                         *result = fwdResult;
 
                     *stop = true;
@@ -130,9 +138,9 @@ namespace SPExt::Listener
         }
     }
 
-    void Cvar(const ICvar *const cvar, const char *old_value, const char *new_value)
+    void Cvar(const SPMod::ICvar *const cvar, const char *old_value, const char *new_value)
     {
-        auto range = gCvarPluginsCallbacks.equal_range(cvar);
+        auto range = gCvarPluginsCallbacks.equal_range(const_cast<SPMod::ICvar *>(cvar));
         for (auto it = range.first; it != range.second; it++)
         {
             SourcePawn::IPluginFunction *func = it->second;
@@ -147,17 +155,18 @@ namespace SPExt::Listener
         }
     }
 
-    void Menu(SPMod::IMenu *const menu, SPMod::IMenuItem *const item, SPMod::IPlayer *const player)
+    void Menu(SPMod::IMenu *const menu, SPMod::IMenu::IItem *const item, SPMod::IPlayer *const player, void *data)
     {
-        SourcePawn::IPluginFunction *func = gMenuPluginHandlers[menu];
+        auto func = reinterpret_cast<SourcePawn::IPluginFunction *>(data);
         if (func && func->IsRunnable())
         {
             std::size_t menuId = gMenuHandlers.getKey(menu);
             func->PushCell(menuId);
 
-            if (item->getNavType() == NavigationType::None)
+            if (item->getNavType() == SPMod::NavigationType::None)
             {
-                func->PushCell(static_cast<cell_t>(menuPackItem(menuId, getItemIndex(item))));
+                func->PushCell(
+                    static_cast<cell_t>(menuPackItem(menuId, static_cast<cell_t>(menu->getItemIndex(item)))));
             }
             else
             {
@@ -169,9 +178,9 @@ namespace SPExt::Listener
         }
     }
 
-    void MenuText(SPMod::IMenu *const menu, int key, SPMod::IPlayer *const player)
+    void MenuText(SPMod::IMenu *const menu, int key, SPMod::IPlayer *const player, void *data)
     {
-        SourcePawn::IPluginFunction *func = gMenuPluginHandlers[menu];
+        auto func = reinterpret_cast<SourcePawn::IPluginFunction *>(data);
         if (func && func->IsRunnable())
         {
             func->PushCell(static_cast<cell_t>(gMenuHandlers.getKey(menu)));
@@ -181,5 +190,58 @@ namespace SPExt::Listener
         }
     }
 
-    ItemStatus MenuItemCallback(SPMod::IMenu *const menu, SPMod::IMenuItem *const item, SPMod::IPlayer *const player) {}
+    SPMod::IMenu::IItem::Status MenuItemCallback(SPMod::IMenu *const menu,
+                                                 SPMod::IMenu::IItem *const item,
+                                                 SPMod::IPlayer *const player,
+                                                 void *data)
+    {
+        auto func = reinterpret_cast<SourcePawn::IPluginFunction *>(data);
+        if (func && func->IsRunnable())
+        {
+            cell_t menuId = gMenuHandlers.getKey(menu);
+            cell_t result;
+            func->PushCell(menuId);
+            // item index?
+            func->PushCell(static_cast<cell_t>(menuPackItem(menuId, menu->getItemIndex(item))));
+            func->PushCell(static_cast<cell_t>(player->getIndex()));
+            func->Execute(reinterpret_cast<cell_t *>(&result));
+
+            return static_cast<SPMod::IMenu::IItem::Status>(result);
+        }
+
+        return SPMod::IMenu::IItem::Status::Enabled;
+    }
+
+    SPMod::IForward::ReturnValue CmdCallback(SPMod::IPlayer *const player, const SPMod::ICommand *const cmd, void *data)
+    {
+        SourcePawn::IPluginFunction *spFunc = reinterpret_cast<SourcePawn::IPluginFunction *>(data);
+        if (spFunc)
+        {
+            cell_t retValue;
+            spFunc->PushCell(static_cast<cell_t>(player->getIndex()));
+            spFunc->PushCell(static_cast<cell_t>(gCommandHandlers.getKey(cmd)));
+            spFunc->Execute(&retValue);
+
+            return static_cast<SPMod::IForward::ReturnValue>(retValue);
+        }
+
+        return SPMod::IForward::ReturnValue::Ignored;
+    }
+
+    bool TimerCallback(SPMod::ITimer *const timer, void *data)
+    {
+        auto func = reinterpret_cast<SourcePawn::IPluginFunction *>(data);
+        if (func && func->IsRunnable())
+        {
+            cell_t result = 0;
+            func->PushCell(gTimerHandlers.getKey(timer));
+            func->PushCell(*reinterpret_cast<cell_t *>(timer->getData()));
+            func->Execute(&result);
+
+            return static_cast<SPMod::IForward::ReturnValue>(result) != SPMod::IForward::ReturnValue::Stop;
+        }
+
+        return true;
+    }
+
 } // namespace SPExt::Listener

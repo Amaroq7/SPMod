@@ -1,21 +1,21 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2019 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
- *  This program is free software: you can redistribute it and/or modify
+ *  SPMod is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
-
- *  This program is distributed in the hope that it will be useful,
+ *
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
-
+ *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #include "ExtMain.hpp"
 
@@ -33,7 +33,7 @@ static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_paramstypes
     };
 
-    auto execType = static_cast<IForward::ExecType>(params[arg_exec]);
+    auto execType = static_cast<SPMod::IForward::ExecType>(params[arg_exec]);
     SPMod::IForwardMngr *fwdMngr = gSPGlobal->getForwardManager();
 
     char *fwdName;
@@ -43,12 +43,12 @@ static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
     if (fwdParamsNum > SP_MAX_EXEC_PARAMS)
         return -1;
 
-    std::array<IForward::ParamType, SP_MAX_EXEC_PARAMS> fwdParamsList;
+    std::array<SPMod::IForward::Param::Type, SP_MAX_EXEC_PARAMS> fwdParamsList;
     for (std::size_t i = 0; i < fwdParamsNum; ++i)
     {
         cell_t *paramType;
         ctx->LocalToPhysAddr(params[i + arg_paramstypes], &paramType);
-        fwdParamsList.at(i) = static_cast<IForward::ParamType>(*paramType);
+        fwdParamsList.at(i) = static_cast<SPMod::IForward::Param::Type>(*paramType);
     }
 
     // Created forward
@@ -68,9 +68,9 @@ static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
         std::string_view pluginNameExt(pluginName);
         pluginNameExt = pluginNameExt.substr(pluginNameExt.length() - 4);
 
-        IPlugin *plugin;
+        SPMod::IPlugin *plugin;
         // If it's SourcePawn plugin lets find it here without involving core
-        if (pluginNameExt == PluginMngr::pluginsExtension)
+        if (pluginNameExt == SPExt::PluginMngr::pluginsExtension)
             plugin = gModuleInterface->getPluginMngrCore()->getPluginCore(pluginName).get();
         else
             plugin = gSPGlobal->getPlugin(pluginName);
@@ -81,7 +81,7 @@ static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
             return -1;
         }
 
-        forward = fwdMngr->createForward(fwdName, pluginName, fwdParamsNum, fwdParamsList.data());
+        forward = fwdMngr->createForward(fwdName, plugin, fwdParamsNum, fwdParamsList.data());
     }
     else
         forward = fwdMngr->createForward(fwdName, execType, fwdParamsNum, fwdParamsList.data());
@@ -118,7 +118,7 @@ static cell_t PushCell(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    return forward->pushCell(params[arg_cell]);
+    return forward->pushInt(params[arg_cell]);
 }
 
 // bool PushCellRef(any &cell)
@@ -147,7 +147,7 @@ static cell_t PushCellRef(SourcePawn::IPluginContext *ctx, const cell_t *params)
     cell_t *value;
     ctx->LocalToPhysAddr(params[arg_cellref], &value);
 
-    return forward->pushCellPtr(value, true);
+    return forward->pushInt(value, true);
 }
 
 // bool PushFloat(float real)
@@ -206,7 +206,7 @@ static cell_t PushFloatRef(SourcePawn::IPluginContext *ctx, const cell_t *params
 
     ctx->LocalToPhysAddr(params[arg_floatref], &floatHolder.cellptr);
 
-    return forward->pushFloatPtr(floatHolder.floatptr, true);
+    return forward->pushFloat(floatHolder.floatptr, true);
 }
 
 // bool PushString(const char[] string)
@@ -287,7 +287,7 @@ static cell_t PushStringEx(SourcePawn::IPluginContext *ctx, const cell_t *params
         return 0;
     }
 
-    SPMod::IForward *forward = gForwardHandlers.(fwdId);
+    SPMod::IForward *forward = gForwardHandlers.get(fwdId);
     if (!forward)
     {
         ctx->ReportError("Forward not found");
@@ -296,9 +296,9 @@ static cell_t PushStringEx(SourcePawn::IPluginContext *ctx, const cell_t *params
 
     char *string;
     ctx->LocalToString(params[arg_string], &string);
-    auto sflags = static_cast<IForward::StringFlags>(params[arg_sflags]);
+    auto sflags = static_cast<SPMod::IForward::StringFlags>(params[arg_sflags]);
 
-    return forward->pushStringEx(string, params[arg_length], sflags, params[arg_copyback]);
+    return forward->pushString(string, params[arg_length], sflags, params[arg_copyback]);
 }
 
 // bool PushArrayEx(any[] array, int size, int cpflags)
@@ -406,10 +406,9 @@ static cell_t ForwardRemove(SourcePawn::IPluginContext *ctx, const cell_t *param
     if (!forward)
         return 0;
 
-    if (forward->isExecuted())
+    if (!gSPGlobal->getForwardManager()->deleteForward(forward))
         return 0;
 
-    gSPGlobal->getForwardManager()->deleteForward(forward);
     gForwardHandlers.free(fwdId);
     return 1;
 }

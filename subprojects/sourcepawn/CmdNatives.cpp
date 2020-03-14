@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2019 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -7,17 +7,19 @@
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
-
- *  This program is distributed in the hope that it will be useful,
+ *
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
-
+ *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include "spmod.hpp"
+#include "ExtMain.hpp"
+
+TypeHandler<SPMod::ICommand> gCommandHandlers;
 
 // Command Command(const char[] cmd, ConCallback func, const char[] info = "", bool server = false, int flags = 0)
 static cell_t CommandCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -31,22 +33,24 @@ static cell_t CommandCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_flags
     };
 
-    const std::unique_ptr<CommandMngr> &cmdMngr = gSPGlobal->getCommandManagerCore();
+    SPMod::ICommandMngr *cmdMngr = gSPGlobal->getCommandManager();
     SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_func]);
     char *cmd, *info;
     ctx->LocalToString(params[arg_cmd], &cmd);
     ctx->LocalToString(params[arg_info], &info);
 
-    std::shared_ptr<Command> pCmd;
+    SPMod::ICommand *pCmd;
     if (!params[arg_server])
-        pCmd = cmdMngr->registerCommand<ClientCommand>(cmd, info, func, params[arg_flags]);
+        pCmd = cmdMngr->registerCommand(SPMod::ICommand::Type::Client, cmd, info, params[arg_flags],
+                                        SPExt::Listener::CmdCallback, func);
     else
     {
-        pCmd = cmdMngr->registerCommand<ServerCommand>(cmd, info, func);
-        REG_SVR_COMMAND(cmd, PluginSrvCmd);
+        pCmd =
+            cmdMngr->registerCommand(SPMod::ICommand::Type::Server, cmd, info, 0, SPExt::Listener::CmdCallback, func);
+        gSPGlobal->getEngineFuncs()->registerSrvCommand(cmd);
     }
 
-    return pCmd->getId();
+    return gCommandHandlers.create(pCmd);
 }
 
 // int GetInfo(char[] buffer, int size)
@@ -61,14 +65,12 @@ static cell_t GetInfo(SourcePawn::IPluginContext *ctx, const cell_t *params)
 
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
-    const std::unique_ptr<CommandMngr> &cmdMngr = gSPGlobal->getCommandManagerCore();
 
-    std::shared_ptr<Command> pCmd = cmdMngr->getCommand(params[arg_id]);
-
+    SPMod::ICommand *pCmd = gCommandHandlers.get(params[arg_id]);
     if (!pCmd)
         return 0;
 
-    return gSPGlobal->getUtilsCore()->strCopyCore(destBuffer, params[arg_size], pCmd->getInfo());
+    return gSPGlobal->getUtils()->strCopy(destBuffer, params[arg_size], pCmd->getInfo());
 }
 
 // property int Access.get()
@@ -79,8 +81,7 @@ static cell_t GetAccess(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
         arg_id = 1
     };
 
-    const std::unique_ptr<CommandMngr> &cmdMngr = gSPGlobal->getCommandManagerCore();
-    std::shared_ptr<Command> pCmd = cmdMngr->getCommand(params[arg_id]);
+    SPMod::ICommand *pCmd = gCommandHandlers.get(params[arg_id]);
     if (!pCmd)
         return 0;
 
@@ -92,7 +93,7 @@ static cell_t CmdGetArgv(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     enum
     {
-        arg_id = 1,
+        arg_arg = 1,
         arg_buffer,
         arg_size
     };
@@ -100,12 +101,11 @@ static cell_t CmdGetArgv(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
 
-    const char *argv = CMD_ARGV(params[arg_id]);
-
+    const char *argv = gSPGlobal->getEngineFuncs()->getArg(params[arg_arg]);
     if (!argv)
         return 0;
 
-    return gSPGlobal->getUtilsCore()->strCopyCore(destBuffer, params[arg_size], argv);
+    return gSPGlobal->getUtils()->strCopy(destBuffer, params[arg_size], argv);
 }
 
 // int CmdGetArgs(char[] buffer, int size)
@@ -120,18 +120,17 @@ static cell_t CmdGetArgs(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
 
-    const char *args = CMD_ARGS();
-
+    const char *args = gSPGlobal->getEngineFuncs()->getArgs();
     if (!args)
         return 0;
 
-    return gSPGlobal->getUtilsCore()->strCopyCore(destBuffer, params[arg_size], args);
+    return gSPGlobal->getUtils()->strCopy(destBuffer, params[arg_size], args);
 }
 
 // int CmdGetArgsNum()
 static cell_t CmdGetArgsNum(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params [[maybe_unused]])
 {
-    return CMD_ARGC();
+    return gSPGlobal->getEngineFuncs()->getArgc();
 }
 
 sp_nativeinfo_t gCmdsNatives[] = {{"Command.Command", CommandCtor},

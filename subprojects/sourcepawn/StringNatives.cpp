@@ -1,23 +1,23 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2019 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
- *  This program is free software: you can redistribute it and/or modify
+ *  SPMod is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
-
- *  This program is distributed in the hope that it will be useful,
+ *
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
-
+ *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include "spmod.hpp"
+#include "ExtMain.hpp"
 
 // int NumToString(int num, char[] buffer, int size)
 static cell_t NumToString(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -67,7 +67,7 @@ static cell_t CopyString(SourcePawn::IPluginContext *ctx, const cell_t *params)
     ctx->LocalToString(params[arg_buffer], &destArray);
     ctx->LocalToString(params[arg_source], &stringToCopy);
 
-    return gSPGlobal->getUtilsCore()->strCopy(destArray, params[arg_size], stringToCopy);
+    return gSPGlobal->getUtils()->strCopy(destArray, params[arg_size], stringToCopy);
 }
 
 sp_nativeinfo_t gStringNatives[] = {{"NumToString", NumToString},

@@ -16,29 +16,16 @@ environment:
     - LINK_TYPE: static
 install:
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat"
-  - set PATH=C:\Python37-x64;C:\Python37-x64\Scripts;C:\Program Files\Meson;%PATH%
+  - set PATH=C:\Python38-x64;C:\Python38-x64\Scripts;C:\Program Files\Meson;%PATH%
   - git submodule update --init --recursive
-  - mkdir dlls
   - cd ..
-  - ps: Start-FileDownload 'https://github.com/mesonbuild/meson/releases/download/0.50.1/meson-0.50.1-64.msi'
-  - start /wait msiexec.exe /i meson-0.50.1-64.msi /quiet /qn /norestart
+  - ps: Start-FileDownload 'https://github.com/mesonbuild/meson/releases/download/0.53.2/meson-0.53.2-64.msi'
+  - start /wait msiexec.exe /i meson-0.53.2-64.msi /quiet /qn /norestart
   - cd SPMod
-  # Install ambuild
-#  - git clone --depth=1 https://github.com/alliedmodders/ambuild.git
-#  - cd ambuild
-#  - python setup.py install
-  # Build SourcePawn lib
-#  - cd ..\SPMod\include\sourcepawn
-#  - mkdir build
-#  - cd build
-#  - python ..\configure.py --enable-optimize --build=core
-#  - ambuild
-#  - move vm\sourcepawn.jit.x86\sourcepawn.jit.x86.dll ..\..\..\dlls
-#  - move compiler\spcomp\spcomp.exe ..\..\..\scripts
-#  - cd ..\..\..
 build_script:
-  - ps: appveyor\build.ps1
-  - ps: appveyor\package.ps1
+  - pwsh: appveyor\build.ps1
+after_build:
+  - pwsh: appveyor\package.ps1
 deploy:
   - provider: GitHub
     description: ''

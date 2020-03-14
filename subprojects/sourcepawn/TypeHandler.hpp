@@ -1,28 +1,31 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2019 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
- *  This program is free software: you can redistribute it and/or modify
+ *  SPMod is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
-
- *  This program is distributed in the hope that it will be useful,
+ *
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
-
+ *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #pragma once
+
+#include <queue>
 
 template<typename T>
 class TypeHandler
 {
 public:
-    std::size_t create(T *data)
+    std::size_t create(const T *const data)
     {
         std::size_t id = 0;
         if (!m_freeIds.empty())
@@ -35,7 +38,7 @@ public:
             id = m_handlers.size();
         }
 
-        m_handlers[id] = data;
+        m_handlers[id] = const_cast<T *>(data);
         return id;
     }
 
@@ -47,11 +50,12 @@ public:
         }
         catch (const std::out_of_range &e)
         {
+            (void)e;
             return nullptr;
         }
     }
 
-    std::size_t getKey(T *data)
+    std::size_t getKey(const T *const data)
     {
         for (const auto &handler : m_handlers)
         {
@@ -59,7 +63,7 @@ public:
                 return handler.first;
         }
 
-        return -1;
+        return static_cast<std::size_t>(-1);
     }
 
     void free(std::size_t id)
@@ -74,7 +78,10 @@ public:
     void clear()
     {
         m_handlers.clear();
-        m_freeIds.clear();
+        while (!m_freeIds.empty())
+        {
+            m_freeIds.pop();
+        }
     }
 
 private:

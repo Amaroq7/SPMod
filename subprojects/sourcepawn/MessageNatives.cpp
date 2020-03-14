@@ -1,21 +1,35 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018-2019 SPMod Development Team
  *
- *  This program is free software: you can redistribute it and/or modify
+ *  This file is part of SPMod.
+ *
+ *  SPMod is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
-
- *  This program is distributed in the hope that it will be useful,
+ *
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
-
+ *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include "spmod.hpp"
+#include "ExtMain.hpp"
+
+#define MSG_BROADCAST 0 // unreliable to all
+#define MSG_ONE       1 // reliable to one (msg_entity)
+#define MSG_ALL       2 // reliable to all
+#define MSG_INIT      3 // write to the init string
+#define MSG_PVS       4 // Ents in PVS of org
+#define MSG_PAS       5 // Ents in PAS of org
+#define MSG_PVS_R     6 // Reliable to PVS
+#define MSG_PAS_R     7 // Reliable to PAS
+#define MSG_ONE_UNRELIABLE                                                                                             \
+    8 // Send to one client, but don't put in reliable stream, put in unreliable datagram ( could be dropped )
+#define MSG_SPEC 9 // Sends to all spectator proxies
 
 // int GetUserMsgId(const char[] msgname);
 static cell_t GetUserMsgId(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -28,7 +42,7 @@ static cell_t GetUserMsgId(SourcePawn::IPluginContext *ctx, const cell_t *params
     char *string;
     ctx->LocalToString(params[arg_msgname], &string);
 
-    return GET_USER_MSG_ID(PLID, string, nullptr);
+    return gSPGlobal->getMetaFuncs()->getUsrMsgId(string);
 }
 
 // int GetUserMsgName(int msgid, char[] str, int len) = 3 params
@@ -41,7 +55,7 @@ static cell_t GetUserMsgName(SourcePawn::IPluginContext *ctx, const cell_t *para
         arg_len
     };
 
-    const char *string = GET_USER_MSG_NAME(PLID, params[arg_msg], nullptr);
+    const char *string = gSPGlobal->getMetaFuncs()->getUsrMsgName(params[arg_msg]);
     if (string)
     {
         ctx->StringToLocal(params[arg_str], params[arg_len], string);
@@ -66,9 +80,9 @@ static cell_t MessageBegin_(SourcePawn::IPluginContext *ctx, const cell_t *param
     cell_t *cpOrigin;
 
     if (params[arg_msg_type] < 1 || ((params[arg_msg_type] > 63) // maximal number of engine messages
-                                     && !GET_USER_MSG_NAME(PLID, params[2], nullptr)))
+                                     && !gSPGlobal->getMetaFuncs()->getUsrMsgName(params[2])))
     {
-        ctx->ReportError("Plugin called message_begin with an invalid message id (%d).", params[arg_msg_type]);
+        ctx->ReportError("Plugin called MessageBegin with an invalid message id (%d).", params[arg_msg_type]);
         return 0;
     }
 
@@ -78,7 +92,7 @@ static cell_t MessageBegin_(SourcePawn::IPluginContext *ctx, const cell_t *param
         case MSG_ALL:
         case MSG_SPEC:
         case MSG_INIT:
-            MESSAGE_BEGIN(params[arg_dest], params[arg_msg_type], nullptr);
+            gSPGlobal->getEngineFuncs()->messageBegin(params[arg_dest], params[arg_msg_type], nullptr);
             break;
         case MSG_PVS:
         case MSG_PAS:
@@ -105,7 +119,7 @@ static cell_t MessageBegin_(SourcePawn::IPluginContext *ctx, const cell_t *param
                 vecOrigin[2] = sp_ctof(*(cpOrigin + 2));
             }
 
-            MESSAGE_BEGIN(params[arg_dest], params[arg_msg_type], vecOrigin);
+            gSPGlobal->getEngineFuncs()->messageBegin(params[arg_dest], params[arg_msg_type], vecOrigin);
 
             break;
         case MSG_ONE_UNRELIABLE:
@@ -116,7 +130,8 @@ static cell_t MessageBegin_(SourcePawn::IPluginContext *ctx, const cell_t *param
                 return 0;
             }
 
-            MESSAGE_BEGIN(params[arg_dest], params[arg_msg_type], nullptr, INDEXENT(params[arg_player]));
+            SPMod::IPlayer *player = gSPGlobal->getPlayerManager()->getPlayer(params[arg_player]);
+            gSPGlobal->getEngineFuncs()->messageBegin(params[arg_dest], params[arg_msg_type], nullptr, player);
             break;
     }
 
@@ -138,7 +153,7 @@ static cell_t MessageBeginF(SourcePawn::IPluginContext *ctx, const cell_t *param
 // native void MessageEnd();
 static cell_t MessageEnd(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params [[maybe_unused]])
 {
-    MESSAGE_END();
+    gSPGlobal->getEngineFuncs()->messageEnd();
     return 1;
 }
 
@@ -149,7 +164,7 @@ static cell_t WriteByte(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
     {
         arg_value = 1
     };
-    WRITE_BYTE(params[arg_value]);
+    gSPGlobal->getEngineFuncs()->writeByte(params[arg_value]);
     return 1;
 }
 // native void WriteChar(char value);
@@ -159,7 +174,7 @@ static cell_t WriteChar(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
     {
         arg_value = 1
     };
-    WRITE_CHAR(params[arg_value]);
+    gSPGlobal->getEngineFuncs()->writeChar(params[arg_value]);
     return 1;
 }
 // native void WriteShort(int value);
@@ -169,7 +184,7 @@ static cell_t WriteShort(SourcePawn::IPluginContext *ctx [[maybe_unused]], const
     {
         arg_value = 1
     };
-    WRITE_SHORT(params[arg_value]);
+    gSPGlobal->getEngineFuncs()->writeShort(params[arg_value]);
     return 1;
 }
 // native void WriteLong(int value);
@@ -179,7 +194,7 @@ static cell_t WriteLong(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
     {
         arg_value = 1
     };
-    WRITE_LONG(params[arg_value]);
+    gSPGlobal->getEngineFuncs()->writeLong(params[arg_value]);
     return 1;
 }
 // native void WriteEntity(int value);
@@ -189,7 +204,7 @@ static cell_t WriteEntity(SourcePawn::IPluginContext *ctx [[maybe_unused]], cons
     {
         arg_value = 1
     };
-    WRITE_ENTITY(params[arg_value]);
+    gSPGlobal->getEngineFuncs()->writeEntity(params[arg_value]);
     return 1;
 }
 // native void WriteAngle(int value);
@@ -199,7 +214,7 @@ static cell_t WriteAngle(SourcePawn::IPluginContext *ctx [[maybe_unused]], const
     {
         arg_value = 1
     };
-    WRITE_ANGLE(static_cast<float>(params[arg_value]));
+    gSPGlobal->getEngineFuncs()->writeAngle(static_cast<float>(params[arg_value]));
     return 1;
 }
 // native void WriteAngleF(float value);
@@ -209,7 +224,7 @@ static cell_t WriteAngleF(SourcePawn::IPluginContext *ctx [[maybe_unused]], cons
     {
         arg_value = 1
     };
-    WRITE_ANGLE(sp_ctof(params[arg_value]));
+    gSPGlobal->getEngineFuncs()->writeAngle(sp_ctof(params[arg_value]));
     return 1;
 }
 // native void WriteCoord(int value);
@@ -219,7 +234,7 @@ static cell_t WriteCoord(SourcePawn::IPluginContext *ctx [[maybe_unused]], const
     {
         arg_value = 1
     };
-    WRITE_COORD(static_cast<float>(params[arg_value]));
+    gSPGlobal->getEngineFuncs()->writeCoord(static_cast<float>(params[arg_value]));
     return 1;
 }
 // native void WriteCoordF(float value);
@@ -229,7 +244,7 @@ static cell_t WriteCoordF(SourcePawn::IPluginContext *ctx [[maybe_unused]], cons
     {
         arg_value = 1
     };
-    WRITE_COORD(sp_ctof(params[arg_value]));
+    gSPGlobal->getEngineFuncs()->writeCoord(sp_ctof(params[arg_value]));
     return 1;
 }
 // native void WriteString(char[] value);
@@ -241,7 +256,7 @@ static cell_t WriteString(SourcePawn::IPluginContext *ctx, const cell_t *params)
     };
     char *string;
     ctx->LocalToString(params[arg_value], &string);
-    WRITE_STRING(string);
+    gSPGlobal->getEngineFuncs()->writeString(string);
     return 1;
 }
 

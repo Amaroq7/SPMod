@@ -1,23 +1,25 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018-2019 SPMod Development Team
  *
- *  This program is free software: you can redistribute it and/or modify
+ *  This file is part of SPMod.
+ *
+ *  SPMod is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
-
- *  This program is distributed in the hope that it will be useful,
+ *
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
-
+ *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include "DebugListener.hpp"
+#include "ExtMain.hpp"
 
-void Logger::OnDebugSpew(const char *msg, ...)
+void DebugListener::OnDebugSpew(const char *msg, ...)
 {
     char debugMsg[512];
     va_list paramsList;
@@ -26,34 +28,33 @@ void Logger::OnDebugSpew(const char *msg, ...)
     std::vsnprintf(debugMsg, sizeof(debugMsg), msg, paramsList);
     va_end(paramsList);
 
-    LogConsoleCore("[SPMOD] ", debugMsg);
+    gSPGlobal->getLoggerManager()->getLogger("SP EXT")->logToConsole(SPMod::LogLevel::Debug, debugMsg);
 }
 
-void Logger::ReportError(const SourcePawn::IErrorReport &report, SourcePawn::IFrameIterator &iter)
+void DebugListener::ReportError(const SourcePawn::IErrorReport &report, SourcePawn::IFrameIterator &iter)
 {
-    auto *spErrorMsg = gSPGlobal->getSPEnvironment()->APIv2()->GetErrorString(report.Code());
+    const char *spErrorMsg = gSPAPI->getSPEnvironment()->APIv2()->GetErrorString(report.Code());
     auto getPluginIdentity = [](SourcePawn::IPluginContext *ctx) {
         char *pluginIdentity;
         ctx->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
         return pluginIdentity;
     };
-
-    LogErrorCore("Run time error ", report.Code(), ": ", spErrorMsg);
-    LogErrorCore("Error: ", report.Message());
+    gSPLogger->logToBoth(SPMod::LogLevel::Error, "Run time error %i: %s", report.Code(), spErrorMsg);
+    gSPLogger->logToBoth(SPMod::LogLevel::Error, "Error: ", report.Message());
 
     if (report.Blame() || report.Context())
     {
-        LogErrorCore("Blaming:");
+        gSPLogger->logToBoth(SPMod::LogLevel::Error, "Blaming:");
 
         if (report.Blame())
-            LogErrorCore("   Function: ", report.Blame()->DebugName());
+            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   Function: %s", report.Blame()->DebugName());
 
         if (report.Context())
-            LogErrorCore("   Plugin: ", getPluginIdentity(report.Context()));
+            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   Plugin: %s", getPluginIdentity(report.Context()));
     }
 
     if (!iter.Done())
-        LogErrorCore("Stack trace:");
+        gSPLogger->logToBoth(SPMod::LogLevel::Error, "Stack trace:");
 
     std::size_t entryPos = 0;
     while (!iter.Done())
@@ -77,10 +78,11 @@ void Logger::ReportError(const SourcePawn::IErrorReport &report, SourcePawn::IFr
             else
                 pluginIdentity = "???";
 
-            LogErrorCore("   [", entryPos, "] ", pluginIdentity, "::", funcName, " (line ", iter.LineNumber(), ")");
+            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   [%i] %s::%s (line %u)", entryPos, pluginIdentity, funcName,
+                                 iter.LineNumber());
         }
         else if (iter.IsNativeFrame())
-            LogErrorCore("   [", entryPos, "] ", funcName);
+            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   [%i] %s", entryPos, funcName);
 
         ++entryPos;
         iter.Next();

@@ -149,7 +149,7 @@ static std::size_t _ntoa_long(char *buffer,
     {
         do
         {
-            char digit = value % base;
+            auto digit = static_cast<char>(value % base);
             buf[len++] = digit < 10 ? '0' + digit : (flags & FLAGS_UPPERCASE ? 'A' : 'a') + digit - 10;
             value /= base;
         } while (len < PRINTF_NTOA_BUFFER_SIZE && value);
@@ -184,9 +184,9 @@ static std::size_t
     if (prec > 9)
         prec = 9;
 
-    int whole = value;
+    auto whole = static_cast<int>(value);
     double tmp = (value - whole) * pow(10.0, prec);
-    unsigned long frac = tmp;
+    auto frac = static_cast<unsigned long>(tmp);
     diff = tmp - frac;
 
     if (diff > 0.5)

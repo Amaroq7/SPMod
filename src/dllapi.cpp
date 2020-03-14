@@ -50,7 +50,7 @@ static void ClientCommand(edict_t *pEntity)
     META_RES res = MRES_IGNORED;
 
     std::string strCmd(CMD_ARGV(0));
-    
+
     if (strCmd == "menuselect")
     {
         res = gSPGlobal->getMenuManagerCore()->ClientCommand(pEntity);

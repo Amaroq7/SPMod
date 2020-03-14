@@ -1,24 +1,25 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2019 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
- *  This program is free software: you can redistribute it and/or modify
+ *  SPMod is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
-
- *  This program is distributed in the hope that it will be useful,
+ *
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
-
+ *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include "spmod.hpp"
+#include "ExtMain.hpp"
 
+TypeHandler<SPMod::ITimer> gTimerHandlers;
 static cell_t TimerCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     enum
@@ -29,13 +30,15 @@ static cell_t TimerCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_exec,
         arg_pause
     };
-    const std::unique_ptr<TimerMngr> &timerMngr = gSPGlobal->getTimerManagerCore();
+
+    SPMod::ITimerMngr *timerMngr = gSPGlobal->getTimerManager();
     SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_func]);
-    std::shared_ptr<Timer> timer;
+    SPMod::ITimer *timer;
 
     try
     {
-        timer = timerMngr->createTimerCore(sp_ctof(params[arg_interval]), func, params[arg_data], params[arg_pause]);
+        timer = timerMngr->createTimer(sp_ctof(params[arg_interval]), SPExt::Listener::TimerCallback, func,
+                                       const_cast<cell_t *>(&params[arg_data]), params[arg_pause]);
     }
     catch (const std::runtime_error &e)
     {
@@ -44,9 +47,9 @@ static cell_t TimerCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
     }
 
     if (params[arg_exec])
-        timerMngr->execTimerCore(timer);
+        timerMngr->execTimer(timer);
 
-    return timer->getId();
+    return gTimerHandlers.create(timer);
 }
 
 static cell_t PauseGet(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -55,9 +58,8 @@ static cell_t PauseGet(SourcePawn::IPluginContext *ctx, const cell_t *params)
     {
         arg_id = 1
     };
-    const std::unique_ptr<TimerMngr> &timerMngr = gSPGlobal->getTimerManagerCore();
-    std::shared_ptr<Timer> timer = timerMngr->getTimer(params[arg_id]);
 
+    SPMod::ITimer *timer = gTimerHandlers.get(params[arg_id]);
     if (!timer)
     {
         ctx->ReportError("Invalid timer id (%i)", params[arg_id]);
@@ -73,9 +75,8 @@ static cell_t IntervalGet(SourcePawn::IPluginContext *ctx, const cell_t *params)
     {
         arg_id = 1
     };
-    const std::unique_ptr<TimerMngr> &timerMngr = gSPGlobal->getTimerManagerCore();
-    std::shared_ptr<Timer> timer = timerMngr->getTimer(params[arg_id]);
 
+    SPMod::ITimer *timer = gTimerHandlers.get(params[arg_id]);
     if (!timer)
     {
         ctx->ReportError("Invalid timer id (%i)", params[arg_id]);
@@ -92,9 +93,8 @@ static cell_t PauseSet(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_id = 1,
         arg_pause
     };
-    const std::unique_ptr<TimerMngr> &timerMngr = gSPGlobal->getTimerManagerCore();
-    std::shared_ptr<Timer> timer = timerMngr->getTimer(params[arg_id]);
 
+    SPMod::ITimer *timer = gTimerHandlers.get(params[arg_id]);
     if (!timer)
     {
         ctx->ReportError("Invalid timer id (%i)", params[arg_id]);
@@ -112,9 +112,8 @@ static cell_t IntervalSet(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_id = 1,
         arg_interval
     };
-    const std::unique_ptr<TimerMngr> &timerMngr = gSPGlobal->getTimerManagerCore();
-    std::shared_ptr<Timer> timer = timerMngr->getTimer(params[arg_id]);
 
+    SPMod::ITimer *timer = gTimerHandlers.get(params[arg_id]);
     if (!timer)
     {
         ctx->ReportError("Invalid timer id (%i)", params[arg_id]);
@@ -138,16 +137,16 @@ static cell_t Trigger(SourcePawn::IPluginContext *ctx, const cell_t *params)
     {
         arg_id = 1
     };
-    const std::unique_ptr<TimerMngr> &timerMngr = gSPGlobal->getTimerManagerCore();
-    std::shared_ptr<Timer> timer = timerMngr->getTimer(params[arg_id]);
 
+    SPMod::ITimerMngr *timerMngr = gSPGlobal->getTimerManager();
+    SPMod::ITimer *timer = gTimerHandlers.get(params[arg_id]);
     if (!timer)
     {
         ctx->ReportError("Invalid timer id (%i)", params[arg_id]);
         return 0;
     }
 
-    timerMngr->execTimerCore(timer);
+    timerMngr->execTimer(timer);
     return 1;
 }
 
@@ -157,9 +156,9 @@ static cell_t Remove(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cel
     {
         arg_id = 1
     };
-    const std::unique_ptr<TimerMngr> &timerMngr = gSPGlobal->getTimerManagerCore();
 
-    timerMngr->removeTimerCore(params[arg_id]);
+    SPMod::ITimerMngr *timerMngr = gSPGlobal->getTimerManager();
+    timerMngr->removeTimer(gTimerHandlers.get(params[arg_id]));
     return 1;
 }
 

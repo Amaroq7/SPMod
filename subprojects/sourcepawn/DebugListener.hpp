@@ -1,23 +1,25 @@
-/*  SPMod - SourcePawn Scripting Engine for Half-Life
- *  Copyright (C) 2018  SPMod Development Team
+/*
+ *  Copyright (C) 2018-2019 SPMod Development Team
  *
- *  This program is free software: you can redistribute it and/or modify
+ *  This file is part of SPMod.
+ *
+ *  SPMod is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
-
- *  This program is distributed in the hope that it will be useful,
+ *
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
-
+ *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #pragma once
 
-#include "SourcePawnAPI.hpp"
+#include "ExtMain.hpp"
 
 #ifdef SP_CLANG
     #pragma clang diagnostic push
@@ -32,12 +34,10 @@ class DebugListener final : public SourcePawn::IDebugListener
 public:
     DebugListener() = default;
     DebugListener(const DebugListener &other) = delete;
-    DebugListener(const DebugListener &&other) = default;
     ~DebugListener() = default;
 
     // IDebugListener
     void OnDebugSpew(const char *msg, ...) override;
-
     void ReportError(const SourcePawn::IErrorReport &report, SourcePawn::IFrameIterator &iter) override;
 };
 

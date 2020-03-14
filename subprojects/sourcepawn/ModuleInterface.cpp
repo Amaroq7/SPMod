@@ -1,27 +1,30 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2019 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
- *  This program is free software: you can redistribute it and/or modify
+ *  SPMod is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
-
- *  This program is distributed in the hope that it will be useful,
+ *
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
-
+ *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #include "ExtMain.hpp"
 
-ModuleInterface::ModuleInterface(fs::path &&path)
-    : m_sourcePawnAPI(std::make_unique<SourcePawnAPI>(std::move(path))), m_pluginMngr(std::make_unique<PluginMngr>()),
-      m_debugListener(std::make_unique<DebugListener>())
+namespace SPExt
 {
-    m_sourcePawnAPI->getSPEnvironment()->APIv2()->setDebugListener(m_debugListener.get());
-}
+    ModuleInterface::ModuleInterface(fs::path &&path)
+        : m_sourcePawnAPI(std::make_unique<SourcePawnAPI>(std::move(path))),
+          m_pluginMngr(std::make_unique<SPExt::PluginMngr>()), m_debugListener(std::make_unique<DebugListener>())
+    {
+        m_sourcePawnAPI->getSPEnvironment()->APIv2()->SetDebugListener(m_debugListener.get());
+    }
+} // namespace SPExt

@@ -54,3 +54,6 @@ include/llvm/*
 **/msvc/Release/
 *.vcxproj.user
 *.pdb
+
+# SourcePawn deps
+subprojects/sourcepawn/sourcepawn_deps/
