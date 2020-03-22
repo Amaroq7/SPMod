@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,50 +8,38 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "LoggingSystem.hpp"
+#include "spmod.hpp"
+
+Logger *LoggerMngr::getLogger(std::string_view prefix)
+{
+    return m_loggers.try_emplace(prefix.data(), std::make_unique<Logger>(prefix)).first->second.get();
+}
 
 Logger::Logger(std::string_view prefix) : m_prefix(prefix) {}
 
-ILogger *LoggerMngr::getLogger(const char *prefix)
-{
-    return getLoggerCore(prefix).get();
-}
-
-std::shared_ptr<Logger> LoggerMngr::getLoggerCore(std::string_view prefix)
-{
-    return m_loggers.try_emplace(prefix.data(), std::make_shared<Logger>(prefix)).first->second;
-}
-
-void Logger::setFilename(const char *filename)
+void Logger::setFilename(std::string_view filename)
 {
     m_filename = filename;
 }
 
-void Logger::logToConsole(LogLevel level, const char *format, ...) const
+void Logger::logToConsole(LogLevel level, std::string_view msg) const
 {
     if (level < m_logLevel)
         return;
 
-    char logMsg[512];
-    va_list paramsList;
-
-    va_start(paramsList, format);
-    std::vsnprintf(logMsg, sizeof(logMsg), format, paramsList);
-    va_end(paramsList);
-
-    logToConsoleCore(level, logMsg);
+    logToConsoleInternal(level, msg);
 }
 
-void Logger::logToFile(LogLevel level, const char *format, ...) const
+void Logger::logToFile(LogLevel level, std::string_view msg) const
 {
     if (level < m_logLevel)
         return;
@@ -59,41 +47,20 @@ void Logger::logToFile(LogLevel level, const char *format, ...) const
     if (m_filename.empty())
         return;
 
-    char logMsg[512];
-    va_list paramsList;
-
-    va_start(paramsList, format);
-    std::vsnprintf(logMsg, sizeof(logMsg), format, paramsList);
-    va_end(paramsList);
-
-    logToFileCore(level, logMsg);
+    logToFileInternal(level, msg);
 }
 
-void Logger::logToBoth(LogLevel level, const char *format, ...) const
+void Logger::logToBoth(LogLevel level, std::string_view msg) const
 {
     if (level < m_logLevel)
         return;
 
-    char logMsg[512];
-    va_list paramsList;
-
-    va_start(paramsList, format);
-    std::vsnprintf(logMsg, sizeof(logMsg), format, paramsList);
-    va_end(paramsList);
-
-    logToBothCore(level, logMsg);
+    logToBothInternal(level, msg);
 }
 
-void Logger::sendMsgToConsole(const char *format, ...) const
+void Logger::sendMsgToConsole(std::string_view msg) const
 {
-    char logMsg[512];
-    va_list paramsList;
-
-    va_start(paramsList, format);
-    std::vsnprintf(logMsg, sizeof(logMsg), format, paramsList);
-    va_end(paramsList);
-
-    sendMsgToConsoleCore(logMsg);
+    sendMsgToConsoleInternal(msg);
 }
 
 void Logger::setLogLevel(LogLevel level)
@@ -128,7 +95,7 @@ void Logger::_writeToFile(std::string_view msg) const
     std::strftime(logDateTime, sizeof(logDateTime), "%Y/%m/%d - %H:%M:%S: ", &convertedTime);
     std::strftime(fileName, sizeof(fileName), "logs_%Y%m%d.log", &convertedTime);
 
-    std::fstream logFile(gSPGlobal->getPathCore(DirType::Logs) / fileName, fFlags::out | fFlags::app | fFlags::ate);
+    std::fstream logFile(gSPGlobal->getPath(DirType::Logs) / fileName, fFlags::out | fFlags::app | fFlags::ate);
 
     if (!logFile.tellg())
     {

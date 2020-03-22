@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -21,10 +21,7 @@
 
 namespace SPExt
 {
-    Plugin::Plugin(std::size_t id,
-                   std::string_view identity,
-                   const fs::path &path,
-                   const std::unique_ptr<PluginMngr> &pluginMngr)
+    Plugin::Plugin(std::size_t id, std::string_view identity, const fs::path &path, PluginMngr *pluginMngr)
         : m_id(id), m_identity(identity), m_filename(path.filename().string()), m_pluginMngr(pluginMngr)
     {
         char errorSPMsg[256];
@@ -57,7 +54,6 @@ namespace SPExt
         m_runtime->GetDefaultContext()->SetKey(1, const_cast<char *>(m_identity.c_str()));
 
         std::uint32_t nativesNum = plugin->GetNativesNum();
-        const std::unique_ptr<PluginMngr> &plMngr = gModuleInterface->getPluginMngrCore();
         for (std::uint32_t index = 0; index < nativesNum; ++index)
         {
             const sp_native_t *pluginNative = m_runtime->GetNative(index);
@@ -65,7 +61,7 @@ namespace SPExt
             if (pluginNative->status == SP_NATIVE_BOUND)
                 continue;
 
-            SPVM_NATIVE_FUNC router = plMngr->findNative(pluginNative->name);
+            SPVM_NATIVE_FUNC router = pluginMngr->findNative(pluginNative->name);
             if (!router) /* Don't mark plugin as not working yet since native can be made by other plugin */
                 continue;
 
@@ -82,39 +78,39 @@ namespace SPExt
         }
     }
 
-    const char *Plugin::getName() const
+    std::string_view Plugin::getName() const
     {
-        return m_name.c_str();
+        return m_name;
     }
 
-    const char *Plugin::getVersion() const
+    std::string_view Plugin::getVersion() const
     {
-        return m_version.c_str();
+        return m_version;
     }
 
-    const char *Plugin::getAuthor() const
+    std::string_view Plugin::getAuthor() const
     {
-        return m_author.c_str();
+        return m_author;
     }
 
-    const char *Plugin::getUrl() const
+    std::string_view Plugin::getUrl() const
     {
-        return m_url.c_str();
+        return m_url;
     }
 
-    const char *Plugin::getIdentity() const
+    std::string_view Plugin::getIdentity() const
     {
-        return m_identity.c_str();
+        return m_identity;
     }
 
-    const char *Plugin::getFilename() const
+    std::string_view Plugin::getFilename() const
     {
-        return m_filename.c_str();
+        return m_filename;
     }
 
     SPMod::IPluginMngr *Plugin::getPluginMngr() const
     {
-        return m_pluginMngr.get();
+        return m_pluginMngr;
     }
 
     int Plugin::getProxiedParamAsInt(std::size_t index) const
@@ -212,36 +208,6 @@ namespace SPExt
     }
 
     // Plugin
-    std::string_view Plugin::getNameCore() const
-    {
-        return m_name;
-    }
-
-    std::string_view Plugin::getVersionCore() const
-    {
-        return m_version;
-    }
-
-    std::string_view Plugin::getAuthorCore() const
-    {
-        return m_author;
-    }
-
-    std::string_view Plugin::getUrlCore() const
-    {
-        return m_url;
-    }
-
-    std::string_view Plugin::getIdentityCore() const
-    {
-        return m_identity;
-    }
-
-    std::string_view Plugin::getFileNameCore() const
-    {
-        return m_filename;
-    }
-
     void Plugin::setProxyContext(SourcePawn::IPluginContext *ctx)
     {
         m_proxyContext = ctx;
@@ -257,43 +223,50 @@ namespace SPExt
         return m_runtime;
     }
 
-    std::shared_ptr<Plugin> PluginMngr::getPluginCore(std::string_view name) const
+    void Plugin::setProxyParams(const cell_t *params)
+    {
+        for (std::size_t i = 0; i <= static_cast<std::size_t>(params[0]); i++)
+            m_proxiedParams[i] = params[i];
+    }
+
+    Plugin *PluginMngr::getPlugin(std::string_view name) const
     {
         auto result = m_plugins.find(name.data());
 
-        return (result != m_plugins.end()) ? result->second : nullptr;
+        return (result != m_plugins.end()) ? result->second.get() : nullptr;
     }
 
-    std::shared_ptr<Plugin> PluginMngr::getPluginCore(std::size_t index) const
+    Plugin *PluginMngr::getPlugin(std::size_t index) const
     {
         for (const auto &entry : m_plugins)
         {
             if (entry.second->getId() == index)
-                return entry.second;
+                return entry.second.get();
         }
         return nullptr;
     }
 
-    std::shared_ptr<Plugin> PluginMngr::getPluginCore(SourcePawn::IPluginContext *ctx) const
+    Plugin *PluginMngr::getPlugin(SourcePawn::IPluginContext *ctx) const
     {
         char *pluginIdentity;
         ctx->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
 
-        return getPluginCore(pluginIdentity);
+        auto result = m_plugins.find(pluginIdentity);
+        return (result != m_plugins.end()) ? result->second.get() : nullptr;
     }
 
-    std::shared_ptr<Plugin> PluginMngr::getPluginCore(SPMod::IPlugin *plugin) const
+    Plugin *PluginMngr::getPlugin(SPMod::IPlugin *plugin) const
     {
         for (const auto &entry : m_plugins)
         {
             if (entry.second.get() == plugin)
-                return entry.second;
+                return entry.second.get();
         }
 
         return nullptr;
     }
 
-    std::shared_ptr<Plugin> PluginMngr::_loadPlugin(const fs::path &path, std::string &error)
+    Plugin *PluginMngr::_loadPlugin(const fs::path &path, std::string &error)
     {
         std::size_t pluginId = m_plugins.size();
 
@@ -302,14 +275,14 @@ namespace SPExt
             return nullptr;
 
         std::string fileName = path.stem().string();
-        std::shared_ptr<Plugin> plugin;
+        std::unique_ptr<Plugin> plugin;
 
         if (m_plugins.find(fileName) != m_plugins.end())
             return nullptr;
 
         try
         {
-            plugin = std::make_shared<Plugin>(pluginId, fileName, path, gModuleInterface->getPluginMngrCore());
+            plugin = std::make_unique<Plugin>(pluginId, fileName, path, this);
         }
         catch (const std::runtime_error &e)
         {
@@ -317,9 +290,10 @@ namespace SPExt
             return nullptr;
         }
 
-        m_plugins.emplace(fileName, plugin);
-        m_exportedPlugins.AddToTail(plugin.get());
-        return plugin;
+        m_exportedPlugins.emplace_back(plugin.get());
+        m_plugins.emplace(fileName, std::move(plugin));
+
+        return m_plugins.at(fileName).get();
     }
 
     void PluginMngr::loadPlugins()
@@ -329,8 +303,7 @@ namespace SPExt
 
         if (errCode)
         {
-            gSPLogger->logToConsole(SPMod::LogLevel::Error, "Error while loading plugins: %s",
-                                    errCode.message().c_str());
+            gSPLogger->logToConsole(SPMod::LogLevel::Error, "Error while loading plugins: " + errCode.message());
             return;
         }
 
@@ -342,7 +315,7 @@ namespace SPExt
             fs::path filePath = entry.path();
             if (!_loadPlugin(filePath, errorMsg) && !errorMsg.empty())
             {
-                gSPLogger->logToConsole(SPMod::LogLevel::Error, "%s", errorMsg.c_str());
+                gSPLogger->logToConsole(SPMod::LogLevel::Error, errorMsg);
                 errorMsg.clear();
             }
         }
@@ -350,11 +323,10 @@ namespace SPExt
 
     void PluginMngr::bindPluginsNatives()
     {
-        const SPMod::INativeProxy *nativeProxy = gSPGlobal->getNativeProxy();
-        for (std::size_t i = 0; i < nativeProxy->getNativesNum(); i++)
+        SPMod::INativeProxy *nativeProxy = gSPGlobal->getNativeProxy();
+        for (const auto &proxiedNative : nativeProxy->getProxiedNatives())
         {
-            const SPMod::IProxiedNative *native = nativeProxy->getProxiedNative(i);
-            addProxiedNative(native->getName(), native);
+            addProxiedNative(proxiedNative->getName(), proxiedNative);
         }
 
         for (const auto &entry : m_plugins)
@@ -386,17 +358,12 @@ namespace SPExt
         return m_plugins.size();
     }
 
-    SPMod::IPlugin *PluginMngr::getPlugin(const char *name)
-    {
-        return getPluginCore(name).get();
-    }
-
     void PluginMngr::unloadPlugins()
     {
         m_plugins.clear();
     }
 
-    const char *PluginMngr::getPluginsExt() const
+    std::string_view PluginMngr::getPluginsExt() const
     {
         return PluginMngr::pluginsExtension;
     }
@@ -422,11 +389,10 @@ namespace SPExt
         return true;
     }
 
-    bool PluginMngr::addProxiedNative(std::string_view name, const SPMod::IProxiedNative *native)
+    bool PluginMngr::addProxiedNative(std::string_view name, SPMod::IProxiedNative *native)
     {
         SourcePawn::ISourcePawnEngine2 *spAPIv2 = gSPAPI->getSPEnvironment()->APIv2();
-        SPVM_NATIVE_FUNC router =
-            spAPIv2->CreateFakeNative(PluginMngr::proxyNativeRouter, const_cast<SPMod::IProxiedNative *>(native));
+        SPVM_NATIVE_FUNC router = spAPIv2->CreateFakeNative(PluginMngr::proxyNativeRouter, native);
 
         if (!m_natives.try_emplace(name.data(), router).second)
         {
@@ -453,24 +419,21 @@ namespace SPExt
             return 0;
         }
 
-        std::shared_ptr<Plugin> caller = gModuleInterface->getPluginMngrCore()->getPluginCore(ctx);
+        Plugin *caller = gAdapterInterface->getPluginMngr()->getPlugin(ctx);
         caller->setProxyContext(ctx);
+        caller->setProxyParams(params);
 
-        for (std::size_t i = 0; i <= static_cast<std::size_t>(params[0]); i++)
-            caller->m_proxiedParams[i] = params[i];
-
-        cell_t result = gSPGlobal->getNativeProxy()->nativeExecNotify(reinterpret_cast<SPMod::IProxiedNative *>(data),
-                                                                      caller.get());
+        cell_t result = reinterpret_cast<SPMod::IProxiedNative *>(data)->exec(caller);
 
         return result;
     }
 
-    int PluginMngr::proxyNativeCallback(const SPMod::IProxiedNative *const native, const SPMod::IPlugin *const plugin)
+    int PluginMngr::proxyNativeCallback(SPMod::IProxiedNative *native, SPMod::IPlugin *plugin)
     {
         PluginMngr::m_callerPlugin = plugin;
 
         cell_t result;
-        auto *pluginHandler = reinterpret_cast<SourcePawn::IPluginFunction *>(native->getData());
+        auto pluginHandler = std::any_cast<SourcePawn::IPluginFunction *>(native->getData());
         pluginHandler->Execute(&result);
 
         PluginMngr::m_callerPlugin = nullptr;
@@ -503,7 +466,7 @@ namespace SPExt
         addNatives(gPlayerNatives);
     }
 
-    const CUtlVector<SPMod::IPlugin *> &PluginMngr::getPluginsList() const
+    const std::vector<SPMod::IPlugin *> &PluginMngr::getPluginsList() const
     {
         return m_exportedPlugins;
     }

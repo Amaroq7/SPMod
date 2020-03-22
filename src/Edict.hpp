@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -26,12 +26,12 @@ class Edict : public virtual IEdict
 public:
     Edict() = delete;
     Edict(edict_t *edict);
-    Edict(int index);
+    Edict(std::uint32_t index);
     ~Edict() = default;
 
     // IEdict
-    int getIndex() const override;
-    const char *getClassName() const override;
+    std::uint32_t getIndex() const override;
+    std::string_view getClassName() const override;
     void getOrigin(float *origin) const override;
     void getVelocity(float *velocity) const override;
     void setVelocity(const float *velocity) override;

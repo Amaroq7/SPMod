@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,30 +8,16 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
-
-#if defined SP_POSIX
-    #define _vsnprintf vsnprintf
-#endif
-
-#if defined SP_MSVC
-    #pragma warning(push)
-    #pragma warning(disable : 4100)
-    #pragma warning(disable : 4996)
-#endif
-#include <utlvector.h>
-#if defined SP_MSVC
-    #pragma warning(pop)
-#endif
 
 namespace SPMod
 {
@@ -46,28 +32,28 @@ namespace SPMod
          *
          * @return        Plugin name.
          */
-        virtual const char *getName() const = 0;
+        virtual std::string_view getName() const = 0;
 
         /**
          * @brief Returns version of plugin.
          *
          * @return        Plugin version.
          */
-        virtual const char *getVersion() const = 0;
+        virtual std::string_view getVersion() const = 0;
 
         /**
          * @brief Returns author of plugin.
          *
          * @return        Plugin author.
          */
-        virtual const char *getAuthor() const = 0;
+        virtual std::string_view getAuthor() const = 0;
 
         /**
          * @brief Returns url address of plugin.
          *
          * @return        Plugin url address.
          */
-        virtual const char *getUrl() const = 0;
+        virtual std::string_view getUrl() const = 0;
 
         /**
          * @brief Returns identity of plugin.
@@ -76,14 +62,14 @@ namespace SPMod
          *
          * @return        Plugin identity.
          */
-        virtual const char *getIdentity() const = 0;
+        virtual std::string_view getIdentity() const = 0;
 
         /**
          * @brief Returns filename of plugin.
          *
          * @return        Plugin filename.
          */
-        virtual const char *getFilename() const = 0;
+        virtual std::string_view getFilename() const = 0;
 
         /**
          * @brief Gets plugin's plugin manager.
@@ -99,7 +85,7 @@ namespace SPMod
          *
          * @return        Param as int.
          */
-        virtual int getProxiedParamAsInt(std::size_t index) const = 0;
+        virtual std::int32_t getProxiedParamAsInt(std::size_t index) const = 0;
 
         /**
          * @brief Gets proxied param as pointer to int.
@@ -108,7 +94,7 @@ namespace SPMod
          *
          * @return        Param as pointer to int.
          */
-        virtual int *getProxiedParamAsIntAddr(std::size_t index) const = 0;
+        virtual std::int32_t *getProxiedParamAsIntAddr(std::size_t index) const = 0;
 
         /**
          * @brief Gets proxied param as float.
@@ -146,7 +132,6 @@ namespace SPMod
          */
         virtual void *getProxiedParamAsArray(std::size_t index) const = 0;
 
-    protected:
         virtual ~IPlugin() = default;
     };
 
@@ -160,7 +145,7 @@ namespace SPMod
          *
          * @return        Plugin pointer, nullptr if not found.
          */
-        virtual IPlugin *getPlugin(const char *name) = 0;
+        virtual IPlugin *getPlugin(std::string_view name) const = 0;
 
         /**
          * @brief Loads plugins.
@@ -191,7 +176,7 @@ namespace SPMod
          *
          * @return        Native result.
          */
-        virtual int proxyNativeCallback(const IProxiedNative *const native, const IPlugin *const plugin) = 0;
+        virtual std::int32_t proxyNativeCallback(IProxiedNative *native, IPlugin *plugin) = 0;
 
         /**
          * @brief Returns numbers of loaded plugins.
@@ -205,16 +190,15 @@ namespace SPMod
          *
          * @return        Plugins extension.
          */
-        virtual const char *getPluginsExt() const = 0;
+        virtual std::string_view getPluginsExt() const = 0;
 
         /**
          * @brief Returns list of the plugins.
          *
          * @return        Plugins list.
          */
-        virtual const CUtlVector<IPlugin *> &getPluginsList() const = 0;
+        virtual const std::vector<IPlugin *> &getPluginsList() const = 0;
 
-    protected:
         virtual ~IPluginMngr() = default;
     };
 } // namespace SPMod

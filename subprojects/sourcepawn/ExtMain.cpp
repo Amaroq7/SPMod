@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -22,21 +22,21 @@
 using namespace SPExt;
 
 SPMod::ISPGlobal *gSPGlobal;
-std::unique_ptr<ModuleInterface> gModuleInterface;
+std::unique_ptr<AdapterInterface> gAdapterInterface;
 SPMod::ILogger *gSPLogger;
 
 SPMOD_API SPMod::ExtQueryValue SPMod_Query(SPMod::ISPGlobal *spmodInstance)
 {
     gSPGlobal = spmodInstance;
-    gModuleInterface = std::make_unique<ModuleInterface>(gSPGlobal->getPath(SPMod::DirType::Exts));
+    gAdapterInterface = std::make_unique<AdapterInterface>(gSPGlobal->getPath(SPMod::DirType::Exts));
 
-    return (gSPGlobal->registerInterface(gModuleInterface.get()) ? SPMod::ExtQueryValue::SPModExt
-                                                                 : SPMod::ExtQueryValue::DontLoad);
+    return (gSPGlobal->registerAdapter(gAdapterInterface.get()) ? SPMod::ExtQueryValue::SPModAdapter
+                                                                : SPMod::ExtQueryValue::DontLoad);
 }
 
 SPMOD_API bool SPMod_Init()
 {
-    gSPLogger = gSPGlobal->getLoggerManager()->getLogger("SP EXT");
+    gSPLogger = gSPGlobal->getLoggerManager()->getLogger(gSPExtLoggerName);
     gSPLogger->setLogLevel(SPMod::LogLevel::Info);
 
     gSPAPI = std::make_unique<SourcePawnAPI>(gSPGlobal->getPath(SPMod::DirType::Exts));

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,25 +8,21 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
 
 #include "spmod.hpp"
 
-class LoggerMngr;
-
 class Logger final : public ILogger
 {
-    friend class LoggerMngr;
-
 public:
     Logger() = delete;
     Logger(const Logger &other) = delete;
@@ -38,32 +34,32 @@ public:
     Logger(std::string_view prefix);
 
     // ILogger
-    void setFilename(const char *filename) override;
-    void logToConsole(LogLevel level, const char *format, ...) const override;
+    void setFilename(std::string_view filename) override;
+    void logToConsole(LogLevel level, std::string_view msg) const override;
 
-    void logToFile(LogLevel level, const char *format, ...) const override;
+    void logToFile(LogLevel level, std::string_view msg) const override;
 
-    void logToBoth(LogLevel level, const char *format, ...) const override;
+    void logToBoth(LogLevel level, std::string_view msg) const override;
 
-    void sendMsgToConsole(const char *format, ...) const override;
+    void sendMsgToConsole(std::string_view msg) const override;
 
     void setLogLevel(LogLevel logType) override;
     LogLevel getLogLevel() const override;
 
     // Logger
     template<typename... Args>
-    void sendMsgToConsoleCore(Args... args) const
+    void sendMsgToConsoleInternal(Args... args) const
     {
         std::stringstream messageToLog;
 
         (messageToLog << ... << args);
-        messageToLog << '\n';
+        messageToLog << '\n' << CNSL_RESET;
 
         SERVER_PRINT(messageToLog.str().c_str());
     }
 
     template<typename... Args>
-    void logToConsoleCore(LogLevel level, Args... args) const
+    void logToConsoleInternal(LogLevel level, Args... args) const
     {
         if (level < m_logLevel)
             return;
@@ -72,13 +68,13 @@ public:
 
         messageToLog << '[' << m_prefix << "] ";
         (messageToLog << ... << args);
-        messageToLog << '\n';
+        messageToLog << '\n' << CNSL_RESET;
 
         SERVER_PRINT(messageToLog.str().c_str());
     }
 
     template<typename... Args>
-    void logToFileCore(LogLevel level, Args... args) const
+    void logToFileInternal(LogLevel level, Args... args) const
     {
         if (level < m_logLevel)
             return;
@@ -96,7 +92,7 @@ public:
     }
 
     template<typename... Args>
-    void logToBothCore(LogLevel level, Args... args) const
+    void logToBothInternal(LogLevel level, Args... args) const
     {
         if (level < m_logLevel)
             return;
@@ -107,12 +103,14 @@ public:
         (messageToLog << ... << args);
         messageToLog << '\n';
 
-        SERVER_PRINT(messageToLog.str().c_str());
+        std::string message = messageToLog.str();
+
+        SERVER_PRINT(message.c_str());
 
         if (m_filename.empty())
             return;
 
-        _writeToFile(messageToLog.str());
+        _writeToFile(message);
     }
 
 private:
@@ -131,11 +129,8 @@ public:
     ~LoggerMngr() = default;
 
     // ILoggerMngr
-    ILogger *getLogger(const char *prefix) override;
-
-    // LoggerMngr
-    std::shared_ptr<Logger> getLoggerCore(std::string_view prefix);
+    Logger *getLogger(std::string_view prefix) override;
 
 private:
-    std::unordered_map<std::string, std::shared_ptr<Logger>> m_loggers;
+    std::unordered_map<std::string, std::unique_ptr<Logger>> m_loggers;
 };

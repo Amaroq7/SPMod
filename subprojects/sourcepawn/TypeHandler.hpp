@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -25,7 +25,7 @@ template<typename T>
 class TypeHandler
 {
 public:
-    std::size_t create(const T *const data)
+    std::size_t create(T *data)
     {
         std::size_t id = 0;
         if (!m_freeIds.empty())
@@ -38,7 +38,7 @@ public:
             id = m_handlers.size();
         }
 
-        m_handlers[id] = const_cast<T *>(data);
+        m_handlers[id] = data;
         return id;
     }
 
@@ -55,12 +55,12 @@ public:
         }
     }
 
-    std::size_t getKey(const T *const data)
+    std::size_t getKey(T *data)
     {
-        for (const auto &handler : m_handlers)
+        for (const auto &[key, content] : m_handlers)
         {
-            if (handler.second == data)
-                return handler.first;
+            if (content == data)
+                return key;
         }
 
         return static_cast<std::size_t>(-1);

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,24 +8,22 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "spmod.hpp"
 
 static void ChangeLevel(const char *s1, const char *s2 [[maybe_unused]])
 {
-    using def = ForwardMngr::FwdDefault;
-
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    std::shared_ptr<Forward> fwdMapChange = fwdMngr->getDefaultForward(def::MapChange);
-    int result;
+    auto fwdMngr = gSPGlobal->getForwardManager();
+    auto fwdMapChange = fwdMngr->getForward(ForwardMngr::FWD_MAP_CHANGE);
+    std::int32_t result;
 
     fwdMapChange->pushString(s1);
     fwdMapChange->execFunc(&result);
@@ -39,7 +37,7 @@ static void ChangeLevel(const char *s1, const char *s2 [[maybe_unused]])
 static void
     MessageBegin_Pre(int msg_dest [[maybe_unused]], int msg_type, const float *pOrigin [[maybe_unused]], edict_t *ed)
 {
-    std::shared_ptr<Player> spPlayer = gSPGlobal->getPlayerManagerCore()->getPlayerCore(ENTINDEX(ed));
+    auto spPlayer = gSPGlobal->getPlayerManager()->getPlayer(ENTINDEX(ed));
     if (msg_type == gmsgShowMenu || msg_type == gmsgVGUIMenu)
     {
         spPlayer->closeMenu();

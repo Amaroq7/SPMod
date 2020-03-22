@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
 
  *  This file is part of SPMod.
 
@@ -19,12 +19,12 @@
 
 #include "spmod.hpp"
 
-int MetaFuncs::getUsrMsgId(const char *msgName) const
+std::uint32_t MetaFuncs::getUsrMsgId(std::string_view msgName) const
 {
-    return GET_USER_MSG_ID(PLID, msgName, nullptr);
+    return GET_USER_MSG_ID(PLID, msgName.data(), nullptr);
 }
 
-const char *MetaFuncs::getUsrMsgName(int msgId) const
+std::string_view MetaFuncs::getUsrMsgName(std::uint32_t msgId) const
 {
     return GET_USER_MSG_NAME(PLID, msgId, nullptr);
 }

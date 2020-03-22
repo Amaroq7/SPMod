@@ -20,7 +20,8 @@ if build_machine.system() == 'linux'
     endif
 endif
 
-sourceFiles = files('CmdNatives.cpp',
+sourceFiles = files('AdapterInterface.cpp',
+                    'CmdNatives.cpp',
                     'CoreNatives.cpp',
                     'CvarsNatives.cpp',
                     'DebugListener.cpp',
@@ -30,7 +31,6 @@ sourceFiles = files('CmdNatives.cpp',
                     'Listeners.cpp',
                     'MenuNatives.cpp',
                     'MessageNatives.cpp',
-                    'ModuleInterface.cpp',
                     'PlayerNatives.cpp',
                     'PluginSystem.cpp',
                     'PrintfImpl.cpp',

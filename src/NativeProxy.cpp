@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,64 +8,64 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "spmod.hpp"
 
-ProxiedNative::ProxiedNative(std::size_t id, std::string_view name, void *data, const IPlugin *plugin)
-    : m_id(id), m_plugin(plugin), m_name(name), m_data(data)
+ProxiedNative::ProxiedNative(std::string_view name, std::any data, IPlugin *plugin)
+    : m_plugin(plugin), m_name(name), m_data(data)
 {
 }
 
-const char *ProxiedNative::getName() const
+std::string_view ProxiedNative::getName() const
 {
-    return m_name.c_str();
+    return m_name;
 }
 
-void *ProxiedNative::getData() const
+std::any ProxiedNative::getData() const
 {
     return m_data;
 }
 
-const IPlugin *ProxiedNative::getPlugin() const
+IPlugin *ProxiedNative::getPlugin() const
 {
     return m_plugin;
 }
 
-std::size_t ProxiedNative::getId() const
+std::int32_t ProxiedNative::exec(IPlugin *plugin)
 {
-    return m_id;
+    return getPlugin()->getPluginMngr()->proxyNativeCallback(this, plugin);
 }
 
-bool NativeProxy::registerNative(const char *name, void *data, const IPlugin *plugin)
+bool NativeProxy::registerNative(std::string_view name, std::any data, IPlugin *plugin)
 {
-    return m_proxiedNatives.try_emplace(name, std::make_shared<ProxiedNative>(m_nativeId++, name, data, plugin)).second;
+    return m_proxiedNatives.try_emplace(name.data(), std::make_unique<ProxiedNative>(name, data, plugin)).second;
 }
 
-int NativeProxy::nativeExecNotify(const IProxiedNative *const native, const IPlugin *const plugin) const
+const std::unordered_map<std::string, std::unique_ptr<ProxiedNative>> &NativeProxy::getProxiedNatives() const
 {
-    return native->getPlugin()->getPluginMngr()->proxyNativeCallback(native, plugin);
+    return m_proxiedNatives;
 }
 
-const IProxiedNative *NativeProxy::getProxiedNative(std::size_t id) const
+void NativeProxy::clearNatives()
 {
-    for (const auto &native : m_proxiedNatives)
+    m_proxiedNatives.clear();
+}
+
+std::vector<IProxiedNative *> NativeProxy::getProxiedNativesImpl() const
+{
+    std::vector<IProxiedNative *> proxiedNatives;
+    for (const auto &[name, native] : getProxiedNatives())
     {
-        if (native.second->getId() == id)
-            return native.second.get();
+        proxiedNatives.emplace_back(native.get());
     }
 
-    return nullptr;
-}
-
-std::size_t NativeProxy::getNativesNum() const
-{
-    return m_proxiedNatives.size();
+    return proxiedNatives;
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,18 +8,16 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
-
-#include <cstddef>
 
 namespace SPMod
 {
@@ -44,18 +42,17 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void setFilename(const char *filename) = 0;
+        virtual void setFilename(std::string_view filename) = 0;
 
         /**
          * @brief Logs to the console.
          *
          * @param level         Level of the log.
-         * @param format        Formatting string.
-         * @param ...           Formatting parameters.
+         * @param msg           Message to log.
          *
          * @noreturn
          */
-        virtual void logToConsole(LogLevel level, const char *format, ...) const = 0;
+        virtual void logToConsole(LogLevel level, std::string_view msg) const = 0;
 
         /**
          * @brief Logs to the file.
@@ -65,33 +62,30 @@ namespace SPMod
          * @note setFilename() has to be called at least once before executing this function.
          *
          * @param level         Level of the log.
-         * @param format        Formatting string.
-         * @param ...           Formatting parameters.
+         * @param msg           Message to log.
          *
          * @noreturn
          */
-        virtual void logToFile(LogLevel level, const char *format, ...) const = 0;
+        virtual void logToFile(LogLevel level, std::string_view msg) const = 0;
 
         /**
          * @brief Logs to the console and the file.
          *
          * @param level         Level of the log.
-         * @param format        Formatting string.
-         * @param ...           Formatting parameters.
+         * @param msg           Message to log.
          *
          * @noreturn
          */
-        virtual void logToBoth(LogLevel level, const char *format, ...) const = 0;
+        virtual void logToBoth(LogLevel level, std::string_view msg) const = 0;
 
         /**
          * @brief Sends message to the console.
          *
-         * @param format        Formatting string.
-         * @param ...           Formatting parameters.
+         * @param msg           Message to log.
          *
          * @noreturn
          */
-        virtual void sendMsgToConsole(const char *format, ...) const = 0;
+        virtual void sendMsgToConsole(std::string_view msg) const = 0;
 
         /**
          * @brief Sets log level.
@@ -109,7 +103,6 @@ namespace SPMod
          */
         virtual LogLevel getLogLevel() const = 0;
 
-    protected:
         virtual ~ILogger() = default;
     };
 
@@ -126,7 +119,7 @@ namespace SPMod
          *
          * @return              Interface's name.
          */
-        const char *getName() const override
+        std::string_view getName() const override
         {
             return "ILoggerMngr";
         }
@@ -152,9 +145,8 @@ namespace SPMod
          *
          * @return      Logger's instance.
          */
-        virtual ILogger *getLogger(const char *prefix) = 0;
+        virtual ILogger *getLogger(std::string_view prefix) = 0;
 
-    protected:
         virtual ~ILoggerMngr() = default;
     };
 } // namespace SPMod

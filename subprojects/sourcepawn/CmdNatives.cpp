@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -101,8 +101,8 @@ static cell_t CmdGetArgv(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
 
-    const char *argv = gSPGlobal->getEngineFuncs()->getArg(params[arg_arg]);
-    if (!argv)
+    std::string_view argv = gSPGlobal->getEngineFuncs()->getArg(params[arg_arg]);
+    if (argv.empty())
         return 0;
 
     return gSPGlobal->getUtils()->strCopy(destBuffer, params[arg_size], argv);
@@ -120,8 +120,8 @@ static cell_t CmdGetArgs(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
 
-    const char *args = gSPGlobal->getEngineFuncs()->getArgs();
-    if (!args)
+    std::string_view args = gSPGlobal->getEngineFuncs()->getArgs();
+    if (args.empty())
         return 0;
 
     return gSPGlobal->getUtils()->strCopy(destBuffer, params[arg_size], args);

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,19 +8,46 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
 
 #include <cinttypes>
+#include <cstddef>
+#include <functional>
+#include <any>
+#include <string>
+#include <variant>
+#include <array>
+#include <type_traits>
+#include <regex>
+#include <charconv>
+
 #include <IHelpers.hpp>
+
+#if __has_include(<filesystem>)
+    #include <filesystem>
+    // As of GCC 8.1, Clang 7 and MSVC 2019 filesystem is no longer part of experimental
+    #if (defined SP_GCC && __GNUC__ >= 8) || (defined SP_CLANG && __clang_major__ >= 7) ||                             \
+        (defined SP_MSVC && _MSC_VER >= 1920)
+namespace fs = std::filesystem;
+    #else // Some compilers still have filesystem within experimental namespace like MSVC 2017
+namespace fs = std::experimental::filesystem;
+    #endif
+#elif __has_include(<experimental/filesystem>)
+    #include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+    #error Filesystem header missing
+#endif
+
 #include <IInterface.hpp>
 #include <IForwardSystem.hpp>
 #include <ICvarSystem.hpp>
@@ -60,7 +87,7 @@ namespace SPMod
          *
          * @return      Interface's name.
          */
-        const char *getName() const override
+        std::string_view getName() const override
         {
             return "ISPGlobal";
         }
@@ -82,14 +109,14 @@ namespace SPMod
          *
          * @return              Home dir.
          */
-        virtual const char *getPath(DirType type) const = 0;
+        virtual const fs::path &getPath(DirType type) const = 0;
 
         /**
          * @brief Returns name of the mod.
          *
          * @return              Mod name.
          */
-        virtual const char *getModName() const = 0;
+        virtual std::string_view getModName() const = 0;
 
         /**
          * @brief Checks if plugins can precache resources.
@@ -105,7 +132,7 @@ namespace SPMod
          *
          * @return              Edict.
          */
-        virtual IEdict *getEdict(int index) = 0;
+        virtual IEdict *getEdict(std::uint32_t index) = 0;
 
         /**
          * @brief Finds plugin.
@@ -114,7 +141,7 @@ namespace SPMod
          *
          * @return              Plugin pointer or nullptr if not found.
          */
-        virtual IPlugin *getPlugin(const char *pluginname) const = 0;
+        virtual IPlugin *getPlugin(std::string_view pluginname) const = 0;
 
         /**
          * @brief Returns SPMod forward manager.
@@ -210,52 +237,30 @@ namespace SPMod
         /**
          * @brief Registers module's interface.
          *
-         * @param interface     Interface's address.
+         * @param interface     Interface's implementation.
          *
          * @return              True if registered successfully, false otherwise.
          */
-        virtual bool registerInterface(IInterface *interface) = 0;
+        virtual bool registerModule(IModuleInterface *interface) = 0;
+
+        /**
+         * @brief Registers adapter's interface.
+         *
+         * @param interface     Adapter's implementation.
+         *
+         * @return              True if registered successfully, false otherwise.
+         */
+        virtual bool registerAdapter(IAdapterInterface *interface) = 0;
 
         /**
          * @brief Gets a module's interface.
          *
          * @param name          Name of the interface to look up for.
          *
-         * @return              True if registered successfully, false otherwise.
+         * @return              Interface's implementation.
          */
-        virtual IInterface *getInterface(const char *name) const = 0;
+        virtual IModuleInterface *getInterface(std::string_view name) const = 0;
 
-    protected:
         virtual ~ISPGlobal() = default;
     };
-
-    enum class ExtQueryValue : uint8_t
-    {
-        DontLoad = 0,
-        SPModExt = 1
-    };
-
-    /**
-     * @brief Entry point for modules to obtain access to SPMod API.
-     *
-     * @return
-     */
-    SPMOD_API ExtQueryValue SPMod_Query(ISPGlobal *spmodInstance);
-    using fnSPModQuery = ExtQueryValue (*)(ISPGlobal *spmodInstance);
-
-    /**
-     * @brief Called after SPMod_Query().
-     *
-     * @note Here extension should ask for interfaces.
-     *
-     * @return True if extension should be loaded, false otherwise.
-     */
-    SPMOD_API bool SPMod_Init();
-    using fnSPModInit = bool (*)();
-
-    /**
-     * @brief Called on extension unloading. (mapchange, server shutdown)
-     */
-    SPMOD_API void SPMod_End();
-    using fnSPModEnd = void (*)();
 } // namespace SPMod

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -18,18 +18,6 @@
  */
 
 #include "ExtMain.hpp"
-
-#define MSG_BROADCAST 0 // unreliable to all
-#define MSG_ONE       1 // reliable to one (msg_entity)
-#define MSG_ALL       2 // reliable to all
-#define MSG_INIT      3 // write to the init string
-#define MSG_PVS       4 // Ents in PVS of org
-#define MSG_PAS       5 // Ents in PAS of org
-#define MSG_PVS_R     6 // Reliable to PVS
-#define MSG_PAS_R     7 // Reliable to PAS
-#define MSG_ONE_UNRELIABLE                                                                                             \
-    8 // Send to one client, but don't put in reliable stream, put in unreliable datagram ( could be dropped )
-#define MSG_SPEC 9 // Sends to all spectator proxies
 
 // int GetUserMsgId(const char[] msgname);
 static cell_t GetUserMsgId(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -55,11 +43,11 @@ static cell_t GetUserMsgName(SourcePawn::IPluginContext *ctx, const cell_t *para
         arg_len
     };
 
-    const char *string = gSPGlobal->getMetaFuncs()->getUsrMsgName(params[arg_msg]);
-    if (string)
+    std::string_view string = gSPGlobal->getMetaFuncs()->getUsrMsgName(params[arg_msg]);
+    if (!string.empty())
     {
-        ctx->StringToLocal(params[arg_str], params[arg_len], string);
-        return strlen(string);
+        ctx->StringToLocal(params[arg_str], params[arg_len], string.data());
+        return string.length();
     }
 
     return 0;
@@ -80,24 +68,26 @@ static cell_t MessageBegin_(SourcePawn::IPluginContext *ctx, const cell_t *param
     cell_t *cpOrigin;
 
     if (params[arg_msg_type] < 1 || ((params[arg_msg_type] > 63) // maximal number of engine messages
-                                     && !gSPGlobal->getMetaFuncs()->getUsrMsgName(params[2])))
+                                     && gSPGlobal->getMetaFuncs()->getUsrMsgName(params[2]).empty()))
     {
         ctx->ReportError("Plugin called MessageBegin with an invalid message id (%d).", params[arg_msg_type]);
         return 0;
     }
 
-    switch (params[arg_dest])
+    auto messageDest = static_cast<SPMod::MessageDest>(params[arg_dest]);
+
+    switch (messageDest)
     {
-        case MSG_BROADCAST:
-        case MSG_ALL:
-        case MSG_SPEC:
-        case MSG_INIT:
-            gSPGlobal->getEngineFuncs()->messageBegin(params[arg_dest], params[arg_msg_type], nullptr);
+        case SPMod::MessageDest::BROADCAST:
+        case SPMod::MessageDest::ALL:
+        case SPMod::MessageDest::SPEC:
+        case SPMod::MessageDest::INIT:
+            gSPGlobal->getEngineFuncs()->messageBegin(messageDest, params[arg_msg_type], nullptr);
             break;
-        case MSG_PVS:
-        case MSG_PAS:
-        case MSG_PVS_R:
-        case MSG_PAS_R:
+        case SPMod::MessageDest::PVS:
+        case SPMod::MessageDest::PAS:
+        case SPMod::MessageDest::PVS_R:
+        case SPMod::MessageDest::PAS_R:
             if (numparam < 3)
             {
                 ctx->ReportError("Invalid number of parameters passed");
@@ -119,11 +109,11 @@ static cell_t MessageBegin_(SourcePawn::IPluginContext *ctx, const cell_t *param
                 vecOrigin[2] = sp_ctof(*(cpOrigin + 2));
             }
 
-            gSPGlobal->getEngineFuncs()->messageBegin(params[arg_dest], params[arg_msg_type], vecOrigin);
+            gSPGlobal->getEngineFuncs()->messageBegin(messageDest, params[arg_msg_type], vecOrigin);
 
             break;
-        case MSG_ONE_UNRELIABLE:
-        case MSG_ONE:
+        case SPMod::MessageDest::ONE_UNRELIABLE:
+        case SPMod::MessageDest::ONE:
             if (numparam < 4)
             {
                 ctx->ReportError("Invalid number of parameters passed");
@@ -131,7 +121,7 @@ static cell_t MessageBegin_(SourcePawn::IPluginContext *ctx, const cell_t *param
             }
 
             SPMod::IPlayer *player = gSPGlobal->getPlayerManager()->getPlayer(params[arg_player]);
-            gSPGlobal->getEngineFuncs()->messageBegin(params[arg_dest], params[arg_msg_type], nullptr, player);
+            gSPGlobal->getEngineFuncs()->messageBegin(messageDest, params[arg_msg_type], nullptr, player);
             break;
     }
 

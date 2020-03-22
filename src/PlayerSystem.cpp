@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,30 +8,30 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "spmod.hpp"
 
-Player::Player(std::shared_ptr<Edict> edict) : Edict(edict->getInternalEdict()), m_connected(false), m_inGame(false) {}
+Player::Player(const Edict *edict) : Edict(edict->getInternalEdict()), m_connected(false), m_inGame(false) {}
 
-std::string_view Player::getNameCore() const
+std::string_view Player::getName() const
 {
     return m_name;
 }
 
-std::string_view Player::getIPAddressCore() const
+std::string_view Player::getIPAddress() const
 {
     return m_ip;
 }
 
-std::string_view Player::getSteamIDCore() const
+std::string_view Player::getSteamID() const
 {
     return m_steamID;
 }
@@ -41,43 +41,38 @@ void Player::setName(std::string_view newname)
     m_name = newname;
 }
 
-IMenu *Player::getMenu() const
-{
-    return getMenuCore().lock().get();
-}
-
-std::weak_ptr<Menu> Player::getMenuCore() const
+Menu *Player::getMenu() const
 {
     return m_menu;
 }
 
 void Player::closeMenu()
 {
-    std::shared_ptr<Menu> pMenu = getMenuCore().lock();
-
-    if (!pMenu)
+    if (!m_menu)
+    {
         return;
+    }
 
-    setMenu(nullptr);
-
-    if (pMenu->getStyle() == IMenu::Style::Item)
-        pMenu->execExitHandler(m_ownInstance.lock());
+    if (m_menu->getStyle() == IMenu::Style::Item)
+        m_menu->execExitHandler(this);
 
     static char menu[] = "\n";
-    gSPGlobal->getUtilsCore()->ShowMenu(m_ownInstance.lock(), 0, 0, menu, strlen(menu));
+    gSPGlobal->getUtils()->ShowMenu(this, 0, 0, menu);
+
+    setMenu(nullptr);
 }
 
-void Player::setMenu(std::shared_ptr<Menu> menu)
+void Player::setMenu(Menu *menu)
 {
     m_menu = menu;
 }
 
-int Player::getMenuPage() const
+std::uint32_t Player::getMenuPage() const
 {
     return m_menuPage;
 }
 
-void Player::setMenuPage(int page)
+void Player::setMenuPage(std::uint32_t page)
 {
     m_menuPage = page;
 }
@@ -110,27 +105,7 @@ void Player::authorize(std::string_view authid)
     m_steamID = authid;
 }
 
-const char *Player::getName() const
-{
-    return getNameCore().data();
-}
-
-const char *Player::getIPAddress() const
-{
-    return getIPAddressCore().data();
-}
-
-const char *Player::getSteamID() const
-{
-    return getSteamIDCore().data();
-}
-
-void Player::setOwnInstance(std::shared_ptr<Player> instance)
-{
-    m_ownInstance = instance;
-}
-
-int Player::getUserId() const
+std::uint32_t Player::getUserId() const
 {
     return m_userID;
 }
@@ -160,42 +135,54 @@ bool Player::isInGame() const
     return m_inGame;
 }
 
-IPlayer *PlayerMngr::getPlayer(int index) const
+Player *PlayerMngr::getPlayer(std::uint32_t index) const
 {
-    return getPlayerCore(index).get();
+    try
+    {
+        return m_players.at(index).get();
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
+        return nullptr;
+    }
 }
 
-IPlayer *PlayerMngr::getPlayer(IEdict *edict) const
+Player *PlayerMngr::getPlayer(const IEdict *edict) const
 {
-    std::shared_ptr<Edict> spEdict = gSPGlobal->getEdictCore(edict->getIndex());
-    return getPlayerCore(spEdict).get();
+    try
+    {
+        return m_players.at(edict->getIndex()).get();
+    }
+    catch (const std::out_of_range &e [[maybe_unused]])
+    {
+        return nullptr;
+    }
 }
 
-unsigned int PlayerMngr::getMaxClients() const
+std::uint32_t PlayerMngr::getMaxClients() const
 {
     return m_maxClients;
 }
 
-unsigned int PlayerMngr::getNumPlayers() const
+std::uint32_t PlayerMngr::getNumPlayers() const
 {
     return m_playersNum;
 }
 
 void PlayerMngr::_initPlayers(edict_t *edictList)
 {
-    for (size_t i = 1; i <= m_maxClients; i++)
+    for (std::size_t i = 1; i <= m_maxClients; i++)
     {
-        std::shared_ptr<Edict> spEdict = gSPGlobal->getEdictCore(ENTINDEX(edictList + i));
-        m_players.at(i) = std::make_shared<Player>(spEdict);
-        m_players.at(i)->setOwnInstance(m_players.at(i));
+        Edict *spEdict = gSPGlobal->getEdict(ENTINDEX(edictList + i));
+        m_players.at(i) = std::make_unique<Player>(spEdict);
     }
 }
 
-std::shared_ptr<Player> PlayerMngr::getPlayerCore(int index) const
+Player *PlayerMngr::getPlayer(edict_t *edict) const
 {
     try
     {
-        return m_players.at(index);
+        return m_players.at(ENTINDEX(edict)).get();
     }
     catch (const std::out_of_range &e [[maybe_unused]])
     {
@@ -203,55 +190,21 @@ std::shared_ptr<Player> PlayerMngr::getPlayerCore(int index) const
     }
 }
 
-std::shared_ptr<Player> PlayerMngr::getPlayerCore(std::shared_ptr<Edict> edict) const
-{
-    try
-    {
-        return m_players.at(edict->getIndex());
-    }
-    catch (const std::out_of_range &e [[maybe_unused]])
-    {
-        return nullptr;
-    }
-}
-
-std::shared_ptr<Player> PlayerMngr::getPlayerCore(edict_t *edict) const
-{
-    try
-    {
-        return m_players.at(ENTINDEX(edict));
-    }
-    catch (const std::out_of_range &e [[maybe_unused]])
-    {
-        return nullptr;
-    }
-}
-
-std::shared_ptr<Player> PlayerMngr::getPlayerCore(IPlayer *player) const
-{
-    try
-    {
-        return m_players.at(player->getIndex());
-    }
-    catch (const std::out_of_range &e [[maybe_unused]])
-    {
-        return nullptr;
-    }
-}
-
-void PlayerMngr::_setMaxClients(int maxClients)
+void PlayerMngr::_setMaxClients(std::uint32_t maxClients)
 {
     m_maxClients = maxClients;
 }
 
-bool PlayerMngr::ClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128])
+bool PlayerMngr::ClientConnect(edict_t *pEntity,
+                               std::string_view pszName,
+                               std::string_view pszAddress,
+                               char szRejectReason[128])
 {
-    using def = ForwardMngr::FwdDefault;
     using sf = IForward::StringFlags;
 
-    std::shared_ptr<Forward> fwdPlrConnect = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnect);
+    Forward *fwdPlrConnect = gSPGlobal->getForwardManager()->getForward(ForwardMngr::FWD_PLAYER_CONNECT);
 
-    int result;
+    std::int32_t result;
     fwdPlrConnect->pushInt(ENTINDEX(pEntity));
     fwdPlrConnect->pushString(pszName);
     fwdPlrConnect->pushString(pszAddress);
@@ -259,29 +212,28 @@ bool PlayerMngr::ClientConnect(edict_t *pEntity, const char *pszName, const char
     fwdPlrConnect->execFunc(&result);
 
     if (static_cast<IForward::ReturnValue>(result) == IForward::ReturnValue::Stop)
+    {
         return false;
+    }
 
     return true;
 }
 
-void PlayerMngr::ClientConnectPost(edict_t *pEntity, const char *pszName, const char *pszAddress)
+void PlayerMngr::ClientConnectPost(edict_t *pEntity, std::string_view pszName, std::string_view pszAddress)
 {
-    using def = ForwardMngr::FwdDefault;
-
-    std::shared_ptr<Player> plr = getPlayerCore(pEntity);
+    Player *plr = getPlayer(pEntity);
     plr->connect(pszName, pszAddress);
 
     PlayerMngr::m_playersNum++;
 
     std::string_view authid(GETPLAYERAUTHID(pEntity));
 
-    if (authid.empty() || !authid.compare("STEAM_ID_PENDING"))
-        m_playersToAuth.push_back(plr);
+    if (authid.empty() || authid == "STEAM_ID_PENDING")
+        m_playersToAuth.emplace_back(plr);
     else
         plr->authorize(authid);
 
-    std::shared_ptr<Forward> fwdPlrConnectPost =
-        gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientConnectPost);
+    Forward *fwdPlrConnectPost = gSPGlobal->getForwardManager()->getForward(ForwardMngr::FWD_PLAYER_CONNECTED);
     fwdPlrConnectPost->pushInt(ENTINDEX(pEntity));
     fwdPlrConnectPost->pushString(pszName);
     fwdPlrConnectPost->pushString(pszAddress);
@@ -290,32 +242,26 @@ void PlayerMngr::ClientConnectPost(edict_t *pEntity, const char *pszName, const 
 
 void PlayerMngr::ClientPutInServer(edict_t *pEntity)
 {
-    using def = ForwardMngr::FwdDefault;
+    Player *plr = getPlayer(pEntity);
 
-    std::shared_ptr<Player> plr = getPlayerCore(pEntity);
-
-    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServer);
+    Forward *forward = gSPGlobal->getForwardManager()->getForward(ForwardMngr::FWD_PLAYER_ENTER);
     forward->pushInt(plr->getIndex());
     forward->execFunc(nullptr);
 }
 
 void PlayerMngr::ClientPutInServerPost(edict_t *pEntity)
 {
-    using def = ForwardMngr::FwdDefault;
-
-    std::shared_ptr<Player> plr = getPlayerCore(pEntity);
+    Player *plr = getPlayer(pEntity);
     plr->putInServer();
 
-    std::shared_ptr<Forward> forward =
-        gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientPutInServerPost);
+    Forward *forward = gSPGlobal->getForwardManager()->getForward(ForwardMngr::FWD_PLAYER_ENTERED);
     forward->pushInt(plr->getIndex());
     forward->execFunc(nullptr);
 }
 
 void PlayerMngr::ClientUserInfoChangedPost(edict_t *pEntity, char *infobuffer)
 {
-    std::shared_ptr<Player> plr = getPlayerCore(pEntity);
-    plr->setName(INFOKEY_VALUE(infobuffer, "name"));
+    getPlayer(pEntity)->setName(INFOKEY_VALUE(infobuffer, "name"));
 }
 
 void PlayerMngr::StartFramePost()
@@ -327,9 +273,9 @@ void PlayerMngr::StartFramePost()
         auto iter = m_playersToAuth.begin();
         while (iter != m_playersToAuth.end())
         {
-            std::shared_ptr<Player> plr = *iter;
+            Player *plr = *iter;
             std::string_view authid(GETPLAYERAUTHID(plr->getInternalEdict()));
-            if (!authid.empty() && authid.compare("STEAM_ID_PENDING"))
+            if (!authid.empty() && authid == "STEAM_ID_PENDING")
             {
                 plr->authorize(authid);
                 iter = m_playersToAuth.erase(iter);
@@ -340,7 +286,7 @@ void PlayerMngr::StartFramePost()
     }
 }
 
-void PlayerMngr::ServerActivatePost(edict_t *pEdictList, int clientMax)
+void PlayerMngr::ServerActivatePost(edict_t *pEdictList, std::uint32_t clientMax)
 {
     _setMaxClients(clientMax);
     _initPlayers(pEdictList);

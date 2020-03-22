@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,13 +8,13 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -30,22 +30,16 @@ class Command : public ICommand
 {
 public:
     Command() = delete;
-    ~Command() = default;
-    Command(std::string_view cmd, std::string_view info, ICommand::Callback cb, void *data);
+    virtual ~Command() = default;
+    Command(std::string_view cmd, std::string_view info, ICommand::Callback cb, std::any data);
 
-    const char *getCmd() const override;
-    const char *getInfo() const override;
-
-    std::string_view getCmdCore() const;
-    std::string_view getInfoCore() const;
-    ICommand::Callback getCallback() const;
-    void *getCallbackData() const;
-
-    virtual bool hasAccessCore(std::shared_ptr<Player> player) const = 0;
+    const std::regex &getRegex() const override;
+    std::string_view getInfo() const override;
+    IForward::ReturnValue execCallback(Player *player);
 
 protected:
-    /* name of command or regex */
-    std::string m_cmd;
+    /* command's regex */
+    std::regex m_regex;
 
     /* info for cmd, example of usage etc. */
     std::string m_info;
@@ -54,7 +48,7 @@ protected:
     ICommand::Callback m_callback;
 
     /* callback data */
-    void *m_data;
+    std::any m_data;
 };
 
 /* @brief Represents client command */
@@ -62,15 +56,21 @@ class ClientCommand final : public Command
 {
 public:
     ClientCommand() = delete;
-    ClientCommand(const ClientCommand &other) = delete;
+    ClientCommand(const ClientCommand &other) = default;
     ClientCommand(ClientCommand &&other) = default;
     ~ClientCommand() = default;
 
-    ClientCommand(std::string_view cmd, std::string_view info, std::uint32_t flags, ICommand::Callback cb, void *data);
+    ClientCommand(std::string_view cmd,
+                  std::string_view info,
+                  std::uint32_t flags,
+                  ICommand::Callback cb,
+                  std::any data);
 
-    bool hasAccess(IPlayer *player) const override;
-    bool hasAccessCore(std::shared_ptr<Player> player) const override;
+    bool hasAccess(const IPlayer *player) const override;
     uint32_t getAccess() const override;
+
+private:
+    bool _hasAccess(uint32_t flags) const;
 
 private:
     /* permissions for command */
@@ -82,14 +82,13 @@ class ServerCommand final : public Command
 {
 public:
     ServerCommand() = delete;
-    ServerCommand(const ServerCommand &other) = delete;
+    ServerCommand(const ServerCommand &other) = default;
     ServerCommand(ServerCommand &&other) = default;
     ~ServerCommand() = default;
 
-    ServerCommand(std::string_view cmd, std::string_view info, ICommand::Callback cb, void *data);
+    ServerCommand(std::string_view cmd, std::string_view info, ICommand::Callback cb, std::any data);
 
-    bool hasAccess(IPlayer *player) const override;
-    bool hasAccessCore(std::shared_ptr<Player> player) const override;
+    bool hasAccess(const IPlayer *player) const override;
     std::uint32_t getAccess() const override;
 };
 
@@ -99,22 +98,24 @@ public:
     CommandMngr() = default;
     ~CommandMngr() = default;
 
-    ICommand *registerCommand(ICommand::Type type,
-                              const char *cmd,
-                              const char *info,
-                              std::uint32_t flags,
-                              ICommand::Callback cb,
-                              void *data) override;
+    Command *registerCommand(ICommand::Type type,
+                             std::string_view cmd,
+                             std::string_view info,
+                             std::uint32_t flags,
+                             ICommand::Callback cb,
+                             std::any data);
 
     template<typename T, typename... Args, typename = std::enable_if_t<std::is_base_of_v<Command, T>>>
-    std::shared_ptr<Command> registerCommandCore(Args... args)
+    const std::unique_ptr<Command> &registerCommandInternal(Args... args)
     {
-        auto cmd = std::make_shared<T>(std::forward<Args>(args)...);
-
         if constexpr (std::is_same_v<ClientCommand, T>)
-            return m_clientCommands.emplace_back(cmd);
+        {
+            return m_clientCommands.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
+        }
         else
-            return m_serverCommands.emplace_back(cmd);
+        {
+            return m_serverCommands.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
+        }
     }
 
     const auto &getCommandList(ICommand::Type type) const
@@ -125,9 +126,9 @@ public:
     std::size_t getCommandsNum(ICommand::Type type);
     void clearCommands();
 
-    META_RES ClientCommandMeta(std::shared_ptr<Edict> entity, std::string&& cmd);
+    META_RES ClientCommandMeta(edict_t *entity, std::string_view cmd);
 
 private:
-    std::vector<std::shared_ptr<Command>> m_clientCommands;
-    std::vector<std::shared_ptr<Command>> m_serverCommands;
+    std::vector<std::unique_ptr<Command>> m_clientCommands;
+    std::vector<std::unique_ptr<Command>> m_serverCommands;
 };

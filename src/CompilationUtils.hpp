@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2020 SPMod Development Team
+ *  Copyright (C) 2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -19,5 +19,6 @@
 
 #pragma once
 
-constexpr const char *APP_COMMIT_SHA = "@commit@";
-constexpr const char *gSPModVersion = "@version@";
+constexpr const char *gCompilationDate = __DATE__;
+constexpr const char *gCompilationYear = (gCompilationDate + 7);
+constexpr const char *gCompilationTime = __TIME__;

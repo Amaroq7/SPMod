@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -50,7 +50,7 @@ public:
 #endif
 
     SourcePawnAPI() = delete;
-    SourcePawnAPI(fs::path &&libraryDir);
+    SourcePawnAPI(const fs::path &libraryDir);
     SourcePawnAPI(const SourcePawnAPI &other) = delete;
     SourcePawnAPI(SourcePawnAPI &&other) = default;
     ~SourcePawnAPI();

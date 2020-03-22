@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,13 +8,13 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -29,19 +29,17 @@ public:
     ProxiedNative(ProxiedNative &&other) = default;
     ~ProxiedNative() = default;
 
-    ProxiedNative(std::size_t id, std::string_view name, void *data, const IPlugin *plugin);
+    ProxiedNative(std::string_view name, std::any data, IPlugin *plugin);
 
-    const char *getName() const override;
-    void *getData() const override;
-    const IPlugin *getPlugin() const override;
-
-    std::size_t getId() const;
+    std::string_view getName() const override;
+    std::any getData() const override;
+    IPlugin *getPlugin() const override;
+    std::int32_t exec(IPlugin *plugin) override;
 
 private:
-    std::size_t m_id;
-    const IPlugin *m_plugin;
+    IPlugin *m_plugin;
     std::string m_name;
-    void *m_data;
+    std::any m_data;
 };
 
 class NativeProxy final : public INativeProxy
@@ -52,14 +50,14 @@ public:
     NativeProxy(NativeProxy &&other) = default;
     ~NativeProxy() = default;
 
-    bool registerNative(const char *name, void *data, const IPlugin *plugin) override;
+    bool registerNative(std::string_view name, std::any data, IPlugin *plugin) override;
 
-    int nativeExecNotify(const IProxiedNative *native, const IPlugin *const plugin) const override;
+    const std::unordered_map<std::string, std::unique_ptr<ProxiedNative>> &getProxiedNatives() const;
+    void clearNatives();
 
-    const IProxiedNative *getProxiedNative(std::size_t id) const override;
-    std::size_t getNativesNum() const override;
+protected:
+    std::vector<IProxiedNative *> getProxiedNativesImpl() const override;
 
 private:
-    std::size_t m_nativeId;
-    std::unordered_map<std::string, std::shared_ptr<ProxiedNative>> m_proxiedNatives;
+    std::unordered_map<std::string, std::unique_ptr<ProxiedNative>> m_proxiedNatives;
 };

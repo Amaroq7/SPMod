@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,13 +8,13 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -50,61 +50,66 @@ namespace SPMod
                 Hide
             };
 
-            using Callback = Status (*)(IMenu *const menu, IItem *const item, IPlayer *const player, void *data);
+            using Callback =
+                std::function<Status(IMenu *const menu, IItem *const item, IPlayer *const player, std::any data)>;
 
-            virtual const char *getName() const = 0;
-            virtual void setName(const char *name) = 0;
+            virtual std::string_view getName() const = 0;
+            virtual void setName(std::string_view name) = 0;
 
-            virtual void *getData() const = 0;
-            virtual void setData(void *data) = 0;
+            virtual std::any getData() const = 0;
+            virtual void setData(std::any data) = 0;
 
             virtual NavigationType getNavType() const = 0;
 
-            virtual void setCallback(Callback func, void *data) = 0;
+            virtual void setCallback(Callback func, std::any data) = 0;
 
-        protected:
             virtual ~IItem() = default;
         };
 
-        using ItemHandler = void (*)(IMenu *const menu, IItem *const item, IPlayer *const player, void *data);
-        using TextHandler = void (*)(IMenu *const menu, int key, IPlayer *const player, void *data);
+        using ItemHandler =
+            std::function<void(IMenu *const menu, IItem *const item, IPlayer *const player, std::any data)>;
+        using TextHandler =
+            std::function<void(IMenu *const menu, std::uint32_t key, IPlayer *const player, std::any data)>;
 
-        virtual void display(IPlayer *const player, int page, int time) = 0;
+        virtual void display(IPlayer *player, std::uint32_t page, std::uint32_t time) = 0;
         virtual bool getGlobal() const = 0;
         virtual Style getStyle() const = 0;
 
-        virtual void setText(const char *text) = 0;
-        virtual void setKeys(int keys) = 0;
+        virtual void setText(std::string_view text) = 0;
+        virtual void setKeys(std::uint32_t keys) = 0;
 
-        virtual void setTitle(const char *text) = 0;
+        virtual void setTitle(std::string_view text) = 0;
 
         virtual void setItemsPerPage(std::size_t value) = 0;
         virtual std::size_t getItemsPerPage() const = 0;
 
-        virtual int getTime() const = 0;
-        virtual int getKeys() const = 0;
+        virtual std::uint32_t getTime() const = 0;
+        virtual std::uint32_t getKeys() const = 0;
 
-        virtual IItem *appendItem(const char *name, IItem::Callback callback, void *cbData, void *data) = 0;
+        virtual IItem *appendItem(std::string_view name, IItem::Callback callback, std::any cbData, std::any data) = 0;
 
-        virtual IItem *
-            insertItem(std::size_t position, const char *name, IItem::Callback callback, void *cbData, void *data) = 0;
+        virtual IItem *insertItem(std::size_t position,
+                                  std::string_view name,
+                                  IItem::Callback callback,
+                                  std::any cbData,
+                                  std::any data) = 0;
 
         virtual IItem *setStaticItem(std::size_t position,
-                                     const char *name,
+                                     std::string_view name,
                                      IItem::Callback callback,
-                                     void *cbData,
-                                     void *data) = 0;
+                                     std::any cbData,
+                                     std::any data) = 0;
 
         virtual bool removeItem(std::size_t position) = 0;
         virtual void removeAllItems() = 0;
 
         virtual IItem *getItem(std::size_t position) const = 0;
-        virtual int getItemIndex(const IItem *item) const = 0;
-        virtual void setNumberFormat(const char *format) = 0;
+
+        virtual std::uint32_t getItemIndex(const IItem *item) const = 0;
+        virtual void setNumberFormat(std::string_view format) = 0;
 
         virtual std::size_t getItems() const = 0;
 
-    protected:
         virtual ~IMenu() = default;
     };
 
@@ -120,7 +125,7 @@ namespace SPMod
          *
          * @return        Interface's name.
          */
-        const char *getName() const override
+        std::string_view getName() const override
         {
             return "IMenuMngr";
         }
@@ -137,11 +142,10 @@ namespace SPMod
             return VERSION;
         }
 
-        virtual IMenu *registerMenu(IMenu::ItemHandler handler, void *data, bool global) = 0;
-        virtual IMenu *registerMenu(IMenu::TextHandler handler, void *data, bool global) = 0;
-        virtual void destroyMenu(IMenu *menu) = 0;
-
-    protected:
+        virtual IMenu *registerMenu(const std::variant<IMenu::ItemHandler, IMenu::TextHandler> &handler,
+                                    std::any data,
+                                    bool global) = 0;
+        virtual void destroyMenu(const IMenu *menu) = 0;
         virtual ~IMenuMngr() = default;
     };
 } // namespace SPMod

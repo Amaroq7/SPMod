@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,22 +8,18 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
 
 #include "spmod.hpp"
-
-class ForwardMngr;
-class CvarMngr;
-class LoggerMngr;
 
 class SPGlobal final : public ISPGlobal
 {
@@ -36,53 +32,43 @@ public:
     explicit SPGlobal(fs::path &&dllDir);
 
     // ISPGlobal
-    const char *getPath(DirType type) const override;
-    const char *getModName() const override;
+    const fs::path &getPath(DirType type) const override;
+    std::string_view getModName() const override;
     bool canPluginsPrecache() const override;
-    IPlugin *getPlugin(const char *pluginname) const override;
+    IPlugin *getPlugin(std::string_view pluginname) const override;
 
-    IForwardMngr *getForwardManager() const override;
-    ICvarMngr *getCvarManager() const override;
-    ITimerMngr *getTimerManager() const override;
-    IMenuMngr *getMenuManager() const override;
-    ILoggerMngr *getLoggerManager() const override;
-    IPlayerMngr *getPlayerManager() const override;
-    INativeProxy *getNativeProxy() const override;
-    ICommandMngr *getCommandManager() const override;
-    IEngineFuncs *getEngineFuncs() const override;
-    IEngineFuncsHooked *getEngineHookedFuncs() const override;
-    IEngineGlobals *getEngineGlobals() const override;
-    IMetaFuncs *getMetaFuncs() const override;
-    IEdict *getEdict(int index) override;
-    IUtils *getUtils() const override;
+    ForwardMngr *getForwardManager() const override;
+    CvarMngr *getCvarManager() const override;
+    TimerMngr *getTimerManager() const override;
+    MenuMngr *getMenuManager() const override;
+    LoggerMngr *getLoggerManager() const override;
+    PlayerMngr *getPlayerManager() const override;
+    NativeProxy *getNativeProxy() const override;
+    CommandMngr *getCommandManager() const override;
+    EngineFuncs *getEngineFuncs() const override;
+    EngineFuncsHooked *getEngineHookedFuncs() const override;
+    EngineGlobals *getEngineGlobals() const override;
+    MetaFuncs *getMetaFuncs() const override;
+    Edict *getEdict(std::uint32_t index) override;
+    Utils *getUtils() const override;
 
-    bool registerInterface(IInterface *interface) override;
-    IInterface *getInterface(const char *name) const override;
+    bool registerModule(IModuleInterface *interface) override;
+    bool registerAdapter(IAdapterInterface *interface) override;
+    IModuleInterface *getInterface(std::string_view name) const override;
 
     // SPGlobal
-    const fs::path &getPathCore(DirType type) const;
-    std::string_view getModNameCore() const;
-
-    const std::unique_ptr<ForwardMngr> &getForwardManagerCore() const;
-    const std::unique_ptr<CvarMngr> &getCvarManagerCore() const;
-    const std::unique_ptr<CommandMngr> &getCommandManagerCore() const;
-    const std::unique_ptr<TimerMngr> &getTimerManagerCore() const;
-    const std::unique_ptr<Utils> &getUtilsCore() const;
-    const std::unique_ptr<MenuMngr> &getMenuManagerCore() const;
-    const std::unique_ptr<LoggerMngr> &getLoggerManagerCore() const;
-    const std::unique_ptr<PlayerMngr> &getPlayerManagerCore() const;
-    const std::unique_ptr<NativeProxy> &getNativeProxyCore() const;
-    std::shared_ptr<Edict> getEdictCore(int index);
     void clearEdicts();
-    const auto &getInterfacesList() const
+    void removeEdict(edict_t *edict);
+    const auto &getModulesInterfaces() const
     {
-        return m_interfaces;
+        return m_modulesInterfaces;
+    }
+    const auto &getAdaptersInterfaces() const
+    {
+        return m_adaptersInterfaces;
     }
 
-    void setPluginsDir(std::string_view folder);
-    void setLogsDir(std::string_view folder);
-    void setDllsDir(std::string_view folder);
-    void setExtDir(std::string_view folder);
+    void setPath(DirType type, std::string_view path);
 
     std::size_t loadExts();
     void unloadExts();
@@ -111,10 +97,10 @@ private:
     std::unique_ptr<Utils> m_utils;
 
     std::string m_modName;
-    std::unordered_map<std::string, IInterface *> m_interfaces;
+    std::unordered_map<std::string, IModuleInterface *> m_modulesInterfaces;
+    std::unordered_map<std::string, IAdapterInterface *> m_adaptersInterfaces;
     std::vector<std::unique_ptr<Extension>> m_extHandles;
-    std::vector<IPluginMngr *> m_pluginManagers;
-    std::unordered_map<int, std::shared_ptr<Edict>> m_edicts;
+    std::unordered_map<std::uint32_t, std::unique_ptr<Edict>> m_edicts;
 
     bool m_canPluginsPrecache;
 };

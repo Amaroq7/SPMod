@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,13 +8,13 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -26,7 +26,8 @@ namespace SPMod
     class ICommand
     {
     public:
-        using Callback = IForward::ReturnValue (*)(IPlayer *const player, const ICommand *const cmd, void *data);
+        using Callback =
+            std::function<IForward::ReturnValue(IPlayer *const player, ICommand *const cmd, std::any data)>;
 
         enum class Type : std::uint8_t
         {
@@ -35,18 +36,18 @@ namespace SPMod
         };
 
         /**
-         * @brief Returns command's name.
+         * @brief Returns command's regex.
          *
-         * @return Command's name.
+         * @return Command's regex.
          */
-        virtual const char *getCmd() const = 0;
+        virtual const std::regex &getRegex() const = 0;
 
         /**
          * @brief Returns command's info.
          *
          * @return Command's info.
          */
-        virtual const char *getInfo() const = 0;
+        virtual std::string_view getInfo() const = 0;
 
         /**
          * @brief Checks if player can execute the command.
@@ -55,7 +56,7 @@ namespace SPMod
          *
          * @return True if player has access, false otherwise.
          */
-        virtual bool hasAccess(IPlayer *player) const = 0;
+        virtual bool hasAccess(const IPlayer *player) const = 0;
 
         /**
          * @brief Returns command's access flags.
@@ -64,7 +65,6 @@ namespace SPMod
          */
         virtual std::uint32_t getAccess() const = 0;
 
-    protected:
         virtual ~ICommand() = default;
     };
 
@@ -81,7 +81,7 @@ namespace SPMod
          *
          * @return        Interface's name.
          */
-        const char *getName() const override
+        std::string_view getName() const override
         {
             return "ICommandMngr";
         }
@@ -111,13 +111,12 @@ namespace SPMod
          * @return        Registered command.
          */
         virtual ICommand *registerCommand(ICommand::Type type,
-                                          const char *cmd,
-                                          const char *info,
+                                          std::string_view cmd,
+                                          std::string_view info,
                                           std::uint32_t flags,
                                           ICommand::Callback cb,
-                                          void *data) = 0;
+                                          std::any data) = 0;
 
-    protected:
         virtual ~ICommandMngr() = default;
     };
 } // namespace SPMod

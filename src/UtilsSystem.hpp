@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,13 +8,13 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -25,18 +25,8 @@ class Utils final : public IUtils
 {
 public:
     // IUtils
-    std::size_t strCopy(char *buffer, std::size_t size, const char *src) const override;
+    std::size_t strCopy(char *buffer, std::size_t size, std::string_view src) const override;
+    std::string strReplaced(std::string_view source, std::string_view from, std::string_view to) const override;
 
-    std::size_t strReplaced(char *buffer,
-                            std::size_t size,
-                            const char *source,
-                            const char *from,
-                            const char *to) const override;
-
-    // Utils
-    std::size_t strCopyCore(char *buffer, std::size_t size, std::string_view src) const;
-
-    std::string strReplacedCore(std::string_view source, std::string_view from, std::string_view to) const;
-
-    void ShowMenu(std::shared_ptr<Edict> pEdict, int slots, int time, const char *menu, std::size_t menuLength);
+    void ShowMenu(const Edict *pEdict, std::uint32_t slots, std::uint32_t time, std::string_view menu);
 };

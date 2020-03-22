@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -21,9 +21,9 @@
 
 namespace SPExt
 {
-    ModuleInterface::ModuleInterface(fs::path &&path)
-        : m_sourcePawnAPI(std::make_unique<SourcePawnAPI>(std::move(path))),
-          m_pluginMngr(std::make_unique<SPExt::PluginMngr>()), m_debugListener(std::make_unique<DebugListener>())
+    AdapterInterface::AdapterInterface(const fs::path &path)
+        : m_sourcePawnAPI(std::make_unique<SourcePawnAPI>(path)), m_pluginMngr(std::make_unique<SPExt::PluginMngr>()),
+          m_debugListener(std::make_unique<DebugListener>())
     {
         m_sourcePawnAPI->getSPEnvironment()->APIv2()->SetDebugListener(m_debugListener.get());
     }

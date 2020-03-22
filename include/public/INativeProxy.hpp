@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,13 +8,13 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -31,24 +31,32 @@ namespace SPMod
          *
          * @return      Native's name.
          */
-        virtual const char *getName() const = 0;
+        virtual std::string_view getName() const = 0;
 
         /**
          * @brief Gets native data.
          *
          * @return      Native's data.
          */
-        virtual void *getData() const = 0;
+        virtual std::any getData() const = 0;
 
         /**
          * @brief Gets native plugin.
          *
          * @return      Native's plugin.
          */
-        virtual const IPlugin *getPlugin() const = 0;
+        virtual IPlugin *getPlugin() const = 0;
 
-    protected:
-        ~IProxiedNative() = default;
+        /**
+         * @brief Notifies adapter about executed native.
+         *
+         * @param plugin    Plugin which has executed the native.
+         *
+         * @return          Native result.
+         */
+        virtual std::int32_t exec(IPlugin *plugin) = 0;
+
+        virtual ~IProxiedNative() = default;
     };
 
     class INativeProxy : public ISPModInterface
@@ -64,7 +72,7 @@ namespace SPMod
          *
          * @return          Interface's name.
          */
-        const char *getName() const override
+        std::string_view getName() const override
         {
             return "INativeProxy";
         }
@@ -90,32 +98,23 @@ namespace SPMod
          *
          * @return          True if registration succeed, false otherwise.
          */
-        virtual bool registerNative(const char *name, void *data, const IPlugin *plugin) = 0;
+        virtual bool registerNative(std::string_view name, std::any data, IPlugin *plugin) = 0;
 
         /**
-         * @brief Notifies extension about executed native.
-         *
-         * @param native    Executed native.
-         * @param plugin    Plugin which has executed the native.
-         *
-         * @return          Native result.
-         */
-        virtual int nativeExecNotify(const IProxiedNative *native, const IPlugin *const plugin) const = 0;
-
-        /**
-         * @brief Gets proxied native.
+         * @brief Gets list of proxied natives.
          *
          * @param native    Native's id.
          *
          * @return          Proxied native or nullptr if invalid id.
          */
-        virtual const IProxiedNative *getProxiedNative(std::size_t id) const = 0;
+        std::vector<IProxiedNative *> getProxiedNatives() const
+        {
+            return getProxiedNativesImpl();
+        }
 
-        /**
-         * @brief Returns number of proxied natives.
-         *
-         * @return          Number of natives.
-         */
-        virtual std::size_t getNativesNum() const = 0;
+        virtual ~INativeProxy() = default;
+
+    protected:
+        virtual std::vector<IProxiedNative *> getProxiedNativesImpl() const = 0;
     };
 } // namespace SPMod

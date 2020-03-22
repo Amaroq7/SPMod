@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2019 SPMod Development Team
+ *  Copyright (C) 2019-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -21,6 +21,21 @@
 
 namespace SPMod
 {
+    enum class MessageDest : std::uint8_t
+    {
+        BROADCAST = 0,      // unreliable to all
+        ONE = 1,            // reliable to one (msg_entity)
+        ALL = 2,            // reliable to all
+        INIT = 3,           // write to the init string
+        PVS = 4,            // Ents in PVS of org
+        PAS = 5,            // Ents in PAS of org
+        PVS_R = 6,          // Reliable to PVS
+        PAS_R = 7,          // Reliable to PAS
+        ONE_UNRELIABLE = 8, // Send to one client, but don't put in reliable stream, put in unreliable datagram (
+                            // could be dropped )
+        SPEC = 9,           // Sends to all spectator proxies
+    };
+
     class IEngineFuncs : public ISPModInterface
     {
     public:
@@ -33,7 +48,7 @@ namespace SPMod
          *
          * @return        Interface's name.
          */
-        const char *getName() const override
+        std::string_view getName() const override
         {
             return "IEngineFuncs";
         }
@@ -57,14 +72,14 @@ namespace SPMod
          *
          * @return Command's argument.
          */
-        virtual const char *getArg(int arg) const = 0;
+        virtual std::string_view getArg(std::uint32_t arg) const = 0;
 
         /**
          * @brief Returns current command's arguments.
          *
          * @return Command's arguments.
          */
-        virtual const char *getArgs() const = 0;
+        virtual std::string_view getArgs() const = 0;
 
         /**
          * @brief Returns current command's arguments count.
@@ -73,7 +88,7 @@ namespace SPMod
          *
          * @return Command's arguments count.
          */
-        virtual int getArgc() const = 0;
+        virtual std::uint32_t getArgc() const = 0;
 
         /**
          * @brief Prints message to server's console.
@@ -82,7 +97,7 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void serverPrint(const char *msg) const = 0;
+        virtual void serverPrint(std::string_view msg) const = 0;
 
         /**
          * @brief Precaches model.
@@ -91,7 +106,7 @@ namespace SPMod
          *
          * @return Precached model's index.
          */
-        virtual int precacheModel(const char *model) const = 0;
+        virtual std::uint32_t precacheModel(std::string_view model) const = 0;
 
         /**
          * @brief Precaches sound.
@@ -100,7 +115,7 @@ namespace SPMod
          *
          * @return Precached sound's index.
          */
-        virtual int precacheSound(const char *sound) const = 0;
+        virtual std::uint32_t precacheSound(std::string_view sound) const = 0;
 
         /**
          * @brief Precaches generic resource.
@@ -109,7 +124,7 @@ namespace SPMod
          *
          * @return Precached generic resource's index.
          */
-        virtual int precacheGeneric(const char *generic) const = 0;
+        virtual std::uint32_t precacheGeneric(std::string_view generic) const = 0;
 
         /**
          * @brief Changes level.
@@ -118,7 +133,7 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void changeLevel(const char *level) const = 0;
+        virtual void changeLevel(std::string_view level) const = 0;
 
         /**
          * @brief Executes server's command.
@@ -129,7 +144,7 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void serverCommand(const char *cmd) const = 0;
+        virtual void serverCommand(std::string_view cmd) const = 0;
 
         /**
          * @brief Executes previously buffered server's command.
@@ -145,22 +160,23 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void registerSrvCommand(const char *cmd) const = 0;
+        virtual void registerSrvCommand(std::string_view cmd) const = 0;
 
         // TODO: Describe funcs
-        virtual void
-            messageBegin(int msgDest, int msgType, const float *pOrigin = nullptr, IEdict *pEdict = nullptr) const = 0;
+        virtual void messageBegin(MessageDest msgDest,
+                                  std::uint32_t msgType,
+                                  const float *pOrigin = nullptr,
+                                  IEdict *pEdict = nullptr) const = 0;
         virtual void messageEnd() const = 0;
-        virtual void writeByte(int byteArg) const = 0;
-        virtual void writeChar(int charArg) const = 0;
-        virtual void writeShort(int shortArg) const = 0;
-        virtual void writeLong(int longArg) const = 0;
-        virtual void writeEntity(int entArg) const = 0;
+        virtual void writeByte(std::int32_t byteArg) const = 0;
+        virtual void writeChar(std::int32_t charArg) const = 0;
+        virtual void writeShort(std::int32_t shortArg) const = 0;
+        virtual void writeLong(std::int32_t longArg) const = 0;
+        virtual void writeEntity(std::int32_t entArg) const = 0;
         virtual void writeAngle(float angleArg) const = 0;
         virtual void writeCoord(float coordArg) const = 0;
-        virtual void writeString(const char *strArg) const = 0;
+        virtual void writeString(std::string_view strArg) const = 0;
 
-    protected:
         virtual ~IEngineFuncs() = default;
     };
 
@@ -176,7 +192,7 @@ namespace SPMod
          *
          * @return        Interface's name.
          */
-        const char *getName() const override
+        std::string_view getName() const override
         {
             return "IEngineFuncsHooked";
         }
@@ -200,14 +216,14 @@ namespace SPMod
          *
          * @return Command's argument.
          */
-        virtual const char *getArg(int arg) const = 0;
+        virtual std::string_view getArg(std::uint32_t arg) const = 0;
 
         /**
          * @brief Returns current command's arguments.
          *
          * @return Command's arguments.
          */
-        virtual const char *getArgs() const = 0;
+        virtual std::string_view getArgs() const = 0;
 
         /**
          * @brief Returns current command's arguments count.
@@ -216,7 +232,7 @@ namespace SPMod
          *
          * @return Command's arguments count.
          */
-        virtual int getArgc() const = 0;
+        virtual std::uint32_t getArgc() const = 0;
 
         /**
          * @brief Prints message to server's console.
@@ -225,7 +241,7 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void serverPrint(const char *msg) const = 0;
+        virtual void serverPrint(std::string_view msg) const = 0;
 
         /**
          * @brief Precaches model.
@@ -234,7 +250,7 @@ namespace SPMod
          *
          * @return Precached model's index.
          */
-        virtual int precacheModel(const char *model) const = 0;
+        virtual std::uint32_t precacheModel(std::string_view model) const = 0;
 
         /**
          * @brief Precaches sound.
@@ -243,7 +259,7 @@ namespace SPMod
          *
          * @return Precached sound's index.
          */
-        virtual int precacheSound(const char *sound) const = 0;
+        virtual std::uint32_t precacheSound(std::string_view sound) const = 0;
 
         /**
          * @brief Precaches generic resource.
@@ -252,7 +268,7 @@ namespace SPMod
          *
          * @return Precached generic resource's index.
          */
-        virtual int precacheGeneric(const char *generic) const = 0;
+        virtual std::uint32_t precacheGeneric(std::string_view generic) const = 0;
 
         /**
          * @brief Changes level.
@@ -261,7 +277,7 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void changeLevel(const char *level) const = 0;
+        virtual void changeLevel(std::string_view level) const = 0;
 
         /**
          * @brief Buffers server's command.
@@ -272,7 +288,7 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void serverCommand(const char *cmd) const = 0;
+        virtual void serverCommand(std::string_view cmd) const = 0;
 
         /**
          * @brief Executes previously buffered server's command.
@@ -288,22 +304,23 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void registerSrvCommand(const char *cmd) const = 0;
+        virtual void registerSrvCommand(std::string_view cmd) const = 0;
 
         // TODO: Describe funcs
-        virtual void
-            messageBegin(int msgDest, int msgType, const float *pOrigin = nullptr, IEdict *pEdict = nullptr) const = 0;
+        virtual void messageBegin(MessageDest msgDest,
+                                  std::uint32_t msgType,
+                                  const float *pOrigin = nullptr,
+                                  IEdict *pEdict = nullptr) const = 0;
         virtual void messageEnd() const = 0;
-        virtual void writeByte(int byteArg) const = 0;
-        virtual void writeChar(int charArg) const = 0;
-        virtual void writeShort(int shortArg) const = 0;
-        virtual void writeLong(int longArg) const = 0;
-        virtual void writeEntity(int entArg) const = 0;
+        virtual void writeByte(std::int32_t byteArg) const = 0;
+        virtual void writeChar(std::int32_t charArg) const = 0;
+        virtual void writeShort(std::int32_t shortArg) const = 0;
+        virtual void writeLong(std::int32_t longArg) const = 0;
+        virtual void writeEntity(std::int32_t entArg) const = 0;
         virtual void writeAngle(float angleArg) const = 0;
         virtual void writeCoord(float coordArg) const = 0;
-        virtual void writeString(const char *strArg) const = 0;
+        virtual void writeString(std::string_view strArg) const = 0;
 
-    protected:
         virtual ~IEngineFuncsHooked() = default;
     };
 
@@ -319,7 +336,7 @@ namespace SPMod
          *
          * @return        Interface's name.
          */
-        const char *getName() const override
+        std::string_view getName() const override
         {
             return "IEngineGlobals";
         }
@@ -343,9 +360,8 @@ namespace SPMod
          */
         virtual float getTime() const = 0;
 
-        virtual const char *getMapName() const = 0;
+        virtual std::string_view getMapName() const = 0;
 
-    protected:
         virtual ~IEngineGlobals() = default;
     };
 } // namespace SPMod

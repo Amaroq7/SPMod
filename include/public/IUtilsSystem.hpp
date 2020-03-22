@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,13 +8,13 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -33,7 +33,7 @@ namespace SPMod
          *
          * @return        Interface's name.
          */
-        const char *getName() const override
+        std::string_view getName() const override
         {
             return "IUtils";
         }
@@ -61,7 +61,7 @@ namespace SPMod
          *
          * @return          Written chars to buffer.
          */
-        virtual std::size_t strCopy(char *buffer, std::size_t size, const char *src) const = 0;
+        virtual std::size_t strCopy(char *buffer, std::size_t size, std::string_view src) const = 0;
 
         /**
          * @brief Creates new string with replaced part.
@@ -74,10 +74,8 @@ namespace SPMod
          *
          * @return          Written chars to buffer.
          */
-        virtual std::size_t
-            strReplaced(char *buffer, std::size_t size, const char *source, const char *from, const char *to) const = 0;
+        virtual std::string strReplaced(std::string_view source, std::string_view from, std::string_view to) const = 0;
 
-    protected:
         virtual ~IUtils() = default;
     };
 } // namespace SPMod

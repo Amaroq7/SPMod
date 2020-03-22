@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,18 +8,16 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
-
-#include <type_traits>
 
 namespace SPMod
 {
@@ -60,8 +58,9 @@ namespace SPMod
             Binary = (1 << 2)
         };
 
-        struct Param
+        class IParam
         {
+        public:
             /*
              * Param types
              */
@@ -75,12 +74,25 @@ namespace SPMod
                 String = (1 << 4)
             };
 
-            void *m_data;
-            std::size_t m_size;        /* Array or string length */
-            bool m_copyback;           /* True if data is meant to be overwritten */
-            StringFlags m_stringFlags; /* String flags */
-            Type m_dataType;
+            virtual std::any getData() const = 0;
+            virtual bool shouldCopyback() const = 0;
+            virtual StringFlags getStringFlags() const = 0;
+            virtual Type getDataType() const = 0;
+            virtual std::size_t getDataSize() const = 0;
+
+            virtual ~IParam() = default;
         };
+
+        /**
+         * @brief Callback gets executed when forward is being executed.
+         *
+         * @param fwd      Forward that is being executed.
+         * @param result   Result of executing where it should be written to.
+         * @param stop     Should be set to true if further callbacks should not be called. (multi forward only)
+         *
+         * @noreturn
+         */
+        using Callback = std::function<void(IForward *const fwd, std::int32_t &result, bool &stop)>;
 
         /*
          * Predefined values that can be returned by plugins
@@ -102,7 +114,7 @@ namespace SPMod
          *
          * @return      Null-terminated name.
          */
-        virtual const char *getName() const = 0;
+        virtual std::string_view getName() const = 0;
 
         /*
          * @brief Returns plugin which the forward will be executed in.
@@ -125,23 +137,19 @@ namespace SPMod
          *
          * @return      Param.
          */
-        virtual const Param *getParam(std::size_t id) const = 0;
-
-        /*
-         * @brief Returns params num.
-         *
-         * @return      Param num.
-         */
-        virtual std::size_t getParamsNum() const = 0;
+        std::array<IParam *, MAX_EXEC_PARAMS> getParams() const
+        {
+            return getParamsImpl();
+        }
 
         /*
          * @brief Pushes int to the current call.
          *
-         * @param int     Integer to pass.
+         * @param integer Integer to pass.
          *
          * @return        True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushInt(int integer) = 0;
+        virtual bool pushInt(std::int32_t integer) = 0;
 
         /*
          * @brief Pushes integer pointer to the current call.
@@ -151,7 +159,7 @@ namespace SPMod
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushInt(int *integer, bool copyback) = 0;
+        virtual bool pushInt(std::int32_t *integer, bool copyback) = 0;
 
         /*
          * @brief Pushes real to the current call.
@@ -181,7 +189,7 @@ namespace SPMod
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushArray(void *array, std::size_t size, bool copyback) = 0;
+        virtual bool pushArray(std::variant<std::int32_t *, float *> array, std::size_t size, bool copyback) = 0;
 
         /*
          * @brief Pushes string to the current call.
@@ -190,19 +198,19 @@ namespace SPMod
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushString(const char *string) = 0;
+        virtual bool pushString(std::string_view string) = 0;
 
         /*
          * @brief Pushes string to the current call.
          *
-         * @param string    String to pass.
-         * @param length    Length of the string.
+         * @param buffer    String to pass.
+         * @param size      Size of the string.
          * @param sflags    String flags.
          * @param copyback  True if copy back value, false to not.
          *
          * @return          True if succeed, false if parameter type is wrong.
          */
-        virtual bool pushString(char *buffer, std::size_t length, StringFlags sflags, bool copyback) = 0;
+        virtual bool pushString(char *buffer, std::size_t size, StringFlags sflags, bool copyback) = 0;
 
         /*
          * @brief Pushes string to the current call.
@@ -214,7 +222,7 @@ namespace SPMod
          *
          * @return          True if succeed, false if execution failed.
          */
-        virtual bool execFunc(int *result) = 0;
+        virtual bool execFunc(std::int32_t *result) = 0;
 
         /*
          * @brief Resets params already pushed to forward.
@@ -223,20 +231,11 @@ namespace SPMod
          */
         virtual void resetParams() = 0;
 
-    protected:
         virtual ~IForward() = default;
-    };
 
-    /**
-     * @brief Callback gets executed when forward is being executed.
-     *
-     * @param fwd      Forward that is being executed.
-     * @param result   Result of executing where it should be written to.
-     * @param stop     Should be set to true if further callbacks should not be called. (multi forward only)
-     *
-     * @noreturn
-     */
-    using ForwardCallback = void (*)(const IForward *const fwd, int *result, bool *stop);
+    protected:
+        virtual std::array<IParam *, MAX_EXEC_PARAMS> getParamsImpl() const = 0;
+    };
 
     class IForwardMngr : public ISPModInterface
     {
@@ -250,7 +249,7 @@ namespace SPMod
          *
          * @return        Interface's name.
          */
-        const char *getName() const override
+        std::string_view getName() const override
         {
             return "IForwardMngr";
         }
@@ -275,15 +274,16 @@ namespace SPMod
          *
          * @param name      Name of the forward.
          * @param exec      Exec type.
-         * @param paramsnum Number of parameters, cannot exceed MAX_EXEC_PARAMS.
          * @param params    Types of parameters (IForward::Param::Type).
          *
          * @return          Forward pointer, nullptr if failed.
          */
-        virtual IForward *createForward(const char *name,
-                                        IForward::ExecType exec,
-                                        std::size_t paramsnum,
-                                        IForward::Param::Type *params) = 0;
+        IForward *createForward(std::string_view name,
+                                IForward::ExecType exec = IForward::ExecType::Ignore,
+                                std::array<IForward::IParam::Type, IForward::MAX_EXEC_PARAMS> params = {})
+        {
+            return createForward(name, exec, params, nullptr);
+        }
 
         /*
          * @brief Creates forward.
@@ -293,13 +293,34 @@ namespace SPMod
          *
          * @param name      Name of the forward.
          * @param plugin    Plugin which the forward will be executed in.
-         * @param paramsnum Number of parameters, cannot exceed 32.
          * @param params    Types of parameters (IForward::Param::Type).
          *
          * @return          Forward pointer, nullptr if failed.
          */
-        virtual IForward *
-            createForward(const char *name, IPlugin *plugin, std::size_t paramsnum, IForward::Param::Type *params) = 0;
+        IForward *createForward(std::string_view name,
+                                IPlugin *plugin,
+                                std::array<IForward::IParam::Type, IForward::MAX_EXEC_PARAMS> params)
+        {
+            return createForward(name, IForward::ExecType::Ignore, params, plugin);
+        }
+
+        /*
+         * @brief Creates forward.
+         *
+         * @note  Name of the forward is also the name of function
+         *        that will be executed in a plugin.
+         *
+         * @param name      Name of the forward.
+         * @param exec      Exec type.
+         * @param plugin    Plugin which the forward will be executed in.
+         * @param params    Types of parameters (IForward::Param::Type).
+         *
+         * @return          Forward pointer, nullptr if failed.
+         */
+        virtual IForward *createForward(std::string_view name,
+                                        IForward::ExecType exec,
+                                        std::array<IForward::IParam::Type, IForward::MAX_EXEC_PARAMS> params,
+                                        IPlugin *plugin) = 0;
 
         /*
          * @brief Deletes forward.
@@ -310,7 +331,7 @@ namespace SPMod
          *
          * @return          True if forward has been successfully deleted, false otherwise.
          */
-        virtual bool deleteForward(IForward *forward) = 0;
+        virtual bool deleteForward(const IForward *forward) = 0;
 
         /*
          * @brief Adds listener.
@@ -319,9 +340,8 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void addForwardListener(ForwardCallback func) = 0;
+        virtual void addForwardListener(IForward::Callback func) = 0;
 
-    protected:
         virtual ~IForwardMngr() = default;
     };
 

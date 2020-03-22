@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -86,9 +86,9 @@ static cell_t NativeRegister(SourcePawn::IPluginContext *ctx, const cell_t *para
 {
     char *nativeName;
     ctx->LocalToString(params[1], &nativeName);
-    std::shared_ptr<SPExt::Plugin> plugin = gModuleInterface->getPluginMngrCore()->getPluginCore(ctx);
+    SPExt::Plugin *plugin = gAdapterInterface->getPluginMngr()->getPlugin(ctx);
 
-    return gSPGlobal->getNativeProxy()->registerNative(nativeName, ctx->GetFunctionById(params[2]), plugin.get());
+    return gSPGlobal->getNativeProxy()->registerNative(nativeName, ctx->GetFunctionById(params[2]), plugin);
 }
 
 // native int NativeGetInt(int param)
@@ -439,7 +439,7 @@ static cell_t GetMapName(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *plOutput;
     ctx->LocalToString(params[arg_buffer], &plOutput);
 
-    const char *mapName = gSPGlobal->getEngineGlobals()->getMapName();
+    std::string_view mapName = gSPGlobal->getEngineGlobals()->getMapName();
 
     return static_cast<cell_t>(gSPGlobal->getUtils()->strCopy(plOutput, params[arg_size], mapName));
 }

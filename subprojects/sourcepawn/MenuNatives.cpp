@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -122,9 +122,8 @@ static cell_t MenuAddItem(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *name;
     ctx->LocalToString(params[arg_name], &name);
 
-    SPMod::IMenu::IItem *item =
-        pMenu->appendItem(name, SPExt::Listener::MenuItemCallback, ctx->GetFunctionById(params[arg_callback]),
-                          const_cast<cell_t *>(&params[arg_data]));
+    SPMod::IMenu::IItem *item = pMenu->appendItem(name, SPExt::Listener::MenuItemCallback,
+                                                  ctx->GetFunctionById(params[arg_callback]), params[arg_data]);
 
     if (!item)
         return 0;
@@ -168,7 +167,7 @@ static cell_t MenuAddStaticItem(SourcePawn::IPluginContext *ctx, const cell_t *p
     ctx->LocalToString(params[arg_name], &name);
 
     pMenu->setStaticItem(static_cast<size_t>(params[arg_position]), name, SPExt::Listener::MenuItemCallback,
-                         ctx->GetFunctionById(params[arg_callback]), const_cast<cell_t *>(&params[arg_data]));
+                         ctx->GetFunctionById(params[arg_callback]), params[arg_data]);
 
     return 1;
 }
@@ -209,7 +208,7 @@ static cell_t MenuInsertItem(SourcePawn::IPluginContext *ctx, const cell_t *para
     ctx->LocalToString(params[arg_name], &name);
 
     pMenu->insertItem(static_cast<size_t>(params[arg_position]), name, SPExt::Listener::MenuItemCallback,
-                      ctx->GetFunctionById(params[arg_callback]), const_cast<cell_t *>(&params[arg_data]));
+                      ctx->GetFunctionById(params[arg_callback]), params[arg_data]);
 
     return 1;
 }
@@ -720,7 +719,7 @@ static cell_t MenuItemSetData(SourcePawn::IPluginContext *ctx, const cell_t *par
 
     SPMod::IMenu::IItem *pItem = pMenu->getItem(itemId);
 
-    pItem->setData(const_cast<cell_t *>(&params[arg_data]));
+    pItem->setData(params[arg_data]);
 
     return 1;
 }
@@ -764,7 +763,7 @@ static cell_t MenuItemGetData(SourcePawn::IPluginContext *ctx, const cell_t *par
 
     SPMod::IMenu::IItem *pItem = pMenu->getItem(itemId);
 
-    return *static_cast<cell_t *>(pItem->getData());
+    return std::any_cast<cell_t>(pItem->getData());
 }
 
 sp_nativeinfo_t gMenuNatives[] = {{"Menu.Menu", MenuCreate},

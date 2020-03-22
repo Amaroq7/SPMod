@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,20 +8,59 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
 
 #include "spmod.hpp"
 
-class Timer;
+class Timer final : public ITimer
+{
+public:
+    Timer() = delete;
+    Timer(const Timer &other) = delete;
+    Timer(Timer &&other) = default;
+    ~Timer() = default;
+
+    Timer(float interval, Callback func, std::any cbData, std::any data, bool pause);
+
+    // ITimer
+    float getInterval() const override;
+    bool isPaused() const override;
+    void setInterval(float newint) override;
+    void setPause(bool pause) override;
+    std::any getData() const override;
+    bool exec() override;
+
+    // Timer
+    float getLastExecTime() const;
+
+private:
+    /* interval */
+    float m_interval;
+
+    /* callback */
+    Callback m_callback;
+
+    /* callback data */
+    std::any m_cbData;
+
+    /* plugin data */
+    std::any m_data;
+
+    /* Pause state */
+    bool m_paused;
+
+    /* last execution */
+    float m_lastExec;
+};
 
 class TimerMngr final : public ITimerMngr
 {
@@ -29,66 +68,19 @@ public:
     TimerMngr() = default;
     ~TimerMngr() = default;
 
-    template<typename... Args>
-    std::shared_ptr<Timer> createTimerCore(Args... args)
-    {
-        return m_timers.emplace_back(std::make_shared<Timer>(std::forward<Args>(args)...));
-    }
+    Timer *createTimer(float interval,
+                       Timer::Callback callback,
+                       std::any cbData,
+                       std::any data,
+                       bool pause = false) override;
+    void removeTimer(const ITimer *timer) override;
 
-    ITimer *createTimer(float interval, TimerCallback callback, void *cbData, void *data, bool pause) override;
-
-    void removeTimer(ITimer *timer) override;
-    void execTimer(ITimer *timer) override;
-    void execTimers(float time);
+    void execTimers(float execTime);
     void clearTimers();
-    void execTimerCore(std::shared_ptr<Timer> timer);
-    void removeTimerCore(std::shared_ptr<Timer> timer);
 
     /* next execution of timers */
     static inline float m_nextExecution;
 
 private:
-    std::vector<std::shared_ptr<Timer>> m_timers;
-};
-
-class Timer final : public ITimer
-{
-    friend void TimerMngr::execTimer(ITimer *timer);
-    friend void TimerMngr::execTimerCore(std::shared_ptr<Timer> timer);
-    friend void TimerMngr::execTimers(float time);
-
-public:
-    Timer() = delete;
-    Timer(const Timer &other) = delete;
-    Timer(Timer &&other) = default;
-    ~Timer() = default;
-
-    Timer(float interval, TimerCallback func, void *cbData, void *data, bool pause);
-
-    float getInterval() const override;
-    bool isPaused() const override;
-    void setInterval(float newint) override;
-    void setPause(bool pause) override;
-    void *getData() const override;
-
-private:
-    bool exec(float time);
-
-    /* interval */
-    float m_interval;
-
-    /* callback */
-    TimerCallback m_callback;
-
-    /* callback data */
-    void *m_cbData;
-
-    /* plugin data */
-    void *m_data;
-
-    /* Pause state */
-    bool m_paused;
-
-    /* last execution */
-    float m_lastExec;
+    std::vector<std::unique_ptr<Timer>> m_timers;
 };

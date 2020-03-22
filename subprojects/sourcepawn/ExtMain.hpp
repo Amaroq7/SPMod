@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -20,23 +20,6 @@
 #pragma once
 
 #include <ISPGlobal.hpp>
-
-#if __has_include(<filesystem>)
-    #include <filesystem>
-    // As of GCC 8.1, Clang 7 and MSVC 2019 filesystem is no longer part of experimental
-    #if (defined SP_GCC && __GNUC__ >= 8) || (defined SP_CLANG && __clang_major__ >= 7) ||                             \
-        (defined SP_MSVC && _MSC_VER >= 1920)
-namespace fs = std::filesystem;
-    #else // Some compilers still have filesystem within experimental namespace like MSVC 2017
-namespace fs = std::experimental::filesystem;
-    #endif
-#elif __has_include(<experimental/filesystem>)
-    #include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-    #error Filesystem header missing
-#endif
-
 #include <unordered_map>
 #include <array>
 #include <vector>
@@ -48,12 +31,12 @@ namespace fs = std::experimental::filesystem;
 #include "SourcePawnAPI.hpp"
 #include "DebugListener.hpp"
 #include "PluginSystem.hpp"
-#include "ModuleInterface.hpp"
+#include "AdapterInterface.hpp"
 #include "TypeHandler.hpp"
 #include "PrintfImpl.hpp"
 #include "Listeners.hpp"
 
-extern std::unique_ptr<SPExt::ModuleInterface> gModuleInterface;
+extern std::unique_ptr<SPExt::AdapterInterface> gAdapterInterface;
 extern SPMod::ISPGlobal *gSPGlobal;
 extern std::unique_ptr<SourcePawnAPI> gSPAPI;
 
@@ -85,6 +68,8 @@ constexpr void menuUnpackItem(std::size_t index, cell_t &menuid, cell_t &itemid)
     menuid = index >> 16;
     itemid = index & 0xFFFF;
 }
+
+constexpr const char *gSPExtLoggerName = "SPExt";
 
 // Natives
 extern sp_nativeinfo_t gCmdsNatives[];

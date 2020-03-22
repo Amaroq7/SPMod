@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,13 +8,13 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "spmod.hpp"
@@ -27,12 +27,10 @@ IRehldsServerData *gRehldsServerData;
 
 static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain, IGameClient *client, bool crash, const char *string)
 {
-    using def = ForwardMngr::FwdDefault;
+    PlayerMngr *plrMngr = gSPGlobal->getPlayerManager();
+    Player *plr = plrMngr->getPlayer(client->GetEdict());
 
-    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
-    std::shared_ptr<Player> plr = plrMngr->getPlayerCore(client->GetEdict());
-
-    std::shared_ptr<Forward> forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientDisconnect);
+    Forward *forward = gSPGlobal->getForwardManager()->getForward(ForwardMngr::FWD_PLAYER_DISCONNECT);
     forward->pushInt(plr->getIndex());
     forward->pushInt(crash);
     forward->pushString(string);
@@ -45,7 +43,7 @@ static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain, IGameClient *cli
     PlayerMngr::m_playersNum--;
     plr->disconnect();
 
-    forward = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientDisconnectPost);
+    forward = gSPGlobal->getForwardManager()->getForward(ForwardMngr::FWD_PLAYER_DISCONNECTED);
     forward->pushInt(plr->getIndex());
     forward->pushInt(crash);
     forward->pushString(string);
@@ -54,9 +52,16 @@ static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain, IGameClient *cli
 
 static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain, cvar_t *cvar, const char *value)
 {
-    auto cachedCvar = gSPGlobal->getCvarManagerCore()->findCvarCore(cvar->name, true);
+    auto cachedCvar = gSPGlobal->getCvarManager()->getCvar(cvar->name);
+
+    if (!cachedCvar)
+    {
+        chain->callNext(cvar, value);
+        return;
+    }
+
     // If cached cvar is the same, do not update cached value
-    if (cachedCvar && cachedCvar->asStringCore().compare(value))
+    if (cachedCvar && cachedCvar->asString() == value)
     {
         cachedCvar->setValue(value);
     }
@@ -83,7 +88,7 @@ static bool _initRehldsApi(CSysModule *module, std::string *error = nullptr)
         return false;
     }
 
-    int retCode = 0;
+    std::int32_t retCode = 0;
     gRehldsApi = reinterpret_cast<IRehldsApi *>(ifaceFactory(VREHLDS_HLDS_API_VERSION, &retCode));
     if (!gRehldsApi)
     {
@@ -141,7 +146,7 @@ bool initRehldsApi()
     CSysModule *engineModule = Sys_LoadModule("engine_i486.so");
     if (!_initRehldsApi(engineModule, &errorMsg))
     {
-        gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD")->logToBothCore(LogLevel::Error, errorMsg.c_str());
+        gSPGlobal->getLoggerManager()->getLogger(gSPModLoggerName)->logToBoth(LogLevel::Error, errorMsg);
         return false;
     }
 #else
@@ -151,7 +156,7 @@ bool initRehldsApi()
         engineModule = Sys_LoadModule("filesystem_stdio.dll");
         if (!_initRehldsApi(engineModule, &errorMsg))
         {
-            gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD")->logToBothCore(LogLevel::Error, errorMsg.c_str());
+            gSPGlobal->getLoggerManager()->getLogger(gSPModLoggerName)->logToBoth(LogLevel::Error, errorMsg);
             return false;
         }
     }

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,16 +8,17 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "spmod.hpp"
+#include "CompilationUtils.hpp"
 
 meta_globals_t *gpMetaGlobals;
 gamedll_funcs_t *gpGamedllFuncs;
@@ -25,15 +26,9 @@ mutil_funcs_t *gpMetaUtilFuncs;
 
 enginefuncs_t *gpEngineFuncs;
 
-plugin_info_t Plugin_info = {META_INTERFACE_VERSION,
-                             "SPMod",
-                             gSPModVersion,
-                             __DATE__,
-                             gSPModAuthor,
-                             "https://github.com/Amaroq7/SPMod",
-                             "SPMOD",
-                             PT_STARTUP,
-                             PT_ANYTIME};
+plugin_info_t Plugin_info = {
+    META_INTERFACE_VERSION, "SPMod",    gSPModVersion, __DATE__, gSPModAuthor, "https://github.com/Amaroq7/SPMod",
+    gSPModLoggerName,       PT_STARTUP, PT_ANYTIME};
 
 C_DLLEXPORT int
     Meta_Query(char *interfaceVersion [[maybe_unused]], plugin_info_t **plinfo, mutil_funcs_t *pMetaUtilFuncs)
@@ -68,24 +63,34 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
     catch (const std::exception &e)
     {
         // Failed to initialize gSPGlobal, we gotta use this util func
-        LOG_CONSOLE(PLID, "[SPMOD] %s", e.what());
+        LOG_ERROR(PLID, "%s[%s] %s%s%s", CNSL_BOLD, gSPModLoggerName, CNSL_RED, e.what(), CNSL_RESET);
         return 0;
     }
 
-    std::shared_ptr<Logger> logger = gSPGlobal->getLoggerManagerCore()->getLoggerCore("SPMOD");
-    logger->sendMsgToConsoleCore("\n   SPMod version ", gSPModVersion, " Copyright (c) 2018-2019 ", gSPModAuthor,
-                                 "\n   This program comes with ABSOLUTELY NO WARRANTY; for details type `spmod gpl' \
+    auto logger = gSPGlobal->getLoggerManager()->getLogger(gSPModLoggerName);
+
+    logger->sendMsgToConsoleInternal(
+        "\n   SPMod version ", gSPModVersion, " Copyright (c) 2018-", gCompilationYear, " ", gSPModAuthor,
+        "\n   This program comes with ABSOLUTELY NO WARRANTY; for details type `spmod gpl' \
 \n   This is free software, and you are welcome to redistribute it\
-\n   under certain conditions; type `spmod gpl' for details.\n\
-    \nSPMod ",
-                                 gSPModVersion, ", API ", ISPGlobal::VERSION, "\nSPMod build: ", __TIME__, " ",
-                                 __DATE__ "\nSPMod from: ", APP_COMMIT_URL, APP_COMMIT_SHA, "\n");
+\n   under certain conditions; type `spmod gpl' for details.\n");
 
     if (!initRehldsApi())
     {
-        logger->logToBothCore(LogLevel::Error, "SPMod requires to have ReHLDS installed!");
+        logger->logToBothInternal(LogLevel::Error, CNSL_RED, "SPMod requires to have ReHLDS installed");
         return 0;
     }
+
+    logger->sendMsgToConsoleInternal(CNSL_BOLD, CNSL_GREEN, "SPMod ", CNSL_BLUE, "v", gSPModVersion, CNSL_GREEN,
+                                     " has been successfully loaded.\n");
+
+    logger->sendMsgToConsoleInternal(CNSL_LBLUE, "SPMod API: ", CNSL_RESET, CNSL_LGREEN, "v", ISPGlobal::MAJOR_VERSION,
+                                     ".", ISPGlobal::MINOR_VERSION);
+    logger->sendMsgToConsoleInternal(CNSL_LBLUE, "SPMod build: ", CNSL_RESET, CNSL_LGREEN, gCompilationTime, " ",
+                                     gCompilationDate);
+    logger->sendMsgToConsoleInternal(CNSL_LBLUE, "SPMod from: ", CNSL_RESET, CNSL_LGREEN, APP_COMMIT_URL,
+                                     APP_COMMIT_SHA, '\n');
+
     GET_HOOK_TABLES(PLID, &gpEngineFuncs, nullptr, nullptr);
     memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
 
@@ -94,19 +99,17 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now [[maybe_unused]],
 
 C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now [[maybe_unused]], PL_UNLOAD_REASON reason [[maybe_unused]])
 {
-    using def = ForwardMngr::FwdDefault;
-
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    fwdMngr->getDefaultForward(def::PluginEnd)->execFunc(nullptr);
+    auto fwdMngr = gSPGlobal->getForwardManager();
+    fwdMngr->getForward(ForwardMngr::FWD_PLUGIN_END)->execFunc(nullptr);
     fwdMngr->clearForwards();
 
+    gSPGlobal->getTimerManager()->clearTimers();
+    gSPGlobal->getCommandManager()->clearCommands();
+    gSPGlobal->getCvarManager()->clearCvars();
+    gSPGlobal->getMenuManager()->clearMenus();
+    gSPGlobal->getNativeProxy()->clearNatives();
+
     gSPGlobal->unloadExts();
-
-    gSPGlobal->getTimerManagerCore()->clearTimers();
-    gSPGlobal->getCommandManagerCore()->clearCommands();
-    gSPGlobal->getCvarManagerCore()->clearCvars();
-    gSPGlobal->getMenuManagerCore()->clearMenus();
-
     uninstallRehldsHooks();
 
     return 1;

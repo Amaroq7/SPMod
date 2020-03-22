@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -23,15 +23,14 @@
 
 namespace SPExt::Listener
 {
-    void Forward(const SPMod::IForward *const fwd, int *result, bool *stop);
-    void Cvar(const SPMod::ICvar *const cvar, const char *old_value, const char *new_value);
-    void Menu(SPMod::IMenu *const menu, SPMod::IMenu::IItem *const item, SPMod::IPlayer *const player, void *data);
-    void MenuText(SPMod::IMenu *const menu, int key, SPMod::IPlayer *const player, void *data);
+    void Forward(SPMod::IForward *const fwd, int &result, bool &stop);
+    void Cvar(const SPMod::ICvar *const cvar, std::string_view old_value, std::string_view new_value);
+    void Menu(SPMod::IMenu *const menu, SPMod::IMenu::IItem *const item, SPMod::IPlayer *const player, std::any data);
+    void MenuText(SPMod::IMenu *const menu, int key, SPMod::IPlayer *const player, std::any data);
     SPMod::IMenu::IItem::Status MenuItemCallback(SPMod::IMenu *const menu,
                                                  SPMod::IMenu::IItem *const item,
                                                  SPMod::IPlayer *const player,
-                                                 void *data);
-    SPMod::IForward::ReturnValue
-        CmdCallback(SPMod::IPlayer *const player, const SPMod::ICommand *const cmd, void *data);
-    bool TimerCallback(SPMod::ITimer *const timer, void *data);
+                                                 std::any data);
+    SPMod::IForward::ReturnValue CmdCallback(SPMod::IPlayer *const player, SPMod::ICommand *const cmd, std::any data);
+    bool TimerCallback(SPMod::ITimer *const timer, std::any data);
 } // namespace SPExt::Listener

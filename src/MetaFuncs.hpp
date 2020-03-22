@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
 
  *  This file is part of SPMod.
 
@@ -27,6 +27,6 @@ public:
     MetaFuncs() = default;
     ~MetaFuncs() = default;
 
-    int getUsrMsgId(const char *msgName) const override;
-    const char *getUsrMsgName(int msgId) const override;
+    std::uint32_t getUsrMsgId(std::string_view msgName) const override;
+    std::string_view getUsrMsgName(std::uint32_t msgId) const override;
 };

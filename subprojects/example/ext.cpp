@@ -26,9 +26,9 @@ SPExtExample::Interface gInterface;
 SPMOD_API SPMod::ExtQueryValue SPMod_Query(SPMod::ISPGlobal *spmodInstance)
 {
     gSPGlobal = spmodInstance;
-    gSPGlobal->registerInterface(&gInterface);
+    gSPGlobal->registerAdapter(&gInterface);
 
-    return SPMod::ExtQueryValue::SPModExt;
+    return SPMod::ExtQueryValue::SPModAdapter;
 }
 
 SPMOD_API bool SPMod_Init()

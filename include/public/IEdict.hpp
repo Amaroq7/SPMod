@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2019 SPMod Development Team
+ *  Copyright (C) 2019-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -33,7 +33,7 @@ namespace SPMod
          *
          * @return        Interface's name.
          */
-        const char *getName() const override
+        std::string_view getName() const override
         {
             return "IEdict";
         }
@@ -55,9 +55,9 @@ namespace SPMod
          *
          * @return Edict's index.
          */
-        virtual int getIndex() const = 0;
+        virtual std::uint32_t getIndex() const = 0;
 
-        virtual const char *getClassName() const = 0;
+        virtual std::string_view getClassName() const = 0;
         virtual void getOrigin(float *origin) const = 0;
         virtual void getVelocity(float *velocity) const = 0;
         virtual void setVelocity(const float *velocity) = 0;
@@ -65,7 +65,6 @@ namespace SPMod
         virtual void setHealth(float health) = 0;
         virtual void *getPrivateData() const = 0;
 
-    protected:
         virtual ~IEdict() = default;
     };
 } // namespace SPMod

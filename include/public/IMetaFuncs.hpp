@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
 
  *  This file is part of SPMod.
 
@@ -26,23 +26,22 @@ namespace SPMod
     public:
         /**
          * @brief Returns ID of message.
-         * 
+         *
          * @param msgName          Message's name.
-         * 
+         *
          * @return ID of the message.
          */
-        virtual int getUsrMsgId(const char *msgName) const = 0;
+        virtual std::uint32_t getUsrMsgId(std::string_view msgName) const = 0;
 
         /**
          * @brief Returns message name.
-         * 
+         *
          * @param msgId         Message's id.
-         * 
+         *
          * @return Name of the message.
          */
-        virtual const char *getUsrMsgName(int msgId) const = 0;
+        virtual std::string_view getUsrMsgName(std::uint32_t msgId) const = 0;
 
-    protected:
         virtual ~IMetaFuncs() = default;
     };
-}
+} // namespace SPMod

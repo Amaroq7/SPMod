@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -19,20 +19,16 @@
 
 #include "spmod.hpp"
 
-Edict::Edict(edict_t *edict) : m_edict(edict)
-{
-}
+Edict::Edict(edict_t *edict) : m_edict(edict) {}
 
-Edict::Edict(int index) : m_edict(INDEXENT(index))
-{
-}
+Edict::Edict(std::uint32_t index) : m_edict(INDEXENT(index)) {}
 
-int Edict::getIndex() const
+std::uint32_t Edict::getIndex() const
 {
     return ENTINDEX(m_edict);
 }
 
-const char *Edict::getClassName() const
+std::string_view Edict::getClassName() const
 {
     return STRING(m_edict->v.classname);
 }

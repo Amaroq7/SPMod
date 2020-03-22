@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,91 +8,69 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "CvarSystem.hpp"
+#include "spmod.hpp"
 
-ICvar *CvarMngr::registerCvar(const char *name, const char *value, ICvar::Flags flags)
+Cvar *CvarMngr::registerCvar(std::string_view name, std::string_view value, ICvar::Flags flags)
 {
-    return registerCvarCore(name, value, flags).get();
-}
-
-std::shared_ptr<Cvar> CvarMngr::registerCvarCore(std::string_view name, std::string_view value, ICvar::Flags flags)
-{
-    if (auto cvar = findCvarCore(name, true))
+    if (Cvar *cvar = findCvar(name))
     {
         return cvar;
     }
 
-    // Not found in cache, check if already registered
-    cvar_t *pcvar = nullptr;
-    std::shared_ptr<Cvar> cvar;
-    pcvar = CVAR_GET_POINTER(name.data());
+    // Else create and register
+    cvar_t new_cvar;
+    new_cvar.name = name.data();
+    new_cvar.string = const_cast<char *>("");
+    new_cvar.flags = static_cast<int>(flags);
 
-    if (pcvar)
-    {
-        cvar = std::make_shared<Cvar>(name, pcvar->string, static_cast<ICvar::Flags>(pcvar->flags), pcvar);
-    }
-    else
-    {
-        // Else create and register
-        cvar_t new_cvar;
-        new_cvar.name = name.data();
-        new_cvar.string = const_cast<char *>("");
-        new_cvar.flags = static_cast<int>(flags);
+    CVAR_REGISTER(&new_cvar);
 
-        CVAR_REGISTER(&new_cvar);
+    // Check if really registered
+    cvar_t *pcvar = CVAR_GET_POINTER(name.data());
 
-        // Check if really registered
-        pcvar = CVAR_GET_POINTER(name.data());
-
-        if (!pcvar)
-            return nullptr;
-
-        g_engfuncs.pfnCvar_DirectSet(pcvar, value.data());
-
-        cvar = std::make_shared<Cvar>(name, value, flags, pcvar);
-    }
-
-    // Always add to cache
-    m_cvars.emplace(name, cvar);
-
-    return cvar;
-}
-
-ICvar *CvarMngr::findCvar(const char *name)
-{
-    return findCvarCore(name, false).get();
-}
-
-std::shared_ptr<Cvar> CvarMngr::findCvarCore(std::string_view name, bool cacheonly)
-{
-    auto pair = m_cvars.find(name.data());
-    if (pair != m_cvars.end())
-        return pair->second;
-
-    if (cacheonly)
+    if (!pcvar)
         return nullptr;
 
-    cvar_t *pcvar = nullptr;
-    pcvar = CVAR_GET_POINTER(name.data());
-    if (pcvar)
-    {
-        std::shared_ptr<Cvar> cvar =
-            std::make_shared<Cvar>(name, pcvar->string, static_cast<ICvar::Flags>(pcvar->flags), pcvar);
-        // Always add to cache
-        m_cvars.emplace(name, cvar);
+    g_engfuncs.pfnCvar_DirectSet(pcvar, value.data());
 
+    // Always add to cache
+    return m_cvars.emplace(name, std::make_unique<Cvar>(name, value, flags, pcvar)).first->second.get();
+}
+
+Cvar *CvarMngr::findCvar(std::string_view name)
+{
+    if (Cvar *cvar = getCvar(name); cvar)
+    {
         return cvar;
     }
+
+    // Check if really registered, if so cache it
+    if (cvar_t *pcvar = CVAR_GET_POINTER(name.data()); pcvar)
+    {
+        // Always add to cache
+        return m_cvars
+            .emplace(name, std::make_unique<Cvar>(name, pcvar->string, static_cast<Cvar::Flags>(pcvar->flags), pcvar))
+            .first->second.get();
+    }
+
     // Not found
+    return nullptr;
+}
+
+Cvar *CvarMngr::getCvar(std::string_view name)
+{
+    if (auto iter = m_cvars.find(name.data()); iter != m_cvars.end())
+        return iter->second.get();
+
     return nullptr;
 }
 
@@ -103,7 +81,7 @@ void CvarMngr::clearCvars()
 
 void CvarMngr::clearCvarsCallback()
 {
-    for (auto pair : m_cvars)
+    for (const auto &pair : m_cvars)
         pair.second->clearCallback();
 }
 
@@ -112,9 +90,9 @@ Cvar::Cvar(std::string_view name, std::string_view value, ICvar::Flags flags, cv
 {
 }
 
-const char *Cvar::getName() const
+std::string_view Cvar::getName() const
 {
-    return m_name.c_str();
+    return m_name;
 }
 
 Cvar::Flags Cvar::getFlags() const
@@ -124,17 +102,12 @@ Cvar::Flags Cvar::getFlags() const
 
 void Cvar::setValue(float val)
 {
-    setValueCore(std::to_string(val));
+    setValue(std::to_string(val));
 }
 
-void Cvar::setValue(int val)
+void Cvar::setValue(std::int32_t val)
 {
-    setValueCore(std::to_string(val));
-}
-
-void Cvar::setValue(const char *val)
-{
-    setValueCore(val);
+    setValue(std::to_string(val));
 }
 
 void Cvar::setFlags(Flags flags)
@@ -143,7 +116,7 @@ void Cvar::setFlags(Flags flags)
     m_cvar->flags = static_cast<int>(flags);
 }
 
-int Cvar::asInt() const
+std::int32_t Cvar::asInt() const
 {
     try
     {
@@ -167,35 +140,21 @@ float Cvar::asFloat() const
     }
 }
 
-const char *Cvar::asString() const
-{
-    return m_value.c_str();
-}
-
-std::string_view Cvar::asStringCore() const
+std::string_view Cvar::asString() const
 {
     return m_value;
 }
 
-std::string_view Cvar::getNameCore() const
+void Cvar::addCallback(Callback callback)
 {
-    return m_name;
+    m_callbacks.emplace_back(callback);
 }
 
-void Cvar::addCallback(CvarCallback callback)
-{
-    if (std::find(m_callbacks.begin(), m_callbacks.end(), callback) != m_callbacks.end())
-        return;
-
-    m_callbacks.push_back(callback);
-}
-
-void Cvar::runCallbacks(std::string_view old_value, std::string_view new_value)
-
+void Cvar::runCallbacks(std::string_view old_value, std::string_view new_value) const
 {
     for (auto callback : m_callbacks)
     {
-        callback(this, old_value.data(), new_value.data());
+        callback(this, old_value, new_value);
     }
 }
 
@@ -204,9 +163,9 @@ void Cvar::clearCallback()
     m_callbacks.clear();
 }
 
-void Cvar::setValueCore(std::string_view val)
+void Cvar::setValue(std::string_view val)
 {
     runCallbacks(m_value, val);
-    m_value.assign(val);
+    m_value = val;
     g_engfuncs.pfnCvar_DirectSet(m_cvar, val.data());
 }

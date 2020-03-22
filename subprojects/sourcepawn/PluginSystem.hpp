@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -27,29 +27,24 @@ namespace SPExt
 
     class Plugin final : public SPMod::IPlugin
     {
-        friend class PluginMngr;
-
     public:
         static constexpr std::uint32_t FIELD_NAME = 0;
         static constexpr std::uint32_t FIELD_VERSION = 1;
         static constexpr std::uint32_t FIELD_AUTHOR = 2;
         static constexpr std::uint32_t FIELD_URL = 3;
 
-        Plugin(std::size_t id,
-               std::string_view identity,
-               const fs::path &path,
-               const std::unique_ptr<PluginMngr> &pluginMngr);
+        Plugin(std::size_t id, std::string_view identity, const fs::path &path, PluginMngr *pluginMngr);
 
         Plugin() = delete;
         ~Plugin() = default;
 
         // IPlugin
-        const char *getName() const override;
-        const char *getVersion() const override;
-        const char *getAuthor() const override;
-        const char *getUrl() const override;
-        const char *getIdentity() const override;
-        const char *getFilename() const override;
+        std::string_view getName() const override;
+        std::string_view getVersion() const override;
+        std::string_view getAuthor() const override;
+        std::string_view getUrl() const override;
+        std::string_view getIdentity() const override;
+        std::string_view getFilename() const override;
         SPMod::IPluginMngr *getPluginMngr() const override;
         int getProxiedParamAsInt(std::size_t index) const override;
         int *getProxiedParamAsIntAddr(std::size_t index) const override;
@@ -61,19 +56,14 @@ namespace SPExt
         // Plugin
         SourcePawn::IPluginRuntime *getRuntime() const;
         std::size_t getId() const;
-        std::string_view getNameCore() const;
-        std::string_view getVersionCore() const;
-        std::string_view getAuthorCore() const;
-        std::string_view getUrlCore() const;
-        std::string_view getIdentityCore() const;
-        std::string_view getFileNameCore() const;
         void setProxyContext(SourcePawn::IPluginContext *ctx);
+        void setProxyParams(const cell_t *params);
 
     private:
         std::size_t m_id;
         std::string m_identity;
         std::string m_filename;
-        const std::unique_ptr<PluginMngr> &m_pluginMngr;
+        PluginMngr *m_pluginMngr;
         SourcePawn::IPluginRuntime *m_runtime;
         std::string m_name;
         std::string m_version;
@@ -93,12 +83,12 @@ namespace SPExt
 
         // IPluginMngr
         std::size_t getPluginsNum() const override;
-        SPMod::IPlugin *getPlugin(const char *name) override;
+        Plugin *getPlugin(std::string_view name) const override;
         void loadPlugins() override;
         void bindPluginsNatives() override;
         void unloadPlugins() override;
-        const char *getPluginsExt() const override;
-        const CUtlVector<SPMod::IPlugin *> &getPluginsList() const override;
+        std::string_view getPluginsExt() const override;
+        const std::vector<SPMod::IPlugin *> &getPluginsList() const override;
 
         // PluginMngr
         const auto &getPluginsListCore() const
@@ -108,29 +98,28 @@ namespace SPExt
 
         bool addNatives(const sp_nativeinfo_t *natives);
 
-        std::shared_ptr<Plugin> getPluginCore(std::size_t index) const;
-        std::shared_ptr<Plugin> getPluginCore(std::string_view name) const;
-        std::shared_ptr<Plugin> getPluginCore(SourcePawn::IPluginContext *ctx) const;
-        std::shared_ptr<Plugin> getPluginCore(SPMod::IPlugin *plugin) const;
+        Plugin *getPlugin(std::size_t index) const;
+        Plugin *getPlugin(SourcePawn::IPluginContext *ctx) const;
+        Plugin *getPlugin(SPMod::IPlugin *plugin) const;
 
         void clearNatives();
         void addDefaultNatives();
         SPVM_NATIVE_FUNC findNative(std::string_view name);
 
         // Proxied natives
-        int proxyNativeCallback(const SPMod::IProxiedNative *const native, const SPMod::IPlugin *const plugin) override;
-        bool addProxiedNative(std::string_view name, const SPMod::IProxiedNative *native);
+        int proxyNativeCallback(SPMod::IProxiedNative *native, SPMod::IPlugin *plugin) override;
+        bool addProxiedNative(std::string_view name, SPMod::IProxiedNative *native);
         static cell_t proxyNativeRouter(SourcePawn::IPluginContext *ctx, const cell_t *params, void *data);
 
-        static inline const SPMod::IPlugin *m_callerPlugin;
+        static inline SPMod::IPlugin *m_callerPlugin;
 
     private:
-        std::shared_ptr<Plugin> _loadPlugin(const fs::path &path, std::string &error);
+        Plugin *_loadPlugin(const fs::path &path, std::string &error);
 
         bool _addNative(std::string_view name, SPVM_NATIVE_FUNC func);
 
-        std::unordered_map<std::string, std::shared_ptr<Plugin>> m_plugins;
-        CUtlVector<SPMod::IPlugin *> m_exportedPlugins;
+        std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
+        std::vector<SPMod::IPlugin *> m_exportedPlugins;
         std::unordered_map<std::string, SPVM_NATIVE_FUNC> m_natives;
 
         // Routers to be freed on the map change

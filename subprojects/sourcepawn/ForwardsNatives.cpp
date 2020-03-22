@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -34,7 +34,7 @@ static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
     };
 
     auto execType = static_cast<SPMod::IForward::ExecType>(params[arg_exec]);
-    SPMod::IForwardMngr *fwdMngr = gSPGlobal->getForwardManager();
+    auto fwdMngr = gSPGlobal->getForwardManager();
 
     char *fwdName;
     ctx->LocalToString(params[arg_name], &fwdName);
@@ -43,12 +43,12 @@ static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
     if (fwdParamsNum > SP_MAX_EXEC_PARAMS)
         return -1;
 
-    std::array<SPMod::IForward::Param::Type, SP_MAX_EXEC_PARAMS> fwdParamsList;
+    std::array<SPMod::IForward::IParam::Type, SP_MAX_EXEC_PARAMS> fwdParamsList;
     for (std::size_t i = 0; i < fwdParamsNum; ++i)
     {
         cell_t *paramType;
         ctx->LocalToPhysAddr(params[i + arg_paramstypes], &paramType);
-        fwdParamsList.at(i) = static_cast<SPMod::IForward::Param::Type>(*paramType);
+        fwdParamsList.at(i) = static_cast<SPMod::IForward::IParam::Type>(*paramType);
     }
 
     // Created forward
@@ -71,7 +71,7 @@ static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
         SPMod::IPlugin *plugin;
         // If it's SourcePawn plugin lets find it here without involving core
         if (pluginNameExt == SPExt::PluginMngr::pluginsExtension)
-            plugin = gModuleInterface->getPluginMngrCore()->getPluginCore(pluginName).get();
+            plugin = gAdapterInterface->getPluginMngr()->getPlugin(pluginName);
         else
             plugin = gSPGlobal->getPlugin(pluginName);
 
@@ -81,10 +81,10 @@ static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
             return -1;
         }
 
-        forward = fwdMngr->createForward(fwdName, plugin, fwdParamsNum, fwdParamsList.data());
+        forward = fwdMngr->createForward(fwdName, plugin, fwdParamsList);
     }
     else
-        forward = fwdMngr->createForward(fwdName, execType, fwdParamsNum, fwdParamsList.data());
+        forward = fwdMngr->createForward(fwdName, execType, fwdParamsList);
 
     if (!forward)
     {
@@ -111,7 +111,7 @@ static cell_t PushCell(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    SPMod::IForward *forward = gForwardHandlers.get(fwdId);
+    auto forward = gForwardHandlers.get(fwdId);
     if (!forward)
     {
         ctx->ReportError("Forward not found");
@@ -137,7 +137,7 @@ static cell_t PushCellRef(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    SPMod::IForward *forward = gForwardHandlers.get(fwdId);
+    auto forward = gForwardHandlers.get(fwdId);
     if (!forward)
     {
         ctx->ReportError("Forward not found");

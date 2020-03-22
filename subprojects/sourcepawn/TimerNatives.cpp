@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -38,7 +38,7 @@ static cell_t TimerCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
     try
     {
         timer = timerMngr->createTimer(sp_ctof(params[arg_interval]), SPExt::Listener::TimerCallback, func,
-                                       const_cast<cell_t *>(&params[arg_data]), params[arg_pause]);
+                                       params[arg_data], params[arg_pause]);
     }
     catch (const std::runtime_error &e)
     {
@@ -46,8 +46,11 @@ static cell_t TimerCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return -1;
     }
 
-    if (params[arg_exec])
-        timerMngr->execTimer(timer);
+    if (params[arg_exec] && !timer->exec())
+    {
+        timerMngr->removeTimer(timer);
+        return -1;
+    }
 
     return gTimerHandlers.create(timer);
 }
@@ -138,7 +141,6 @@ static cell_t Trigger(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_id = 1
     };
 
-    SPMod::ITimerMngr *timerMngr = gSPGlobal->getTimerManager();
     SPMod::ITimer *timer = gTimerHandlers.get(params[arg_id]);
     if (!timer)
     {
@@ -146,7 +148,11 @@ static cell_t Trigger(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    timerMngr->execTimer(timer);
+    if (!timer->exec())
+    {
+        gSPGlobal->getTimerManager()->removeTimer(timer);
+        gTimerHandlers.free(params[arg_id]);
+    }
     return 1;
 }
 
@@ -159,6 +165,7 @@ static cell_t Remove(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cel
 
     SPMod::ITimerMngr *timerMngr = gSPGlobal->getTimerManager();
     timerMngr->removeTimer(gTimerHandlers.get(params[arg_id]));
+    gTimerHandlers.free(params[arg_id]);
     return 1;
 }
 

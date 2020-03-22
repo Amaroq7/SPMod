@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,13 +8,13 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "spmod.hpp"
@@ -31,43 +31,24 @@ SPGlobal::SPGlobal(fs::path &&dllDir)
       m_utils(std::make_unique<Utils>()), m_modName(GET_GAME_INFO(PLID, GINFO_NAME))
 {
     // Sets default dirs
-    setPluginsDir("plugins");
-    setLogsDir("logs");
-    setDllsDir("dlls");
-    setExtDir("exts");
+    setPath(DirType::Plugins, "plugins");
+    setPath(DirType::Logs, "logs");
+    setPath(DirType::Dlls, "dlls");
+    setPath(DirType::Exts, "exts");
 
     m_edicts.reserve(2048);
 }
 
-void SPGlobal::setPluginsDir(std::string_view folder)
-{
-    m_SPModPluginsDir = m_SPModDir / folder.data();
-}
-
-void SPGlobal::setLogsDir(std::string_view folder)
-{
-    m_SPModLogsDir = m_SPModDir / folder.data();
-}
-
-void SPGlobal::setDllsDir(std::string_view folder)
-{
-    m_SPModDllsDir = m_SPModDir / folder.data();
-}
-
-void SPGlobal::setExtDir(std::string_view folder)
-{
-    m_SPModExtsDir = m_SPModDir / folder.data();
-}
-
 std::size_t SPGlobal::loadExts()
 {
+    using namespace std::string_literals;
     std::error_code errCode;
     auto directoryIter = fs::directory_iterator(m_SPModExtsDir, errCode);
-    std::shared_ptr<Logger> logger = m_loggingSystem->getLoggerCore("SPMOD");
+    auto logger = m_loggingSystem->getLogger(gSPModLoggerName);
 
     if (errCode)
     {
-        logger->logToBothCore(LogLevel::Error, "Can't read extensions directory: ", errCode.message());
+        logger->logToBoth(LogLevel::Error, "Can't read extensions directory: " + errCode.message());
         return 0u;
     }
 
@@ -82,24 +63,24 @@ std::size_t SPGlobal::loadExts()
         }
         catch (const std::runtime_error &e)
         {
-            logger->logToBothCore(LogLevel::Error, e.what());
+            logger->logToBoth(LogLevel::Error, e.what());
             continue;
         }
 
         if (!extHandle->getQueryFunc())
         {
-            logger->logToBothCore(LogLevel::Error, "Querying problem: ", extPath.filename());
+            logger->logToBoth(LogLevel::Error, "Querying problem: " + extPath.filename().string());
             continue;
         }
 
         ExtQueryValue result = extHandle->getQueryFunc()(gSPGlobal.get());
         if (result == ExtQueryValue::DontLoad)
         {
-            logger->logToBothCore(LogLevel::Error, "Can't be loaded: ", extPath.filename());
+            logger->logToBoth(LogLevel::Error, "Can't be loaded: " + extPath.filename().string());
             continue;
         }
 
-        m_extHandles.push_back(std::move(extHandle));
+        m_extHandles.emplace_back(std::move(extHandle));
     }
 
     /* Initialize extensions */
@@ -126,8 +107,9 @@ void SPGlobal::unloadExts()
             ext->getEndFunc()();
     }
 
+    m_adaptersInterfaces.clear();
+    m_modulesInterfaces.clear();
     m_extHandles.clear();
-    m_interfaces.clear();
 }
 
 bool SPGlobal::canPluginsPrecache() const
@@ -135,18 +117,18 @@ bool SPGlobal::canPluginsPrecache() const
     return m_canPluginsPrecache;
 }
 
-IPlugin *SPGlobal::getPlugin(const char *pluginname) const
+IPlugin *SPGlobal::getPlugin(std::string_view pluginname) const
 {
-    if (strlen(pluginname) < 4)
+    if (pluginname.length() < 4)
     {
         return nullptr;
     }
 
     std::string_view pluginExt(pluginname);
     pluginExt = pluginExt.substr(pluginExt.length() - 4);
-    for (const auto &interface : m_interfaces)
+    for (const auto &interface : m_adaptersInterfaces)
     {
-        IPluginMngr *pluginMngr = interface.second->getPluginMngr();
+        auto pluginMngr = interface.second->getPluginMngr();
 
         if (pluginExt != pluginMngr->getPluginsExt())
             continue;
@@ -162,109 +144,9 @@ void SPGlobal::allowPrecacheForPlugins(bool allow)
     m_canPluginsPrecache = allow;
 }
 
-const char *SPGlobal::getPath(DirType type) const
+const fs::path &SPGlobal::getPath(DirType type) const
 {
-#if defined SP_POSIX
-    return getPathCore(type).c_str();
-#else
-    static std::string tempDir;
-    tempDir = getPathCore(type).string();
-    return tempDir.c_str();
-#endif
-}
-
-const char *SPGlobal::getModName() const
-{
-    return getModNameCore().data();
-}
-
-IForwardMngr *SPGlobal::getForwardManager() const
-{
-    return getForwardManagerCore().get();
-}
-
-ICvarMngr *SPGlobal::getCvarManager() const
-{
-    return getCvarManagerCore().get();
-}
-
-ITimerMngr *SPGlobal::getTimerManager() const
-{
-    return getTimerManagerCore().get();
-}
-
-IMenuMngr *SPGlobal::getMenuManager() const
-{
-    return getMenuManagerCore().get();
-}
-
-ILoggerMngr *SPGlobal::getLoggerManager() const
-{
-    return getLoggerManagerCore().get();
-}
-
-IPlayerMngr *SPGlobal::getPlayerManager() const
-{
-    return getPlayerManagerCore().get();
-}
-
-ICommandMngr *SPGlobal::getCommandManager() const
-{
-    return getCommandManagerCore().get();
-}
-
-IUtils *SPGlobal::getUtils() const
-{
-    return getUtilsCore().get();
-}
-
-INativeProxy *SPGlobal::getNativeProxy() const
-{
-    return getNativeProxyCore().get();
-}
-
-IEngineFuncs *SPGlobal::getEngineFuncs() const
-{
-    return m_engineFuncs.get();
-}
-
-IEngineFuncsHooked *SPGlobal::getEngineHookedFuncs() const
-{
-    return m_engineFuncsHooked.get();
-}
-
-IEngineGlobals *SPGlobal::getEngineGlobals() const
-{
-    return m_engineGlobals.get();
-}
-
-IMetaFuncs *SPGlobal::getMetaFuncs() const
-{
-    return m_metaFuncs.get();
-}
-
-IEdict *SPGlobal::getEdict(int index)
-{
-    return getEdictCore(index).get();
-}
-
-bool SPGlobal::registerInterface(IInterface *interface)
-{
-    return m_interfaces.try_emplace(interface->getName(), interface).second;
-}
-
-IInterface *SPGlobal::getInterface(const char *name) const
-{
-    if (auto iter = m_interfaces.find(name); iter != m_interfaces.end())
-        return iter->second;
-
-    return nullptr;
-}
-
-const fs::path &SPGlobal::getPathCore(DirType type) const
-{
-    static fs::path emptyPath;
-
+    static fs::path empty;
     switch (type)
     {
         case DirType::Home:
@@ -278,79 +160,153 @@ const fs::path &SPGlobal::getPathCore(DirType type) const
         case DirType::Plugins:
             return m_SPModPluginsDir;
         default:
-            return emptyPath;
+            return empty;
     }
 }
 
-std::string_view SPGlobal::getModNameCore() const
+void SPGlobal::setPath(DirType type, std::string_view path)
+{
+    switch (type)
+    {
+        case DirType::Home:
+            break;
+        case DirType::Dlls:
+        {
+            m_SPModDllsDir = m_SPModDir / path;
+            break;
+        }
+        case DirType::Exts:
+        {
+            m_SPModExtsDir = m_SPModDir / path;
+            break;
+        }
+        case DirType::Logs:
+        {
+            m_SPModLogsDir = m_SPModDir / path;
+            break;
+        }
+        case DirType::Plugins:
+        {
+            m_SPModPluginsDir = m_SPModDir / path;
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+std::string_view SPGlobal::getModName() const
 {
     return m_modName;
 }
 
-const std::unique_ptr<ForwardMngr> &SPGlobal::getForwardManagerCore() const
+ForwardMngr *SPGlobal::getForwardManager() const
 {
-    return m_forwardManager;
+    return m_forwardManager.get();
 }
 
-const std::unique_ptr<CvarMngr> &SPGlobal::getCvarManagerCore() const
+CvarMngr *SPGlobal::getCvarManager() const
 {
-    return m_cvarManager;
+    return m_cvarManager.get();
 }
 
-const std::unique_ptr<LoggerMngr> &SPGlobal::getLoggerManagerCore() const
+TimerMngr *SPGlobal::getTimerManager() const
 {
-    return m_loggingSystem;
+    return m_timerManager.get();
 }
 
-const std::unique_ptr<CommandMngr> &SPGlobal::getCommandManagerCore() const
+MenuMngr *SPGlobal::getMenuManager() const
 {
-    return m_cmdManager;
+    return m_menuManager.get();
 }
 
-const std::unique_ptr<TimerMngr> &SPGlobal::getTimerManagerCore() const
+LoggerMngr *SPGlobal::getLoggerManager() const
 {
-    return m_timerManager;
+    return m_loggingSystem.get();
 }
 
-const std::unique_ptr<Utils> &SPGlobal::getUtilsCore() const
+PlayerMngr *SPGlobal::getPlayerManager() const
 {
-    return m_utils;
+    return m_plrManager.get();
 }
 
-const std::unique_ptr<MenuMngr> &SPGlobal::getMenuManagerCore() const
+CommandMngr *SPGlobal::getCommandManager() const
 {
-    return m_menuManager;
+    return m_cmdManager.get();
 }
 
-const std::unique_ptr<PlayerMngr> &SPGlobal::getPlayerManagerCore() const
+Utils *SPGlobal::getUtils() const
 {
-    return m_plrManager;
+    return m_utils.get();
 }
 
-const std::unique_ptr<NativeProxy> &SPGlobal::getNativeProxyCore() const
+NativeProxy *SPGlobal::getNativeProxy() const
 {
-    return m_nativeProxy;
+    return m_nativeProxy.get();
 }
 
-std::shared_ptr<Edict> SPGlobal::getEdictCore(int index)
+EngineFuncs *SPGlobal::getEngineFuncs() const
+{
+    return m_engineFuncs.get();
+}
+
+EngineFuncsHooked *SPGlobal::getEngineHookedFuncs() const
+{
+    return m_engineFuncsHooked.get();
+}
+
+EngineGlobals *SPGlobal::getEngineGlobals() const
+{
+    return m_engineGlobals.get();
+}
+
+MetaFuncs *SPGlobal::getMetaFuncs() const
+{
+    return m_metaFuncs.get();
+}
+
+Edict *SPGlobal::getEdict(std::uint32_t index)
 {
     try
     {
-        return m_edicts.at(index);
+        return m_edicts.at(index).get();
     }
     catch (const std::out_of_range &e [[maybe_unused]])
     {
         // check if edict is valid and register it
         if (edict_t *edict = INDEXENT(index); edict)
         {
-            auto resultIter = m_edicts.emplace(index, std::make_shared<Edict>(index)).first;
-            return (*resultIter).second;
+            auto resultIter = m_edicts.emplace(index, std::make_unique<Edict>(index)).first;
+            return (*resultIter).second.get();
         }
         return nullptr;
     }
 }
 
+bool SPGlobal::registerAdapter(IAdapterInterface *interface)
+{
+    return m_adaptersInterfaces.try_emplace(interface->getName().data(), interface).second;
+}
+
+bool SPGlobal::registerModule(IModuleInterface *interface)
+{
+    return m_modulesInterfaces.try_emplace(interface->getName().data(), interface).second;
+}
+
+IModuleInterface *SPGlobal::getInterface(std::string_view name) const
+{
+    if (auto iter = m_modulesInterfaces.find(name.data()); iter != m_modulesInterfaces.end())
+        return iter->second;
+
+    return nullptr;
+}
+
 void SPGlobal::clearEdicts()
 {
     m_edicts.clear();
+}
+
+void SPGlobal::removeEdict(edict_t *edict)
+{
+    m_edicts.erase(ENTINDEX(edict));
 }

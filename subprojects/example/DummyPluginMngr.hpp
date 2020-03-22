@@ -26,12 +26,12 @@ namespace SPExtExample
     class Plugin final : public SPMod::IPlugin
     {
     public:
-        const char *getName() const override;
-        const char *getVersion() const override;
-        const char *getAuthor() const override;
-        const char *getUrl() const override;
-        const char *getIdentity() const override;
-        const char *getFilename() const override;
+        std::string_view getName() const override;
+        std::string_view getVersion() const override;
+        std::string_view getAuthor() const override;
+        std::string_view getUrl() const override;
+        std::string_view getIdentity() const override;
+        std::string_view getFilename() const override;
         SPMod::IPluginMngr *getPluginMngr() const override;
         int getProxiedParamAsInt(std::size_t index) const override;
         int *getProxiedParamAsIntAddr(std::size_t index) const override;
@@ -45,13 +45,13 @@ namespace SPExtExample
     {
     public:
         std::size_t getPluginsNum() const override;
-        SPMod::IPlugin *getPlugin(const char *name) override;
+        Plugin *getPlugin(std::string_view name) const override;
         void loadPlugins() override;
         void bindPluginsNatives() override;
         void unloadPlugins() override;
-        const char *getPluginsExt() const override;
-        int proxyNativeCallback(const SPMod::IProxiedNative *const native, const SPMod::IPlugin *const plugin) override;
-        const CUtlVector<SPMod::IPlugin *> &getPluginsList() const override;
+        std::string_view getPluginsExt() const override;
+        int proxyNativeCallback(SPMod::IProxiedNative *native, SPMod::IPlugin *plugin) override;
+        const std::vector<SPMod::IPlugin *> &getPluginsList() const override;
     };
 
     extern PluginMngr gPluginMngr;

@@ -24,9 +24,9 @@
 
 namespace SPExtExample
 {
-    class Interface final : public SPMod::IInterface
+    class Interface final : public SPMod::IAdapterInterface
     {
-        const char *getName() const override
+        std::string_view getName() const override
         {
             return "ISPExampleExt";
         }
@@ -36,17 +36,17 @@ namespace SPExtExample
             return 1U;
         }
 
-        const char *getAuthor() const override
+        std::string_view getAuthor() const override
         {
             return "SPMod Development Team";
         }
 
-        const char *getUrl() const override
+        std::string_view getUrl() const override
         {
             return "https://github.com/Amaroq7/SPMod";
         }
 
-        const char *getExtName() const override
+        std::string_view getExtName() const override
         {
             return "SPMod Example Module";
         }

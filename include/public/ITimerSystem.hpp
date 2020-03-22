@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,13 +8,13 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -24,6 +24,13 @@ namespace SPMod
     class ITimer
     {
     public:
+        /**
+         * @brief Timer callback
+         *
+         * @return  True to continue executing timer, false to remove.
+         */
+        using Callback = std::function<bool(ITimer *const timer, std::any data)>;
+
         /**
          * @brief Gets interval.
          *
@@ -61,18 +68,21 @@ namespace SPMod
          *
          * @return        Timer's data.
          */
-        virtual void *getData() const = 0;
+        virtual std::any getData() const = 0;
 
-    protected:
+        /**
+         * @brief Executes a timer.
+         *
+         * @note If callback returns false, timer will be removed.
+         *
+         * @param timer       Timer to be executed.
+         *
+         * @noreturn
+         */
+        virtual bool exec() = 0;
+
         virtual ~ITimer() = default;
     };
-
-    /**
-     * @brief Timer callback
-     *
-     * @return  True to continue executing timer, false to remove.
-     */
-    using TimerCallback = bool (*)(ITimer *const timer, void *data);
 
     class ITimerMngr : public ISPModInterface
     {
@@ -87,7 +97,7 @@ namespace SPMod
          *
          * @return              Interface's name.
          */
-        const char *getName() const override
+        std::string_view getName() const override
         {
             return "ITimerMngr";
         }
@@ -116,9 +126,9 @@ namespace SPMod
          * @return            Created timer.
          */
         virtual ITimer *createTimer(float interval,
-                                    TimerCallback func,
-                                    void *cbData = nullptr,
-                                    void *data = nullptr,
+                                    ITimer::Callback func,
+                                    std::any cbData = {},
+                                    std::any data = {},
                                     bool pause = false) = 0;
 
         /**
@@ -130,20 +140,8 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void removeTimer(ITimer *timer) = 0;
+        virtual void removeTimer(const ITimer *timer) = 0;
 
-        /**
-         * @brief Executes a timer.
-         *
-         * @note If callback returns false, timer will be removed.
-         *
-         * @param timer       Timer to be executed.
-         *
-         * @noreturn
-         */
-        virtual void execTimer(ITimer *timer) = 0;
-
-    protected:
         virtual ~ITimerMngr() = default;
     };
 } // namespace SPMod

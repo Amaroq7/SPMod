@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -33,24 +33,26 @@ void DebugListener::OnDebugSpew(const char *msg, ...)
 
 void DebugListener::ReportError(const SourcePawn::IErrorReport &report, SourcePawn::IFrameIterator &iter)
 {
+    using namespace std::string_literals;
+
     const char *spErrorMsg = gSPAPI->getSPEnvironment()->APIv2()->GetErrorString(report.Code());
     auto getPluginIdentity = [](SourcePawn::IPluginContext *ctx) {
         char *pluginIdentity;
         ctx->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
         return pluginIdentity;
     };
-    gSPLogger->logToBoth(SPMod::LogLevel::Error, "Run time error %i: %s", report.Code(), spErrorMsg);
-    gSPLogger->logToBoth(SPMod::LogLevel::Error, "Error: ", report.Message());
+    gSPLogger->logToBoth(SPMod::LogLevel::Error, "Run time error " + std::to_string(report.Code()) + ": " + spErrorMsg);
+    gSPLogger->logToBoth(SPMod::LogLevel::Error, "Error: "s + report.Message());
 
     if (report.Blame() || report.Context())
     {
         gSPLogger->logToBoth(SPMod::LogLevel::Error, "Blaming:");
 
         if (report.Blame())
-            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   Function: %s", report.Blame()->DebugName());
+            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   Function: "s + report.Blame()->DebugName());
 
         if (report.Context())
-            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   Plugin: %s", getPluginIdentity(report.Context()));
+            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   Plugin: "s + getPluginIdentity(report.Context()));
     }
 
     if (!iter.Done())
@@ -78,11 +80,12 @@ void DebugListener::ReportError(const SourcePawn::IErrorReport &report, SourcePa
             else
                 pluginIdentity = "???";
 
-            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   [%i] %s::%s (line %u)", entryPos, pluginIdentity, funcName,
-                                 iter.LineNumber());
+            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   [" + std::to_string(entryPos) + "] " + pluginIdentity +
+                                                             "::" + funcName + " (line " +
+                                                             std::to_string(iter.LineNumber()) + ")");
         }
         else if (iter.IsNativeFrame())
-            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   [%i] %s", entryPos, funcName);
+            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   [" + std::to_string(entryPos) + "] " + funcName);
 
         ++entryPos;
         iter.Next();

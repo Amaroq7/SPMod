@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -21,18 +21,18 @@
 
 std::unique_ptr<SourcePawnAPI> gSPAPI;
 
-SourcePawnAPI::SourcePawnAPI(fs::path &&libraryDir)
+SourcePawnAPI::SourcePawnAPI(const fs::path &libraryDir)
 {
-    libraryDir /= SourcePawnAPI::sourcepawnLibrary;
+    fs::path libraryName = libraryDir / SourcePawnAPI::sourcepawnLibrary;
 
 #if defined SP_POSIX
-    void *libraryHandle = dlopen(libraryDir.c_str(), RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND);
+    void *libraryHandle = dlopen(libraryName.c_str(), RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND);
 #else
     HMODULE libraryHandle = LoadLibrary(libraryDir.string().c_str());
 #endif
 
     if (!libraryHandle)
-        throw std::runtime_error(libraryDir.string() + " Failed to open SourcePawn library");
+        throw std::runtime_error(libraryName.string() + " Failed to open SourcePawn library");
 
 #if defined SP_POSIX
     auto getFactoryFunc =

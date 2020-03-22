@@ -23,32 +23,32 @@ namespace SPExtExample
 {
     PluginMngr gPluginMngr;
 
-    const char *Plugin::getName() const
+    std::string_view Plugin::getName() const
     {
         return "Dummy plugin";
     }
 
-    const char *Plugin::getVersion() const
+    std::string_view Plugin::getVersion() const
     {
         return "1.0.0";
     }
 
-    const char *Plugin::getAuthor() const
+    std::string_view Plugin::getAuthor() const
     {
         return "SPMod Development Team";
     }
 
-    const char *Plugin::getUrl() const
+    std::string_view Plugin::getUrl() const
     {
         return "https:://github.com/Amaroq7/SPMod";
     }
 
-    const char *Plugin::getIdentity() const
+    std::string_view Plugin::getIdentity() const
     {
         return "dummy";
     }
 
-    const char *Plugin::getFilename() const
+    std::string_view Plugin::getFilename() const
     {
         return "dummy";
     }
@@ -97,7 +97,7 @@ namespace SPExtExample
         return 0;
     }
 
-    SPMod::IPlugin *PluginMngr::getPlugin(const char *name [[maybe_unused]])
+    Plugin *PluginMngr::getPlugin(std::string_view name [[maybe_unused]]) const
     {
         static Plugin dummy;
         return &dummy;
@@ -109,25 +109,25 @@ namespace SPExtExample
 
     void PluginMngr::unloadPlugins() {}
 
-    const char *PluginMngr::getPluginsExt() const
+    std::string_view PluginMngr::getPluginsExt() const
     {
         return "";
     }
 
-    int PluginMngr::proxyNativeCallback(const SPMod::IProxiedNative *const native [[maybe_unused]],
-                                        const SPMod::IPlugin *const plugin [[maybe_unused]])
+    int PluginMngr::proxyNativeCallback(SPMod::IProxiedNative *native [[maybe_unused]],
+                                        SPMod::IPlugin *plugin [[maybe_unused]])
     {
         return 0;
     }
 
-    const CUtlVector<SPMod::IPlugin *> &PluginMngr::getPluginsList() const
+    const std::vector<SPMod::IPlugin *> &PluginMngr::getPluginsList() const
     {
-        static CUtlVector<SPMod::IPlugin *> pluginsList;
+        static std::vector<SPMod::IPlugin *> pluginsList;
         static Plugin dummyPlugin;
 
-        if (!pluginsList.Count())
+        if (!pluginsList.size())
         {
-            pluginsList.AddToTail(&dummyPlugin);
+            pluginsList.push_back(&dummyPlugin);
         }
 
         return pluginsList;

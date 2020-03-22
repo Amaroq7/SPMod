@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,13 +8,13 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -24,7 +24,8 @@ namespace SPMod
     class ICvar
     {
     public:
-        using CvarCallback = void (*)(const ICvar *const cvar, const char *old_value, const char *new_value);
+        using Callback =
+            std::function<void(const ICvar *const cvar, std::string_view old_value, std::string_view new_value)>;
         /**
          * Cvar flags (from engine)
          */
@@ -70,7 +71,7 @@ namespace SPMod
          *
          * @return        Cvar name.
          */
-        virtual const char *getName() const = 0;
+        virtual std::string_view getName() const = 0;
 
         /**
          * @brief Returns flags of the cvar
@@ -86,7 +87,7 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void setValue(const char *val) = 0;
+        virtual void setValue(std::string_view val) = 0;
 
         /**
          * @brief Set's cvar value by int
@@ -95,7 +96,7 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void setValue(int val) = 0;
+        virtual void setValue(std::int32_t val) = 0;
 
         /**
          * @brief Set's cvar value by float
@@ -120,14 +121,14 @@ namespace SPMod
          *
          * @noreturn
          */
-        virtual void addCallback(CvarCallback callback) = 0;
+        virtual void addCallback(Callback callback) = 0;
 
         /**
          * @brief Return cvar value as integer.
          *
          * @return    Integer cvar value
          */
-        virtual int asInt() const = 0;
+        virtual std::int32_t asInt() const = 0;
 
         /**
          * @brief Return cvar value  as Float.
@@ -141,9 +142,8 @@ namespace SPMod
          *
          * @return    String cvar value
          */
-        virtual const char *asString() const = 0;
+        virtual std::string_view asString() const = 0;
 
-    protected:
         virtual ~ICvar() = default;
     };
 
@@ -159,7 +159,7 @@ namespace SPMod
          *
          * @return        Interface's name.
          */
-        const char *getName() const override
+        std::string_view getName() const override
         {
             return "ICvarMngr";
         }
@@ -180,13 +180,13 @@ namespace SPMod
          * @brief Registers cvar.
          *
          * @param name           Name of the cvar.
-         * @param type           Cvar type
          * @param value_type     Type of the value
          * @param flags          Engine flags for cvar
          *
          * @return               Cvar pointer, nullptr if failed.
          */
-        virtual ICvar *registerCvar(const char *name, const char *value, ICvar::Flags flags) = 0;
+        virtual ICvar *registerCvar(std::string_view name, std::string_view value, ICvar::Flags flags) = 0;
+
         /*
          * @brief Find cvar.
          *
@@ -194,9 +194,8 @@ namespace SPMod
          *
          * @return               Cvar pointer, nullptr if failed.
          */
-        virtual ICvar *findCvar(const char *name) = 0;
+        virtual ICvar *findCvar(std::string_view name) = 0;
 
-    protected:
         virtual ~ICvarMngr() = default;
     };
 } // namespace SPMod

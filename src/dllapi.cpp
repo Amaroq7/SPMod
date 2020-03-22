@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -8,20 +8,20 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  This program is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "spmod.hpp"
 
 static qboolean ClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128])
 {
-    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
+    auto plrMngr = gSPGlobal->getPlayerManager();
 
     if (!plrMngr->ClientConnect(pEntity, pszName, pszAddress, szRejectReason))
         RETURN_META_VALUE(MRES_SUPERCEDE, FALSE);
@@ -31,11 +31,9 @@ static qboolean ClientConnect(edict_t *pEntity, const char *pszName, const char 
 
 static void ClientCommand(edict_t *pEntity)
 {
-    using def = ForwardMngr::FwdDefault;
-    std::shared_ptr<Edict> spEdict = gSPGlobal->getEdictCore(ENTINDEX(pEntity));
     {
         int result;
-        std::shared_ptr<Forward> fwdCmd = gSPGlobal->getForwardManagerCore()->getDefaultForward(def::ClientCommmand);
+        auto fwdCmd = gSPGlobal->getForwardManager()->getForward(ForwardMngr::FWD_PLAYER_COMMAND);
 
         if (!fwdCmd)
             RETURN_META(MRES_IGNORED);
@@ -49,21 +47,21 @@ static void ClientCommand(edict_t *pEntity)
 
     META_RES res = MRES_IGNORED;
 
-    std::string strCmd(CMD_ARGV(0));
+    std::string_view strCmd(CMD_ARGV(0));
 
     if (strCmd == "menuselect")
     {
-        res = gSPGlobal->getMenuManagerCore()->ClientCommand(pEntity);
+        res = gSPGlobal->getMenuManager()->ClientCommand(pEntity);
         RETURN_META(res);
     }
 
-    const std::unique_ptr<CommandMngr> &cmdMngr = gSPGlobal->getCommandManagerCore();
-    RETURN_META(cmdMngr->ClientCommandMeta(spEdict, std::move(strCmd)));
+    auto cmdMngr = gSPGlobal->getCommandManager();
+    RETURN_META(cmdMngr->ClientCommandMeta(pEntity, strCmd));
 }
 
 void ClientPutInServer(edict_t *pEntity)
 {
-    gSPGlobal->getPlayerManagerCore()->ClientPutInServer(pEntity);
+    gSPGlobal->getPlayerManager()->ClientPutInServer(pEntity);
 }
 
 DLL_FUNCTIONS gDllFunctionTable = {
@@ -121,32 +119,30 @@ DLL_FUNCTIONS gDllFunctionTable = {
 
 static void ServerActivatePost(edict_t *pEdictList, int edictCount [[maybe_unused]], int clientMax)
 {
-    using DefFwd = ForwardMngr::FwdDefault;
-
     gSPGlobal->clearEdicts();
-    gSPGlobal->getPlayerManagerCore()->ServerActivatePost(pEdictList, clientMax);
+    gSPGlobal->getPlayerManager()->ServerActivatePost(pEdictList, clientMax);
 
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
+    auto fwdMngr = gSPGlobal->getForwardManager();
     fwdMngr->addDefaultsForwards();
 
     gSPGlobal->loadExts();
     gSPGlobal->allowPrecacheForPlugins(true);
 
-    for (auto &interface : gSPGlobal->getInterfacesList())
+    for (auto &interface : gSPGlobal->getAdaptersInterfaces())
     {
         interface.second->getPluginMngr()->loadPlugins();
     }
 
     // Allow plugins to add their natives
-    fwdMngr->getDefaultForward(DefFwd::PluginNatives)->execFunc(nullptr);
+    fwdMngr->getForward(ForwardMngr::FWD_PLUGIN_NATIVES)->execFunc(nullptr);
 
-    for (auto &interface : gSPGlobal->getInterfacesList())
+    for (auto &interface : gSPGlobal->getAdaptersInterfaces())
     {
         interface.second->getPluginMngr()->bindPluginsNatives();
     }
 
-    fwdMngr->getDefaultForward(DefFwd::PluginInit)->execFunc(nullptr);
-    fwdMngr->getDefaultForward(DefFwd::PluginsLoaded)->execFunc(nullptr);
+    fwdMngr->getForward(ForwardMngr::FWD_PLUGIN_INIT)->execFunc(nullptr);
+    fwdMngr->getForward(ForwardMngr::FWD_PLUGINS_LOADED)->execFunc(nullptr);
 
     gSPGlobal->allowPrecacheForPlugins(false);
 
@@ -155,23 +151,22 @@ static void ServerActivatePost(edict_t *pEdictList, int edictCount [[maybe_unuse
 
 static void ServerDeactivatePost()
 {
-    using DefFwd = ForwardMngr::FwdDefault;
+    auto fwdMngr = gSPGlobal->getForwardManager();
+    fwdMngr->getForward(ForwardMngr::FWD_PLUGIN_END)->execFunc(nullptr);
 
-    const std::unique_ptr<ForwardMngr> &fwdMngr = gSPGlobal->getForwardManagerCore();
-    fwdMngr->getDefaultForward(DefFwd::PluginEnd)->execFunc(nullptr);
-
-    for (auto &interface : gSPGlobal->getInterfacesList())
+    for (auto &interface : gSPGlobal->getAdaptersInterfaces())
     {
         interface.second->getPluginMngr()->unloadPlugins();
     }
 
-    gSPGlobal->unloadExts();
-
-    gSPGlobal->getTimerManagerCore()->clearTimers();
-    gSPGlobal->getCommandManagerCore()->clearCommands();
-    gSPGlobal->getCvarManagerCore()->clearCvarsCallback();
-    gSPGlobal->getMenuManagerCore()->clearMenus();
     fwdMngr->clearForwards();
+    gSPGlobal->getTimerManager()->clearTimers();
+    gSPGlobal->getCommandManager()->clearCommands();
+    gSPGlobal->getCvarManager()->clearCvarsCallback();
+    gSPGlobal->getMenuManager()->clearMenus();
+    gSPGlobal->getNativeProxy()->clearNatives();
+
+    gSPGlobal->unloadExts();
     uninstallRehldsHooks();
 }
 
@@ -185,30 +180,29 @@ static qboolean ClientConnectPost(edict_t *pEntity,
                                   const char *pszAddress,
                                   char szRejectReason [[maybe_unused]][128])
 {
-    gSPGlobal->getPlayerManagerCore()->ClientConnectPost(pEntity, pszName, pszAddress);
+    gSPGlobal->getPlayerManager()->ClientConnectPost(pEntity, pszName, pszAddress);
 
     RETURN_META_VALUE(MRES_IGNORED, TRUE);
 }
 
 static void ClientPutInServerPost(edict_t *pEntity)
 {
-    const std::unique_ptr<PlayerMngr> &plrMngr = gSPGlobal->getPlayerManagerCore();
-    plrMngr->ClientPutInServerPost(pEntity);
+    gSPGlobal->getPlayerManager()->ClientPutInServerPost(pEntity);
 }
 
 static void ClientUserInfoChangedPost(edict_t *pEntity, char *infobuffer)
 {
-    gSPGlobal->getPlayerManagerCore()->ClientUserInfoChangedPost(pEntity, infobuffer);
+    gSPGlobal->getPlayerManager()->ClientUserInfoChangedPost(pEntity, infobuffer);
 }
 
 static void StartFramePost()
 {
-    gSPGlobal->getPlayerManagerCore()->StartFramePost();
+    gSPGlobal->getPlayerManager()->StartFramePost();
 
     if (TimerMngr::m_nextExecution <= gpGlobals->time)
     {
         TimerMngr::m_nextExecution = gpGlobals->time + 0.1f;
-        gSPGlobal->getTimerManagerCore()->execTimers(gpGlobals->time);
+        gSPGlobal->getTimerManager()->execTimers(gpGlobals->time);
     }
 
     RETURN_META(MRES_IGNORED);
@@ -275,8 +269,14 @@ NEW_DLL_FUNCTIONS gNewDllFunctionTable = {
     nullptr, //! pfnCvarValue2()
 };
 
+void OnFreeEntPrivateDataPost(edict_t *pEnt)
+{
+    gSPGlobal->removeEdict(pEnt);
+}
+
 NEW_DLL_FUNCTIONS gNewDllFunctionTablePost = {
-    nullptr, //! pfnOnFreeEntPrivateData()	Called right before the object's memory is freed.  Calls its destructor.
+    OnFreeEntPrivateDataPost, //! pfnOnFreeEntPrivateData()	Called right before the object's memory is freed.  Calls its
+                              //! destructor.
     nullptr, //! pfnGameShutdown()
     nullptr, //! pfnShouldCollide()
     nullptr, //! pfnCvarValue()

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -21,23 +21,23 @@
 
 namespace SPExt
 {
-    class ModuleInterface final : public SPMod::IInterface
+    class AdapterInterface final : public SPMod::IAdapterInterface
     {
     public:
         static constexpr std::uint16_t MAJOR_VERSION = 0;
         static constexpr std::uint16_t MINOR_VERSION = 1;
         static constexpr std::uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
 
-        ModuleInterface() = delete;
-        ModuleInterface(const ModuleInterface &other) = delete;
-        ModuleInterface(ModuleInterface &&other) = delete;
-        ~ModuleInterface() = default;
+        AdapterInterface() = delete;
+        AdapterInterface(const AdapterInterface &other) = delete;
+        AdapterInterface(AdapterInterface &&other) = delete;
+        ~AdapterInterface() = default;
 
-        ModuleInterface(fs::path &&path);
+        AdapterInterface(const fs::path &path);
 
-        const char *getName() const override
+        std::string_view getName() const override
         {
-            return "ISourcePawnModule";
+            return "ISourcePawnAdapter";
         }
 
         std::uint32_t getVersion() const override
@@ -45,29 +45,24 @@ namespace SPExt
             return VERSION;
         }
 
-        const char *getAuthor() const override
+        std::string_view getAuthor() const override
         {
             return "SPMod Development Team";
         }
 
-        const char *getUrl() const override
+        std::string_view getUrl() const override
         {
             return "https://github.com/Amaroq7/SPMod";
         }
 
-        const char *getExtName() const override
+        std::string_view getExtName() const override
         {
-            return "SourcePawn Module";
+            return "SourcePawn Adapter";
         }
 
-        SPMod::IPluginMngr *getPluginMngr() const override
+        PluginMngr *getPluginMngr() const override
         {
-            return getPluginMngrCore().get();
-        }
-
-        const std::unique_ptr<PluginMngr> &getPluginMngrCore() const
-        {
-            return m_pluginMngr;
+            return m_pluginMngr.get();
         }
 
     private:
