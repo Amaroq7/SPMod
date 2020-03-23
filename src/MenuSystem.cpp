@@ -69,8 +69,8 @@ Menu::Item::Status Menu::Item::execCallback(IPlayer *player)
 }
 
 Menu::Menu(const std::variant<ItemHandler, TextHandler> &handler, std::any data, Menu::Style style, bool global)
-    : m_style(style), m_global(global), m_numberFormat("\\r#num."), m_time(-1), m_itemsPerPage(7), m_keys(0),
-      m_cbData(data),
+    : m_style(style), m_global(global), m_numberFormat("\\r#num."), m_time(static_cast<std::uint32_t>(-1)),
+      m_itemsPerPage(7), m_keys(0), m_cbData(data),
       m_nextItem(std::make_unique<Item>(this, "Next", Item::Callback(), std::any(), std::any(), NavigationType::Next)),
       m_backItem(std::make_unique<Item>(this, "Back", Item::Callback(), std::any(), std::any(), NavigationType::Back)),
       m_exitItem(std::make_unique<Item>(this, "Exit", Item::Callback(), std::any(), std::any(), NavigationType::Exit)),
