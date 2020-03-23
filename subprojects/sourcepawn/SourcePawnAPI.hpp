@@ -53,13 +53,18 @@ public:
     SourcePawnAPI(const fs::path &libraryDir);
     SourcePawnAPI(const SourcePawnAPI &other) = delete;
     SourcePawnAPI(SourcePawnAPI &&other) = default;
+
+#if defined SP_POSIX
+    ~SourcePawnAPI() = default;
+#else
     ~SourcePawnAPI();
+#endif
 
     SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const;
 
 private:
 #if defined SP_POSIX
-    void *m_SPLibraryHandle;
+    std::unique_ptr<void, std::function<void(void *)>> m_SPLibraryHandle;
 #else
     HMODULE m_SPLibraryHandle;
 #endif

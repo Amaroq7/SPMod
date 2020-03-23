@@ -28,6 +28,11 @@
 
 #if defined SP_POSIX
     #include <dlfcn.h>
+#else
+    #if !defined WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
+    #endif
+    #include <windows.h>
 #endif
 
 #include "SourcePawnAPI.hpp"

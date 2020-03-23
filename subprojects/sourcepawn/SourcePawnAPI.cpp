@@ -26,7 +26,10 @@ SourcePawnAPI::SourcePawnAPI(const fs::path &libraryDir)
     fs::path libraryName = libraryDir / SourcePawnAPI::sourcepawnLibrary;
 
 #if defined SP_POSIX
-    void *libraryHandle = dlopen(libraryName.c_str(), RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND);
+    auto libraryHandle = std::unique_ptr<void, std::function<void(void *)>>(
+        dlopen(libraryName.c_str(), RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND), [](void *ptr) {
+            dlclose(ptr);
+        });
 #else
     HMODULE libraryHandle = LoadLibrary(libraryDir.string().c_str());
 #endif
@@ -36,7 +39,7 @@ SourcePawnAPI::SourcePawnAPI(const fs::path &libraryDir)
 
 #if defined SP_POSIX
     auto getFactoryFunc =
-        reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>(dlsym(libraryHandle, "GetSourcePawnFactory"));
+        reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>(dlsym(libraryHandle.get(), "GetSourcePawnFactory"));
 #else
     auto getFactoryFunc =
         reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>(GetProcAddress(libraryHandle, "GetSourcePawnFactory"));
@@ -44,9 +47,7 @@ SourcePawnAPI::SourcePawnAPI(const fs::path &libraryDir)
 
     if (!getFactoryFunc)
     {
-#if defined SP_POSIX
-        dlclose(libraryHandle);
-#else
+#if defined SP_WINDOWS
         FreeLibrary(libraryHandle);
 #endif
         throw std::runtime_error("Cannot find SourcePawn factory function");
@@ -55,28 +56,24 @@ SourcePawnAPI::SourcePawnAPI(const fs::path &libraryDir)
     SourcePawn::ISourcePawnFactory *SPFactory = getFactoryFunc(SOURCEPAWN_API_VERSION);
     if (!SPFactory)
     {
-#if defined SP_POSIX
-        dlclose(libraryHandle);
-#else
+#if defined SP_WINDOWS
         FreeLibrary(libraryHandle);
 #endif
         throw std::runtime_error("Wrong SourcePawn library version");
     }
 
-    m_SPLibraryHandle = libraryHandle;
+    m_SPLibraryHandle = std::move(libraryHandle);
     m_spFactory = SPFactory;
     m_spFactory->NewEnvironment();
     getSPEnvironment()->APIv2()->SetJitEnabled(true);
 }
 
+#if defined SP_WINDOWS
 SourcePawnAPI::~SourcePawnAPI()
 {
-#if defined SP_POSIX
-    dlclose(m_SPLibraryHandle);
-#else
     FreeLibrary(m_SPLibraryHandle);
-#endif
 }
+#endif
 
 SourcePawn::ISourcePawnEnvironment *SourcePawnAPI::getSPEnvironment() const
 {
