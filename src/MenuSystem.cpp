@@ -89,7 +89,7 @@ void Menu::display(IPlayer *player, std::uint32_t page, std::uint32_t time)
     if (m_style == IMenu::Style::Item)
     {
         // format and show menu
-        std::int32_t keys = 0;
+        std::uint32_t keys = 0;
 
         // cache this?
         // cache to m_text if all items without callback
@@ -280,7 +280,7 @@ Menu::Item *Menu::keyToItem(std::uint32_t key) const
 
 Menu::Item *Menu::appendItem(std::string_view name, Item::Callback callback, std::any cbData, std::any data)
 {
-    return _addItem(-1, name, callback, cbData, data);
+    return _addItem(static_cast<std::uint32_t>(-1), name, callback, cbData, data);
 }
 
 Menu::Item *Menu::insertItem(std::size_t position,
@@ -451,7 +451,7 @@ void MenuMngr::clearMenus()
 META_RES MenuMngr::ClientCommand(edict_t *pEntity)
 {
     std::string_view pressedKeyText(CMD_ARGV(1));
-    std::int32_t pressedKey;
+    std::uint32_t pressedKey;
     if (const auto &[ptr, ec] =
             std::from_chars(pressedKeyText.data(), pressedKeyText.data() + pressedKeyText.length(), pressedKey);
         ec != std::errc())

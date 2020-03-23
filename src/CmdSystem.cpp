@@ -92,6 +92,8 @@ Command *CommandMngr::registerCommand(ICommand::Type type,
             return registerCommandInternal<ClientCommand>(cmd, info, flags, cb, data).get();
         case ICommand::Type::Server:
             return registerCommandInternal<ServerCommand>(cmd, info, cb, data).get();
+        default:
+            return nullptr;
     }
 }
 

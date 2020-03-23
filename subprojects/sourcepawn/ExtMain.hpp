@@ -23,6 +23,8 @@
 #include <unordered_map>
 #include <array>
 #include <vector>
+#include <cstdarg>
+#include <cmath>
 
 #if defined SP_POSIX
     #include <dlfcn.h>
