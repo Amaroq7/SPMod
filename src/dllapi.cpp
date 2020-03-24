@@ -165,6 +165,7 @@ static void ServerDeactivatePost()
     gSPGlobal->getCvarManager()->clearCvarsCallback();
     gSPGlobal->getMenuManager()->clearMenus();
     gSPGlobal->getNativeProxy()->clearNatives();
+    gSPGlobal->getPlayerManager()->ServerDeactivatePost();
 
     gSPGlobal->unloadExts();
     uninstallRehldsHooks();

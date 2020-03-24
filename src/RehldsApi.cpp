@@ -36,8 +36,6 @@ static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain, IGameClient *cli
     forward->pushString(string);
     forward->execFunc(nullptr);
 
-    plr->closeMenu();
-
     chain->callNext(client, crash, string);
 
     PlayerMngr::m_playersNum--;

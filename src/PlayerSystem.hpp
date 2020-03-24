@@ -61,15 +61,15 @@ public:
     void authorize(std::string_view authid);
 
 private:
-    bool m_connected;
-    bool m_inGame;
-    std::uint32_t m_userID;
+    bool m_connected = false;
+    bool m_inGame = false;
+    std::uint32_t m_userID = 0;
     std::string m_name;
     std::string m_ip;
     std::string m_steamID;
 
-    Menu *m_menu;
-    std::uint32_t m_menuPage;
+    Menu *m_menu = nullptr;
+    std::uint32_t m_menuPage = 0;
 };
 #if defined SP_MSVC
     #pragma warning(pop)
@@ -100,6 +100,7 @@ public:
     void ClientUserInfoChangedPost(edict_t *pEntity, char *infobuffer);
     void StartFramePost();
     void ServerActivatePost(edict_t *pEdictList, std::uint32_t clientMax);
+    void ServerDeactivatePost();
 
     static inline std::uint32_t m_playersNum;
 
@@ -111,5 +112,5 @@ private:
     float m_nextAuthCheck = 0.0f;
 
     std::array<std::unique_ptr<Player>, MAX_PLAYERS + 1> m_players;
-    std::uint32_t m_maxClients;
+    std::uint32_t m_maxClients = 0;
 };

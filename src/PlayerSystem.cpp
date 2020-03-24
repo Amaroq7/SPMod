@@ -19,7 +19,7 @@
 
 #include "spmod.hpp"
 
-Player::Player(const Edict *edict) : Edict(edict->getInternalEdict()), m_connected(false), m_inGame(false) {}
+Player::Player(const Edict *edict) : Edict(edict->getInternalEdict()) {}
 
 std::string_view Player::getName() const
 {
@@ -56,7 +56,7 @@ void Player::closeMenu()
     if (m_menu->getStyle() == IMenu::Style::Item)
         m_menu->execExitHandler(this);
 
-    static char menu[] = "\n";
+    static std::string_view menu("\n");
     gSPGlobal->getUtils()->ShowMenu(this, 0, 0, menu);
 
     setMenu(nullptr);
@@ -89,6 +89,8 @@ void Player::disconnect()
 {
     m_connected = false;
     m_inGame = false;
+
+    closeMenu();
 
     m_ip.clear();
     m_name.clear();
@@ -290,4 +292,14 @@ void PlayerMngr::ServerActivatePost(edict_t *pEdictList, std::uint32_t clientMax
 {
     _setMaxClients(clientMax);
     _initPlayers(pEdictList);
+}
+
+void PlayerMngr::ServerDeactivatePost()
+{
+    // Reset player menus
+    for (std::size_t i = 1; i <= m_maxClients; i++)
+    {
+        m_players.at(i)->setMenu(nullptr);
+        m_players.at(i)->setMenuPage(0);
+    }
 }
