@@ -36,7 +36,7 @@ SPGlobal::SPGlobal(fs::path &&dllDir)
     setPath(DirType::Dlls, "dlls");
     setPath(DirType::Exts, "exts");
 
-    m_edicts.reserve(2048);
+    m_edicts.reserve(MAX_EDICTS);
 }
 
 std::size_t SPGlobal::loadExts()
