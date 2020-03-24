@@ -173,7 +173,7 @@ static void ServerDeactivatePost()
 
 static void GameInitPost()
 {
-    REG_SVR_COMMAND("spmod", SPModInfoCommand);
+    REG_SVR_COMMAND("spmod", CommandMngr::SPModInfoCommand);
 }
 
 static qboolean ClientConnectPost(edict_t *pEntity,
@@ -278,10 +278,10 @@ void OnFreeEntPrivateDataPost(edict_t *pEnt)
 NEW_DLL_FUNCTIONS gNewDllFunctionTablePost = {
     OnFreeEntPrivateDataPost, //! pfnOnFreeEntPrivateData()	Called right before the object's memory is freed.  Calls its
                               //! destructor.
-    nullptr, //! pfnGameShutdown()
-    nullptr, //! pfnShouldCollide()
-    nullptr, //! pfnCvarValue()
-    nullptr, //! pfnCvarValue2()
+    nullptr,                  //! pfnGameShutdown()
+    nullptr,                  //! pfnShouldCollide()
+    nullptr,                  //! pfnCvarValue()
+    nullptr,                  //! pfnCvarValue2()
 };
 
 C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion)

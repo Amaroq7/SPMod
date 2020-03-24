@@ -38,7 +38,7 @@ public:
     void changeLevel(std::string_view level) const override;
     void serverCommand(std::string_view cmd) const override;
     void serverExecute() const override;
-    void registerSrvCommand(std::string_view cmd) const override;
+    void registerSrvCommand(std::string_view cmd, ServerCmdCallback callback) const override;
     void
         messageBegin(MessageDest msgDest, std::uint32_t msgType, const float *pOrigin, IEdict *pEdict) const override;
     void messageEnd() const override;
@@ -69,7 +69,7 @@ public:
     void changeLevel(std::string_view level) const override;
     void serverCommand(std::string_view cmd) const override;
     void serverExecute() const override;
-    void registerSrvCommand(std::string_view cmd) const override;
+    void registerSrvCommand(std::string_view cmd, ServerCmdCallback callback) const override;
     void messageBegin(MessageDest msgDest, std::uint32_t msgType, const float *pOrigin, IEdict *pEdict) const override;
     void messageEnd() const override;
     void writeByte(std::int32_t byteArg) const override;

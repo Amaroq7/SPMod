@@ -18,15 +18,21 @@
  */
 
 #include "spmod.hpp"
+#include "CompilationUtils.hpp"
 
-Command::Command(std::string_view regex, std::string_view info, ICommand::Callback cb, std::any data)
-    : m_regex(regex.data()), m_info(info), m_callback(cb), m_data(data)
+Command::Command(std::string &&cmd, std::string_view info, ICommand::Callback cb, std::any data)
+    : m_nameOrRegex(std::move(cmd)), m_info(info), m_callback(cb), m_data(data)
 {
 }
 
-const std::regex &Command::getRegex() const
+Command::Command(std::regex &&cmd, std::string_view info, ICommand::Callback cb, std::any data)
+    : m_nameOrRegex(std::move(cmd)), m_info(info), m_callback(cb), m_data(data)
 {
-    return m_regex;
+}
+
+const std::variant<std::string, std::regex> &Command::getNameOrRegex() const
+{
+    return m_nameOrRegex;
 }
 
 std::string_view Command::getInfo() const
@@ -39,12 +45,21 @@ IForward::ReturnValue Command::execCallback(Player *player)
     return m_callback(player, this, m_data);
 }
 
-ClientCommand::ClientCommand(std::string_view cmd,
+ClientCommand::ClientCommand(std::string &&cmd,
                              std::string_view info,
                              std::uint32_t flags,
                              ICommand::Callback cb,
                              std::any data)
-    : Command(cmd, info, cb, data), m_flags(flags)
+    : Command(std::move(cmd), info, cb, data), m_flags(flags)
+{
+}
+
+ClientCommand::ClientCommand(std::regex &&cmd,
+                             std::string_view info,
+                             std::uint32_t flags,
+                             ICommand::Callback cb,
+                             std::any data)
+    : Command(std::move(cmd), info, cb, data), m_flags(flags)
 {
 }
 
@@ -65,7 +80,7 @@ bool ClientCommand::_hasAccess(uint32_t flags [[maybe_unused]]) const
 }
 
 ServerCommand::ServerCommand(std::string_view cmd, std::string_view info, ICommand::Callback cb, std::any data)
-    : Command(cmd, info, cb, data)
+    : Command(std::string(cmd), info, cb, data)
 {
 }
 
@@ -82,6 +97,7 @@ std::uint32_t ServerCommand::getAccess() const
 Command *CommandMngr::registerCommand(ICommand::Type type,
                                       std::string_view cmd,
                                       std::string_view info,
+                                      bool regex,
                                       std::uint32_t flags,
                                       ICommand::Callback cb,
                                       std::any data)
@@ -89,9 +105,22 @@ Command *CommandMngr::registerCommand(ICommand::Type type,
     switch (type)
     {
         case ICommand::Type::Client:
-            return registerCommandInternal<ClientCommand>(cmd, info, flags, cb, data).get();
+        {
+            if (regex)
+            {
+                return registerCommandInternal<ClientCommand>(std::regex(cmd.data()), info, flags, cb, data).get();
+            }
+            return registerCommandInternal<ClientCommand>(std::string(cmd), info, flags, cb, data).get();
+        }
         case ICommand::Type::Server:
+        {
+            if (regex)
+            {
+                return nullptr; // Server command can't be a regex expression
+            }
+            REG_SVR_COMMAND(cmd.data(), CommandMngr::PluginSrvCommand);
             return registerCommandInternal<ServerCommand>(cmd, info, cb, data).get();
+        }
         default:
             return nullptr;
     }
@@ -112,9 +141,9 @@ META_RES CommandMngr::ClientCommandMeta(edict_t *entity, std::string_view clCmd)
 {
     Player *player = gSPGlobal->getPlayerManager()->getPlayer(entity);
     META_RES metaResult = MRES_IGNORED;
-    std::string cmdName(clCmd);
     if (getCommandsNum(ICommand::Type::Client))
     {
+        std::string cmdName(clCmd);
         if (clCmd == "say" || clCmd == "say_team")
         {
             cmdName += ' ';
@@ -123,7 +152,22 @@ META_RES CommandMngr::ClientCommandMeta(edict_t *entity, std::string_view clCmd)
 
         for (const auto &cmd : getCommandList(ICommand::Type::Client))
         {
-            if (std::regex_search(cmdName, cmd->getRegex()) && cmd->hasAccess(player))
+            bool commandMatched = std::visit(
+                [&cmdName](auto &&arg) {
+                    using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, std::string>)
+                    {
+                        return cmdName == arg;
+                    }
+                    else if constexpr (std::is_same_v<T, std::regex>)
+                    {
+                        return std::regex_search(cmdName, arg);
+                    }
+
+                    return false;
+                },
+                cmd->getNameOrRegex());
+            if (commandMatched && cmd->hasAccess(player))
             {
                 IForward::ReturnValue result = cmd->execCallback(player);
                 if (result == IForward::ReturnValue::Stop || result == IForward::ReturnValue::Handled)
@@ -136,4 +180,113 @@ META_RES CommandMngr::ClientCommandMeta(edict_t *entity, std::string_view clCmd)
         }
     }
     return metaResult;
+}
+
+void CommandMngr::PluginSrvCommand()
+{
+    std::string_view argv(CMD_ARGV(0));
+
+    for (const auto &cmd : gSPGlobal->getCommandManager()->getCommandList(Command::Type::Server))
+    {
+        if (argv == std::get<std::string>(cmd->getNameOrRegex()))
+        {
+            cmd->execCallback(nullptr);
+        }
+    }
+}
+
+void CommandMngr::SPModInfoCommand()
+{
+    static constexpr std::size_t nameWidth = 25;
+    static constexpr std::size_t verWidth = 15;
+    static constexpr std::size_t authWidth = 20;
+    static constexpr std::size_t fileWidth = 15;
+
+    auto logger = gSPGlobal->getLoggerManager()->getLogger(gSPModLoggerName);
+    // Print out available commands
+    if (CMD_ARGC() == 1)
+    {
+        logger->sendMsgToConsoleInternal("\nUsage: spmod [command] [args]\n \
+                                      Command:\n \
+                                      version - displays currently version\n \
+                                      plugins - displays currently loaded plugins\n \
+                                      adapters - displays currently loaded adapters\n \
+                                      gpl - displays spmod license");
+    }
+    else
+    {
+        std::string_view arg(CMD_ARGV(1));
+
+        if (arg == "plugins")
+        {
+            logger->sendMsgToConsoleInternal(std::left, std::setw(7), "\n", std::setw(nameWidth), "name",
+                                             std::setw(verWidth), "version", std::setw(authWidth), "author",
+                                             "filename");
+            std::size_t pos = 1;
+
+            for (const auto interface : gSPGlobal->getAdaptersInterfaces())
+            {
+                for (const auto plugin : interface.second->getPluginMngr()->getPluginsList())
+                {
+                    logger->sendMsgToConsoleInternal("[", std::right, std::setw(3), pos++,
+                                                     "] ",                 // right align for ordinal number
+                                                     std::left,            // left align for the rest
+                                                     std::setw(nameWidth), // format rules for name
+                                                     std::string_view(plugin->getName()).substr(0, nameWidth - 1),
+                                                     std::setw(verWidth), // format rules for version
+                                                     std::string_view(plugin->getVersion()).substr(0, verWidth - 1),
+                                                     std::setw(authWidth), // format rules for author
+                                                     std::string_view(plugin->getAuthor()).substr(0, authWidth - 1),
+                                                     std::string_view(plugin->getFilename()).substr(0, fileWidth));
+                }
+            }
+        }
+        else if (arg == "gpl")
+        {
+            logger->sendMsgToConsoleInternal("   SPMod - SourcePawn Scripting Engine for Half-Life\n \
+  Copyright (C) 2018-",
+                                             gCompilationYear, " SPMod Development Team\n\n \
+  \
+SPMod is free software: you can redistribute it and/or modify\n \
+  it under the terms of the GNU General Public License as published by\n \
+  the Free Software Foundation, either version 3 of the License, or\n \
+  (at your option) any later version.\n\n \
+  \
+SPMod is distributed in the hope that it will be useful,\n \
+  but WITHOUT ANY WARRANTY; without even the implied warranty of\n \
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n \
+  GNU General Public License for more details.\n\n \
+  \
+You should have received a copy of the GNU General Public License\n \
+  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.");
+        }
+        if (arg == "adapters")
+        {
+            logger->sendMsgToConsoleInternal(std::left, std::setw(7), '\n', std::setw(nameWidth), "name",
+                                             std::setw(verWidth), "version", std::setw(authWidth), "author");
+            std::size_t pos = 1;
+            for (const auto &entry : gSPGlobal->getAdaptersInterfaces())
+            {
+                logger->sendMsgToConsoleInternal("[", std::right, std::setw(3), pos++,
+                                                 "] ",                 // right align for ordinal number
+                                                 std::left,            // left align for the rest
+                                                 std::setw(nameWidth), // format rules for name
+                                                 entry.second->getExtName(),
+                                                 std::setw(verWidth), // format rules for version
+                                                 entry.second->getVersion(),
+                                                 std::setw(authWidth), // format rules for author
+                                                 entry.second->getAuthor());
+            }
+        }
+        else if (arg == "version")
+        {
+            logger->sendMsgToConsoleInternal(CNSL_LBLUE, "SPMod ", CNSL_RESET, CNSL_LGREEN, "v", gSPModVersion);
+            logger->sendMsgToConsoleInternal(CNSL_LBLUE, "SPMod API: ", CNSL_RESET, CNSL_LGREEN, "v",
+                                             ISPGlobal::MAJOR_VERSION, ".", ISPGlobal::MINOR_VERSION);
+            logger->sendMsgToConsoleInternal(CNSL_LBLUE, "SPMod build: ", CNSL_RESET, CNSL_LGREEN, gCompilationTime,
+                                             " ", gCompilationDate);
+            logger->sendMsgToConsoleInternal(CNSL_LBLUE, "SPMod from: ", CNSL_RESET, CNSL_LGREEN, APP_COMMIT_URL,
+                                             APP_COMMIT_SHA);
+        }
+    }
 }

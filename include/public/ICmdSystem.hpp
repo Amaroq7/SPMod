@@ -36,11 +36,13 @@ namespace SPMod
         };
 
         /**
-         * @brief Returns command's regex.
+         * @brief Returns command's name or regex, depends on how command was registered.
          *
-         * @return Command's regex.
+         * @note Always returns name for server commands.
+         *
+         * @return Command's regex or name.
          */
-        virtual const std::regex &getRegex() const = 0;
+        virtual const std::variant<std::string, std::regex> &getNameOrRegex() const = 0;
 
         /**
          * @brief Returns command's info.
@@ -101,9 +103,12 @@ namespace SPMod
         /**
          * @brief Registers a command.
          *
+         * @note Param regex can be only true for client commands.
+         *
          * @param type          Command type.
          * @param cmd           Command name.
          * @param info          Command info.
+         * @param regex         Register command name as regex.
          * @param flags         Access flags.
          * @param cb            Callback address.
          * @param data          Data that will be sent to callback.
@@ -113,6 +118,7 @@ namespace SPMod
         virtual ICommand *registerCommand(ICommand::Type type,
                                           std::string_view cmd,
                                           std::string_view info,
+                                          bool regex,
                                           std::uint32_t flags,
                                           ICommand::Callback cb,
                                           std::any data) = 0;

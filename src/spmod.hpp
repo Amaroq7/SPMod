@@ -94,7 +94,3 @@ constexpr const char *gSPModLoggerName = "SPMod";
 
 extern int gmsgShowMenu;
 extern int gmsgVGUIMenu;
-
-// Server command function (SrvCommand.cpp)
-void SPModInfoCommand();
-void PluginSrvCmd();

@@ -69,9 +69,9 @@ void EngineFuncs::serverExecute() const
     SERVER_EXECUTE();
 }
 
-void EngineFuncs::registerSrvCommand(std::string_view cmd) const
+void EngineFuncs::registerSrvCommand(std::string_view cmd, ServerCmdCallback callback) const
 {
-    REG_SVR_COMMAND(cmd.data(), PluginSrvCmd);
+    REG_SVR_COMMAND(cmd.data(), callback);
 }
 
 void EngineFuncs::messageBegin(MessageDest msgDest, std::uint32_t msgType, const float *pOrigin, IEdict *pEdict) const
@@ -174,9 +174,9 @@ void EngineFuncsHooked::serverExecute() const
     gpEngineFuncs->pfnServerExecute();
 }
 
-void EngineFuncsHooked::registerSrvCommand(std::string_view cmd) const
+void EngineFuncsHooked::registerSrvCommand(std::string_view cmd, ServerCmdCallback callback) const
 {
-    gpEngineFuncs->pfnAddServerCommand(cmd.data(), PluginSrvCmd);
+    gpEngineFuncs->pfnAddServerCommand(cmd.data(), callback);
 }
 
 void EngineFuncsHooked::messageBegin(MessageDest msgDest,

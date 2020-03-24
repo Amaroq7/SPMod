@@ -31,15 +31,16 @@ class Command : public ICommand
 public:
     Command() = delete;
     virtual ~Command() = default;
-    Command(std::string_view cmd, std::string_view info, ICommand::Callback cb, std::any data);
+    Command(std::string &&cmd, std::string_view info, ICommand::Callback cb, std::any data);
+    Command(std::regex &&cmd, std::string_view info, ICommand::Callback cb, std::any data);
 
-    const std::regex &getRegex() const override;
+    const std::variant<std::string, std::regex> &getNameOrRegex() const override;
     std::string_view getInfo() const override;
     IForward::ReturnValue execCallback(Player *player);
 
 protected:
-    /* command's regex */
-    std::regex m_regex;
+    /* command's regex or name */
+    std::variant<std::string, std::regex> m_nameOrRegex;
 
     /* info for cmd, example of usage etc. */
     std::string m_info;
@@ -60,11 +61,8 @@ public:
     ClientCommand(ClientCommand &&other) = default;
     ~ClientCommand() = default;
 
-    ClientCommand(std::string_view cmd,
-                  std::string_view info,
-                  std::uint32_t flags,
-                  ICommand::Callback cb,
-                  std::any data);
+    ClientCommand(std::string &&cmd, std::string_view info, std::uint32_t flags, ICommand::Callback cb, std::any data);
+    ClientCommand(std::regex &&cmd, std::string_view info, std::uint32_t flags, ICommand::Callback cb, std::any data);
 
     bool hasAccess(const IPlayer *player) const override;
     uint32_t getAccess() const override;
@@ -101,6 +99,7 @@ public:
     Command *registerCommand(ICommand::Type type,
                              std::string_view cmd,
                              std::string_view info,
+                             bool regex,
                              std::uint32_t flags,
                              ICommand::Callback cb,
                              std::any data);
@@ -127,6 +126,9 @@ public:
     void clearCommands();
 
     META_RES ClientCommandMeta(edict_t *entity, std::string_view cmd);
+
+    static void PluginSrvCommand();
+    static void SPModInfoCommand();
 
 private:
     std::vector<std::unique_ptr<Command>> m_clientCommands;

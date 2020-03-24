@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -33,7 +33,7 @@ typeset CmdCallback
 
 methodmap Command
 {
-    public native Command(const char[] cmd, CmdCallback func, const char[] info = "", bool server = false, int flags = 0);
+    public native Command(const char[] cmd, CmdCallback func, const char[] info = "", bool regex = false, bool server = false, int flags = 0);
     public native int GetInfo(char[] buffer, int size);
 
     property int Access {

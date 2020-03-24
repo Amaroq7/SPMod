@@ -36,6 +36,8 @@ namespace SPMod
         SPEC = 9,           // Sends to all spectator proxies
     };
 
+    using ServerCmdCallback = void (*)(void);
+
     class IEngineFuncs : public ISPModInterface
     {
     public:
@@ -157,10 +159,11 @@ namespace SPMod
          * @brief Registers server's command.
          *
          * @param cmd          Command to register.
+         * @param callback     Function to be executed when command is used.
          *
          * @noreturn
          */
-        virtual void registerSrvCommand(std::string_view cmd) const = 0;
+        virtual void registerSrvCommand(std::string_view cmd, ServerCmdCallback callback) const = 0;
 
         // TODO: Describe funcs
         virtual void messageBegin(MessageDest msgDest,
@@ -301,10 +304,11 @@ namespace SPMod
          * @brief Registers server's command.
          *
          * @param cmd          Command to register.
+         * @param callback     Function to be executed when command is used.
          *
          * @noreturn
          */
-        virtual void registerSrvCommand(std::string_view cmd) const = 0;
+        virtual void registerSrvCommand(std::string_view cmd, ServerCmdCallback callback) const = 0;
 
         // TODO: Describe funcs
         virtual void messageBegin(MessageDest msgDest,

@@ -21,7 +21,8 @@
 
 TypeHandler<SPMod::ICommand> gCommandHandlers;
 
-// Command Command(const char[] cmd, ConCallback func, const char[] info = "", bool server = false, int flags = 0)
+// Command(const char[] cmd, ConCallback func, const char[] info = "", bool regex = false, bool server = false,
+// int flags = 0)
 static cell_t CommandCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     enum
@@ -29,6 +30,7 @@ static cell_t CommandCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_cmd = 1,
         arg_func,
         arg_info,
+        arg_regex,
         arg_server,
         arg_flags
     };
@@ -41,13 +43,19 @@ static cell_t CommandCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
 
     SPMod::ICommand *pCmd;
     if (!params[arg_server])
-        pCmd = cmdMngr->registerCommand(SPMod::ICommand::Type::Client, cmd, info, params[arg_flags],
+    {
+        pCmd = cmdMngr->registerCommand(SPMod::ICommand::Type::Client, cmd, info, params[arg_regex], params[arg_flags],
                                         SPExt::Listener::CmdCallback, func);
+    }
     else
     {
-        pCmd =
-            cmdMngr->registerCommand(SPMod::ICommand::Type::Server, cmd, info, 0, SPExt::Listener::CmdCallback, func);
-        gSPGlobal->getEngineFuncs()->registerSrvCommand(cmd);
+        if (params[arg_regex])
+        {
+            ctx->ReportError("Server command cannot be registered as regex");
+            return -1;
+        }
+        pCmd = cmdMngr->registerCommand(SPMod::ICommand::Type::Server, cmd, info, false, 0,
+                                        SPExt::Listener::CmdCallback, func);
     }
 
     return gCommandHandlers.create(pCmd);
