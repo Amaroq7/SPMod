@@ -16,12 +16,8 @@ environment:
     - LINK_TYPE: static
 install:
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat"
-  - set PATH=C:\Python38-x64;C:\Python38-x64\Scripts;C:\Program Files\Meson;%PATH%
+  - set PATH=C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
   - git submodule update --init --recursive
-  - cd ..
-  - ps: Start-FileDownload 'https://github.com/mesonbuild/meson/releases/download/0.53.2/meson-0.53.2-64.msi'
-  - start /wait msiexec.exe /i meson-0.53.2-64.msi /quiet /qn /norestart
-  - cd SPMod
 build_script:
   - pwsh: appveyor\build.ps1
 after_build:

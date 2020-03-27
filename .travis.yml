@@ -11,77 +11,70 @@ matrix:
   include:
     - addons:
         apt:
-          sources:
-            - sourceline: 'ppa:ricotz/toolchain' #more recent meson version
           packages:
-            - clang-8
-            - lld-8
+            - llvm-9
+            - clang-9
+            - lld-9
             - gcc-multilib
             - g++-multilib
-            - meson
             - ninja-build
             - lib32z1-dev
             - lib32stdc++6
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - CLANG_VERSION=8 LINK_TYPE=static
+        - CLANG_VERSION=9 LINK_TYPE=static
       compiler: clang
 
     - addons:
         apt:
           sources:
-            - sourceline: 'ppa:ricotz/toolchain' #more recent meson version
-            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main'
+            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
-            - clang-9
-            - lld-9
+            - llvm-10
+            - clang-10
+            - lld-10
             - gcc-multilib
             - g++-multilib
-            - meson
             - ninja-build
             - lib32z1-dev
             - lib32stdc++6
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - CLANG_VERSION=9 LINK_TYPE=static CC_VERSION=9
+        - CLANG_VERSION=10 LINK_TYPE=static CC_VERSION=10
       compiler: clang
 
     - addons:
         apt:
           sources:
-            - sourceline: 'ppa:ricotz/toolchain' #more recent meson version
-            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main'
+            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
-            - clang-9
-            - lld-9
+            - llvm-10
+            - clang-10
+            - lld-10
             - gcc-multilib
             - g++-multilib
-            - meson
             - ninja-build
             - lib32z1-dev
             - lib32stdc++6
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - CLANG_VERSION=9 LINK_TYPE=dynamic CC_VERSION=9
+        - CLANG_VERSION=10 LINK_TYPE=dynamic CC_VERSION=10
       compiler: clang
 
     - addons:
         apt:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test' # workaround for disallowed source
-            - sourceline: 'ppa:ricotz/toolchain' #more recent meson version
           packages:
             - gcc-8
             - g++-8
             - gcc-8-multilib
             - g++-8-multilib
-            - python3
-            - meson
             - ninja-build
             - lib32z1-dev
             - lib32stdc++6
@@ -95,14 +88,11 @@ matrix:
         apt:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test' # workaround for disallowed source
-            - sourceline: 'ppa:ricotz/toolchain' #more recent meson version
           packages:
             - gcc-9
             - g++-9
             - gcc-9-multilib
             - g++-9-multilib
-            - python3
-            - meson
             - ninja-build
             - lib32z1-dev
             - lib32stdc++6
@@ -116,14 +106,11 @@ matrix:
         apt:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test' # workaround for disallowed source
-            - sourceline: 'ppa:ricotz/toolchain'
           packages:
             - gcc-9
             - g++-9
             - gcc-9-multilib
             - g++-9-multilib
-            - python3
-            - meson
             - ninja-build
             - lib32z1-dev
             - lib32stdc++6
@@ -155,7 +142,7 @@ deploy:
     on:
       tags: true
       branch: /^v\d+\.\d+(\.\d+)?(-\S*)?$/
-      condition: $CLANG_VERSION = 9 || $GCC_VERSION = 9
+      condition: $CLANG_VERSION = 10 || $GCC_VERSION = 9
   - provider: s3
     local-dir: upload/s3
     access_key_id: 
@@ -167,4 +154,4 @@ deploy:
     skip_cleanup: true
     on:
       branch: master
-      condition: $CLANG_VERSION = 9 || $GCC_VERSION = 9
+      condition: $CLANG_VERSION = 10 || $GCC_VERSION = 9

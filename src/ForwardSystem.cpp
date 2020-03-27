@@ -261,7 +261,7 @@ bool Forward::pushString(char *buffer, std::size_t size, IForward::StringFlags s
 
 std::array<IForward::IParam *, IForward::MAX_EXEC_PARAMS> Forward::getParamsImpl() const
 {
-    std::array<IForward::IParam *, IForward::MAX_EXEC_PARAMS> params;
+    std::array<IForward::IParam *, IForward::MAX_EXEC_PARAMS> params = {};
 
     std::size_t idx = 0;
     for (const auto &param : m_params)

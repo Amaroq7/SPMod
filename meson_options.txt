@@ -1,2 +1,0 @@
-option('linktype', type : 'combo', choices : [ 'static', 'dynamic' ], value : 'static', description : 'Linking type')
-option('extensions', type : 'array', choices : ['all', 'sourcepawn', 'example'], value : ['example', 'sourcepawn'], description : 'Extensions to build')

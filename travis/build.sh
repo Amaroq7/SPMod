@@ -1,6 +1,13 @@
 #!/bin/bash
+
+if [[ $LINK_TYPE == "dynamic" ]]
+then
+    BUILD_DYNAMIC="ON"
+else
+    BUILD_DYNAMIC="OFF"
+fi
+
 mkdir -p build
 cd build
-python /usr/bin/meson .. . --buildtype release --werror --optimization 3 --warnlevel 3 -D linktype=$LINK_TYPE -D b_lto=true -D cpp_std=c++17 -D c_std=c11
-python /usr/bin/meson configure
-ninja -v
+cmake -G Ninja --log-level=VERBOSE -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../upload -DBUILD_DYNAMIC=$BUILD_DYNAMIC .. .
+ninja install -v
