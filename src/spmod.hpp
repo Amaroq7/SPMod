@@ -22,13 +22,21 @@
 #include <IHelpers.hpp>
 
 // Metamod & HLSDK
+#if defined SP_MSVC
+    #pragma warning(push)
+    #pragma warning(disable:4100)
+#endif
+#include <osconfig.h>
+#if defined SP_MSVC
+    #pragma warning(pop)
+#endif
+
 #include <extdll.h>
 #include <meta_api.h>
 // Supress warning about redefining
 #undef MAX_PATH
 
 // ReHLDS
-#include <osconfig.h>
 #include <usercmd.h>
 #include <rehlds_api.h>
 
@@ -38,23 +46,21 @@
 // SPMod interface
 #include <ISPGlobal.hpp>
 
+// C
+#define __STDC_WANT_LIB_EXT1__
+#include <cstring>
+#include <cstdarg>
+
 // STL C++
 #include <memory>
 #include <vector>
 #include <sstream>
 #include <unordered_map>
 #include <exception>
-#include <array>
-#include <variant>
-#include <string_view>
 #include <fstream>
-#include <regex>
-#include <functional>
+#include <stack>
 
-// C
-#define __STDC_WANT_LIB_EXT1__
-#include <cstring>
-#include <cstdarg>
+#include <yaml-cpp/yaml.h>
 
 extern IRehldsApi *gRehldsApi;
 extern const RehldsFuncs_t *gRehldsFuncs;
@@ -73,7 +79,38 @@ using namespace SPMod;
 
 // SPMod specific
 #include <SPConfig.hpp>
-#include "Edict.hpp"
+
+#if defined SP_MSVC
+    #pragma warning(push)
+    #pragma warning(disable:4250)
+#endif
+
+// engine implementations
+#include "engine/EntVars.hpp"
+#include "engine/Edict.hpp"
+#include "engine/TraceResult.hpp"
+#include "engine/Funcs.hpp"
+#include "engine/Globals.hpp"
+#include "engine/Engine.hpp"
+
+// valve entities
+#include "valve/BaseEntity.hpp"
+#include "valve/BaseDelay.hpp"
+#include "valve/BaseAnimating.hpp"
+#include "valve/BaseToggle.hpp"
+#include "valve/BaseMonster.hpp"
+#include "valve/BasePlayer.hpp"
+
+// metamod
+#include "metamod/Funcs.hpp"
+#include "metamod/Metamod.hpp"
+
+#if defined SP_MSVC
+    #pragma warning(pop)
+#endif
+
+
+// SPMod
 #include "UtilsSystem.hpp"
 #include "LoggingSystem.hpp"
 #include "ForwardSystem.hpp"
@@ -85,8 +122,7 @@ using namespace SPMod;
 #include "MessageSystem.hpp"
 #include "ExtensionSystem.hpp"
 #include "NativeProxy.hpp"
-#include "EngineFuncs.hpp"
-#include "MetaFuncs.hpp"
+#include "VTableHookManager.hpp"
 #include "SPGlobal.hpp"
 
 constexpr const char *gSPModAuthor = "SPMod Development Team";

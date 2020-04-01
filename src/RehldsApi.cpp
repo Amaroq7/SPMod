@@ -31,7 +31,7 @@ static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain, IGameClient *cli
     Player *plr = plrMngr->getPlayer(client->GetEdict());
 
     Forward *forward = gSPGlobal->getForwardManager()->getForward(ForwardMngr::FWD_PLAYER_DISCONNECT);
-    forward->pushInt(plr->getIndex());
+    forward->pushInt(plr->basePlayer()->edict()->getIndex());
     forward->pushInt(crash);
     forward->pushString(string);
     forward->execFunc(nullptr);
@@ -42,7 +42,7 @@ static void SV_DropClientHook(IRehldsHook_SV_DropClient *chain, IGameClient *cli
     plr->disconnect();
 
     forward = gSPGlobal->getForwardManager()->getForward(ForwardMngr::FWD_PLAYER_DISCONNECTED);
-    forward->pushInt(plr->getIndex());
+    forward->pushInt(plr->basePlayer()->edict()->getIndex());
     forward->pushInt(crash);
     forward->pushString(string);
     forward->execFunc(nullptr);
@@ -59,7 +59,7 @@ static void Cvar_DirectSetHook(IRehldsHook_Cvar_DirectSet *chain, cvar_t *cvar, 
     }
 
     // If cached cvar is the same, do not update cached value
-    if (cachedCvar && cachedCvar->asString() == value)
+    if (cachedCvar && cachedCvar->asString() != value)
     {
         cachedCvar->setValue(value);
     }
@@ -106,8 +106,8 @@ static bool _initRehldsApi(CSysModule *module, std::string *error = nullptr)
     {
         std::stringstream msg;
 
-        msg << "ReHLDS API Major version mismatch; expected " << REHLDS_API_VERSION_MAJOR;
-        msg << ", got " << majorVersion;
+        msg << "ReHLDS API Major version mismatch; expected " << std::to_string(REHLDS_API_VERSION_MAJOR);
+        msg << ", got " << std::to_string(majorVersion);
 
         if (error)
             *error = msg.str();
@@ -119,8 +119,8 @@ static bool _initRehldsApi(CSysModule *module, std::string *error = nullptr)
     {
         std::stringstream msg;
 
-        msg << "ReHLDS API minor version mismatch; excpected at least " << REHLDS_API_VERSION_MINOR;
-        msg << ", got " << minorVersion;
+        msg << "ReHLDS API minor version mismatch; excpected at least " << std::to_string(REHLDS_API_VERSION_MINOR);
+        msg << ", got " << std::to_string(minorVersion);
 
         if (error)
             *error = msg.str();

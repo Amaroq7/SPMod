@@ -31,18 +31,49 @@ static cell_t MenuCreate(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_global
     };
 
-    SPMod::IMenuMngr *menuManager = gSPGlobal->getMenuManager();
     SPMod::IMenu *pMenu;
+    SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_handler]);
 
     if (static_cast<SPMod::IMenu::Style>(params[arg_style]) == SPMod::IMenu::Style::Item)
     {
-        pMenu = menuManager->registerMenu(SPExt::Listener::Menu, ctx->GetFunctionById(params[arg_handler]),
-                                          params[arg_global]);
+        pMenu = gSPMenuMngr->registerMenu(
+            [func](SPMod::IMenu *const menu, SPMod::IMenu::IItem *const item, SPMod::IPlayer *const player) {
+                if (func && func->IsRunnable())
+                {
+                    std::size_t menuId = gMenuHandlers.getKey(menu);
+                    func->PushCell(menuId);
+
+                    if (item->getNavType() == SPMod::NavigationType::None)
+                    {
+                        func->PushCell(
+                            static_cast<cell_t>(menuPackItem(menuId, static_cast<cell_t>(menu->getItemIndex(item)))));
+                    }
+                    else
+                    {
+                        func->PushCell(static_cast<cell_t>(item->getNavType()));
+                    }
+
+                    func->PushCell(static_cast<cell_t>(player->edict()->getIndex()));
+                    func->Execute(nullptr);
+                }
+            },
+            params[arg_global]
+        );
     }
     else
     {
-        pMenu = menuManager->registerMenu(SPExt::Listener::MenuText, ctx->GetFunctionById(params[arg_handler]),
-                                          params[arg_global]);
+        pMenu = gSPMenuMngr->registerMenu(
+            [func](SPMod::IMenu *const menu, int key, SPMod::IPlayer *const player) {
+                if (func && func->IsRunnable())
+                {
+                    func->PushCell(static_cast<cell_t>(gMenuHandlers.getKey(menu)));
+                    func->PushCell(static_cast<cell_t>(key));
+                    func->PushCell(static_cast<cell_t>(player->edict()->getIndex()));
+                    func->Execute(nullptr);
+                }
+            },
+            params[arg_global]
+        );
     }
 
     if (!pMenu)
@@ -121,9 +152,28 @@ static cell_t MenuAddItem(SourcePawn::IPluginContext *ctx, const cell_t *params)
 
     char *name;
     ctx->LocalToString(params[arg_name], &name);
+    SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_callback]);
 
-    SPMod::IMenu::IItem *item = pMenu->appendItem(name, SPExt::Listener::MenuItemCallback,
-                                                  ctx->GetFunctionById(params[arg_callback]), params[arg_data]);
+    auto callback = [func](SPMod::IMenu *const menu,
+                           SPMod::IMenu::IItem *const item,
+                           SPMod::IPlayer *const player) {
+        if (func && func->IsRunnable())
+        {
+            cell_t menuId = gMenuHandlers.getKey(menu);
+            cell_t result;
+            func->PushCell(menuId);
+            // item index?
+            func->PushCell(static_cast<cell_t>(menuPackItem(menuId, menu->getItemIndex(item))));
+            func->PushCell(static_cast<cell_t>(player->edict()->getIndex()));
+            func->Execute(reinterpret_cast<cell_t *>(&result));
+
+            return static_cast<SPMod::IMenu::IItem::Status>(result);
+        }
+
+        return SPMod::IMenu::IItem::Status::Enabled;
+    };
+
+    SPMod::IMenu::IItem *item = pMenu->appendItem(name, callback, params[arg_data]);
 
     if (!item)
         return 0;
@@ -166,8 +216,28 @@ static cell_t MenuAddStaticItem(SourcePawn::IPluginContext *ctx, const cell_t *p
     char *name;
     ctx->LocalToString(params[arg_name], &name);
 
-    pMenu->setStaticItem(static_cast<size_t>(params[arg_position]), name, SPExt::Listener::MenuItemCallback,
-                         ctx->GetFunctionById(params[arg_callback]), params[arg_data]);
+    SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_callback]);
+
+    auto callback = [func](SPMod::IMenu *const menu,
+                           SPMod::IMenu::IItem *const item,
+                           SPMod::IPlayer *const player) {
+        if (func && func->IsRunnable())
+        {
+            cell_t menuId = gMenuHandlers.getKey(menu);
+            cell_t result;
+            func->PushCell(menuId);
+            // item index?
+            func->PushCell(static_cast<cell_t>(menuPackItem(menuId, menu->getItemIndex(item))));
+            func->PushCell(static_cast<cell_t>(player->edict()->getIndex()));
+            func->Execute(reinterpret_cast<cell_t *>(&result));
+
+            return static_cast<SPMod::IMenu::IItem::Status>(result);
+        }
+
+        return SPMod::IMenu::IItem::Status::Enabled;
+    };
+
+    pMenu->setStaticItem(static_cast<size_t>(params[arg_position]), name, callback, params[arg_data]);
 
     return 1;
 }
@@ -206,9 +276,28 @@ static cell_t MenuInsertItem(SourcePawn::IPluginContext *ctx, const cell_t *para
 
     char *name;
     ctx->LocalToString(params[arg_name], &name);
+    SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_callback]);
 
-    pMenu->insertItem(static_cast<size_t>(params[arg_position]), name, SPExt::Listener::MenuItemCallback,
-                      ctx->GetFunctionById(params[arg_callback]), params[arg_data]);
+    auto callback = [func](SPMod::IMenu *const menu,
+                           SPMod::IMenu::IItem *const item,
+                           SPMod::IPlayer *const player) {
+        if (func && func->IsRunnable())
+        {
+            cell_t menuId = gMenuHandlers.getKey(menu);
+            cell_t result;
+            func->PushCell(menuId);
+            // item index?
+            func->PushCell(static_cast<cell_t>(menuPackItem(menuId, menu->getItemIndex(item))));
+            func->PushCell(static_cast<cell_t>(player->edict()->getIndex()));
+            func->Execute(reinterpret_cast<cell_t *>(&result));
+
+            return static_cast<SPMod::IMenu::IItem::Status>(result);
+        }
+
+      return SPMod::IMenu::IItem::Status::Enabled;
+    };
+
+    pMenu->insertItem(static_cast<size_t>(params[arg_position]), name, callback, params[arg_data]);
 
     return 1;
 }
@@ -340,7 +429,7 @@ static cell_t MenuDestroy(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    gSPGlobal->getMenuManager()->destroyMenu(pMenu);
+    gSPMenuMngr->destroyMenu(pMenu);
 
     return 1;
 }
@@ -572,14 +661,14 @@ static cell_t MenuClose(SourcePawn::IPluginContext *ctx, const cell_t *params)
 
     int player = params[arg_player];
 
-    if (player < 0 || static_cast<unsigned int>(player) > gSPGlobal->getPlayerManager()->getMaxClients())
+    if (player < 0 || static_cast<std::uint32_t>(player) > gSPPlrMngr->getMaxClients())
     {
         ctx->ReportError("Invalid player index! %d", player);
         return 0;
     }
 
     // TODO: make loop if player == 0
-    SPMod::IPlayer *spPlayer = gSPGlobal->getPlayerManager()->getPlayer(player);
+    SPMod::IPlayer *spPlayer = gSPPlrMngr->getPlayer(player);
     spPlayer->closeMenu();
 
     return 1;

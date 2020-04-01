@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 // Platform defines
 #if defined _WIN32
     #define SP_WINDOWS
@@ -90,3 +92,34 @@ constexpr const char *CNSL_WHITE = "";
 constexpr const char *CNSL_BOLD = "";
 constexpr const char *CNSL_RESET = "";
 #endif
+
+template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+constexpr bool operator&(const T lhs, const T rhs)
+{
+    using enumType = std::underlying_type_t<T>;
+    return static_cast<bool>(static_cast<enumType>(lhs) & static_cast<enumType>(rhs));
+}
+
+template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+constexpr T operator|(const T lhs, const T rhs)
+{
+    return static_cast<T>(static_cast<std::underlying_type_t<T>>(lhs) | static_cast<std::underlying_type_t<T>>(rhs));
+}
+
+template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+constexpr T operator^(const T lhs, const T rhs)
+{
+    return static_cast<T>(static_cast<std::underlying_type_t<T>>(lhs) ^ static_cast<std::underlying_type_t<T>>(rhs));
+}
+
+template<typename T, typename S, typename = std::enable_if_t<std::is_enum_v<T>>>
+constexpr bool operator==(const S lhs, const T rhs)
+{
+    return lhs == static_cast<std::underlying_type_t<T>>(rhs);
+}
+
+template<typename T, typename S, typename = std::enable_if_t<std::is_enum_v<T>>>
+constexpr bool operator!=(const S lhs, const T rhs)
+{
+    return lhs != static_cast<std::underlying_type_t<T>>(rhs);
+}

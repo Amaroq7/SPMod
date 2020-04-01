@@ -21,17 +21,11 @@
 
 namespace SPMod
 {
-    enum class LogLevel : uint8_t
-    {
-        Debug,
-        Info,
-        Warning,
-        Error
-    };
-
     class ILogger
     {
     public:
+        virtual ~ILogger() = default;
+
         /**
          * @brief Sets logging file.
          *
@@ -40,7 +34,6 @@ namespace SPMod
          *
          * @param filename        Name of the file to log messages to.
          *
-         * @noreturn
          */
         virtual void setFilename(std::string_view filename) = 0;
 
@@ -50,7 +43,6 @@ namespace SPMod
          * @param level         Level of the log.
          * @param msg           Message to log.
          *
-         * @noreturn
          */
         virtual void logToConsole(LogLevel level, std::string_view msg) const = 0;
 
@@ -64,7 +56,6 @@ namespace SPMod
          * @param level         Level of the log.
          * @param msg           Message to log.
          *
-         * @noreturn
          */
         virtual void logToFile(LogLevel level, std::string_view msg) const = 0;
 
@@ -74,7 +65,6 @@ namespace SPMod
          * @param level         Level of the log.
          * @param msg           Message to log.
          *
-         * @noreturn
          */
         virtual void logToBoth(LogLevel level, std::string_view msg) const = 0;
 
@@ -83,7 +73,6 @@ namespace SPMod
          *
          * @param msg           Message to log.
          *
-         * @noreturn
          */
         virtual void sendMsgToConsole(std::string_view msg) const = 0;
 
@@ -92,7 +81,6 @@ namespace SPMod
          *
          * @param logLevel      Log level to set.
          *
-         * @noreturn
          */
         virtual void setLogLevel(LogLevel logLevel) = 0;
 
@@ -102,8 +90,6 @@ namespace SPMod
          * @return              Currently set log level.
          */
         virtual LogLevel getLogLevel() const = 0;
-
-        virtual ~ILogger() = default;
     };
 
     class ILoggerMngr : public ISPModInterface
@@ -136,6 +122,8 @@ namespace SPMod
             return VERSION;
         }
 
+        virtual ~ILoggerMngr() = default;
+
         /**
          * @brief Creates a new logger.
          *
@@ -146,7 +134,5 @@ namespace SPMod
          * @return      Logger's instance.
          */
         virtual ILogger *getLogger(std::string_view prefix) = 0;
-
-        virtual ~ILoggerMngr() = default;
     };
 } // namespace SPMod

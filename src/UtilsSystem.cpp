@@ -51,7 +51,7 @@ std::string Utils::strReplaced(std::string_view source, std::string_view from, s
     return temp;
 }
 
-void Utils::ShowMenu(const Edict *pEdict, std::uint32_t slots, std::uint32_t time, std::string_view menu)
+void Utils::ShowMenu(const Engine::Edict *pEdict, std::uint32_t slots, std::uint32_t time, std::string_view menu)
 {
     static constexpr std::size_t maxStringToSend = 175;
     static constexpr std::size_t maxMenuLength = 512;
@@ -65,7 +65,7 @@ void Utils::ShowMenu(const Edict *pEdict, std::uint32_t slots, std::uint32_t tim
     do
     {
         menuLength -= buffer.length();
-        MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, nullptr, pEdict->getInternalEdict());
+        MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, nullptr, *pEdict);
         WRITE_SHORT(slots);
         WRITE_CHAR(time);
         WRITE_BYTE((menuLength > 0) ? true : false);

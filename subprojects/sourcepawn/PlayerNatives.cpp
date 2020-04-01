@@ -112,7 +112,7 @@ static cell_t GetIndex(SourcePawn::IPluginContext *ctx [[maybe_unused]], const c
         return 0;
     }
 
-    return plr->getIndex();
+    return plr->basePlayer()->edict()->getIndex();
 }
 
 // int Player.UserID.get()
@@ -238,7 +238,7 @@ static cell_t HealthGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
         return 0;
     }
 
-    return static_cast<cell_t>(plr->getHealth());
+    return 0; // static_cast<cell_t>(plr->getHealth());
 }
 
 // void Player.Health.set(int health)
@@ -257,8 +257,32 @@ static cell_t HealthSet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
         return 0;
     }
 
-    plr->setHealth(static_cast<float>(params[arg_health]));
-    return 1;
+    // plr->setHealth(static_cast<float>(params[arg_health]));
+    return 0; // 1;
+}
+
+// void Player.Health.set(int health)
+static cell_t TakeDamage(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    enum
+    {
+        arg_id = 1,
+        arg_attacker,
+        arg_inflictor,
+        arg_damage,
+        arg_dmgbits
+    };
+
+    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    if (!plr)
+    {
+        ctx->ReportError("Non player index (%i)", params[arg_id]);
+        return 0;
+    }
+    auto attacker = gSPEngine->getEdict(params[arg_attacker])->getEntVars();
+    auto inflictor = gSPEngine->getEdict(params[arg_inflictor])->getEntVars();
+
+    return plr->basePlayer()->takeDamage(attacker, inflictor, sp_ctof(params[arg_damage]), params[arg_dmgbits]);
 }
 
 sp_nativeinfo_t gPlayerNatives[] = {{"Player.GetName", GetName},
@@ -273,4 +297,5 @@ sp_nativeinfo_t gPlayerNatives[] = {{"Player.GetName", GetName},
                                     {"Player.InGame.get", InGame},
                                     {"Player.Health.get", HealthGet},
                                     {"Player.Health.set", HealthSet},
+                                    {"Player.TakeDamage", TakeDamage},
                                     {nullptr, nullptr}};

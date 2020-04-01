@@ -17,31 +17,29 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "../spmod.hpp"
 
-#include "spmod.hpp"
-
-class Edict : public virtual IEdict
+namespace SPMod::Engine
 {
-public:
-    Edict() = delete;
-    Edict(edict_t *edict);
-    Edict(std::uint32_t index);
-    ~Edict() = default;
+    EntVars::EntVars(entvars_t *entvars) : m_entVars(entvars) {}
 
-    // IEdict
-    std::uint32_t getIndex() const override;
-    std::string_view getClassName() const override;
-    void getOrigin(float *origin) const override;
-    void getVelocity(float *velocity) const override;
-    void setVelocity(const float *velocity) override;
-    float getHealth() const override;
-    void setHealth(float health) override;
-    void *getPrivateData() const override;
+    EntFlags EntVars::getFlags() const
+    {
+        return static_cast<EntFlags>(m_entVars->flags);
+    }
 
-    // Edict
-    edict_t *getInternalEdict() const;
+    void EntVars::setFlags(EntFlags flags)
+    {
+        m_entVars->flags = static_cast<int>(flags);
+    }
 
-protected:
-    edict_t *m_edict;
-};
+    std::uint32_t EntVars::getIndex() const
+    {
+        return static_cast<std::uint32_t>(ENTINDEX(ENT(m_entVars)));
+    }
+
+    EntVars::operator entvars_t *() const
+    {
+        return m_entVars;
+    }
+} // namespace SPMod::Engine

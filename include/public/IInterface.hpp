@@ -27,6 +27,8 @@ namespace SPMod
     class IModuleInterface
     {
     public:
+        virtual ~IModuleInterface() = default;
+
         /**
          * @brief Gets interface's name.
          *
@@ -80,13 +82,13 @@ namespace SPMod
          * @return              Interface's implementation.
          */
         virtual void *getImplementation() const = 0;
-
-        virtual ~IModuleInterface() = default;
     };
 
     class IAdapterInterface
     {
     public:
+        virtual ~IAdapterInterface() = default;
+
         /**
          * @brief Gets interface's name.
          *
@@ -140,13 +142,13 @@ namespace SPMod
          * @return              Plugin manager.
          */
         virtual IPluginMngr *getPluginMngr() const = 0;
-
-        virtual ~IAdapterInterface() = default;
     };
 
     class ISPModInterface
     {
     public:
+        virtual ~ISPModInterface() = default;
+
         virtual std::string_view getName() const = 0;
         virtual std::uint32_t getVersion() const = 0;
 
@@ -175,8 +177,6 @@ namespace SPMod
 
             return true;
         }
-
-        virtual ~ISPModInterface() = default;
     };
 
     enum class ExtQueryValue : std::uint8_t

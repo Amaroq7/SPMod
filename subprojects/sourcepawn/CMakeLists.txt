@@ -49,7 +49,6 @@ set(SRC_FILES AdapterInterface.cpp
               ExtMain.cpp
               FloatNatives.cpp
               ForwardsNatives.cpp
-              Listeners.cpp
               MenuNatives.cpp
               MessageNatives.cpp
               PlayerNatives.cpp
@@ -57,11 +56,12 @@ set(SRC_FILES AdapterInterface.cpp
               PrintfImpl.cpp
               SourcePawnAPI.cpp
               StringNatives.cpp
-              TimerNatives.cpp)
+              TimerNatives.cpp
+              VTableNatives.cpp)
 
 add_library(${PROJECT_NAME} MODULE ${SRC_FILES})
 
-include(${CMAKE_SOURCE_DIR}/CompilerSetup.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/CompilerSetup.cmake)
 
 if (UNIX)
     target_link_options(${PROJECT_NAME} PRIVATE -m32 -ldl)
@@ -77,6 +77,7 @@ set_target_properties(
     ${PROJECT_NAME}
     PROPERTIES
     CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN 1
 )
 
 install(TARGETS ${PROJECT_NAME}

@@ -23,22 +23,19 @@
 
 class Menu;
 
-#if defined SP_MSVC
-    #pragma warning(push)
-    #pragma warning(disable : 4250) // inheritance via dominance warning
-#endif
-class Player : public Edict, public IPlayer
+class Player : public IPlayer
 {
 public:
     Player() = delete;
     ~Player() = default;
-    Player(const Edict *edict);
+    Player(Engine::Edict *edict);
 
     // IPlayer
     std::string_view getName() const override;
     std::string_view getIPAddress() const override;
     std::string_view getSteamID() const override;
     std::uint32_t getUserId() const override;
+    std::uint32_t getIndex() const override;
     bool isAlive() const override;
     bool isConnected() const override;
     bool isFake() const override;
@@ -47,6 +44,8 @@ public:
     void closeMenu() override;
     Menu *getMenu() const override;
     std::uint32_t getMenuPage() const override;
+    IBasePlayer *basePlayer() const override;
+    Engine::Edict *edict() const override;
 
     // Player
     void setName(std::string_view newname);
@@ -70,10 +69,9 @@ private:
 
     Menu *m_menu = nullptr;
     std::uint32_t m_menuPage = 0;
+    IBasePlayer *m_basePlayer;
+    Engine::Edict *m_edict;
 };
-#if defined SP_MSVC
-    #pragma warning(pop)
-#endif
 
 class PlayerMngr : public IPlayerMngr
 {
@@ -83,7 +81,7 @@ public:
 
     // IPlayerManager
     Player *getPlayer(std::uint32_t index) const override;
-    Player *getPlayer(const IEdict *edict) const override;
+    Player *getPlayer(const Engine::IEdict *edict) const override;
     std::uint32_t getMaxClients() const override;
     std::uint32_t getNumPlayers() const override;
 
@@ -102,11 +100,11 @@ public:
     void ServerActivatePost(edict_t *pEdictList, std::uint32_t clientMax);
     void ServerDeactivatePost();
 
-    static inline std::uint32_t m_playersNum;
+    static inline std::uint32_t m_playersNum = 0;
 
 private:
     void _setMaxClients(std::uint32_t maxClients);
-    void _initPlayers(edict_t *edictList);
+    void _initPlayers();
 
     std::vector<Player *> m_playersToAuth;
     float m_nextAuthCheck = 0.0f;

@@ -28,5 +28,5 @@ public:
     std::size_t strCopy(char *buffer, std::size_t size, std::string_view src) const override;
     std::string strReplaced(std::string_view source, std::string_view from, std::string_view to) const override;
 
-    void ShowMenu(const Edict *pEdict, std::uint32_t slots, std::uint32_t time, std::string_view menu);
+    void ShowMenu(const Engine::Edict *pEdict, std::uint32_t slots, std::uint32_t time, std::string_view menu);
 };

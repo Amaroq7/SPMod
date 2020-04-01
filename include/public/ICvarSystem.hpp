@@ -66,6 +66,8 @@ namespace SPMod
             NoExtraWhiteSpace = (1 << 9)
         };
 
+        virtual ~ICvar() = default;
+
         /**
          * @brief Returns name of the cvar.
          *
@@ -143,8 +145,6 @@ namespace SPMod
          * @return    String cvar value
          */
         virtual std::string_view asString() const = 0;
-
-        virtual ~ICvar() = default;
     };
 
     class ICvarMngr : public ISPModInterface
@@ -171,10 +171,12 @@ namespace SPMod
          *
          * @return        Interface's version.
          */
-        uint32_t getVersion() const override
+        std::uint32_t getVersion() const override
         {
             return VERSION;
         }
+
+        virtual ~ICvarMngr() = default;
 
         /*
          * @brief Registers cvar.
@@ -195,7 +197,5 @@ namespace SPMod
          * @return               Cvar pointer, nullptr if failed.
          */
         virtual ICvar *findCvar(std::string_view name) = 0;
-
-        virtual ~ICvarMngr() = default;
     };
 } // namespace SPMod

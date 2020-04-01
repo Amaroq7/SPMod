@@ -74,13 +74,12 @@ namespace SPMod
                 String = (1 << 4)
             };
 
+            virtual ~IParam() = default;
             virtual std::any getData() const = 0;
             virtual bool shouldCopyback() const = 0;
             virtual StringFlags getStringFlags() const = 0;
             virtual Type getDataType() const = 0;
             virtual std::size_t getDataSize() const = 0;
-
-            virtual ~IParam() = default;
         };
 
         /**
@@ -105,6 +104,8 @@ namespace SPMod
         };
 
         static constexpr std::size_t MAX_EXEC_PARAMS = 32;
+
+        virtual ~IForward() = default;
 
         /*
          * @brief Returns forward name.
@@ -231,8 +232,6 @@ namespace SPMod
          */
         virtual void resetParams() = 0;
 
-        virtual ~IForward() = default;
-
     protected:
         virtual std::array<IParam *, MAX_EXEC_PARAMS> getParamsImpl() const = 0;
     };
@@ -265,6 +264,8 @@ namespace SPMod
         {
             return VERSION;
         }
+
+        virtual ~IForwardMngr() = default;
 
         /*
          * @brief Creates forward.
@@ -341,86 +342,5 @@ namespace SPMod
          * @noreturn
          */
         virtual void addForwardListener(IForward::Callback func) = 0;
-
-        virtual ~IForwardMngr() = default;
     };
-
-    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline bool hasEnumFlag(const T type, const T flag)
-    {
-        return static_cast<bool>(static_cast<std::underlying_type_t<T>>(type) &
-                                 static_cast<std::underlying_type_t<T>>(flag));
-    }
-
-    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline T operator&(const T lhs, const T rhs)
-    {
-        return static_cast<T>(static_cast<std::underlying_type_t<T>>(lhs) &
-                              static_cast<std::underlying_type_t<T>>(rhs));
-    }
-
-    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline T operator&=(const T lhs, const T rhs)
-    {
-        auto returnVal = static_cast<std::underlying_type_t<T>>(lhs);
-        returnVal &= static_cast<std::underlying_type_t<T>>(rhs);
-
-        return static_cast<T>(returnVal);
-    }
-
-    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline T operator|(const T lhs, const T rhs)
-    {
-        return static_cast<T>(static_cast<std::underlying_type_t<T>>(lhs) |
-                              static_cast<std::underlying_type_t<T>>(rhs));
-    }
-
-    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline T operator|=(const T lhs, const T rhs)
-    {
-        auto returnVal = static_cast<std::underlying_type_t<T>>(lhs);
-        returnVal |= static_cast<std::underlying_type_t<T>>(rhs);
-
-        return static_cast<T>(returnVal);
-    }
-
-    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline T operator^(const T lhs, const T rhs)
-    {
-        return static_cast<T>(static_cast<std::underlying_type_t<T>>(lhs) ^
-                              static_cast<std::underlying_type_t<T>>(rhs));
-    }
-
-    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline T operator^=(const T lhs, const T rhs)
-    {
-        auto returnVal = static_cast<std::underlying_type_t<T>>(lhs);
-        returnVal ^= static_cast<std::underlying_type_t<T>>(rhs);
-
-        return static_cast<T>(returnVal);
-    }
-
-    template<typename T, typename S, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline bool operator==(const T lhs, const S rhs)
-    {
-        return static_cast<std::underlying_type_t<T>>(lhs) == rhs;
-    }
-
-    template<typename T, typename S, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline bool operator==(const S lhs, const T rhs)
-    {
-        return lhs == static_cast<std::underlying_type_t<T>>(rhs);
-    }
-
-    template<typename T, typename S, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline bool operator!=(const T lhs, const S rhs)
-    {
-        return static_cast<std::underlying_type_t<T>>(lhs) != rhs;
-    }
-
-    template<typename T, typename S, typename = std::enable_if_t<std::is_enum_v<T>>>
-    inline bool operator!=(const S lhs, const T rhs)
-    {
-        return lhs != static_cast<std::underlying_type_t<T>>(rhs);
-    }
 } // namespace SPMod

@@ -33,7 +33,7 @@ public:
 
     // ISPGlobal
     const fs::path &getPath(DirType type) const override;
-    std::string_view getModName() const override;
+    ModName getModName() const override;
     bool canPluginsPrecache() const override;
     IPlugin *getPlugin(std::string_view pluginname) const override;
 
@@ -46,20 +46,16 @@ public:
     PlayerMngr *getPlayerManager() const override;
     NativeProxy *getNativeProxy() const override;
     CommandMngr *getCommandManager() const override;
-    EngineFuncs *getEngineFuncs() const override;
-    EngineFuncsHooked *getEngineHookedFuncs() const override;
-    EngineGlobals *getEngineGlobals() const override;
-    MetaFuncs *getMetaFuncs() const override;
-    Edict *getEdict(std::uint32_t index) override;
+    Engine::Engine *getEngine() const override;
+    Metamod::Metamod *getMetamod() const override;
     Utils *getUtils() const override;
+    VTableHookManager *getVTableManager() const override;
 
     bool registerModule(IModuleInterface *interface) override;
     bool registerAdapter(IAdapterInterface *interface) override;
     IModuleInterface *getInterface(std::string_view name) const override;
 
     // SPGlobal
-    void clearEdicts();
-    void removeEdict(edict_t *edict);
     const auto &getModulesInterfaces() const
     {
         return m_modulesInterfaces;
@@ -82,6 +78,7 @@ private:
     fs::path m_SPModLogsDir;
     fs::path m_SPModDllsDir;
     fs::path m_SPModExtsDir;
+    fs::path m_SPModConfigsDir;
 
     std::unique_ptr<ForwardMngr> m_forwardManager;
     std::unique_ptr<CvarMngr> m_cvarManager;
@@ -92,17 +89,15 @@ private:
     std::unique_ptr<MessageMngr> m_messageManager;
     std::unique_ptr<PlayerMngr> m_plrManager;
     std::unique_ptr<NativeProxy> m_nativeProxy;
-    std::unique_ptr<EngineFuncs> m_engineFuncs;
-    std::unique_ptr<EngineFuncsHooked> m_engineFuncsHooked;
-    std::unique_ptr<EngineGlobals> m_engineGlobals;
-    std::unique_ptr<MetaFuncs> m_metaFuncs;
+    std::unique_ptr<SPMod::Engine::Engine> m_engine;
+    std::unique_ptr<SPMod::Metamod::Metamod> m_metamod;
     std::unique_ptr<Utils> m_utils;
+    std::unique_ptr<VTableHookManager> m_vTableHookManager;
 
-    std::string m_modName;
+    ModName m_modName;
     std::unordered_map<std::string, IModuleInterface *> m_modulesInterfaces;
     std::unordered_map<std::string, IAdapterInterface *> m_adaptersInterfaces;
     std::vector<std::unique_ptr<Extension>> m_extHandles;
-    std::unordered_map<std::uint32_t, std::unique_ptr<Edict>> m_edicts;
 
     bool m_canPluginsPrecache;
 };

@@ -21,17 +21,18 @@
 
 namespace SPMod
 {
-    /**
-     * @brief Maximum number of supported players.
-     */
-    constexpr std::uint32_t MAX_PLAYERS = 32U;
+    namespace Engine
+    {
+        class IEdict;
+    }
 
-    class IEdict;
     class IMenu;
 
-    class IPlayer : public virtual IEdict
+    class IPlayer
     {
     public:
+        virtual ~IPlayer() = default;
+
         /**
          * @brief Returns the player's name.
          *
@@ -56,9 +57,16 @@ namespace SPMod
         /**
          * @brief Returns the player's userid.
          *
-         * @return      Player's Userid.
+         * @return      Player's userid.
          */
         virtual std::uint32_t getUserId() const = 0;
+
+        /**
+         * @brief Returns the player's index.
+         *
+         * @return      Player's index.
+         */
+        virtual std::uint32_t getIndex() const = 0;
 
         /**
          * @brief Returns if the player is alive.
@@ -99,7 +107,8 @@ namespace SPMod
         virtual std::uint32_t getMenuPage() const = 0;
         virtual void closeMenu() = 0;
 
-        virtual ~IPlayer() = default;
+        virtual IBasePlayer *basePlayer() const = 0;
+        virtual Engine::IEdict *edict() const = 0;
     };
 
     class IPlayerMngr : public ISPModInterface
@@ -131,6 +140,8 @@ namespace SPMod
             return VERSION;
         }
 
+        virtual ~IPlayerMngr() = default;
+
         /**
          * @brief Returns IPlayer object by its client index.
          *
@@ -149,7 +160,7 @@ namespace SPMod
          *
          * @return          IPlayer object, nullptr if out of range.
          */
-        virtual IPlayer *getPlayer(const IEdict *edict) const = 0;
+        virtual IPlayer *getPlayer(const Engine::IEdict *edict) const = 0;
 
         /**
          * @brief Returns the maximum number of clients.
@@ -164,7 +175,5 @@ namespace SPMod
          * @return          Number of connected clients.
          */
         virtual std::uint32_t getNumPlayers() const = 0;
-
-        virtual ~IPlayerMngr() = default;
     };
 } // namespace SPMod

@@ -26,14 +26,15 @@ namespace SPMod
     class ICommand
     {
     public:
-        using Callback =
-            std::function<IForward::ReturnValue(IPlayer *const player, ICommand *const cmd, std::any data)>;
+        using Callback = std::function<IForward::ReturnValue(IPlayer *const player, ICommand *const cmd)>;
 
         enum class Type : std::uint8_t
         {
             Client,
             Server
         };
+
+        virtual ~ICommand() = default;
 
         /**
          * @brief Returns command's name or regex, depends on how command was registered.
@@ -66,8 +67,6 @@ namespace SPMod
          * @return Command's flags (bitwise).
          */
         virtual std::uint32_t getAccess() const = 0;
-
-        virtual ~ICommand() = default;
     };
 
     class ICommandMngr : public ISPModInterface
@@ -100,6 +99,8 @@ namespace SPMod
             return VERSION;
         }
 
+        virtual ~ICommandMngr() = default;
+
         /**
          * @brief Registers a command.
          *
@@ -110,8 +111,7 @@ namespace SPMod
          * @param info          Command info.
          * @param regex         Register command name as regex.
          * @param flags         Access flags.
-         * @param cb            Callback address.
-         * @param data          Data that will be sent to callback.
+         * @param cb            Callback.
          *
          * @return        Registered command.
          */
@@ -120,9 +120,6 @@ namespace SPMod
                                           std::string_view info,
                                           bool regex,
                                           std::uint32_t flags,
-                                          ICommand::Callback cb,
-                                          std::any data) = 0;
-
-        virtual ~ICommandMngr() = default;
+                                          ICommand::Callback cb) = 0;
     };
 } // namespace SPMod

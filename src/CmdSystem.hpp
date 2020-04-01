@@ -31,8 +31,8 @@ class Command : public ICommand
 public:
     Command() = delete;
     virtual ~Command() = default;
-    Command(std::string &&cmd, std::string_view info, ICommand::Callback cb, std::any data);
-    Command(std::regex &&cmd, std::string_view info, ICommand::Callback cb, std::any data);
+    Command(std::string &&cmd, std::string_view info, ICommand::Callback cb);
+    Command(std::regex &&cmd, std::string_view info, ICommand::Callback cb);
 
     const std::variant<std::string, std::regex> &getNameOrRegex() const override;
     std::string_view getInfo() const override;
@@ -47,9 +47,6 @@ protected:
 
     /* cmd callback */
     ICommand::Callback m_callback;
-
-    /* callback data */
-    std::any m_data;
 };
 
 /* @brief Represents client command */
@@ -61,8 +58,8 @@ public:
     ClientCommand(ClientCommand &&other) = default;
     ~ClientCommand() = default;
 
-    ClientCommand(std::string &&cmd, std::string_view info, std::uint32_t flags, ICommand::Callback cb, std::any data);
-    ClientCommand(std::regex &&cmd, std::string_view info, std::uint32_t flags, ICommand::Callback cb, std::any data);
+    ClientCommand(std::string &&cmd, std::string_view info, std::uint32_t flags, ICommand::Callback cb);
+    ClientCommand(std::regex &&cmd, std::string_view info, std::uint32_t flags, ICommand::Callback cb);
 
     bool hasAccess(const IPlayer *player) const override;
     uint32_t getAccess() const override;
@@ -84,7 +81,7 @@ public:
     ServerCommand(ServerCommand &&other) = default;
     ~ServerCommand() = default;
 
-    ServerCommand(std::string_view cmd, std::string_view info, ICommand::Callback cb, std::any data);
+    ServerCommand(std::string_view cmd, std::string_view info, ICommand::Callback cb);
 
     bool hasAccess(const IPlayer *player) const override;
     std::uint32_t getAccess() const override;
@@ -101,8 +98,7 @@ public:
                              std::string_view info,
                              bool regex,
                              std::uint32_t flags,
-                             ICommand::Callback cb,
-                             std::any data);
+                             ICommand::Callback cb) override;
 
     template<typename T, typename... Args, typename = std::enable_if_t<std::is_base_of_v<Command, T>>>
     const std::unique_ptr<Command> &registerCommandInternal(Args... args)

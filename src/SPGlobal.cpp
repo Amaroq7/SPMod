@@ -27,17 +27,39 @@ SPGlobal::SPGlobal(fs::path &&dllDir)
       m_cmdManager(std::make_unique<CommandMngr>()), m_timerManager(std::make_unique<TimerMngr>()),
       m_menuManager(std::make_unique<MenuMngr>()), m_messageManager(std::make_unique<MessageMngr>()),
       m_plrManager(std::make_unique<PlayerMngr>()), m_nativeProxy(std::make_unique<NativeProxy>()),
-      m_engineFuncs(std::make_unique<EngineFuncs>()), m_engineFuncsHooked(std::make_unique<EngineFuncsHooked>()),
-      m_engineGlobals(std::make_unique<EngineGlobals>()), m_metaFuncs(std::make_unique<MetaFuncs>()),
-      m_utils(std::make_unique<Utils>()), m_modName(GET_GAME_INFO(PLID, GINFO_NAME))
+      m_engine(std::make_unique<Engine::Engine>()), m_metamod(std::make_unique<Metamod::Metamod>()),
+      m_utils(std::make_unique<Utils>())
 {
     // Sets default dirs
     setPath(DirType::Plugins, "plugins");
     setPath(DirType::Logs, "logs");
     setPath(DirType::Dlls, "dlls");
     setPath(DirType::Exts, "exts");
+    setPath(DirType::Configs, "configs");
 
-    m_edicts.reserve(MAX_EDICTS);
+    m_vTableHookManager = std::make_unique<VTableHookManager>(getPath(DirType::Configs));
+
+    std::string_view modName(GET_GAME_INFO(PLID, GINFO_NAME));
+    if (modName == "valve")
+    {
+        m_modName = ModName::Valve;
+    }
+    else if (modName == "cstrike")
+    {
+        m_modName = ModName::Cstrike;
+    }
+    else if (modName == "czero")
+    {
+        m_modName = ModName::CZero;
+    }
+    else if (modName == "dod")
+    {
+        m_modName = ModName::DoD;
+    }
+    else if (modName == "tfc")
+    {
+        m_modName = ModName::TFC;
+    }
 }
 
 std::size_t SPGlobal::loadExts()
@@ -160,6 +182,8 @@ const fs::path &SPGlobal::getPath(DirType type) const
             return m_SPModLogsDir;
         case DirType::Plugins:
             return m_SPModPluginsDir;
+        case DirType::Configs:
+            return m_SPModConfigsDir;
         default:
             return empty;
     }
@@ -191,12 +215,16 @@ void SPGlobal::setPath(DirType type, std::string_view path)
             m_SPModPluginsDir = m_SPModDir / path;
             break;
         }
+        case DirType::Configs:
+        {
+            m_SPModConfigsDir = m_SPModDir / path;
+        }
         default:
             break;
     }
 }
 
-std::string_view SPGlobal::getModName() const
+ModName SPGlobal::getModName() const
 {
     return m_modName;
 }
@@ -231,11 +259,6 @@ PlayerMngr *SPGlobal::getPlayerManager() const
     return m_plrManager.get();
 }
 
-MessageMngr *SPGlobal::getMessageManager() const
-{
-    return m_messageManager.get();
-}
-
 CommandMngr *SPGlobal::getCommandManager() const
 {
     return m_cmdManager.get();
@@ -251,42 +274,19 @@ NativeProxy *SPGlobal::getNativeProxy() const
     return m_nativeProxy.get();
 }
 
-EngineFuncs *SPGlobal::getEngineFuncs() const
+Engine::Engine *SPGlobal::getEngine() const
 {
-    return m_engineFuncs.get();
+    return m_engine.get();
 }
 
-EngineFuncsHooked *SPGlobal::getEngineHookedFuncs() const
+Metamod::Metamod *SPGlobal::getMetamod() const
 {
-    return m_engineFuncsHooked.get();
+    return m_metamod.get();
 }
 
-EngineGlobals *SPGlobal::getEngineGlobals() const
+VTableHookManager *SPGlobal::getVTableManager() const
 {
-    return m_engineGlobals.get();
-}
-
-MetaFuncs *SPGlobal::getMetaFuncs() const
-{
-    return m_metaFuncs.get();
-}
-
-Edict *SPGlobal::getEdict(std::uint32_t index)
-{
-    try
-    {
-        return m_edicts.at(index).get();
-    }
-    catch (const std::out_of_range &e [[maybe_unused]])
-    {
-        // check if edict is valid and register it
-        if (edict_t *edict = INDEXENT(index); edict)
-        {
-            auto resultIter = m_edicts.emplace(index, std::make_unique<Edict>(index)).first;
-            return (*resultIter).second.get();
-        }
-        return nullptr;
-    }
+    return m_vTableHookManager.get();
 }
 
 bool SPGlobal::registerAdapter(IAdapterInterface *interface)
@@ -305,14 +305,4 @@ IModuleInterface *SPGlobal::getInterface(std::string_view name) const
         return iter->second;
 
     return nullptr;
-}
-
-void SPGlobal::clearEdicts()
-{
-    m_edicts.clear();
-}
-
-void SPGlobal::removeEdict(edict_t *edict)
-{
-    m_edicts.erase(ENTINDEX(edict));
 }

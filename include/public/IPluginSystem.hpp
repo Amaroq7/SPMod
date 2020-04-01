@@ -27,6 +27,8 @@ namespace SPMod
     class IPlugin
     {
     public:
+        virtual ~IPlugin() = default;
+
         /**
          * @brief Returns name of plugin.
          *
@@ -131,13 +133,13 @@ namespace SPMod
          * @return        Param as pointer to float.
          */
         virtual void *getProxiedParamAsArray(std::size_t index) const = 0;
-
-        virtual ~IPlugin() = default;
     };
 
     class IPluginMngr
     {
     public:
+        virtual ~IPluginMngr() = default;
+
         /**
          * @brief Searches for plugin by specified identity.
          *
@@ -150,21 +152,18 @@ namespace SPMod
         /**
          * @brief Loads plugins.
          *
-         * @noreturn
          */
         virtual void loadPlugins() = 0;
 
         /**
          * @brief Binds natives created by other plugins.
          *
-         * @noreturn
          */
         virtual void bindPluginsNatives() = 0;
 
         /**
          * @brief Unloads plugins.
          *
-         * @noreturn
          */
         virtual void unloadPlugins() = 0;
 
@@ -198,7 +197,5 @@ namespace SPMod
          * @return        Plugins list.
          */
         virtual const std::vector<IPlugin *> &getPluginsList() const = 0;
-
-        virtual ~IPluginMngr() = default;
     };
 } // namespace SPMod

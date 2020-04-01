@@ -31,13 +31,12 @@ static cell_t CvarRegister(SourcePawn::IPluginContext *ctx, const cell_t *params
         arg_flags
     };
 
-    SPMod::ICvarMngr *cvarMngr = gSPGlobal->getCvarManager();
     char *cvarName, *cvarValue;
     ctx->LocalToString(params[arg_name], &cvarName);
     ctx->LocalToString(params[arg_value], &cvarValue);
 
     SPMod::ICvar *plCvar =
-        cvarMngr->registerCvar(cvarName, cvarValue, static_cast<SPMod::ICvar::Flags>(params[arg_flags]));
+        gSPCvarMngr->registerCvar(cvarName, cvarValue, static_cast<SPMod::ICvar::Flags>(params[arg_flags]));
     if (!plCvar)
         return -1;
 
@@ -75,7 +74,7 @@ static cell_t CvarGetName(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
 
-    return gSPGlobal->getUtils()->strCopy(destBuffer, params[arg_size], cvar->getName());
+    return gSPUtils->strCopy(destBuffer, params[arg_size], cvar->getName());
 }
 
 static cell_t CvarGetFloat(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -128,7 +127,7 @@ static cell_t CvarGetString(SourcePawn::IPluginContext *ctx, const cell_t *param
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
 
-    return gSPGlobal->getUtils()->strCopy(destBuffer, params[arg_size], cvar->asString());
+    return gSPUtils->strCopy(destBuffer, params[arg_size], cvar->asString());
 }
 
 static cell_t CvarGetInt(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -286,7 +285,23 @@ static cell_t CvarAddCallback(SourcePawn::IPluginContext *ctx, const cell_t *par
     if (ptr)
     {
         // Add callback for plugins
-        cvar->addCallback(SPExt::Listener::Cvar);
+        cvar->addCallback([](const SPMod::ICvar *const cvar,
+                             std::string_view old_value,
+                             std::string_view new_value) {
+            auto range = gCvarPluginsCallbacks.equal_range(const_cast<SPMod::ICvar *>(cvar));
+            for (auto it = range.first; it != range.second; it++)
+            {
+                SourcePawn::IPluginFunction *func = it->second;
+
+                if (!func || !func->IsRunnable())
+                    continue;
+
+                func->PushCell(gCvarsHandlers.getKey(const_cast<SPMod::ICvar *>(cvar)));
+                func->PushString(old_value.data());
+                func->PushString(new_value.data());
+                func->Execute(nullptr);
+            }
+        });
 
         gCvarPluginsCallbacks.emplace(cvar, ptr);
     }
@@ -327,12 +342,10 @@ static cell_t CvarFind(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_name = 1
     };
 
-    SPMod::ICvarMngr *cvarMngr = gSPGlobal->getCvarManager();
-
     char *cvarName;
     ctx->LocalToString(params[arg_name], &cvarName);
 
-    SPMod::ICvar *plCvar = cvarMngr->findCvar(cvarName);
+    SPMod::ICvar *plCvar = gSPCvarMngr->findCvar(cvarName);
 
     if (!plCvar)
         return -1;

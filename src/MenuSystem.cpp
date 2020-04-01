@@ -17,6 +17,7 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+
 #include "spmod.hpp"
 
 std::int32_t gmsgShowMenu = 0;
@@ -25,10 +26,9 @@ std::int32_t gmsgVGUIMenu = 0;
 Menu::Item::Item(Menu *menu,
                  std::string_view name,
                  Callback callback,
-                 std::any cbData,
                  std::any data,
                  NavigationType type)
-    : m_menu(menu), m_name(name), m_callback(callback), m_data(data), m_cbData(cbData), m_type(type)
+    : m_menu(menu), m_name(name), m_callback(std::move(callback)), m_data(std::move(data)), m_type(type)
 {
 }
 
@@ -47,12 +47,6 @@ NavigationType Menu::Item::getNavType() const
     return m_type;
 }
 
-void Menu::Item::setCallback(Callback func, std::any data)
-{
-    m_callback = func;
-    m_cbData = data;
-}
-
 // MenuItem
 std::string_view Menu::Item::getName() const
 {
@@ -65,15 +59,15 @@ void Menu::Item::setName(std::string_view name)
 
 Menu::Item::Status Menu::Item::execCallback(IPlayer *player)
 {
-    return (m_callback ? m_callback(m_menu, this, player, m_cbData) : Status::Enabled);
+    return (m_callback ? m_callback(m_menu, this, player) : Status::Enabled);
 }
 
-Menu::Menu(const std::variant<ItemHandler, TextHandler> &handler, std::any data, Menu::Style style, bool global)
+Menu::Menu(const std::variant<ItemHandler, TextHandler> &handler, Menu::Style style, bool global)
     : m_style(style), m_global(global), m_numberFormat("\\r#num."), m_time(static_cast<std::uint32_t>(-1)),
-      m_itemsPerPage(7), m_keys(0), m_cbData(data),
-      m_nextItem(std::make_unique<Item>(this, "Next", Item::Callback(), std::any(), std::any(), NavigationType::Next)),
-      m_backItem(std::make_unique<Item>(this, "Back", Item::Callback(), std::any(), std::any(), NavigationType::Back)),
-      m_exitItem(std::make_unique<Item>(this, "Exit", Item::Callback(), std::any(), std::any(), NavigationType::Exit)),
+      m_itemsPerPage(7), m_keys(0),
+      m_nextItem(std::make_unique<Item>(this, "Next", Item::Callback(), std::any(), NavigationType::Next)),
+      m_backItem(std::make_unique<Item>(this, "Back", Item::Callback(), std::any(), NavigationType::Back)),
+      m_exitItem(std::make_unique<Item>(this, "Exit", Item::Callback(), std::any(), NavigationType::Exit)),
       m_handler(handler)
 {
 }
@@ -126,7 +120,7 @@ void Menu::display(IPlayer *player, std::uint32_t page, std::uint32_t time)
             if (r == Item::Status::Enabled)
             {
                 text << " \\w" << n << "\n";
-                keys |= (1 << s);
+                keys |= (1u << s);
             }
             else
             {
@@ -220,7 +214,7 @@ void Menu::display(IPlayer *player, std::uint32_t page, std::uint32_t time)
     m_time = time;
 
     // show
-    gSPGlobal->getUtils()->ShowMenu(playerImpl, m_keys, time, m_text);
+    gSPGlobal->getUtils()->ShowMenu(playerImpl->edict(), m_keys, time, m_text);
 }
 
 bool Menu::getGlobal() const
@@ -278,33 +272,31 @@ Menu::Item *Menu::keyToItem(std::uint32_t key) const
     return m_slots.at(key);
 }
 
-Menu::Item *Menu::appendItem(std::string_view name, Item::Callback callback, std::any cbData, std::any data)
+Menu::Item *Menu::appendItem(std::string_view name, Item::Callback callback, std::any data)
 {
-    return _addItem(static_cast<std::uint32_t>(-1), name, callback, cbData, data);
+    return _addItem(static_cast<std::uint32_t>(-1), name, callback, data);
 }
 
 Menu::Item *Menu::insertItem(std::size_t position,
                              std::string_view name,
                              Item::Callback callback,
-                             std::any cbData,
                              std::any data)
 {
     if (position >= m_items.size())
         return nullptr;
 
-    return _addItem(position, name, callback, cbData, data);
+    return _addItem(position, name, callback, data);
 }
 
 Menu::Item *Menu::setStaticItem(std::size_t position,
                                 std::string_view name,
                                 Item::Callback callback,
-                                std::any cbData,
                                 std::any data)
 {
     if (position >= m_itemsPerPage)
         return nullptr;
 
-    m_staticItems[position] = std::make_unique<Item>(this, name, callback, cbData, data, NavigationType::None);
+    m_staticItems[position] = std::make_unique<Item>(this, name, callback, data, NavigationType::None);
     return m_staticItems[position].get();
 }
 
@@ -355,18 +347,13 @@ Menu::Item *Menu::getItem(std::size_t position) const
 void Menu::execTextHandler(Player *player, std::uint32_t key)
 {
     auto func = std::get<TextHandler>(m_handler);
-    func(this, key, player, m_cbData);
+    func(this, key, player);
 }
 
 void Menu::execItemHandler(Player *player, Menu::Item *item)
 {
     auto func = std::get<ItemHandler>(m_handler);
-    func(this, item, player, m_cbData);
-}
-
-std::any Menu::getCallbackData() const
-{
-    return m_cbData;
+    func(this, item, player);
 }
 
 void Menu::execExitHandler(Player *player)
@@ -377,24 +364,22 @@ void Menu::execExitHandler(Player *player)
 Menu::Item *Menu::_addItem(std::uint32_t position,
                            std::string_view name,
                            Item::Callback callback,
-                           std::any cbData,
                            std::any data)
 {
     if (position == static_cast<std::uint32_t>(-1))
     {
-        return m_items.emplace_back(std::make_unique<Item>(this, name, callback, cbData, data, NavigationType::None))
+        return m_items.emplace_back(std::make_unique<Item>(this, name, callback, data, NavigationType::None))
             .get();
     }
     else
     {
         return (*m_items.insert(m_items.begin() + position,
-                                std::make_unique<Item>(this, name, callback, cbData, data, NavigationType::None)))
+                                std::make_unique<Item>(this, name, callback, data, NavigationType::None)))
             .get();
     }
 }
 
 Menu *MenuMngr::registerMenu(const std::variant<Menu::ItemHandler, Menu::TextHandler> &handler,
-                             std::any data,
                              bool global)
 {
     return std::visit(
@@ -403,11 +388,11 @@ Menu *MenuMngr::registerMenu(const std::variant<Menu::ItemHandler, Menu::TextHan
 
             if constexpr (std::is_same_v<T, Menu::ItemHandler>)
             {
-                return m_menus.emplace_back(std::make_unique<Menu>(handler, data, IMenu::Style::Item, global)).get();
+                return m_menus.emplace_back(std::make_unique<Menu>(handler, IMenu::Style::Item, global)).get();
             }
             else if constexpr (std::is_same_v<T, Menu::TextHandler>)
             {
-                return m_menus.emplace_back(std::make_unique<Menu>(handler, data, IMenu::Style::Text, global)).get();
+                return m_menus.emplace_back(std::make_unique<Menu>(handler, IMenu::Style::Text, global)).get();
             }
         },
         handler);

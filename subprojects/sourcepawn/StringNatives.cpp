@@ -67,7 +67,7 @@ static cell_t CopyString(SourcePawn::IPluginContext *ctx, const cell_t *params)
     ctx->LocalToString(params[arg_buffer], &destArray);
     ctx->LocalToString(params[arg_source], &stringToCopy);
 
-    return gSPGlobal->getUtils()->strCopy(destArray, params[arg_size], stringToCopy);
+    return gSPUtils->strCopy(destArray, params[arg_size], stringToCopy);
 }
 
 sp_nativeinfo_t gStringNatives[] = {{"NumToString", NumToString},

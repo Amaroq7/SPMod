@@ -5,7 +5,7 @@ set(SRC_FILES DummyPluginMngr.cpp
 
 add_library(${PROJECT_NAME} MODULE ${SRC_FILES})
 
-include(${CMAKE_SOURCE_DIR}/CompilerSetup.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/CompilerSetup.cmake)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include/public)
 
 if (UNIX)
@@ -19,4 +19,5 @@ set_target_properties(
     ${PROJECT_NAME}
     PROPERTIES
     CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN 1
 )

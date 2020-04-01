@@ -34,7 +34,6 @@ static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
     };
 
     auto execType = static_cast<SPMod::IForward::ExecType>(params[arg_exec]);
-    auto fwdMngr = gSPGlobal->getForwardManager();
 
     char *fwdName;
     ctx->LocalToString(params[arg_name], &fwdName);
@@ -81,10 +80,10 @@ static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
             return -1;
         }
 
-        forward = fwdMngr->createForward(fwdName, plugin, fwdParamsList);
+        forward = gSPFwdMngr->createForward(fwdName, plugin, fwdParamsList);
     }
     else
-        forward = fwdMngr->createForward(fwdName, execType, fwdParamsList);
+        forward = gSPFwdMngr->createForward(fwdName, execType, fwdParamsList);
 
     if (!forward)
     {
@@ -406,7 +405,7 @@ static cell_t ForwardRemove(SourcePawn::IPluginContext *ctx, const cell_t *param
     if (!forward)
         return 0;
 
-    if (!gSPGlobal->getForwardManager()->deleteForward(forward))
+    if (!gSPFwdMngr->deleteForward(forward))
         return 0;
 
     gForwardHandlers.free(fwdId);

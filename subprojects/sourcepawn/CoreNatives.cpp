@@ -31,7 +31,7 @@ static cell_t PrintToServer(SourcePawn::IPluginContext *ctx, const cell_t *param
     bufferOutput[res++] = '\n';
     bufferOutput[res] = '\0';
 
-    gSPGlobal->getEngineFuncs()->serverPrint(bufferOutput);
+    gSPEngFuncs->serverPrint(bufferOutput);
 
     return 1;
 }
@@ -48,7 +48,7 @@ static cell_t PrecacheModel(SourcePawn::IPluginContext *ctx, const cell_t *param
     char *modelToPrecache;
     ctx->LocalToString(params[1], &modelToPrecache);
 
-    return gSPGlobal->getEngineFuncs()->precacheModel(modelToPrecache);
+    return gSPEngFuncs->precacheModel(modelToPrecache);
 }
 
 // native int PrecacheSound(const char[] sound)
@@ -63,7 +63,7 @@ static cell_t PrecacheSound(SourcePawn::IPluginContext *ctx, const cell_t *param
     char *soundToPrecache;
     ctx->LocalToString(params[1], &soundToPrecache);
 
-    return gSPGlobal->getEngineFuncs()->precacheSound(soundToPrecache);
+    return gSPEngFuncs->precacheSound(soundToPrecache);
 }
 
 // native int PrecacheGeneric(const char[] generic)
@@ -78,7 +78,7 @@ static cell_t PrecacheGeneric(SourcePawn::IPluginContext *ctx, const cell_t *par
     char *genericToPrecache;
     ctx->LocalToString(params[1], &genericToPrecache);
 
-    return gSPGlobal->getEngineFuncs()->precacheGeneric(genericToPrecache);
+    return gSPEngFuncs->precacheGeneric(genericToPrecache);
 }
 
 // native bool NativeRegister(const char[] name, PluginNative func)
@@ -88,7 +88,7 @@ static cell_t NativeRegister(SourcePawn::IPluginContext *ctx, const cell_t *para
     ctx->LocalToString(params[1], &nativeName);
     SPExt::Plugin *plugin = gAdapterInterface->getPluginMngr()->getPlugin(ctx);
 
-    return gSPGlobal->getNativeProxy()->registerNative(nativeName, ctx->GetFunctionById(params[2]), plugin);
+    return gSPNativeProxy->registerNative(nativeName, ctx->GetFunctionById(params[2]), plugin);
 }
 
 // native int NativeGetInt(int param)
@@ -386,7 +386,7 @@ static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx, const cell_t *params)
 
     char *newMap;
     ctx->LocalToString(params[arg_map], &newMap);
-    gSPGlobal->getEngineHookedFuncs()->changeLevel(newMap);
+    gSPEngFuncsHooked->changeLevel(newMap);
 
     return 1;
 }
@@ -394,7 +394,7 @@ static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx, const cell_t *params)
 // float GetGameTime()
 static cell_t GetGameTime(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params [[maybe_unused]])
 {
-    return sp_ftoc(gSPGlobal->getEngineGlobals()->getTime());
+    return sp_ftoc(gSPEngGlobals->getTime());
 }
 
 // native void ServerCmd(const char[] command, any ...)
@@ -415,7 +415,7 @@ static cell_t ServerCmd(SourcePawn::IPluginContext *ctx, const cell_t *params)
     bufferOutput[res++] = '\n';
     bufferOutput[res] = '\0';
 
-    gSPGlobal->getEngineFuncs()->serverCommand(bufferOutput);
+    gSPEngFuncs->serverCommand(bufferOutput);
 
     return 1;
 }
@@ -423,7 +423,7 @@ static cell_t ServerCmd(SourcePawn::IPluginContext *ctx, const cell_t *params)
 // native void ServerExec()
 static cell_t ServerExec(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params [[maybe_unused]])
 {
-    gSPGlobal->getEngineFuncs()->serverExecute();
+    gSPEngFuncs->serverExecute();
     return 1;
 }
 
@@ -439,7 +439,7 @@ static cell_t GetMapName(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *plOutput;
     ctx->LocalToString(params[arg_buffer], &plOutput);
 
-    std::string_view mapName = gSPGlobal->getEngineGlobals()->getMapName();
+    std::string_view mapName = gSPEngGlobals->getMapName();
 
     return static_cast<cell_t>(gSPGlobal->getUtils()->strCopy(plOutput, params[arg_size], mapName));
 }

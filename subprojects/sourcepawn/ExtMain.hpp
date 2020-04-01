@@ -41,10 +41,26 @@
 #include "AdapterInterface.hpp"
 #include "TypeHandler.hpp"
 #include "PrintfImpl.hpp"
-#include "Listeners.hpp"
 
 extern std::unique_ptr<SPExt::AdapterInterface> gAdapterInterface;
 extern SPMod::ISPGlobal *gSPGlobal;
+extern SPMod::ICommandMngr *gSPCmdMngr;
+extern SPMod::ICvarMngr *gSPCvarMngr;
+extern SPMod::IForwardMngr *gSPFwdMngr;
+extern SPMod::ILoggerMngr *gSPLoggerMngr;
+extern SPMod::IMenuMngr *gSPMenuMngr;
+extern SPMod::IPlayerMngr *gSPPlrMngr;
+extern SPMod::ITimerMngr *gSPTimerMngr;
+extern SPMod::IUtils *gSPUtils;
+extern SPMod::INativeProxy *gSPNativeProxy;
+extern SPMod::IVTableHookManager *gSPVTHookMngr;
+extern SPMod::Engine::IEngine *gSPEngine;
+extern SPMod::Engine::IFuncs *gSPEngFuncs;
+extern SPMod::Engine::IFuncs *gSPEngFuncsHooked;
+extern SPMod::Engine::IGlobals *gSPEngGlobals;
+extern SPMod::Metamod::IMetamod *gSPMetamod;
+extern SPMod::Metamod::IFuncs *gSPMetamodFuncs;
+
 extern std::unique_ptr<SourcePawnAPI> gSPAPI;
 
 // ForwardNatives.cpp
@@ -63,6 +79,10 @@ extern TypeHandler<SPMod::IMenu> gMenuHandlers;
 // TimerNatives.cpp
 extern TypeHandler<SPMod::ITimer> gTimerHandlers;
 
+extern std::unordered_multimap<SPMod::IVTableHook *, SourcePawn::IPluginFunction *> gVTableHook;
+extern std::unordered_multimap<SPMod::IVTableHook *, SourcePawn::IPluginFunction *> gVTableHookPost;
+extern TypeHandler<SPMod::IVTableHook> gVTableHandlers;
+
 extern SPMod::ILogger *gSPLogger;
 
 constexpr std::size_t menuPackItem(std::size_t menuid, std::size_t itemid)
@@ -75,6 +95,8 @@ constexpr void menuUnpackItem(std::size_t index, cell_t &menuid, cell_t &itemid)
     menuid = index >> 16;
     itemid = index & 0xFFFF;
 }
+
+extern TypeHandler<SPMod::Engine::ITraceResult> gTraceResultHandlers;
 
 constexpr const char *gSPExtLoggerName = "SPExt";
 
@@ -89,3 +111,4 @@ extern sp_nativeinfo_t gMessageNatives[];
 extern sp_nativeinfo_t gPlayerNatives[];
 extern sp_nativeinfo_t gStringNatives[];
 extern sp_nativeinfo_t gTimerNatives[];
+extern sp_nativeinfo_t gVTableNatives[];

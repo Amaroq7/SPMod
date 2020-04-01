@@ -50,6 +50,8 @@ namespace SPMod
             return VERSION;
         }
 
+        virtual ~IUtils() = default;
+
         /**
          * @brief Copies string to buffer.
          *
@@ -66,8 +68,6 @@ namespace SPMod
         /**
          * @brief Creates new string with replaced part.
          *
-         * @param buffer    Pointer to buffer where string will be stored.
-         * @param size      Size of the buffer.
          * @param source    Pointer to string where part will be replaced.
          * @param from      Pointer to string to search for.
          * @param to        Pointer to string to replace the search string from.
@@ -75,7 +75,5 @@ namespace SPMod
          * @return          Written chars to buffer.
          */
         virtual std::string strReplaced(std::string_view source, std::string_view from, std::string_view to) const = 0;
-
-        virtual ~IUtils() = default;
     };
 } // namespace SPMod

@@ -19,7 +19,7 @@
 
 #include "spmod.hpp"
 
-Player::Player(const Edict *edict) : Edict(edict->getInternalEdict()) {}
+Player::Player(Engine::Edict *edict) : m_basePlayer(edict->getBasePlayer()), m_edict(edict) {}
 
 std::string_view Player::getName() const
 {
@@ -34,6 +34,16 @@ std::string_view Player::getIPAddress() const
 std::string_view Player::getSteamID() const
 {
     return m_steamID;
+}
+
+std::uint32_t Player::getIndex() const
+{
+    return m_edict->getIndex();
+}
+
+bool Player::isAlive() const
+{
+    return m_basePlayer->isAlive();
 }
 
 void Player::setName(std::string_view newname)
@@ -57,7 +67,7 @@ void Player::closeMenu()
         m_menu->execExitHandler(this);
 
     static std::string_view menu("\n");
-    gSPGlobal->getUtils()->ShowMenu(this, 0, 0, menu);
+    gSPGlobal->getUtils()->ShowMenu(m_edict, 0, 0, menu);
 
     setMenu(nullptr);
 }
@@ -82,7 +92,7 @@ void Player::connect(std::string_view name, std::string_view ip)
     m_name = name;
     m_ip = ip;
     m_connected = true;
-    m_userID = GETPLAYERUSERID(m_edict);
+    m_userID = GETPLAYERUSERID(*m_edict);
 }
 
 void Player::disconnect()
@@ -112,11 +122,6 @@ std::uint32_t Player::getUserId() const
     return m_userID;
 }
 
-bool Player::isAlive() const
-{
-    return (m_edict->v.deadflag == DEAD_NO && m_edict->v.health > 0);
-}
-
 bool Player::isConnected() const
 {
     return m_connected;
@@ -124,17 +129,32 @@ bool Player::isConnected() const
 
 bool Player::isFake() const
 {
-    return (m_edict->v.flags & FL_FAKECLIENT || !m_steamID.compare("BOT"));
+    return (m_edict->getEntVars()->getFlags() & Engine::EntFlags::FAKECLIENT || m_steamID == "BOT");
 }
 
 bool Player::isHLTV() const
 {
-    return (m_edict->v.flags & FL_PROXY || !m_steamID.compare("HLTV"));
+    return (m_edict->getEntVars()->getFlags() & Engine::EntFlags::PROXY || m_steamID == "HLTV");
 }
 
 bool Player::isInGame() const
 {
     return m_inGame;
+}
+
+IBasePlayer *Player::basePlayer() const
+{
+    if (gSPGlobal->getModName() == ModName::Valve)
+    {
+        return m_basePlayer;
+    }
+
+    return nullptr;
+}
+
+Engine::Edict *Player::edict() const
+{
+    return m_edict;
 }
 
 Player *PlayerMngr::getPlayer(std::uint32_t index) const
@@ -149,7 +169,7 @@ Player *PlayerMngr::getPlayer(std::uint32_t index) const
     }
 }
 
-Player *PlayerMngr::getPlayer(const IEdict *edict) const
+Player *PlayerMngr::getPlayer(const Engine::IEdict *edict) const
 {
     try
     {
@@ -171,11 +191,11 @@ std::uint32_t PlayerMngr::getNumPlayers() const
     return m_playersNum;
 }
 
-void PlayerMngr::_initPlayers(edict_t *edictList)
+void PlayerMngr::_initPlayers()
 {
     for (std::size_t i = 1; i <= m_maxClients; i++)
     {
-        Edict *spEdict = gSPGlobal->getEdict(ENTINDEX(edictList + i));
+        Engine::Edict *spEdict = gSPGlobal->getEngine()->getEdict(i);
         m_players.at(i) = std::make_unique<Player>(spEdict);
     }
 }
@@ -276,7 +296,7 @@ void PlayerMngr::StartFramePost()
         while (iter != m_playersToAuth.end())
         {
             Player *plr = *iter;
-            std::string_view authid(GETPLAYERAUTHID(plr->getInternalEdict()));
+            std::string_view authid(GETPLAYERAUTHID(*plr->edict()));
             if (!authid.empty() && authid == "STEAM_ID_PENDING")
             {
                 plr->authorize(authid);
@@ -288,10 +308,10 @@ void PlayerMngr::StartFramePost()
     }
 }
 
-void PlayerMngr::ServerActivatePost(edict_t *pEdictList, std::uint32_t clientMax)
+void PlayerMngr::ServerActivatePost(edict_t *pEdictList [[maybe_unused]], std::uint32_t clientMax)
 {
     _setMaxClients(clientMax);
-    _initPlayers(pEdictList);
+    _initPlayers();
 }
 
 void PlayerMngr::ServerDeactivatePost()

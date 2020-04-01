@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2020 SPMod Development Team
+ *  Copyright (C) 2019-2020 SPMod Development Team
 
  *  This file is part of SPMod.
 
@@ -19,11 +19,13 @@
 
 #pragma once
 
-namespace SPMod
+namespace SPMod::Metamod
 {
-    class IMetaFuncs
+    class IFuncs
     {
     public:
+        virtual ~IFuncs() = default;
+
         /**
          * @brief Returns ID of message.
          *
@@ -41,7 +43,5 @@ namespace SPMod
          * @return Name of the message.
          */
         virtual std::string_view getUsrMsgName(std::uint32_t msgId) const = 0;
-
-        virtual ~IMetaFuncs() = default;
     };
-} // namespace SPMod
+} // namespace SPMod::Metamod

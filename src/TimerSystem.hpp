@@ -29,14 +29,13 @@ public:
     Timer(Timer &&other) = default;
     ~Timer() = default;
 
-    Timer(float interval, Callback func, std::any cbData, std::any data, bool pause);
+    Timer(float interval, Callback func, bool pause);
 
     // ITimer
     float getInterval() const override;
     bool isPaused() const override;
-    void setInterval(float newint) override;
+    void setInterval(float interval) override;
     void setPause(bool pause) override;
-    std::any getData() const override;
     bool exec() override;
 
     // Timer
@@ -48,12 +47,6 @@ private:
 
     /* callback */
     Callback m_callback;
-
-    /* callback data */
-    std::any m_cbData;
-
-    /* plugin data */
-    std::any m_data;
 
     /* Pause state */
     bool m_paused;
@@ -70,8 +63,6 @@ public:
 
     Timer *createTimer(float interval,
                        Timer::Callback callback,
-                       std::any cbData,
-                       std::any data,
                        bool pause = false) override;
     void removeTimer(const ITimer *timer) override;
 

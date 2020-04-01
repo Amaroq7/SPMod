@@ -24,12 +24,14 @@ namespace SPMod
     class ITimer
     {
     public:
+        virtual ~ITimer() = default;
+
         /**
          * @brief Timer callback
          *
          * @return  True to continue executing timer, false to remove.
          */
-        using Callback = std::function<bool(ITimer *const timer, std::any data)>;
+        using Callback = std::function<bool(ITimer *const timer)>;
 
         /**
          * @brief Gets interval.
@@ -64,13 +66,6 @@ namespace SPMod
         virtual void setPause(bool pause) = 0;
 
         /**
-         * @brief Gets timer's data.
-         *
-         * @return        Timer's data.
-         */
-        virtual std::any getData() const = 0;
-
-        /**
          * @brief Executes a timer.
          *
          * @note If callback returns false, timer will be removed.
@@ -80,8 +75,6 @@ namespace SPMod
          * @noreturn
          */
         virtual bool exec() = 0;
-
-        virtual ~ITimer() = default;
     };
 
     class ITimerMngr : public ISPModInterface
@@ -102,6 +95,8 @@ namespace SPMod
             return "ITimerMngr";
         }
 
+        virtual ~ITimerMngr() = default;
+
         /**
          * @brief Gets interface's version.
          *
@@ -119,16 +114,12 @@ namespace SPMod
          *
          * @param interval    Time interval.
          * @param func        Callback function.
-         * @param cbData      Data that is passed to timer callback.
-         * @param data        Data that is passed to the plugin.
          * @param pause       True if timer should be paused after creation, false otherwise.
          *
          * @return            Created timer.
          */
         virtual ITimer *createTimer(float interval,
                                     ITimer::Callback func,
-                                    std::any cbData = {},
-                                    std::any data = {},
                                     bool pause = false) = 0;
 
         /**
@@ -141,7 +132,5 @@ namespace SPMod
          * @noreturn
          */
         virtual void removeTimer(const ITimer *timer) = 0;
-
-        virtual ~ITimerMngr() = default;
     };
 } // namespace SPMod

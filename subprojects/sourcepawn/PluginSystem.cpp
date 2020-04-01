@@ -323,8 +323,7 @@ namespace SPExt
 
     void PluginMngr::bindPluginsNatives()
     {
-        SPMod::INativeProxy *nativeProxy = gSPGlobal->getNativeProxy();
-        for (const auto &proxiedNative : nativeProxy->getProxiedNatives())
+        for (const auto &proxiedNative : gSPNativeProxy->getProxiedNatives())
         {
             addProxiedNative(proxiedNative->getName(), proxiedNative);
         }
@@ -464,6 +463,7 @@ namespace SPExt
         addNatives(gFloatNatives);
         addNatives(gMenuNatives);
         addNatives(gPlayerNatives);
+        addNatives(gVTableNatives);
     }
 
     const std::vector<SPMod::IPlugin *> &PluginMngr::getPluginsList() const

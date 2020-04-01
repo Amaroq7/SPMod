@@ -57,3 +57,7 @@ include/llvm/*
 
 # SourcePawn deps
 subprojects/sourcepawn/sourcepawn_deps/
+
+# CLion
+.idea/
+cmake-*/

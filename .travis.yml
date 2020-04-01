@@ -11,23 +11,6 @@ matrix:
   include:
     - addons:
         apt:
-          packages:
-            - llvm-9
-            - clang-9
-            - lld-9
-            - gcc-multilib
-            - g++-multilib
-            - ninja-build
-            - lib32z1-dev
-            - lib32stdc++6
-            - libc6-dev-i386
-            - linux-libc-dev
-      env:
-        - CLANG_VERSION=9 LINK_TYPE=static
-      compiler: clang
-
-    - addons:
-        apt:
           sources:
             - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
@@ -35,11 +18,8 @@ matrix:
             - llvm-10
             - clang-10
             - lld-10
-            - gcc-multilib
-            - g++-multilib
-            - ninja-build
-            - lib32z1-dev
-            - lib32stdc++6
+            - libc++-10-dev
+            - libc++abi-10-dev
             - libc6-dev-i386
             - linux-libc-dev
       env:
@@ -55,11 +35,8 @@ matrix:
             - llvm-10
             - clang-10
             - lld-10
-            - gcc-multilib
-            - g++-multilib
-            - ninja-build
-            - lib32z1-dev
-            - lib32stdc++6
+            - libc++-10-dev
+            - libc++abi-10-dev
             - libc6-dev-i386
             - linux-libc-dev
       env:
@@ -71,17 +48,13 @@ matrix:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test' # workaround for disallowed source
           packages:
-            - gcc-8
-            - g++-8
-            - gcc-8-multilib
-            - g++-8-multilib
-            - ninja-build
-            - lib32z1-dev
+            - g++-9
+            - g++-9-multilib
             - lib32stdc++6
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - GCC_VERSION=8 LINK_TYPE=static
+        - GCC_VERSION=9 LINK_TYPE=static
       compiler: gcc
 
     - addons:
@@ -89,17 +62,13 @@ matrix:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test' # workaround for disallowed source
           packages:
-            - gcc-9
-            - g++-9
-            - gcc-9-multilib
-            - g++-9-multilib
-            - ninja-build
-            - lib32z1-dev
+            - g++-10
+            - g++-10-multilib
             - lib32stdc++6
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - GCC_VERSION=9 LINK_TYPE=static CC_VERSION=9
+        - GCC_VERSION=10 LINK_TYPE=static CC_VERSION=10
       compiler: gcc
 
     - addons:
@@ -107,17 +76,13 @@ matrix:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test' # workaround for disallowed source
           packages:
-            - gcc-9
-            - g++-9
-            - gcc-9-multilib
-            - g++-9-multilib
-            - ninja-build
-            - lib32z1-dev
+            - g++-10
+            - g++-10-multilib
             - lib32stdc++6
             - libc6-dev-i386
             - linux-libc-dev
       env:
-        - GCC_VERSION=9 LINK_TYPE=dynamic CC_VERSION=9
+        - GCC_VERSION=10 LINK_TYPE=dynamic CC_VERSION=10
       compiler: gcc
 
 before_script:
@@ -142,7 +107,7 @@ deploy:
     on:
       tags: true
       branch: /^v\d+\.\d+(\.\d+)?(-\S*)?$/
-      condition: $CLANG_VERSION = 10 || $GCC_VERSION = 9
+      condition: $CLANG_VERSION = 10 || $GCC_VERSION = 10
   - provider: s3
     local-dir: upload/s3
     access_key_id: 
@@ -154,4 +119,4 @@ deploy:
     skip_cleanup: true
     on:
       branch: master
-      condition: $CLANG_VERSION = 10 || $GCC_VERSION = 9
+      condition: $CLANG_VERSION = 10 || $GCC_VERSION = 10

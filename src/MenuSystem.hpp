@@ -31,7 +31,7 @@ public:
     class Item final : public IMenu::IItem
     {
     public:
-        Item(Menu *menu, std::string_view name, Callback callback, std::any cbData, std::any data, NavigationType type);
+        Item(Menu *menu, std::string_view name, Callback callback, std::any data, NavigationType type);
 
         ~Item() = default;
 
@@ -44,8 +44,6 @@ public:
 
         NavigationType getNavType() const override;
 
-        void setCallback(IMenu::IItem::Callback func, std::any data) override;
-
         // Item
         Item::Status execCallback(IPlayer *player);
 
@@ -54,11 +52,10 @@ public:
         std::string m_name;
         Callback m_callback;
         std::any m_data;
-        std::any m_cbData;
         NavigationType m_type;
     };
 
-    Menu(const std::variant<ItemHandler, TextHandler> &handler, std::any data, Menu::Style style, bool global);
+    Menu(const std::variant<ItemHandler, TextHandler> &handler, Menu::Style style, bool global);
     ~Menu() = default;
 
     // IMenu
@@ -77,18 +74,16 @@ public:
     std::uint32_t getTime() const override;
     std::uint32_t getKeys() const override;
 
-    Item *appendItem(std::string_view name, Item::Callback callback, std::any cbData, std::any data) override;
+    Item *appendItem(std::string_view name, Item::Callback callback, std::any data) override;
 
     Item *insertItem(std::size_t position,
                      std::string_view name,
                      Item::Callback callback,
-                     std::any cbData,
                      std::any data) override;
 
     Item *setStaticItem(std::size_t position,
                         std::string_view name,
                         Item::Callback callback,
-                        std::any cbData,
                         std::any data) override;
 
     bool removeItem(std::size_t position) override;
@@ -102,7 +97,6 @@ public:
 
     // Menu
     Item *keyToItem(std::uint32_t key) const;
-    std::any getCallbackData() const;
 
     void execTextHandler(Player *player, std::uint32_t key);
     void execItemHandler(Player *player, Item *item);
@@ -112,7 +106,6 @@ private:
     Item *_addItem(std::uint32_t position,
                    std::string_view name,
                    Item::Callback callback,
-                   std::any cbData,
                    std::any data);
 
 private:
@@ -124,7 +117,6 @@ private:
     std::uint32_t m_time;
     std::size_t m_itemsPerPage;
     std::uint32_t m_keys;
-    std::any m_cbData;
 
     std::array<Item *, 10> m_slots;
     std::array<std::unique_ptr<Item>, MAX_STATIC_ITEMS> m_staticItems;
@@ -146,7 +138,6 @@ public:
 
     // IMenuMngr
     Menu *registerMenu(const std::variant<Menu::ItemHandler, Menu::TextHandler> &handler,
-                       std::any data,
                        bool global) override;
     void destroyMenu(const IMenu *menu) override;
 

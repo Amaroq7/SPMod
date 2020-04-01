@@ -35,17 +35,30 @@ static cell_t CommandCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_flags
     };
 
-    SPMod::ICommandMngr *cmdMngr = gSPGlobal->getCommandManager();
     SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_func]);
     char *cmd, *info;
     ctx->LocalToString(params[arg_cmd], &cmd);
     ctx->LocalToString(params[arg_info], &info);
 
+    auto callback = [func](SPMod::IPlayer *const player, SPMod::ICommand *const cmd) {
+      if (func && func->IsRunnable())
+      {
+          cell_t retValue;
+          func->PushCell(static_cast<cell_t>(player->edict()->getIndex()));
+          func->PushCell(static_cast<cell_t>(gCommandHandlers.getKey(cmd)));
+          func->Execute(&retValue);
+
+          return static_cast<SPMod::IForward::ReturnValue>(retValue);
+      }
+
+      return SPMod::IForward::ReturnValue::Ignored;
+    };
+
     SPMod::ICommand *pCmd;
     if (!params[arg_server])
     {
-        pCmd = cmdMngr->registerCommand(SPMod::ICommand::Type::Client, cmd, info, params[arg_regex], params[arg_flags],
-                                        SPExt::Listener::CmdCallback, func);
+        pCmd = gSPCmdMngr->registerCommand(SPMod::ICommand::Type::Client, cmd, info, params[arg_regex],
+                                           params[arg_flags], callback);
     }
     else
     {
@@ -54,8 +67,8 @@ static cell_t CommandCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
             ctx->ReportError("Server command cannot be registered as regex");
             return -1;
         }
-        pCmd = cmdMngr->registerCommand(SPMod::ICommand::Type::Server, cmd, info, false, 0,
-                                        SPExt::Listener::CmdCallback, func);
+        pCmd = gSPCmdMngr->registerCommand(SPMod::ICommand::Type::Server, cmd, info, false, 0,
+                                           callback);
     }
 
     return gCommandHandlers.create(pCmd);
@@ -78,7 +91,7 @@ static cell_t GetInfo(SourcePawn::IPluginContext *ctx, const cell_t *params)
     if (!pCmd)
         return 0;
 
-    return gSPGlobal->getUtils()->strCopy(destBuffer, params[arg_size], pCmd->getInfo());
+    return gSPUtils->strCopy(destBuffer, params[arg_size], pCmd->getInfo());
 }
 
 // property int Access.get()
@@ -109,11 +122,11 @@ static cell_t CmdGetArgv(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
 
-    std::string_view argv = gSPGlobal->getEngineFuncs()->getArg(params[arg_arg]);
+    std::string_view argv = gSPEngFuncs->getArg(params[arg_arg]);
     if (argv.empty())
         return 0;
 
-    return gSPGlobal->getUtils()->strCopy(destBuffer, params[arg_size], argv);
+    return gSPUtils->strCopy(destBuffer, params[arg_size], argv);
 }
 
 // int CmdGetArgs(char[] buffer, int size)
@@ -128,17 +141,17 @@ static cell_t CmdGetArgs(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
 
-    std::string_view args = gSPGlobal->getEngineFuncs()->getArgs();
+    std::string_view args = gSPEngFuncs->getArgs();
     if (args.empty())
         return 0;
 
-    return gSPGlobal->getUtils()->strCopy(destBuffer, params[arg_size], args);
+    return gSPUtils->strCopy(destBuffer, params[arg_size], args);
 }
 
 // int CmdGetArgsNum()
 static cell_t CmdGetArgsNum(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params [[maybe_unused]])
 {
-    return gSPGlobal->getEngineFuncs()->getArgc();
+    return gSPEngFuncs->getArgc();
 }
 
 sp_nativeinfo_t gCmdsNatives[] = {{"Command.Command", CommandCtor},

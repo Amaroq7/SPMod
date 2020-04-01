@@ -119,7 +119,7 @@ DLL_FUNCTIONS gDllFunctionTable = {
 
 static void ServerActivatePost(edict_t *pEdictList, int edictCount [[maybe_unused]], int clientMax)
 {
-    gSPGlobal->clearEdicts();
+    gSPGlobal->getEngine()->clear();
     gSPGlobal->getPlayerManager()->ServerActivatePost(pEdictList, clientMax);
 
     auto fwdMngr = gSPGlobal->getForwardManager();
@@ -167,6 +167,8 @@ static void ServerDeactivatePost()
     gSPGlobal->getMessageManager()->clearMessages();
     gSPGlobal->getNativeProxy()->clearNatives();
     gSPGlobal->getPlayerManager()->ServerDeactivatePost();
+    gSPGlobal->getVTableManager()->ServerDeactivatePost();
+    gSPGlobal->getEngine()->clear();
 
     gSPGlobal->unloadExts();
     uninstallRehldsHooks();
@@ -271,18 +273,13 @@ NEW_DLL_FUNCTIONS gNewDllFunctionTable = {
     nullptr, //! pfnCvarValue2()
 };
 
-void OnFreeEntPrivateDataPost(edict_t *pEnt)
-{
-    gSPGlobal->removeEdict(pEnt);
-}
-
 NEW_DLL_FUNCTIONS gNewDllFunctionTablePost = {
-    OnFreeEntPrivateDataPost, //! pfnOnFreeEntPrivateData()	Called right before the object's memory is freed.  Calls its
-                              //! destructor.
-    nullptr,                  //! pfnGameShutdown()
-    nullptr,                  //! pfnShouldCollide()
-    nullptr,                  //! pfnCvarValue()
-    nullptr,                  //! pfnCvarValue2()
+    nullptr, //! pfnOnFreeEntPrivateData()	Called right before the object's memory is freed.  Calls its
+             //! destructor.
+    nullptr, //! pfnGameShutdown()
+    nullptr, //! pfnShouldCollide()
+    nullptr, //! pfnCvarValue()
+    nullptr, //! pfnCvarValue2()
 };
 
 C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion)

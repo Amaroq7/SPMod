@@ -29,6 +29,7 @@
 #include <type_traits>
 #include <regex>
 #include <charconv>
+#include <optional>
 
 #include <IHelpers.hpp>
 
@@ -48,33 +49,44 @@ namespace fs = std::experimental::filesystem;
     #error Filesystem header missing
 #endif
 
+#include <Common.hpp>
 #include <IInterface.hpp>
+
+// engine api
+#include <engine/Common.hpp>
+#include <engine/ITraceResult.hpp>
+#include <engine/IGlobals.hpp>
+#include <engine/IEntVars.hpp>
+#include <engine/IFuncs.hpp>
+#include <engine/IEdict.hpp>
+#include <engine/IEngine.hpp>
+
+// dlls api
+#include <dlls/IBaseEntity.hpp>
+#include <dlls/IBaseDelay.hpp>
+#include <dlls/IBaseAnimating.hpp>
+#include <dlls/IBaseToggle.hpp>
+#include <dlls/IBaseMonster.hpp>
+#include <dlls/IBasePlayer.hpp>
+
+// metamod api
+#include <metamod/IFuncs.hpp>
+#include <metamod/IMetamod.hpp>
+
 #include <IForwardSystem.hpp>
 #include <ICvarSystem.hpp>
 #include <ITimerSystem.hpp>
 #include <IMenuSystem.hpp>
-#include <IMessageSystem.hpp>
-#include <IEdict.hpp>
 #include <IUtilsSystem.hpp>
 #include <IPlayerSystem.hpp>
 #include <ILoggerSystem.hpp>
 #include <ICmdSystem.hpp>
 #include <IPluginSystem.hpp>
 #include <INativeProxy.hpp>
-#include <IEngineFuncs.hpp>
-#include <IMetaFuncs.hpp>
+#include <IVTableHookSystem.hpp>
 
 namespace SPMod
 {
-    enum class DirType : std::uint8_t
-    {
-        Home = 0,
-        Dlls,
-        Exts,
-        Plugins,
-        Logs
-    };
-
     class ISPGlobal : public ISPModInterface
     {
     public:
@@ -105,6 +117,8 @@ namespace SPMod
             return VERSION;
         }
 
+        virtual ~ISPGlobal() = default;
+
         /**
          * @brief Returns home dir of SPMod.
          *
@@ -117,7 +131,7 @@ namespace SPMod
          *
          * @return              Mod name.
          */
-        virtual std::string_view getModName() const = 0;
+        virtual ModName getModName() const = 0;
 
         /**
          * @brief Checks if plugins can precache resources.
@@ -125,15 +139,6 @@ namespace SPMod
          * @return              True if they are allowed to, false otherwise.
          */
         virtual bool canPluginsPrecache() const = 0;
-
-        /**
-         * @brief Gets edict.
-         *
-         * @param index         Edict's index.
-         *
-         * @return              Edict.
-         */
-        virtual IEdict *getEdict(std::uint32_t index) = 0;
 
         /**
          * @brief Finds plugin.
@@ -173,13 +178,6 @@ namespace SPMod
         virtual IMenuMngr *getMenuManager() const = 0;
 
         /**
-         * @brief Returns SPMod message manager.
-         *
-         * @return              Message manager.
-         */
-        virtual IMessageMngr *getMessageManager() const = 0;
-
-        /**
          * @brief Returns SPMod logger manager.
          *
          * @return              Logger manager.
@@ -215,32 +213,18 @@ namespace SPMod
         virtual ICommandMngr *getCommandManager() const = 0;
 
         /**
-         * @brief Returns engine funcs.
+         * @brief Returns engine instance.
          *
-         * @return              Engine functions.
+         * @return              Engine instance.
          */
-        virtual IEngineFuncs *getEngineFuncs() const = 0;
+        virtual Engine::IEngine *getEngine() const = 0;
 
         /**
-         * @brief Returns engine hooked funcs.
+         * @brief Returns metamod instance.
          *
-         * @return              Engine hooked functions.
+         * @return              Metamod instance.
          */
-        virtual IEngineFuncsHooked *getEngineHookedFuncs() const = 0;
-
-        /**
-         * @brief Returns engine globals.
-         *
-         * @return              Engine globals.
-         */
-        virtual IEngineGlobals *getEngineGlobals() const = 0;
-
-        /**
-         * @brief Returns engine globals.
-         *
-         * @return              Engine globals.
-         */
-        virtual IMetaFuncs *getMetaFuncs() const = 0;
+        virtual Metamod::IMetamod *getMetamod() const = 0;
 
         /**
          * @brief Registers module's interface.
@@ -269,6 +253,6 @@ namespace SPMod
          */
         virtual IModuleInterface *getInterface(std::string_view name) const = 0;
 
-        virtual ~ISPGlobal() = default;
+        virtual IVTableHookManager *getVTableManager() const = 0;
     };
 } // namespace SPMod

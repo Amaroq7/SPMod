@@ -17,14 +17,17 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <utility>
+
+
 #include "spmod.hpp"
 
-Timer::Timer(float interval, Timer::Callback func, std::any cbData, std::any data, bool pause)
-    : m_interval(interval), m_callback(func), m_cbData(cbData), m_data(data), m_paused(pause),
+Timer::Timer(float interval, Timer::Callback func, bool pause)
+    : m_interval(interval), m_callback(std::move(func)), m_paused(pause),
       m_lastExec(gpGlobals->time)
 {
     if (m_interval <= 0.0f)
-        throw std::runtime_error("Interval lesser or equal to 0");
+        throw std::runtime_error("Interval lesser than or equal to 0");
 }
 
 float Timer::getInterval() const
@@ -36,9 +39,9 @@ bool Timer::isPaused() const
 {
     return m_paused;
 }
-void Timer::setInterval(float newint)
+void Timer::setInterval(float interval)
 {
-    m_interval = newint;
+    m_interval = interval;
     m_lastExec = gpGlobals->time;
 }
 
@@ -54,12 +57,7 @@ void Timer::setPause(bool pause)
 bool Timer::exec()
 {
     m_lastExec = gpGlobals->time;
-    return m_callback(this, m_cbData);
-}
-
-std::any Timer::getData() const
-{
-    return m_data;
+    return m_callback(this);
 }
 
 float Timer::getLastExecTime() const
@@ -67,11 +65,11 @@ float Timer::getLastExecTime() const
     return m_lastExec;
 }
 
-Timer *TimerMngr::createTimer(float interval, Timer::Callback func, std::any cbData, std::any data, bool pause)
+Timer *TimerMngr::createTimer(float interval, Timer::Callback func, bool pause)
 {
     try
     {
-        return m_timers.emplace_back(std::make_unique<Timer>(interval, func, cbData, data, pause)).get();
+        return m_timers.emplace_back(std::make_unique<Timer>(interval, func, pause)).get();
     }
     catch (const std::runtime_error &e [[maybe_unused]])
     {

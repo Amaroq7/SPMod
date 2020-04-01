@@ -9,5 +9,5 @@ fi
 
 mkdir -p build
 cd build
-cmake -G Ninja --log-level=VERBOSE -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../upload -DBUILD_DYNAMIC=$BUILD_DYNAMIC .. .
-ninja install -v
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../upload -DBUILD_DYNAMIC=${BUILD_DYNAMIC} .. .
+make -j 16 install

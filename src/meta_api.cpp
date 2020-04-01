@@ -109,6 +109,9 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now [[maybe_unused]], PL_UNLOAD_REASON
     gSPGlobal->getMenuManager()->clearMenus();
     gSPGlobal->getMessageManager()->clearMessages();
     gSPGlobal->getNativeProxy()->clearNatives();
+    gSPGlobal->getPlayerManager()->ServerDeactivatePost();
+    gSPGlobal->getVTableManager()->ServerDeactivatePost();
+    gSPGlobal->getEngine()->clear();
 
     gSPGlobal->unloadExts();
     uninstallRehldsHooks();

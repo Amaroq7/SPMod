@@ -20,13 +20,13 @@
 #include "spmod.hpp"
 #include "CompilationUtils.hpp"
 
-Command::Command(std::string &&cmd, std::string_view info, ICommand::Callback cb, std::any data)
-    : m_nameOrRegex(std::move(cmd)), m_info(info), m_callback(cb), m_data(data)
+Command::Command(std::string &&cmd, std::string_view info, ICommand::Callback cb)
+    : m_nameOrRegex(std::move(cmd)), m_info(info), m_callback(cb)
 {
 }
 
-Command::Command(std::regex &&cmd, std::string_view info, ICommand::Callback cb, std::any data)
-    : m_nameOrRegex(std::move(cmd)), m_info(info), m_callback(cb), m_data(data)
+Command::Command(std::regex &&cmd, std::string_view info, ICommand::Callback cb)
+    : m_nameOrRegex(std::move(cmd)), m_info(info), m_callback(cb)
 {
 }
 
@@ -42,24 +42,22 @@ std::string_view Command::getInfo() const
 
 IForward::ReturnValue Command::execCallback(Player *player)
 {
-    return m_callback(player, this, m_data);
+    return m_callback(player, this);
 }
 
 ClientCommand::ClientCommand(std::string &&cmd,
                              std::string_view info,
                              std::uint32_t flags,
-                             ICommand::Callback cb,
-                             std::any data)
-    : Command(std::move(cmd), info, cb, data), m_flags(flags)
+                             ICommand::Callback cb)
+    : Command(std::move(cmd), info, cb), m_flags(flags)
 {
 }
 
 ClientCommand::ClientCommand(std::regex &&cmd,
                              std::string_view info,
                              std::uint32_t flags,
-                             ICommand::Callback cb,
-                             std::any data)
-    : Command(std::move(cmd), info, cb, data), m_flags(flags)
+                             ICommand::Callback cb)
+    : Command(std::move(cmd), info, cb), m_flags(flags)
 {
 }
 
@@ -79,8 +77,8 @@ bool ClientCommand::_hasAccess(uint32_t flags [[maybe_unused]]) const
     return true;
 }
 
-ServerCommand::ServerCommand(std::string_view cmd, std::string_view info, ICommand::Callback cb, std::any data)
-    : Command(std::string(cmd), info, cb, data)
+ServerCommand::ServerCommand(std::string_view cmd, std::string_view info, ICommand::Callback cb)
+    : Command(std::string(cmd), info, cb)
 {
 }
 
@@ -99,8 +97,7 @@ Command *CommandMngr::registerCommand(ICommand::Type type,
                                       std::string_view info,
                                       bool regex,
                                       std::uint32_t flags,
-                                      ICommand::Callback cb,
-                                      std::any data)
+                                      ICommand::Callback cb)
 {
     switch (type)
     {
@@ -108,9 +105,9 @@ Command *CommandMngr::registerCommand(ICommand::Type type,
         {
             if (regex)
             {
-                return registerCommandInternal<ClientCommand>(std::regex(cmd.data()), info, flags, cb, data).get();
+                return registerCommandInternal<ClientCommand>(std::regex(cmd.data()), info, flags, cb).get();
             }
-            return registerCommandInternal<ClientCommand>(std::string(cmd), info, flags, cb, data).get();
+            return registerCommandInternal<ClientCommand>(std::string(cmd), info, flags, cb).get();
         }
         case ICommand::Type::Server:
         {
@@ -119,7 +116,7 @@ Command *CommandMngr::registerCommand(ICommand::Type type,
                 return nullptr; // Server command can't be a regex expression
             }
             REG_SVR_COMMAND(cmd.data(), CommandMngr::PluginSrvCommand);
-            return registerCommandInternal<ServerCommand>(cmd, info, cb, data).get();
+            return registerCommandInternal<ServerCommand>(cmd, info, cb).get();
         }
         default:
             return nullptr;
@@ -224,9 +221,9 @@ void CommandMngr::SPModInfoCommand()
                                              "filename");
             std::size_t pos = 1;
 
-            for (const auto interface : gSPGlobal->getAdaptersInterfaces())
+            for (const auto &[key, interface] : gSPGlobal->getAdaptersInterfaces())
             {
-                for (const auto plugin : interface.second->getPluginMngr()->getPluginsList())
+                for (const auto plugin : interface->getPluginMngr()->getPluginsList())
                 {
                     logger->sendMsgToConsoleInternal("[", std::right, std::setw(3), pos++,
                                                      "] ",                 // right align for ordinal number

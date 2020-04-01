@@ -26,6 +26,8 @@ namespace SPMod
     class IProxiedNative
     {
     public:
+        virtual ~IProxiedNative() = default;
+
         /**
          * @brief Gets native name.
          *
@@ -55,8 +57,6 @@ namespace SPMod
          * @return          Native result.
          */
         virtual std::int32_t exec(IPlugin *plugin) = 0;
-
-        virtual ~IProxiedNative() = default;
     };
 
     class INativeProxy : public ISPModInterface
@@ -89,6 +89,8 @@ namespace SPMod
             return VERSION;
         }
 
+        virtual ~INativeProxy() = default;
+
         /**
          * @brief Registers proxied native.
          *
@@ -111,8 +113,6 @@ namespace SPMod
         {
             return getProxiedNativesImpl();
         }
-
-        virtual ~INativeProxy() = default;
 
     protected:
         virtual std::vector<IProxiedNative *> getProxiedNativesImpl() const = 0;
