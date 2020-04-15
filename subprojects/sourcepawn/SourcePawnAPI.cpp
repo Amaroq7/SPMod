@@ -31,7 +31,7 @@ SourcePawnAPI::SourcePawnAPI(const fs::path &libraryDir)
             dlclose(ptr);
         });
 #else
-    HMODULE libraryHandle = LoadLibrary(libraryDir.string().c_str());
+    HMODULE libraryHandle = LoadLibrary(libraryName.string().c_str());
 #endif
 
     if (!libraryHandle)

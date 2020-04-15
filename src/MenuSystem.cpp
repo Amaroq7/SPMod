@@ -464,7 +464,7 @@ META_RES MenuMngr::ClientCommand(edict_t *pEntity)
     Player *pPlayer = gSPGlobal->getPlayerManager()->getPlayer(pEntity);
     Menu *pMenu = pPlayer->getMenu();
 
-    if (pMenu->getKeys() & (1 << pressedKey))
+    if (pMenu && pMenu->getKeys() & (1 << pressedKey))
     {
         pPlayer->setMenu(nullptr);
 
