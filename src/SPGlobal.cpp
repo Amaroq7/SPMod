@@ -28,7 +28,8 @@ SPGlobal::SPGlobal(fs::path &&dllDir)
       m_menuManager(std::make_unique<MenuMngr>()), m_plrManager(std::make_unique<PlayerMngr>()),
       m_nativeProxy(std::make_unique<NativeProxy>()), m_engineFuncs(std::make_unique<EngineFuncs>()),
       m_engineFuncsHooked(std::make_unique<EngineFuncsHooked>()), m_engineGlobals(std::make_unique<EngineGlobals>()),
-      m_utils(std::make_unique<Utils>()), m_modName(GET_GAME_INFO(PLID, GINFO_NAME))
+      m_metaFuncs(std::make_unique<MetaFuncs>()), m_utils(std::make_unique<Utils>()),
+      m_modName(GET_GAME_INFO(PLID, GINFO_NAME))
 {
     // Sets default dirs
     setPath(DirType::Plugins, "plugins");
