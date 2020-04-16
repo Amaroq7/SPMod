@@ -82,6 +82,7 @@ using namespace SPMod;
 #include "TimerSystem.hpp"
 #include "MenuSystem.hpp"
 #include "PlayerSystem.hpp"
+#include "MessageSystem.hpp"
 #include "ExtensionSystem.hpp"
 #include "NativeProxy.hpp"
 #include "EngineFuncs.hpp"

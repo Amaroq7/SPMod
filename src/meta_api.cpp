@@ -107,6 +107,7 @@ C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now [[maybe_unused]], PL_UNLOAD_REASON
     gSPGlobal->getCommandManager()->clearCommands();
     gSPGlobal->getCvarManager()->clearCvars();
     gSPGlobal->getMenuManager()->clearMenus();
+    gSPGlobal->getMessageManager()->clearMessages();
     gSPGlobal->getNativeProxy()->clearNatives();
 
     gSPGlobal->unloadExts();

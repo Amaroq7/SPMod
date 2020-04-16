@@ -266,4 +266,21 @@ namespace SPExt::Listener
         return true;
     }
 
+    SPMod::IForward::ReturnValue MessageHookCallback(SPMod::IMessage *const message, std::any cbData)
+    {
+        auto func = std::any_cast<SourcePawn::IPluginFunction *>(cbData);
+        if (func && func->IsRunnable())
+        {
+            // typedef MessageHandler = function PluginReturn (MessageDest dest, int type, int receiver);
+            cell_t retValue = 0;
+            func->PushCell(message->getDest());
+            func->PushCell(message->getType());
+            func->PushCell(message->getEdict()->getIndex());
+            func->Execute(&retValue);
+
+            return static_cast<SPMod::IForward::ReturnValue>(retValue);
+        }
+        return SPMod::IForward::ReturnValue::Ignored;
+    }
+
 } // namespace SPExt::Listener

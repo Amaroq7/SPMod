@@ -35,158 +35,236 @@ static void ChangeLevel(const char *s1, const char *s2 [[maybe_unused]])
 }
 
 static void
-    MessageBegin_Pre(int msg_dest [[maybe_unused]], int msg_type, const float *pOrigin [[maybe_unused]], edict_t *ed)
+    MessageBegin_Pre(int msg_dest, int msg_type, const float *pOrigin, edict_t *ed)
 {
     auto spPlayer = gSPGlobal->getPlayerManager()->getPlayer(ENTINDEX(ed));
     if (msg_type == gmsgShowMenu || msg_type == gmsgVGUIMenu)
     {
         spPlayer->closeMenu();
     }
-    RETURN_META(MRES_IGNORED);
+    
+    META_RES ret = MRES_IGNORED;
+
+    ret = gSPGlobal->getMessageManager()->MessageBegin(msg_dest, msg_type, pOrigin, ed);
+    
+    RETURN_META(ret);
+}
+static void MessageEnd_Pre(void)
+{
+    META_RES ret = MRES_IGNORED;
+
+    ret = gSPGlobal->getMessageManager()->MessageEnd();
+    
+    RETURN_META(ret);
+}
+static void WriteByte_Pre(int iValue)
+{
+    META_RES ret = MRES_IGNORED;
+
+    ret = gSPGlobal->getMessageManager()->WriteParam(MsgParamType::Byte, iValue);
+    
+    RETURN_META(ret);
+}
+static void WriteChar_Pre(int iValue)
+{
+    META_RES ret = MRES_IGNORED;
+
+    ret = gSPGlobal->getMessageManager()->WriteParam(MsgParamType::Char, iValue);
+    
+    RETURN_META(ret);
+}
+static void WriteShort_Pre(int iValue)
+{
+    META_RES ret = MRES_IGNORED;
+
+    ret = gSPGlobal->getMessageManager()->WriteParam(MsgParamType::Short, iValue);
+    
+    RETURN_META(ret);
+}
+static void WriteLong_Pre(int iValue)
+{
+    META_RES ret = MRES_IGNORED;
+
+    ret = gSPGlobal->getMessageManager()->WriteParam(MsgParamType::Long, iValue);
+    
+    RETURN_META(ret);
+}
+static void WriteAngle_Pre(float flValue)
+{
+    META_RES ret = MRES_IGNORED;
+
+    ret = gSPGlobal->getMessageManager()->WriteParam(MsgParamType::Angle, flValue);
+    
+    RETURN_META(ret);
+}
+static void WriteCoord_Pre(float flValue)
+{
+    META_RES ret = MRES_IGNORED;
+
+    ret = gSPGlobal->getMessageManager()->WriteParam(MsgParamType::Coord, flValue);
+    
+    RETURN_META(ret);
+}
+static void WriteString_Pre(const char *sz)
+{
+    META_RES ret = MRES_IGNORED;
+
+    ret = gSPGlobal->getMessageManager()->WriteParam(MsgParamType::String, sz);
+    
+    RETURN_META(ret);
+}
+static void WriteEntity_Pre(int iValue)
+{
+    META_RES ret = MRES_IGNORED;
+
+    ret = gSPGlobal->getMessageManager()->WriteParam(MsgParamType::Entity, iValue);
+    
+    RETURN_META(ret);
 }
 
-enginefuncs_t gEngineFunctionsTable = {
-    nullptr,          // pfnPrecacheModel()
-    nullptr,          // pfnPrecacheSound()
-    nullptr,          // pfnSetModel()
-    nullptr,          // pfnModelIndex()
-    nullptr,          // pfnModelFrames()
-    nullptr,          // pfnSetSize()
-    ChangeLevel,      // pfnChangeLevel()
-    nullptr,          // pfnGetSpawnParms()
-    nullptr,          // pfnSaveSpawnParms()
-    nullptr,          // pfnVecToYaw()
-    nullptr,          // pfnVecToAngles()
-    nullptr,          // pfnMoveToOrigin()
-    nullptr,          // pfnChangeYaw()
-    nullptr,          // pfnChangePitch()
-    nullptr,          // pfnFindEntityByString()
-    nullptr,          // pfnGetEntityIllum()
-    nullptr,          // pfnFindEntityInSphere()
-    nullptr,          // pfnFindClientInPVS()
-    nullptr,          // pfnEntitiesInPVS()
-    nullptr,          // pfnMakeVectors()
-    nullptr,          // pfnAngleVectors()
-    nullptr,          // pfnCreateEntity()
-    nullptr,          // pfnRemoveEntity()
-    nullptr,          // pfnCreateNamedEntity()
-    nullptr,          // pfnMakeStatic()
-    nullptr,          // pfnEntIsOnFloor()
-    nullptr,          // pfnDropToFloor()
-    nullptr,          // pfnWalkMove()
-    nullptr,          // pfnSetOrigin()
-    nullptr,          // pfnEmitSound()
-    nullptr,          // pfnEmitAmbientSound()
-    nullptr,          // pfnTraceLine()
-    nullptr,          // pfnTraceToss()
-    nullptr,          // pfnTraceMonsterHull()
-    nullptr,          // pfnTraceHull()
-    nullptr,          // pfnTraceModel()
-    nullptr,          // pfnTraceTexture()
-    nullptr,          // pfnTraceSphere()
-    nullptr,          // pfnGetAimVector()
-    nullptr,          // pfnServerCommand()
-    nullptr,          // pfnServerExecute()
-    nullptr,          // pfnClientCommand()
-    nullptr,          // pfnParticleEffect()
-    nullptr,          // pfnLightStyle()
-    nullptr,          // pfnDecalIndex()
-    nullptr,          // pfnPointContents()
-    MessageBegin_Pre, // pfnMessageBegin()
-    nullptr,          // pfnMessageEnd()
-    nullptr,          // pfnWriteByte()
-    nullptr,          // pfnWriteChar()
-    nullptr,          // pfnWriteShort()
-    nullptr,          // pfnWriteLong()
-    nullptr,          // pfnWriteAngle()
-    nullptr,          // pfnWriteCoord()
-    nullptr,          // pfnWriteString()
-    nullptr,          // pfnWriteEntity()
-    nullptr,          // pfnCVarRegister()
-    nullptr,          // pfnCVarGetFloat()
-    nullptr,          // pfnCVarGetString()
-    nullptr,          // pfnCVarSetFloat()
-    nullptr,          // pfnCVarSetString()
-    nullptr,          // pfnAlertMessage()
-    nullptr,          // pfnEngineFprintf()
-    nullptr,          // pfnPvAllocEntPrivateData()
-    nullptr,          // pfnPvEntPrivateData()
-    nullptr,          // pfnFreeEntPrivateData()
-    nullptr,          // pfnSzFromIndex()
-    nullptr,          // pfnAllocString()
-    nullptr,          // pfnGetVarsOfEnt()
-    nullptr,          // pfnPEntityOfEntOffset()
-    nullptr,          // pfnEntOffsetOfPEntity()
-    nullptr,          // pfnIndexOfEdict()
-    nullptr,          // pfnPEntityOfEntIndex()
-    nullptr,          // pfnFindEntityByVars()
-    nullptr,          // pfnGetModelPtr()
-    nullptr,          // pfnRegUserMsg()
-    nullptr,          // pfnAnimationAutomove()
-    nullptr,          // pfnGetBonePosition()
-    nullptr,          // pfnFunctionFromName()
-    nullptr,          // pfnNameForFunction()
-    nullptr,          // pfnClientPrintf()
-    nullptr,          // pfnServerPrint()
-    nullptr,          // pfnCmd_Args()
-    nullptr,          // pfnCmd_Argv()
-    nullptr,          // pfnCmd_Argc()
-    nullptr,          // pfnGetAttachment()
-    nullptr,          // pfnCRC32_Init()
-    nullptr,          // pfnCRC32_ProcessBuffer()
-    nullptr,          // pfnCRC32_ProcessByte()
-    nullptr,          // pfnCRC32_Final()
-    nullptr,          // pfnRandomLong()
-    nullptr,          // pfnRandomFloat()
-    nullptr,          // pfnSetView()
-    nullptr,          // pfnTime()
-    nullptr,          // pfnCrosshairAngle()
-    nullptr,          // pfnLoadFileForMe()
-    nullptr,          // pfnFreeFile()
-    nullptr,          // pfnEndSection()
-    nullptr,          // pfnCompareFileTime()
-    nullptr,          // pfnGetGameDir()
-    nullptr,          // pfnCvar_RegisterVariable()
-    nullptr,          // pfnFadeClientVolume()
-    nullptr,          // pfnSetClientMaxspeed()
-    nullptr,          // pfnCreateFakeClient()
-    nullptr,          // pfnRunPlayerMove()
-    nullptr,          // pfnNumberOfEntities()
-    nullptr,          // pfnGetInfoKeyBuffer()
-    nullptr,          // pfnInfoKeyValue()
-    nullptr,          // pfnSetKeyValue()
-    nullptr,          // pfnSetClientKeyValue()
-    nullptr,          // pfnIsMapValid()
-    nullptr,          // pfnStaticDecal()
-    nullptr,          // pfnPrecacheGeneric()
-    nullptr,          // pfnGetPlayerUserId()
-    nullptr,          // pfnBuildSoundMsg()
-    nullptr,          // pfnIsDedicatedServer()
-    nullptr,          // pfnCVarGetPointer()
-    nullptr,          // pfnGetPlayerWONId()
-    nullptr,          // pfnInfo_RemoveKey()
-    nullptr,          // pfnGetPhysicsKeyValue()
-    nullptr,          // pfnSetPhysicsKeyValue()
-    nullptr,          // pfnGetPhysicsInfoString()
-    nullptr,          // pfnPrecacheEvent()
-    nullptr,          // pfnPlaybackEvent()
-    nullptr,          // pfnSetFatPVS()
-    nullptr,          // pfnSetFatPAS()
-    nullptr,          // pfnCheckVisibility()
-    nullptr,          // pfnDeltaSetField()
-    nullptr,          // pfnDeltaUnsetField()
-    nullptr,          // pfnDeltaAddEncoder()
-    nullptr,          // pfnGetCurrentPlayer()
-    nullptr,          // pfnCanSkipPlayer()
-    nullptr,          // pfnDeltaFindField()
-    nullptr,          // pfnDeltaSetFieldByIndex()
-    nullptr,          // pfnDeltaUnsetFieldByIndex()
-    nullptr,          // pfnSetGroupMask()
-    nullptr,          // pfnCreateInstancedBaseline()
-    nullptr,          // pfnCvar_DirectSet()
-    nullptr,          // pfnForceUnmodified()
-    nullptr,          // pfnGetPlayerStats()
-    nullptr,          // pfnAddServerCommand()
+enginefuncs_t gEngineFunctionsTable =
+{
+    nullptr,		// pfnPrecacheModel()
+    nullptr,		// pfnPrecacheSound()
+    nullptr,		// pfnSetModel()
+    nullptr,		// pfnModelIndex()
+    nullptr,		// pfnModelFrames()
+    nullptr,		// pfnSetSize()
+    ChangeLevel,    // pfnChangeLevel()
+    nullptr,		// pfnGetSpawnParms()
+    nullptr,		// pfnSaveSpawnParms()
+    nullptr,		// pfnVecToYaw()
+    nullptr,		// pfnVecToAngles()
+    nullptr,		// pfnMoveToOrigin()
+    nullptr,		// pfnChangeYaw()
+    nullptr,		// pfnChangePitch()
+    nullptr,		// pfnFindEntityByString()
+    nullptr,		// pfnGetEntityIllum()
+    nullptr,		// pfnFindEntityInSphere()
+    nullptr,		// pfnFindClientInPVS()
+    nullptr,		// pfnEntitiesInPVS()
+    nullptr,		// pfnMakeVectors()
+    nullptr,		// pfnAngleVectors()
+    nullptr,		// pfnCreateEntity()
+    nullptr,		// pfnRemoveEntity()
+    nullptr,		// pfnCreateNamedEntity()
+    nullptr,		// pfnMakeStatic()
+    nullptr,		// pfnEntIsOnFloor()
+    nullptr,		// pfnDropToFloor()
+    nullptr,		// pfnWalkMove()
+    nullptr,		// pfnSetOrigin()
+    nullptr,		// pfnEmitSound()
+    nullptr,		// pfnEmitAmbientSound()
+    nullptr,		// pfnTraceLine()
+    nullptr,		// pfnTraceToss()
+    nullptr,		// pfnTraceMonsterHull()
+    nullptr,		// pfnTraceHull()
+    nullptr,		// pfnTraceModel()
+    nullptr,		// pfnTraceTexture()
+    nullptr,		// pfnTraceSphere()
+    nullptr,		// pfnGetAimVector()
+    nullptr,		// pfnServerCommand()
+    nullptr,		// pfnServerExecute()
+    nullptr,		// pfnClientCommand()
+    nullptr,		// pfnParticleEffect()
+    nullptr,		// pfnLightStyle()
+    nullptr,		// pfnDecalIndex()
+    nullptr,		// pfnPointContents()
+    MessageBegin_Pre,		// pfnMessageBegin()
+    MessageEnd_Pre,		// pfnMessageEnd()
+    WriteByte_Pre,		// pfnWriteByte()
+    WriteChar_Pre,		// pfnWriteChar()
+    WriteShort_Pre,		// pfnWriteShort()
+    WriteLong_Pre,		// pfnWriteLong()
+    WriteAngle_Pre,		// pfnWriteAngle()
+    WriteCoord_Pre,		// pfnWriteCoord()
+    WriteString_Pre,		// pfnWriteString()
+    WriteEntity_Pre,		// pfnWriteEntity()
+    nullptr,		// pfnCVarRegister()
+    nullptr,		// pfnCVarGetFloat()
+    nullptr,		// pfnCVarGetString()
+    nullptr,		// pfnCVarSetFloat()
+    nullptr,		// pfnCVarSetString()
+    nullptr,		// pfnAlertMessage()
+    nullptr,		// pfnEngineFprintf()
+    nullptr,		// pfnPvAllocEntPrivateData()
+    nullptr,		// pfnPvEntPrivateData()
+    nullptr,		// pfnFreeEntPrivateData()
+    nullptr,		// pfnSzFromIndex()
+    nullptr,		// pfnAllocString()
+    nullptr,		// pfnGetVarsOfEnt()
+    nullptr,		// pfnPEntityOfEntOffset()
+    nullptr,		// pfnEntOffsetOfPEntity()
+    nullptr,		// pfnIndexOfEdict()
+    nullptr,		// pfnPEntityOfEntIndex()
+    nullptr,		// pfnFindEntityByVars()
+    nullptr,		// pfnGetModelPtr()
+    nullptr,		// pfnRegUserMsg()
+    nullptr,		// pfnAnimationAutomove()
+    nullptr,		// pfnGetBonePosition()
+    nullptr,		// pfnFunctionFromName()
+    nullptr,		// pfnNameForFunction()
+    nullptr,		// pfnClientPrintf()
+    nullptr,		// pfnServerPrint()
+    nullptr,		// pfnCmd_Args()
+    nullptr,		// pfnCmd_Argv()
+    nullptr,		// pfnCmd_Argc()
+    nullptr,		// pfnGetAttachment()
+    nullptr,		// pfnCRC32_Init()
+    nullptr,		// pfnCRC32_ProcessBuffer()
+    nullptr,		// pfnCRC32_ProcessByte()
+    nullptr,		// pfnCRC32_Final()
+    nullptr,		// pfnRandomLong()
+    nullptr,		// pfnRandomFloat()
+    nullptr,		// pfnSetView()
+    nullptr,		// pfnTime()
+    nullptr,		// pfnCrosshairAngle()
+    nullptr,		// pfnLoadFileForMe()
+    nullptr,		// pfnFreeFile()
+    nullptr,		// pfnEndSection()
+    nullptr,		// pfnCompareFileTime()
+    nullptr,		// pfnGetGameDir()
+    nullptr,		// pfnCvar_RegisterVariable()
+    nullptr,		// pfnFadeClientVolume()
+    nullptr,		// pfnSetClientMaxspeed()
+    nullptr,		// pfnCreateFakeClient()
+    nullptr,		// pfnRunPlayerMove()
+    nullptr,		// pfnNumberOfEntities()
+    nullptr,		// pfnGetInfoKeyBuffer()
+    nullptr,		// pfnInfoKeyValue()
+    nullptr,		// pfnSetKeyValue()
+    nullptr,		// pfnSetClientKeyValue()
+    nullptr,		// pfnIsMapValid()
+    nullptr,		// pfnStaticDecal()
+    nullptr,		// pfnPrecacheGeneric()
+    nullptr,		// pfnGetPlayerUserId()
+    nullptr,		// pfnBuildSoundMsg()
+    nullptr,		// pfnIsDedicatedServer()
+    nullptr,		// pfnCVarGetPointer()
+    nullptr,		// pfnGetPlayerWONId()
+    nullptr,		// pfnInfo_RemoveKey()
+    nullptr,		// pfnGetPhysicsKeyValue()
+    nullptr,		// pfnSetPhysicsKeyValue()
+    nullptr,		// pfnGetPhysicsInfoString()
+    nullptr,		// pfnPrecacheEvent()
+    nullptr,		// pfnPlaybackEvent()
+    nullptr,		// pfnSetFatPVS()
+    nullptr,		// pfnSetFatPAS()
+    nullptr,		// pfnCheckVisibility()
+    nullptr,		// pfnDeltaSetField()
+    nullptr,		// pfnDeltaUnsetField()
+    nullptr,		// pfnDeltaAddEncoder()
+    nullptr,		// pfnGetCurrentPlayer()
+    nullptr,		// pfnCanSkipPlayer()
+    nullptr,		// pfnDeltaFindField()
+    nullptr,		// pfnDeltaSetFieldByIndex()
+    nullptr,		// pfnDeltaUnsetFieldByIndex()
+    nullptr,		// pfnSetGroupMask()
+    nullptr,		// pfnCreateInstancedBaseline()
+    nullptr,		// pfnCvar_DirectSet()
+    nullptr,		// pfnForceUnmodified()
+    nullptr,		// pfnGetPlayerStats()
+    nullptr,		// pfnAddServerCommand()
 
     // Added in SDK 2.2:
     nullptr, // pfnVoice_GetClientListening()

@@ -53,6 +53,7 @@ namespace fs = std::experimental::filesystem;
 #include <ICvarSystem.hpp>
 #include <ITimerSystem.hpp>
 #include <IMenuSystem.hpp>
+#include <IMessageSystem.hpp>
 #include <IEdict.hpp>
 #include <IUtilsSystem.hpp>
 #include <IPlayerSystem.hpp>
@@ -170,6 +171,13 @@ namespace SPMod
          * @return              Menu manager.
          */
         virtual IMenuMngr *getMenuManager() const = 0;
+
+        /**
+         * @brief Returns SPMod message manager.
+         *
+         * @return              Message manager.
+         */
+        virtual IMessageMngr *getMessageManager() const = 0;
 
         /**
          * @brief Returns SPMod logger manager.
