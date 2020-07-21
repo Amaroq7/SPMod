@@ -39,11 +39,11 @@ public:
 
     int getParamInt(std::size_t index) const override;
     float getParamFloat(std::size_t index) const override;
-    const char *getParamString(std::size_t index) const override;
+    std::string_view getParamString(std::size_t index) const override;
 
     void setParamInt(std::size_t index, int value) override;
     void setParamFloat(std::size_t index, float value) override;
-    void setParamString(std::size_t index, const char *string) override;
+    void setParamString(std::size_t index, std::string_view string) override;
 
     int getDest() const override;
     int getType() const override;
@@ -105,7 +105,7 @@ private:
 class MessageHooks
 {
 public:
-    MessageHooks() {}
+    MessageHooks() = default;
     ~MessageHooks() {}
 
     MessageHook *addHook(int msgType, MessageHandler handler, std::any cbData, bool post);

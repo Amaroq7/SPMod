@@ -78,9 +78,9 @@ float Message::getParamFloat(std::size_t index) const
 {
     return getParam<float>(index);
 }
-const char *Message::getParamString(std::size_t index) const
+std::string_view Message::getParamString(std::size_t index) const
 {
-    return getParam<std::string>(index).data();
+    return getParam<std::string>(index);
 }
 
 void Message::setParamInt(std::size_t index, int value)
@@ -91,9 +91,9 @@ void Message::setParamFloat(std::size_t index, float value)
 {
     setParam(index, value);
 }
-void Message::setParamString(std::size_t index, const char *string)
+void Message::setParamString(std::size_t index, std::string_view string)
 {
-    setParam(index, string);
+    setParam(index, string.data());
 }
 
 void Message::addParam(MsgParamType type, std::variant<int, float, std::string> &&data)
@@ -210,11 +210,9 @@ IForward::ReturnValue MessageHooks::exec(const std::unique_ptr<Message> &message
             continue;
         }
 
-        IForward::ReturnValue ret;
-
         auto func = hook->getHandler();
 
-        ret = func(message.get(), hook->getCbData());
+        IForward::ReturnValue ret = func(message.get(), hook->getCbData());
 
         if (ret == IForward::ReturnValue::Stop)
         {
@@ -231,7 +229,7 @@ IForward::ReturnValue MessageHooks::exec(const std::unique_ptr<Message> &message
 
 bool MessageHooks::hasHooks() const
 {
-    return m_handlers.size() ? true : false;
+    return !m_handlers.empty();
 }
 
 void MessageHooks::clearHooks()
@@ -307,6 +305,7 @@ META_RES MessageMngr::MessageBegin(int msg_dest, int msg_type, const float *pOri
 
     return MRES_IGNORED;
 }
+
 META_RES MessageMngr::MessageEnd()
 {
     if (m_inblock)
