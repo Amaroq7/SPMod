@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2019 SPMod Development Team
+ *  Copyright (C) 2018-2020 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -21,6 +21,8 @@
     #endinput
 #endif
 #define _messages_included
+
+#include <hooks_base>
 
 /**
  * Destination types for MessageBegin()
@@ -67,7 +69,7 @@ enum MessageHook
 
 enum MsgArgType
 {
-    MsgArg_Byte = 1,
+    MsgArg_Byte,
     MsgArg_Char,
     MsgArg_Short,
     MsgArg_Long,
@@ -91,11 +93,11 @@ typedef MessageHandler = function PluginReturn (MessageDest dest, int type, int 
  *
  * @param msg_type          Message index.
  * @param hook              Function to use as a hook.
- * @param post              Post or not.
+ * @param type              Pre or post hook type.
  *
  * @return                  Hook index.
  */
-native MessageHook HookMessage(int msg_type, MessageHandler hook, bool post = false);
+native MessageHook HookMessage(int msg_type, MessageHandler hook, HookType type);
 
 /**
  * @brief Unhooks a user message.
@@ -207,12 +209,12 @@ native void SetMsgArgString(int argn, const char[] string);
  * @param msgid         Message index.
  * @param origin        Message origin.
  * @param player        Player index to broadcast to.
- * @param ignore_hooks  Ignore this message in message hooks.
+ * @param type          Hookable or not.
  *
  * @noreturn
  * @error               Invalid message index, invalid number of parameters passed.
  */
-native void MessageBegin(MessageDest dest, int msgid, float origin[3] = {0.0,0.0,0.0}, int player = 0, bool ignore_hooks = true);
+native void MessageBegin(MessageDest dest, int msgid, float origin[3] = {0.0,0.0,0.0}, int player = 0, CallType type = Not_Hookable);
 
 /**
  * @brief Ends a message.

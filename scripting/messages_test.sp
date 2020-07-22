@@ -15,8 +15,8 @@ public void OnPluginInit()
 	Command("say /mblock", MsgTest);
 	Command("say /h1", MsgTesth1);
 	Command("say /h11", MsgTesth11);
-	h1 = HookMessage(GetUserMsgId("SayText"), MessageHandler, false);
-	h2 = HookMessage(GetUserMsgId("SayText"), MessageHandler, true);
+	h1 = HookMessage(GetUserMsgId("SayText"), MessageHandler, Hook_Pre);
+	h2 = HookMessage(GetUserMsgId("SayText"), MessageHandler, Hook_Post);
 }
 public PluginReturn MsgTest(int client, Command cid)
 {
@@ -30,7 +30,7 @@ public PluginReturn MsgTesth1(int client, Command cid)
 public PluginReturn MsgTesth11(int client, Command cid)
 {
 	PrintToServer("11hook id %d", h1);
-	h1 = HookMessage(GetUserMsgId("SayText"), MessageHandler, false);
+	h1 = HookMessage(GetUserMsgId("SayText"), MessageHandler, Hook_Pre);
 	PrintToServer("11hook id %d post", h1);
 }
 public PluginReturn MessageHandler(MessageDest dest, int type, int receiver)

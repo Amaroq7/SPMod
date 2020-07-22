@@ -23,7 +23,7 @@ void Message::init(int dest, int type, const float *origin, edict_t *edict)
 {
     m_dest = dest;
     m_type = type;
-    m_origin = const_cast<float *>(origin);
+    m_origin = Vector(origin[0], origin[1], origin[2]);
     m_edict = std::make_unique<Edict>(edict);
 }
 

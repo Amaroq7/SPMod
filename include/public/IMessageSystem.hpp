@@ -25,7 +25,7 @@ namespace SPMod
 
     enum class MsgParamType
     {
-        Byte = 1,
+        Byte,
         Char,
         Short,
         Long,

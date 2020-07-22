@@ -70,7 +70,7 @@ public:
 private:
     int m_dest;
     int m_type;
-    float *m_origin;
+    Vector m_origin;
     std::unique_ptr<Edict> m_edict;
 
     std::vector<MessageParam> m_params;

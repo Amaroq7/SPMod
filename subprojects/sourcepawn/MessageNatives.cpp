@@ -71,13 +71,13 @@ static cell_t HookMessage(SourcePawn::IPluginContext *ctx, const cell_t *params)
     if (params[arg_msg_type] < 0 || static_cast<unsigned int>(params[arg_msg_type]) >= SPMod::MAX_USER_MESSAGES)
     {
         ctx->ReportError("Invalid message id (%d).", params[arg_msg_type]);
-        return 0;
+        return -1;
     }
 
     // TODO: natives for enable/disable hook
     SPMod::IMessageHook *hook = gSPGlobal->getMessageManager()->registerHook(
         params[arg_msg_type], SPExt::Listener::MessageHookCallback, func, params[arg_post]);
-    
+
     return gMessageHooks.create(hook);
 }
 
