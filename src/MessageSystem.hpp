@@ -64,7 +64,15 @@ public:
     template<typename T>
     const T &getParam(std::size_t index) const
     {
-        return std::get<T>(m_params[index].data);
+        try
+        {
+            return std::get<T>(m_params[index].data);
+        }
+        catch (const std::bad_variant_access &e [[maybe_unused]])
+        {
+            static T empty;
+            return empty;
+        }
     }
 
 private:
