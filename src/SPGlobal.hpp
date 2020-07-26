@@ -41,6 +41,7 @@ public:
     CvarMngr *getCvarManager() const override;
     TimerMngr *getTimerManager() const override;
     MenuMngr *getMenuManager() const override;
+    MessageMngr *getMessageManager() const override;
     LoggerMngr *getLoggerManager() const override;
     PlayerMngr *getPlayerManager() const override;
     NativeProxy *getNativeProxy() const override;
@@ -88,6 +89,7 @@ private:
     std::unique_ptr<CommandMngr> m_cmdManager;
     std::unique_ptr<TimerMngr> m_timerManager;
     std::unique_ptr<MenuMngr> m_menuManager;
+    std::unique_ptr<MessageMngr> m_messageManager;
     std::unique_ptr<PlayerMngr> m_plrManager;
     std::unique_ptr<NativeProxy> m_nativeProxy;
     std::unique_ptr<EngineFuncs> m_engineFuncs;

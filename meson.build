@@ -95,7 +95,8 @@ elif build_machine.system() == 'windows'
     gLinkArgs += '/MACHINE:X86'
 
     gCppArgs += [
-        '/TP'  # Treat files as c++ sources
+        '/TP',  # Treat files as c++ sources
+        '/std:c++17' # Dirty fix
     ]
 endif
 

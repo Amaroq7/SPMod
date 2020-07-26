@@ -33,4 +33,5 @@ namespace SPExt::Listener
                                                  std::any data);
     SPMod::IForward::ReturnValue CmdCallback(SPMod::IPlayer *const player, SPMod::ICommand *const cmd, std::any data);
     bool TimerCallback(SPMod::ITimer *const timer, std::any data);
+    SPMod::IForward::ReturnValue MessageHookCallback(SPMod::IMessage *const message, std::any cbData);
 } // namespace SPExt::Listener

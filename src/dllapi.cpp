@@ -164,6 +164,7 @@ static void ServerDeactivatePost()
     gSPGlobal->getCommandManager()->clearCommands();
     gSPGlobal->getCvarManager()->clearCvarsCallback();
     gSPGlobal->getMenuManager()->clearMenus();
+    gSPGlobal->getMessageManager()->clearMessages();
     gSPGlobal->getNativeProxy()->clearNatives();
     gSPGlobal->getPlayerManager()->ServerDeactivatePost();
 
