@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
+cmake_policy(SET CMP0077 NEW)
 cmake_policy(SET CMP0091 NEW)
 cmake_policy(SET CMP0092 NEW)
 
@@ -35,13 +36,7 @@ else()
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     else()
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-endif()
-
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /WX")
-endif()
-
-if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+    endif()
 endif()
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/third_party)
@@ -55,7 +50,7 @@ else()
     include(cmake/BuildYAMLMSVC.cmake)
 endif()
 
-add_subdirectory(src core)
+add_subdirectory(src spmod)
 add_subdirectory(subprojects)
 
 # install scripts
@@ -63,37 +58,3 @@ install(
     DIRECTORY scripting
     DESTINATION .
 )
-
-# install libyaml
-if (BUILD_DYNAMIC)
-    ExternalProject_Get_Property(yaml-cpp-project INSTALL_DIR)
-    if (UNIX)
-        file(GLOB YAML_LIBRARY_FILES
-             LIST_DIRECTORIES false
-             "${INSTALL_DIR}/lib/*.so*"
-        )
-        install(FILES ${YAML_LIBRARY_FILES}
-                DESTINATION libs
-        )
-    else()
-        file(GLOB YAML_LIBRARY_FILES
-                LIST_DIRECTORIES false
-                "${INSTALL_DIR}/lib/*.dll"
-        )
-        install(FILES ${YAML_LIBRARY_FILES}
-                DESTINATION libs
-        )
-    endif()
-endif()
-
-# install libc++abi & libc++ libs
-if (LLVM_BUILD AND BUILD_DYNAMIC)
-    ExternalProject_Get_Property(llvm-project INSTALL_DIR)
-    file(GLOB LLVM_LIBRARY_FILES
-            LIST_DIRECTORIES false
-            "${LLVM_BINARY_DIR}/lib/*.so*"
-    )
-    install(FILES ${LLVM_LIBRARY_FILES}
-            DESTINATION libs
-    )
-endif()

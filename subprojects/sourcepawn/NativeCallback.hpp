@@ -1,0 +1,8 @@
+//
+// Created by karol on 9/30/20.
+//
+
+#ifndef SPMOD_NATIVECALLBACK_HPP
+#define SPMOD_NATIVECALLBACK_HPP
+
+#endif //SPMOD_NATIVECALLBACK_HPP

@@ -44,9 +44,9 @@ class SourcePawnAPI
 {
 public:
 #if defined SP_LINUX
-    static constexpr auto *sourcepawnLibrary = "sourcepawn.jit.x86.so";
+    static constexpr auto *sourcepawnLibrary = "sourcepawn.vm.so";
 #elif defined SP_WINDOWS
-    static constexpr auto *sourcepawnLibrary = "sourcepawn.jit.x86.dll";
+    static constexpr auto *sourcepawnLibrary = "sourcepawn.vm.dll";
 #endif
 
     SourcePawnAPI() = delete;

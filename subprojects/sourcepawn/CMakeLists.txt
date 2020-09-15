@@ -1,45 +1,8 @@
 project(sourcepawn)
 
 # Build sourcepawn lib
-if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/sourcepawn_deps)
-    message(STATUS "Building SourcePawn library")
-    if (UNIX)
-        execute_process(
-            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build_sourcepawnlib.sh
-            ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
-            RESULT_VARIABLE RESULT
-        )
-        if (NOT RESULT EQUAL 0)
-            message(WARNING "Failed to build SourcePawn library")
-        endif()
-    else()
-        message(VERBOSE "Finding PowerShell Core")
-        find_program(PWSH pwsh)
-        if (NOT PWSH)
-            message(VERBOSE "PowerShell Core not found. Searching for PowerShell instead...")
-            find_program(PWSH powershell)
-            if (NOT PWSH)
-                message(VERBOSE "PowerShell could not be found")
-            endif()
-        endif()
-
-        if (PWSH)
-            execute_process(
-                COMMAND ${PWSH}
-                -ExecutionPolicy Bypass
-                -File ${CMAKE_CURRENT_SOURCE_DIR}\\build_sourcepawnlib.ps1 ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
-                -Scope CurrentUser
-                RESULT_VARIABLE RESULT
-            )
-
-            if (NOT RESULT EQUAL 0)
-                message(WARNING "Failed to build SourcePawn library")
-            endif()
-        else()
-            message(WARNING "Could not build SourcePawn library")
-        endif()
-    endif()
-endif()
+message(STATUS "Building SourcePawn library")
+include(${CMAKE_SOURCE_DIR}/cmake/BuildSPVM.cmake)
 
 set(SRC_FILES AdapterInterface.cpp
               CmdNatives.cpp
@@ -85,13 +48,15 @@ install(TARGETS ${PROJECT_NAME}
             DESTINATION exts
 )
 
+ExternalProject_Get_Property(spvm-project BINARY_DIR)
+
 # SourcePawn lib
 install(FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/sourcepawn_deps/sourcepawn_build/vm/sourcepawn.jit.x86/sourcepawn.jit.x86.$<IF:$<PLATFORM_ID:Linux>,so,dll>
+        ${BINARY_DIR}/vm/sourcepawn.vm/linux-x86/sourcepawn.vm.$<IF:$<PLATFORM_ID:Linux>,so,dll>
         DESTINATION exts
 )
 
 install(PROGRAMS
-        ${CMAKE_CURRENT_SOURCE_DIR}/sourcepawn_deps/sourcepawn_build/compiler/spcomp/spcomp$<$<PLATFORM_ID:Windows>:.exe>
+        ${BINARY_DIR}/compiler/spcomp/linux-x86/spcomp$<$<PLATFORM_ID:Windows>:.exe>
         DESTINATION scripting
 )

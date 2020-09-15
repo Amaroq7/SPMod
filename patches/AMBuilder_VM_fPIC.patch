@@ -1,0 +1,11 @@
+--- AMBuilder	2020-09-10 01:25:57.342121175 +0200
++++ AMBuilder_fPIC	2020-09-10 01:26:25.826598132 +0200
+@@ -45,6 +45,8 @@
+ library = Root.StaticLibrary(builder, 'sourcepawn')
+ library.compiler.includes += Includes
+ 
++library.compiler.cflags += ['-fPIC']
++
+ library.sources += [
+   'api.cpp',
+   'base-context.cpp',

@@ -1,5 +1,10 @@
 if (BUILD_SPADAPTER)
-    add_subdirectory(sourcepawn)
+    find_program(PYTHON_PIP pip3)
+    if (PYTHON_PIP)
+        add_subdirectory(sourcepawn)
+    else()
+        message(FATAL_ERROR "Python pip not found")
+    endif()
 endif()
 
 if (BUILD_EXAMPLE)
