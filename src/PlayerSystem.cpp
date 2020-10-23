@@ -144,7 +144,7 @@ bool Player::isInGame() const
 
 IBasePlayer *Player::basePlayer() const
 {
-    if (gSPGlobal->getModName() == ModName::Valve)
+    if (gSPGlobal->getModName() == ModType::Valve)
     {
         return m_basePlayer;
     }

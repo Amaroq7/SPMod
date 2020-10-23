@@ -42,23 +42,23 @@ SPGlobal::SPGlobal(fs::path &&dllDir)
     std::string_view modName(GET_GAME_INFO(PLID, GINFO_NAME));
     if (modName == "valve")
     {
-        m_modName = ModName::Valve;
+        m_modType = ModType::Valve;
     }
     else if (modName == "cstrike")
     {
-        m_modName = ModName::Cstrike;
+        m_modType = ModType::Cstrike;
     }
     else if (modName == "czero")
     {
-        m_modName = ModName::CZero;
+        m_modType = ModType::CZero;
     }
     else if (modName == "dod")
     {
-        m_modName = ModName::DoD;
+        m_modType = ModType::DoD;
     }
     else if (modName == "tfc")
     {
-        m_modName = ModName::TFC;
+        m_modType = ModType::TFC;
     }
 }
 
@@ -224,9 +224,9 @@ void SPGlobal::setPath(DirType type, std::string_view path)
     }
 }
 
-ModName SPGlobal::getModName() const
+ModType SPGlobal::getModType() const
 {
-    return m_modName;
+    return m_modType;
 }
 
 ForwardMngr *SPGlobal::getForwardManager() const

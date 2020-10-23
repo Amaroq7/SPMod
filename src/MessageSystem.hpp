@@ -24,7 +24,7 @@
 class Message : public IMessage
 {
 public:
-    struct MessageParam
+    struct Param
     {
         MsgParamType type;
         std::variant<int, float, std::string> data;
@@ -45,13 +45,13 @@ public:
     void setParamFloat(std::size_t index, float value) override;
     void setParamString(std::size_t index, std::string_view string) override;
 
-    int getDest() const override;
+    MsgDest getDest() const override;
     int getType() const override;
     const float *getOrigin() const override;
-    IEdict *getEdict() const override;
+    Engine::IEdict *getEdict() const override;
 
     // Message
-    void init(int dest, int type, const float *origin, edict_t *edict);
+    void init(MsgDest dest, int type, const float *origin, Engine::Edict *edict);
 
     void exec() const;
 
@@ -76,18 +76,18 @@ public:
     }
 
 private:
-    int m_dest;
+    MsgDest m_dest;
     int m_type;
     Vector m_origin;
-    std::unique_ptr<Edict> m_edict;
+    Engine::Edict *m_edict;
 
-    std::vector<MessageParam> m_params;
+    std::vector<Param> m_params;
 };
 
-class MessageHook : public IMessageHook
+class MessageHook final : public IMessageHook
 {
 public:
-    MessageHook(int msgType, MessageHandler handler, std::any cbData, bool post);
+    MessageHook(int msgType, Message::Handler handler, HookType hookType);
     ~MessageHook() = default;
 
     // IMessageHook
@@ -97,16 +97,14 @@ public:
     int getMsgType() const override;
 
     // MessageHook
-    bool getPost() const;
-    MessageHandler getHandler() const;
-    std::any getCbData() const;
+    HookType getHookType() const;
+    Message::Handler getHandler() const;
     bool getActive() const;
 
 private:
     int m_msgType;
-    MessageHandler m_handler;
-    std::any m_cbData;
-    bool m_post;
+    Message::Handler m_handler;
+    HookType m_hookType;
     bool m_active;
 };
 
@@ -114,13 +112,13 @@ class MessageHooks
 {
 public:
     MessageHooks() = default;
-    ~MessageHooks() {}
+    ~MessageHooks() = default;
 
-    MessageHook *addHook(int msgType, MessageHandler handler, std::any cbData, bool post);
+    MessageHook *addHook(int msgType, Message::Handler handler, HookType hookType);
 
     void removeHook(IMessageHook *hook);
 
-    IForward::ReturnValue exec(const std::unique_ptr<Message> &message, bool post) const;
+    IForward::ReturnValue exec(const std::unique_ptr<Message> &message, HookType hookType) const;
 
     bool hasHooks() const;
 
@@ -137,13 +135,13 @@ public:
     ~MessageMngr() = default;
 
     // IMessageMngr
-    MessageHook *registerHook(int msgType, MessageHandler handler, std::any cbData, bool post) override;
+    MessageHook *registerHook(int msgType, Message::Handler handler, HookType hookType) override;
     void unregisterHook(IMessageHook *) override;
 
-    BlockType getMessageBlock(int msgType) const override;
-    void setMessageBlock(int msgType, BlockType blockType) override;
+    MsgBlockType getMessageBlock(int msgType) const override;
+    void setMessageBlock(int msgType, MsgBlockType blockType) override;
 
-    IForward::ReturnValue execHandlers(bool post);
+    IForward::ReturnValue execHandlers(HookType hookType);
 
     IMessage *getMessage() const override
     {
@@ -176,7 +174,7 @@ public:
 private:
     std::unique_ptr<Message> m_message;
     std::array<MessageHooks, MAX_USER_MESSAGES> m_hooks;
-    std::array<BlockType, MAX_USER_MESSAGES> m_blocks;
+    std::array<MsgBlockType, MAX_USER_MESSAGES> m_blocks;
 
     bool m_inhook;
     bool m_inblock;

@@ -30,6 +30,7 @@ SPMod::ICvarMngr *gSPCvarMngr;
 SPMod::IForwardMngr *gSPFwdMngr;
 SPMod::ILoggerMngr *gSPLoggerMngr;
 SPMod::IMenuMngr *gSPMenuMngr;
+SPMod::IMessageMngr *gSPMsgMngr;
 SPMod::IPlayerMngr *gSPPlrMngr;
 SPMod::ITimerMngr *gSPTimerMngr;
 SPMod::IUtils *gSPUtils;
@@ -74,6 +75,12 @@ namespace
 
         gSPMenuMngr = gSPGlobal->getMenuManager();
         if (!gSPMenuMngr->isVersionCompatible(SPMod::IMenuMngr::VERSION))
+        {
+            return false;
+        }
+
+        gSPMsgMngr = gSPGlobal->getMessageManager();
+        if (!gSPMsgMngr->isVersionCompatible(SPMod::IMessageMngr::VERSION))
         {
             return false;
         }

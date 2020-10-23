@@ -19,17 +19,30 @@
 
 #include "spmod.hpp"
 
-void Message::init(int dest, int type, const float *origin, edict_t *edict)
+namespace
+{
+    inline std::int32_t msgDestToInt(MsgDest destType)
+    {
+        return static_cast<std::int32_t>(destType);
+    }
+
+    inline MsgDest intToMsgDest(std::int32_t destType)
+    {
+        return static_cast<MsgDest>(destType);
+    }
+}
+
+void Message::init(MsgDest dest, int type, const float *origin, Engine::Edict *edict)
 {
     m_dest = dest;
     m_type = type;
     m_origin = Vector(origin[0], origin[1], origin[2]);
-    m_edict = std::make_unique<Edict>(edict);
+    m_edict = edict;
 }
 
 void Message::exec() const
 {
-    MESSAGE_BEGIN(m_dest, m_type, m_origin, m_edict->getInternalEdict());
+    MESSAGE_BEGIN(msgDestToInt(m_dest), m_type, m_origin, *m_edict);
 
     for (auto param : m_params)
     {
@@ -98,7 +111,7 @@ void Message::setParamString(std::size_t index, std::string_view string)
 
 void Message::addParam(MsgParamType type, std::variant<int, float, std::string> &&data)
 {
-    MessageParam param;
+    Param param;
     param.type = type;
     param.data = data;
 
@@ -120,7 +133,7 @@ MsgParamType Message::getParamType(std::size_t index) const
     return m_params[index].type;
 }
 
-int Message::getDest() const
+MsgDest Message::getDest() const
 {
     return m_dest;
 }
@@ -135,13 +148,13 @@ const float *Message::getOrigin() const
     return m_origin;
 }
 
-IEdict *Message::getEdict() const
+Engine::IEdict *Message::getEdict() const
 {
-    return m_edict.get();
+    return m_edict;
 }
 
-MessageHook::MessageHook(int msgType, MessageHandler handler, std::any cbData, bool post)
-    : m_msgType(msgType), m_handler(handler), m_cbData(cbData), m_post(post), m_active(true)
+MessageHook::MessageHook(int msgType, Message::Handler handler, HookType hookType)
+    : m_msgType(msgType), m_handler(handler), m_hookType(hookType), m_active(true)
 {
 }
 
@@ -165,26 +178,24 @@ int MessageHook::getMsgType() const
 }
 
 // MessageHook
-bool MessageHook::getPost() const
+HookType MessageHook::getHookType() const
 {
-    return m_post;
+    return m_hookType;
 }
-MessageHandler MessageHook::getHandler() const
+
+Message::Handler MessageHook::getHandler() const
 {
     return m_handler;
 }
-std::any MessageHook::getCbData() const
-{
-    return m_cbData;
-}
+
 bool MessageHook::getActive() const
 {
     return m_active;
 }
 
-MessageHook *MessageHooks::addHook(int msgType, MessageHandler handler, std::any cbData, bool post)
+MessageHook *MessageHooks::addHook(int msgType, Message::Handler handler, HookType hookType)
 {
-    return m_handlers.emplace_back(std::make_unique<MessageHook>(msgType, handler, cbData, post)).get();
+    return m_handlers.emplace_back(std::make_unique<MessageHook>(msgType, handler, hookType)).get();
 }
 void MessageHooks::removeHook(IMessageHook *hook)
 {
@@ -199,20 +210,20 @@ void MessageHooks::removeHook(IMessageHook *hook)
         ++iter;
     }
 }
-IForward::ReturnValue MessageHooks::exec(const std::unique_ptr<Message> &message, bool post) const
+IForward::ReturnValue MessageHooks::exec(const std::unique_ptr<Message> &message, HookType hookType) const
 {
     IForward::ReturnValue result = IForward::ReturnValue::Ignored;
 
     for (const auto &hook : m_handlers)
     {
-        if (!hook->getActive() || hook->getPost() != post)
+        if (!hook->getActive() || hook->getHookType() != hookType)
         {
             continue;
         }
 
         auto func = hook->getHandler();
 
-        IForward::ReturnValue ret = func(message.get(), hook->getCbData());
+        IForward::ReturnValue ret = func(message.get());
 
         if (ret == IForward::ReturnValue::Stop)
         {
@@ -243,13 +254,13 @@ MessageMngr::MessageMngr() : m_message(std::make_unique<Message>())
 
     for (std::size_t i = 0; i < MAX_USER_MESSAGES; i++)
     {
-        m_blocks[i] = BlockType::Not;
+        m_blocks[i] = MsgBlockType::Not;
     }
 }
 
-MessageHook *MessageMngr::registerHook(int msgType, MessageHandler handler, std::any cbData, bool post)
+MessageHook *MessageMngr::registerHook(int msgType, Message::Handler handler, HookType hookType)
 {
-    return m_hooks[msgType].addHook(msgType, handler, cbData, post);
+    return m_hooks[msgType].addHook(msgType, handler, hookType);
 }
 
 void MessageMngr::unregisterHook(IMessageHook *hook)
@@ -258,19 +269,19 @@ void MessageMngr::unregisterHook(IMessageHook *hook)
     m_hooks[msgType].removeHook(hook);
 }
 
-BlockType MessageMngr::getMessageBlock(int msgType) const
+MsgBlockType MessageMngr::getMessageBlock(int msgType) const
 {
     return m_blocks[msgType];
 }
 
-void MessageMngr::setMessageBlock(int msgType, BlockType blockType)
+void MessageMngr::setMessageBlock(int msgType, MsgBlockType blockType)
 {
     m_blocks[msgType] = blockType;
 }
 
-IForward::ReturnValue MessageMngr::execHandlers(bool post)
+IForward::ReturnValue MessageMngr::execHandlers(HookType hookType)
 {
-    return m_hooks[m_message->getType()].exec(m_message, post);
+    return m_hooks[m_message->getType()].exec(m_message, hookType);
 }
 
 bool MessageMngr::inHook() const
@@ -288,7 +299,7 @@ void MessageMngr::clearMessages()
 
 META_RES MessageMngr::MessageBegin(int msg_dest, int msg_type, const float *pOrigin, edict_t *ed)
 {
-    if (m_blocks[msg_type] != BlockType::Not)
+    if (m_blocks[msg_type] != MsgBlockType::Not)
     {
         m_inblock = true;
         m_msgType = msg_type;
@@ -299,7 +310,7 @@ META_RES MessageMngr::MessageBegin(int msg_dest, int msg_type, const float *pOri
 
     if (m_inhook)
     {
-        m_message->init(msg_dest, msg_type, pOrigin, ed);
+        m_message->init(intToMsgDest(msg_dest), msg_type, pOrigin, gSPGlobal->getEngine()->getEdict(ed));
         return MRES_SUPERCEDE;
     }
 
@@ -311,9 +322,9 @@ META_RES MessageMngr::MessageEnd()
     if (m_inblock)
     {
         m_inblock = false;
-        if (m_blocks[m_msgType] == BlockType::Once)
+        if (m_blocks[m_msgType] == MsgBlockType::Once)
         {
-            m_blocks[m_msgType] = BlockType::Not;
+            m_blocks[m_msgType] = MsgBlockType::Not;
         }
         return MRES_SUPERCEDE;
     }
@@ -326,7 +337,7 @@ META_RES MessageMngr::MessageEnd()
     // exec pre hooks
     // add contidions for hooks like in amxx events
 
-    IForward::ReturnValue ret = execHandlers(false);
+    IForward::ReturnValue ret = execHandlers(HookType::Pre);
 
     // hooks can change params
     // then exec message
@@ -335,7 +346,7 @@ META_RES MessageMngr::MessageEnd()
         m_message->exec();
 
         // exec post hooks?
-        execHandlers(true);
+        execHandlers(HookType::Post);
     }
 
     m_inhook = false;

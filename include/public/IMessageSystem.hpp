@@ -23,7 +23,7 @@ namespace SPMod
 {
     constexpr std::size_t MAX_USER_MESSAGES = 256U;
 
-    enum class MsgParamType
+    enum class MsgParamType : std::uint8_t
     {
         Byte,
         Char,
@@ -35,18 +35,40 @@ namespace SPMod
         Entity,
     };
 
-    enum class BlockType
+    enum class MsgBlockType : std::uint8_t
     {
         Not,
         Once,
         Set
     };
 
-    class IEdict;
+    /**
+     *  Message destination.
+     */
+    enum class MsgDest : std::uint8_t
+    {
+        BROADCAST = 0,      /**< Unreliable to all */
+        ONE = 1,            /**< Reliable to one (msg_entity) */
+        ALL = 2,            /**< Reliable to all */
+        INIT = 3,           /**< Write to the init string */
+        PVS = 4,            /**< Ents in PVS of org */
+        PAS = 5,            /**< Ents in PAS of org */
+        PVS_R = 6,          /**< Reliable to PVS */
+        PAS_R = 7,          /**< Reliable to PAS */
+        ONE_UNRELIABLE = 8, /**< Send to one client, but don't put in reliable stream, put in unreliable datagram */
+        SPEC = 9,           /**< Sends to all spectator proxies */
+    };
+
+    namespace Engine
+    {
+        class IEdict;
+    }
 
     class IMessage
     {
     public:
+        using Handler = std::function<IForward::ReturnValue(IMessage *const message)>;
+
         virtual ~IMessage() = default;
 
         virtual std::size_t getParams() const = 0;
@@ -61,13 +83,11 @@ namespace SPMod
         virtual void setParamFloat(std::size_t index, float value) = 0;
         virtual void setParamString(std::size_t index, std::string_view string) = 0;
 
-        virtual int getDest() const = 0;
+        virtual MsgDest getDest() const = 0;
         virtual int getType() const = 0;
         virtual const float *getOrigin() const = 0;
-        virtual IEdict *getEdict() const = 0;
+        virtual Engine::IEdict *getEdict() const = 0;
     };
-
-    using MessageHandler = std::function<IForward::ReturnValue(IMessage *const message, std::any cbData)>;
 
     class IMessageHook
     {
@@ -111,11 +131,11 @@ namespace SPMod
             return VERSION;
         }
 
-        virtual IMessageHook *registerHook(int msgType, MessageHandler handler, std::any cbData, bool post) = 0;
+        virtual IMessageHook *registerHook(int msgType, IMessage::Handler handler, HookType hookType) = 0;
         virtual void unregisterHook(IMessageHook *hook) = 0;
 
-        virtual BlockType getMessageBlock(int msgType) const = 0;
-        virtual void setMessageBlock(int msgType, BlockType blockType) = 0;
+        virtual MsgBlockType getMessageBlock(int msgType) const = 0;
+        virtual void setMessageBlock(int msgType, MsgBlockType blockType) = 0;
 
         virtual IMessage *getMessage() const = 0;
         virtual bool inHook() const = 0;

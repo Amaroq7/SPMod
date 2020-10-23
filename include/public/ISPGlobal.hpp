@@ -30,6 +30,7 @@
 #include <regex>
 #include <charconv>
 #include <optional>
+#include <unordered_map>
 
 #include <IHelpers.hpp>
 
@@ -84,6 +85,7 @@ namespace fs = std::experimental::filesystem;
 #include <IPluginSystem.hpp>
 #include <INativeProxy.hpp>
 #include <IVTableHookSystem.hpp>
+#include <IMessageSystem.hpp>
 
 namespace SPMod
 {
@@ -127,11 +129,11 @@ namespace SPMod
         virtual const fs::path &getPath(DirType type) const = 0;
 
         /**
-         * @brief Returns name of the mod.
+         * @brief Returns type of the mod.
          *
-         * @return              Mod name.
+         * @return              Mod type.
          */
-        virtual ModName getModName() const = 0;
+        virtual ModType getModType() const = 0;
 
         /**
          * @brief Checks if plugins can precache resources.
@@ -176,6 +178,13 @@ namespace SPMod
          * @return              Menu manager.
          */
         virtual IMenuMngr *getMenuManager() const = 0;
+
+        /**
+         * @brief Returns SPMod message manager.
+         *
+         * @return              Message manager.
+         */
+        virtual IMessageMngr *getMessageManager() const = 0;
 
         /**
          * @brief Returns SPMod logger manager.

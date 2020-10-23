@@ -19,6 +19,11 @@
 
 #pragma once
 
+namespace SPMod
+{
+    enum class MsgDest : std::uint8_t;
+}
+
 namespace SPMod::Engine
 {
     class IFuncs
@@ -121,7 +126,7 @@ namespace SPMod::Engine
         virtual void registerSrvCommand(std::string_view cmd, ServerCmdCallback callback) const = 0;
 
         // TODO: Describe funcs
-        virtual void messageBegin(MessageDest msgDest,
+        virtual void messageBegin(MsgDest msgDest,
                                   std::uint32_t msgType,
                                   const float *pOrigin = nullptr,
                                   IEdict *pEdict = nullptr) const = 0;

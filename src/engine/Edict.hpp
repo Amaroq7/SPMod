@@ -43,10 +43,12 @@ namespace SPMod::Engine
         operator edict_t *() const;
 
     private:
+        bool _isValid() const;
+
         template<typename T, typename = std::enable_if_t<std::is_base_of_v<IBaseEntity, T>>>
         T *getEntity()
         {
-            if (!isValid())
+            if (!_isValid())
             {
                 return nullptr;
             }

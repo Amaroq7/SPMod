@@ -36,6 +36,7 @@
 #endif
 
 #include "SourcePawnAPI.hpp"
+#include "NativeCallback.hpp"
 #include "DebugListener.hpp"
 #include "PluginSystem.hpp"
 #include "AdapterInterface.hpp"
@@ -49,6 +50,7 @@ extern SPMod::ICvarMngr *gSPCvarMngr;
 extern SPMod::IForwardMngr *gSPFwdMngr;
 extern SPMod::ILoggerMngr *gSPLoggerMngr;
 extern SPMod::IMenuMngr *gSPMenuMngr;
+extern SPMod::IMessageMngr *gSPMsgMngr;
 extern SPMod::IPlayerMngr *gSPPlrMngr;
 extern SPMod::ITimerMngr *gSPTimerMngr;
 extern SPMod::IUtils *gSPUtils;

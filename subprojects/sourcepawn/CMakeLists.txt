@@ -20,7 +20,7 @@ set(SRC_FILES AdapterInterface.cpp
               SourcePawnAPI.cpp
               StringNatives.cpp
               TimerNatives.cpp
-              VTableNatives.cpp)
+              VTableNatives.cpp NativeCallback.hpp NativeCallback.cpp)
 
 add_library(${PROJECT_NAME} MODULE ${SRC_FILES})
 

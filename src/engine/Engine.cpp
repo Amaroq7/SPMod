@@ -46,6 +46,24 @@ namespace SPMod::Engine
         }
     }
 
+    Edict *Engine::getEdict(edict_t *edict)
+    {
+        try
+        {
+            return m_edicts.at(ENTINDEX(edict)).get();
+        }
+        catch (const std::out_of_range &e [[maybe_unused]])
+        {
+            // check if edict is valid and register it
+            if (!FNullEnt(edict) || !ENTINDEX(edict))
+            {
+                auto resultIter = m_edicts.emplace(ENTINDEX(edict), std::make_unique<Edict>(edict)).first;
+                return (*resultIter).second.get();
+            }
+            return nullptr;
+        }
+    }
+
     Globals *Engine::getGlobals() const
     {
         return m_globals.get();

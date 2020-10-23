@@ -36,27 +36,65 @@ namespace SPMod
         virtual std::string_view getName() const = 0;
 
         /**
-         * @brief Gets native data.
+         * @brief Gets passed param as int.
          *
-         * @return      Native's data.
+         * @param index   Param number.
+         *
+         * @return        Param as int.
          */
-        virtual std::any getData() const = 0;
+        virtual std::int32_t getParamAsInt(std::size_t index) const = 0;
 
         /**
-         * @brief Gets native plugin.
+         * @brief Gets passed param as pointer to int.
          *
-         * @return      Native's plugin.
+         * @param index   Param number.
+         *
+         * @return        Param as pointer to int.
          */
-        virtual IPlugin *getPlugin() const = 0;
+        virtual std::int32_t *getParamAsIntAddr(std::size_t index) const = 0;
 
         /**
-         * @brief Notifies adapter about executed native.
+         * @brief Gets passed param as float.
          *
-         * @param plugin    Plugin which has executed the native.
+         * @param index   Param number.
          *
-         * @return          Native result.
+         * @return        Param as float.
          */
-        virtual std::int32_t exec(IPlugin *plugin) = 0;
+        virtual float getParamAsFloat(std::size_t index) const = 0;
+
+        /**
+         * @brief Gets passed param as pointer to float.
+         *
+         * @param index   Param number.
+         *
+         * @return        Param as pointer to float.
+         */
+        virtual float *getParamAsFloatAddr(std::size_t index) const = 0;
+
+        /**
+         * @brief Gets passed param as string.
+         *
+         * @param index   Param number.
+         *
+         * @return        Param as string.
+         */
+        virtual char *getParamAsString(std::size_t index) const = 0;
+
+        /**
+         * @brief Gets passed param as array.
+         *
+         * @param index   Param number.
+         *
+         * @return        Param as pointer to float.
+         */
+        virtual void *getParamAsArray(std::size_t index) const = 0;
+
+        /**
+         * @brief Executes the native.
+         *
+         * @return        Param as pointer to float.
+         */
+        virtual std::int32_t InvokeSPModNative() = 0;
     };
 
     class INativeProxy : public ISPModInterface
@@ -95,26 +133,17 @@ namespace SPMod
          * @brief Registers proxied native.
          *
          * @param name      Native name.
-         * @param data      Native data.
-         * @param plugin    Plugin which native belongs to.
+         * @param callback  Callback to be executed.
          *
          * @return          True if registration succeed, false otherwise.
          */
-        virtual bool registerNative(std::string_view name, std::any data, IPlugin *plugin) = 0;
+        virtual bool registerNative(IProxiedNative *native) = 0;
 
         /**
-         * @brief Gets list of proxied natives.
+         * @brief Returns list of already registered proxied natives.
          *
-         * @param native    Native's id.
-         *
-         * @return          Proxied native or nullptr if invalid id.
+         * @return          Map of registered proxied natives (first element - name of the native, second - implementation)
          */
-        std::vector<IProxiedNative *> getProxiedNatives() const
-        {
-            return getProxiedNativesImpl();
-        }
-
-    protected:
-        virtual std::vector<IProxiedNative *> getProxiedNativesImpl() const = 0;
+        virtual const std::unordered_map<std::string, IProxiedNative *> &getProxiedNatives() const = 0;
     };
 } // namespace SPMod

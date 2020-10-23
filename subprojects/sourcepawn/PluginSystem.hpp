@@ -46,18 +46,10 @@ namespace SPExt
         std::string_view getIdentity() const override;
         std::string_view getFilename() const override;
         SPMod::IPluginMngr *getPluginMngr() const override;
-        int getProxiedParamAsInt(std::size_t index) const override;
-        int *getProxiedParamAsIntAddr(std::size_t index) const override;
-        float getProxiedParamAsFloat(std::size_t index) const override;
-        float *getProxiedParamAsFloatAddr(std::size_t index) const override;
-        char *getProxiedParamAsString(std::size_t index) const override;
-        void *getProxiedParamAsArray(std::size_t index) const override;
 
         // Plugin
         SourcePawn::IPluginRuntime *getRuntime() const;
         std::size_t getId() const;
-        void setProxyContext(SourcePawn::IPluginContext *ctx);
-        void setProxyParams(const cell_t *params);
 
     private:
         std::size_t m_id;
@@ -69,8 +61,6 @@ namespace SPExt
         std::string m_version;
         std::string m_author;
         std::string m_url;
-        std::array<cell_t, SP_MAX_CALL_ARGUMENTS> m_proxiedParams;
-        SourcePawn::IPluginContext *m_proxyContext;
     };
 
     class PluginMngr final : public SPMod::IPluginMngr
@@ -105,13 +95,11 @@ namespace SPExt
         void clearNatives();
         void addDefaultNatives();
         SPVM_NATIVE_FUNC findNative(std::string_view name);
+        NativeCallback *findPluginNative(std::string_view name);
 
         // Proxied natives
-        int proxyNativeCallback(SPMod::IProxiedNative *native, SPMod::IPlugin *plugin) override;
-        bool addProxiedNative(std::string_view name, SPMod::IProxiedNative *native);
-        static cell_t proxyNativeRouter(SourcePawn::IPluginContext *ctx, const cell_t *params, void *data);
-
-        static inline SPMod::IPlugin *m_callerPlugin;
+        void addNative(SPMod::IProxiedNative *native);
+        bool registerNative(std::string_view nativeName, SourcePawn::IPluginFunction *pluginFunc);
 
     private:
         Plugin *_loadPlugin(const fs::path &path, std::string &error);
@@ -121,8 +109,6 @@ namespace SPExt
         std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
         std::vector<SPMod::IPlugin *> m_exportedPlugins;
         std::unordered_map<std::string, SPVM_NATIVE_FUNC> m_natives;
-
-        // Routers to be freed on the map change
-        std::vector<SPVM_NATIVE_FUNC> m_routers;
+        std::unordered_map<std::string, NativeCallback *> m_pluginNatives;
     };
 } // namespace SPExt

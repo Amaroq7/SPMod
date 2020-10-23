@@ -29,6 +29,7 @@ set(SRC_FILES h_export.cpp
               ValveInterface.cpp
               UtilsSystem.cpp
               NativeProxy.cpp
+              MessageSystem.cpp
               engine/Funcs.cpp
               metamod/Funcs.cpp
               metamod/Metamod.cpp

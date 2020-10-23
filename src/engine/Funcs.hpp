@@ -44,7 +44,7 @@ namespace SPMod::Engine
         void serverCommand(std::string_view cmd) const override;
         void serverExecute() const override;
         void registerSrvCommand(std::string_view cmd, ServerCmdCallback callback) const override;
-        void messageBegin(MessageDest msgDest,
+        void messageBegin(MsgDest msgDest,
                           std::uint32_t msgType,
                           const float *pOrigin,
                           IEdict *pEdict) const override;

@@ -79,60 +79,6 @@ namespace SPMod
          * @return        Plugin manager.
          */
         virtual IPluginMngr *getPluginMngr() const = 0;
-
-        /**
-         * @brief Gets proxied param as int.
-         *
-         * @param index   Param number.
-         *
-         * @return        Param as int.
-         */
-        virtual std::int32_t getProxiedParamAsInt(std::size_t index) const = 0;
-
-        /**
-         * @brief Gets proxied param as pointer to int.
-         *
-         * @param index   Param number.
-         *
-         * @return        Param as pointer to int.
-         */
-        virtual std::int32_t *getProxiedParamAsIntAddr(std::size_t index) const = 0;
-
-        /**
-         * @brief Gets proxied param as float.
-         *
-         * @param index   Param number.
-         *
-         * @return        Param as float.
-         */
-        virtual float getProxiedParamAsFloat(std::size_t index) const = 0;
-
-        /**
-         * @brief Gets proxied param as pointer to float.
-         *
-         * @param index   Param number.
-         *
-         * @return        Param as pointer to float.
-         */
-        virtual float *getProxiedParamAsFloatAddr(std::size_t index) const = 0;
-
-        /**
-         * @brief Gets proxied param as string.
-         *
-         * @param index   Param number.
-         *
-         * @return        Param as string.
-         */
-        virtual char *getProxiedParamAsString(std::size_t index) const = 0;
-
-        /**
-         * @brief Gets proxied param as array.
-         *
-         * @param index   Param number.
-         *
-         * @return        Param as pointer to float.
-         */
-        virtual void *getProxiedParamAsArray(std::size_t index) const = 0;
     };
 
     class IPluginMngr
@@ -166,16 +112,6 @@ namespace SPMod
          *
          */
         virtual void unloadPlugins() = 0;
-
-        /**
-         * @brief Called on proxied native.
-         *
-         * @param native  Proxied native.
-         * @param plugin  Plugin which executed the native.
-         *
-         * @return        Native result.
-         */
-        virtual std::int32_t proxyNativeCallback(IProxiedNative *native, IPlugin *plugin) = 0;
 
         /**
          * @brief Returns numbers of loaded plugins.

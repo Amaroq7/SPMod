@@ -19,6 +19,8 @@
 
 #include "ExtMain.hpp"
 
+std::vector<std::unique_ptr<SPExt::NativeCallback>> gSourcePawnPluginsNatives;
+
 // native void PrintToServer(const char[] text, any ...)
 static cell_t PrintToServer(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
@@ -86,22 +88,28 @@ static cell_t NativeRegister(SourcePawn::IPluginContext *ctx, const cell_t *para
 {
     char *nativeName;
     ctx->LocalToString(params[1], &nativeName);
-    SPExt::Plugin *plugin = gAdapterInterface->getPluginMngr()->getPlugin(ctx);
 
-    return gSPNativeProxy->registerNative(nativeName, ctx->GetFunctionById(params[2]), plugin);
+    if (!gAdapterInterface->getPluginMngr()->registerNative(nativeName, ctx->GetFunctionById(params[2])))
+    {
+        ctx->ReportError("Native with the same name already registered");
+        return 0;
+    }
+
+    return 1;
 }
 
 // native int NativeGetInt(int param)
 static cell_t NativeGetInt(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!SPExt::PluginMngr::m_callerPlugin)
+    if (SPExt::NativeCallback::currentPluginNative.empty())
     {
-        ctx->ReportError("No caller plugin");
+        ctx->ReportError("No native executed");
         return 0;
     }
 
     cell_t param = params[1];
-    int paramsNum = SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsInt(0);
+    SPExt::NativeCallback *nativeCallback = SPExt::NativeCallback::currentPluginNative.top();
+    std::int32_t paramsNum = nativeCallback->getParamAsInt(0);
 
     if (param > paramsNum || param < 0)
     {
@@ -109,40 +117,42 @@ static cell_t NativeGetInt(SourcePawn::IPluginContext *ctx, const cell_t *params
         return 0;
     }
 
-    return SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsInt(param);
+    return nativeCallback->getParamAsInt(param);
 }
 
 // native int NativeGetIntRef(int param)
 static cell_t NativeGetIntRef(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!SPExt::PluginMngr::m_callerPlugin)
+    if (SPExt::NativeCallback::currentPluginNative.empty())
     {
-        ctx->ReportError("No caller plugin");
+        ctx->ReportError("No native executed");
         return 0;
     }
 
     cell_t param = params[1];
-    int paramsNum = SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsInt(0);
+    SPExt::NativeCallback *nativeCallback = SPExt::NativeCallback::currentPluginNative.top();
+    std::int32_t paramsNum = nativeCallback->getParamAsInt(0);
     if (param > paramsNum || param < 0)
     {
         ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
         return 0;
     }
 
-    return *SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsIntAddr(param);
+    return *nativeCallback->getParamAsIntAddr(param);
 }
 
 // native float NativeGetFloat(int param)
 static cell_t NativeGetFloat(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!SPExt::PluginMngr::m_callerPlugin)
+    if (SPExt::NativeCallback::currentPluginNative.empty())
     {
         ctx->ReportError("No caller plugin");
         return 0;
     }
 
     cell_t param = params[1];
-    int paramsNum = SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsInt(0);
+    SPExt::NativeCallback *nativeCallback = SPExt::NativeCallback::currentPluginNative.top();
+    std::int32_t paramsNum = nativeCallback->getParamAsInt(0);
 
     if (param > paramsNum || param < 0)
     {
@@ -150,47 +160,49 @@ static cell_t NativeGetFloat(SourcePawn::IPluginContext *ctx, const cell_t *para
         return 0;
     }
 
-    return sp_ftoc(SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsFloat(param));
+    return sp_ftoc(nativeCallback->getParamAsFloat(param));
 }
 
 // native float NativeGetFloatRef(int param)
 static cell_t NativeGetFloatRef(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!SPExt::PluginMngr::m_callerPlugin)
+    if (SPExt::NativeCallback::currentPluginNative.empty())
     {
-        ctx->ReportError("No caller plugin");
+        ctx->ReportError("No native executed");
         return 0;
     }
 
     cell_t param = params[1];
-    int paramsNum = SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsInt(0);
+    SPExt::NativeCallback *nativeCallback = SPExt::NativeCallback::currentPluginNative.top();
+    std::int32_t paramsNum = nativeCallback->getParamAsInt(0);
     if (param > paramsNum || param < 0)
     {
         ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
         return 0;
     }
 
-    return sp_ftoc(*SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsFloatAddr(param));
+    return sp_ftoc(*nativeCallback->getParamAsFloatAddr(param));
 }
 
 // native int NativeGetString(int param, char[] buffer, int size)
 static cell_t NativeGetString(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!SPExt::PluginMngr::m_callerPlugin)
+    if (SPExt::NativeCallback::currentPluginNative.empty())
     {
-        ctx->ReportError("No caller plugin");
+        ctx->ReportError("No native executed");
         return 0;
     }
 
     cell_t param = params[1];
-    int paramsNum = SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsInt(0);
+    SPExt::NativeCallback *nativeCallback = SPExt::NativeCallback::currentPluginNative.top();
+    std::int32_t paramsNum = nativeCallback->getParamAsInt(0);
     if (param > paramsNum || param < 0)
     {
         ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
         return 0;
     }
 
-    const char *stringToCopy = SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsString(param);
+    const char *stringToCopy = nativeCallback->getParamAsString(param);
 
     std::size_t writtenBytes;
     ctx->StringToLocalUTF8(params[2], params[3], stringToCopy, &writtenBytes);
@@ -201,14 +213,15 @@ static cell_t NativeGetString(SourcePawn::IPluginContext *ctx, const cell_t *par
 // native bool NativeGetArrayInt(int param, int[] buffer, int size)
 static cell_t NativeGetArrayInt(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!SPExt::PluginMngr::m_callerPlugin)
+    if (SPExt::NativeCallback::currentPluginNative.empty())
     {
-        ctx->ReportError("No caller plugin");
+        ctx->ReportError("No native executed");
         return 0;
     }
 
     cell_t param = params[1];
-    int paramsNum = SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsInt(0);
+    SPExt::NativeCallback *nativeCallback = SPExt::NativeCallback::currentPluginNative.top();
+    std::int32_t paramsNum = nativeCallback->getParamAsInt(0);
     if (param > paramsNum || param < 0)
     {
         ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
@@ -217,7 +230,7 @@ static cell_t NativeGetArrayInt(SourcePawn::IPluginContext *ctx, const cell_t *p
 
     cell_t *destArray;
     ctx->LocalToPhysAddr(params[2], &destArray);
-    auto srcArray = reinterpret_cast<cell_t *>(SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsArray(param));
+    auto srcArray = reinterpret_cast<cell_t *>(nativeCallback->getParamAsArray(param));
 
     std::copy_n(srcArray, params[3], destArray);
 
@@ -227,14 +240,15 @@ static cell_t NativeGetArrayInt(SourcePawn::IPluginContext *ctx, const cell_t *p
 // native bool NativeGetArrayFloat(int param, float[] buffer, int size)
 static cell_t NativeGetArrayFloat(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!SPExt::PluginMngr::m_callerPlugin)
+    if (SPExt::NativeCallback::currentPluginNative.empty())
     {
-        ctx->ReportError("No caller plugin");
+        ctx->ReportError("No native executed");
         return 0;
     }
 
     cell_t param = params[1];
-    int paramsNum = SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsInt(0);
+    SPExt::NativeCallback *nativeCallback = SPExt::NativeCallback::currentPluginNative.top();
+    std::int32_t paramsNum = nativeCallback->getParamAsInt(0);
     if (param > paramsNum || param < 0)
     {
         ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
@@ -243,7 +257,7 @@ static cell_t NativeGetArrayFloat(SourcePawn::IPluginContext *ctx, const cell_t 
 
     cell_t *destArray;
     ctx->LocalToPhysAddr(params[2], &destArray);
-    auto srcArray = reinterpret_cast<float *>(SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsArray(param));
+    auto srcArray = reinterpret_cast<float *>(nativeCallback->getParamAsArray(param));
 
     for (std::size_t i = 0; i < static_cast<std::size_t>(params[3]); i++)
     {
@@ -256,56 +270,59 @@ static cell_t NativeGetArrayFloat(SourcePawn::IPluginContext *ctx, const cell_t 
 // native bool NativeSetIntRef(int param, int value)
 static cell_t NativeSetIntRef(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!SPExt::PluginMngr::m_callerPlugin)
+    if (SPExt::NativeCallback::currentPluginNative.empty())
     {
-        ctx->ReportError("No caller plugin");
+        ctx->ReportError("No native executed");
         return 0;
     }
 
     cell_t param = params[1];
-    int paramsNum = SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsInt(0);
+    SPExt::NativeCallback *nativeCallback = SPExt::NativeCallback::currentPluginNative.top();
+    std::int32_t paramsNum = nativeCallback->getParamAsInt(0);
     if (param > paramsNum || param < 0)
     {
         ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
         return 0;
     }
 
-    *SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsIntAddr(param) = params[2];
+    *nativeCallback->getParamAsIntAddr(param) = params[2];
     return 1;
 }
 
 // native bool NativeSetFloatRef(int param, float value)
 static cell_t NativeSetFloatRef(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!SPExt::PluginMngr::m_callerPlugin)
+    if (SPExt::NativeCallback::currentPluginNative.empty())
     {
-        ctx->ReportError("No caller plugin");
+        ctx->ReportError("No native executed");
         return 0;
     }
 
     cell_t param = params[1];
-    int paramsNum = SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsInt(0);
+    SPExt::NativeCallback *nativeCallback = SPExt::NativeCallback::currentPluginNative.top();
+    std::int32_t paramsNum = nativeCallback->getParamAsInt(0);
     if (param > paramsNum || param < 0)
     {
         ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
         return 0;
     }
 
-    *SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsFloatAddr(param) = sp_ctof(params[2]);
+    *nativeCallback->getParamAsFloatAddr(param) = sp_ctof(params[2]);
     return 1;
 }
 
 // native int NativeSetString(int param, const char[] string, int size)
 static cell_t NativeSetString(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!SPExt::PluginMngr::m_callerPlugin)
+    if (SPExt::NativeCallback::currentPluginNative.empty())
     {
-        ctx->ReportError("No caller plugin");
+        ctx->ReportError("No native executed");
         return 0;
     }
 
     cell_t param = params[1];
-    int paramsNum = SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsInt(0);
+    SPExt::NativeCallback *nativeCallback = SPExt::NativeCallback::currentPluginNative.top();
+    std::int32_t paramsNum = nativeCallback->getParamAsInt(0);
     if (param > paramsNum || param < 0)
     {
         ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
@@ -315,7 +332,7 @@ static cell_t NativeSetString(SourcePawn::IPluginContext *ctx, const cell_t *par
     char *stringToCopy;
     ctx->LocalToString(params[2], &stringToCopy);
 
-    char *destString = SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsString(param);
+    char *destString = nativeCallback->getParamAsString(param);
     std::copy_n(stringToCopy, params[3], destString);
 
     return params[3];
@@ -324,14 +341,15 @@ static cell_t NativeSetString(SourcePawn::IPluginContext *ctx, const cell_t *par
 // native bool NativeSetArrayInt(int param, const int[] buffer, int size)
 static cell_t NativeSetArrayInt(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!SPExt::PluginMngr::m_callerPlugin)
+    if (SPExt::NativeCallback::currentPluginNative.empty())
     {
-        ctx->ReportError("No caller plugin");
+        ctx->ReportError("No native executed");
         return 0;
     }
 
     cell_t param = params[1];
-    int paramsNum = SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsInt(0);
+    SPExt::NativeCallback *nativeCallback = SPExt::NativeCallback::currentPluginNative.top();
+    std::int32_t paramsNum = nativeCallback->getParamAsInt(0);
     if (param > paramsNum || param < 0)
     {
         ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
@@ -340,7 +358,7 @@ static cell_t NativeSetArrayInt(SourcePawn::IPluginContext *ctx, const cell_t *p
 
     cell_t *arrayToCopy;
     ctx->LocalToPhysAddr(params[2], &arrayToCopy);
-    auto destArray = reinterpret_cast<cell_t *>(SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsArray(param));
+    auto destArray = reinterpret_cast<cell_t *>(nativeCallback->getParamAsArray(param));
 
     std::copy_n(arrayToCopy, params[3], destArray);
 
@@ -350,14 +368,15 @@ static cell_t NativeSetArrayInt(SourcePawn::IPluginContext *ctx, const cell_t *p
 // native bool NativeSetArrayFloat(int param, const float[] buffer, int size)
 static cell_t NativeSetArrayFloat(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!SPExt::PluginMngr::m_callerPlugin)
+    if (SPExt::NativeCallback::currentPluginNative.empty())
     {
-        ctx->ReportError("No caller plugin");
+        ctx->ReportError("No native executed");
         return 0;
     }
 
     cell_t param = params[1];
-    int paramsNum = SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsInt(0);
+    SPExt::NativeCallback *nativeCallback = SPExt::NativeCallback::currentPluginNative.top();
+    std::int32_t paramsNum = nativeCallback->getParamAsInt(0);
     if (param > paramsNum || param < 0)
     {
         ctx->ReportError("Incorrect parameter %d (range: 0 - %d)", param, paramsNum);
@@ -366,7 +385,7 @@ static cell_t NativeSetArrayFloat(SourcePawn::IPluginContext *ctx, const cell_t 
 
     cell_t *arrayToCopy;
     ctx->LocalToPhysAddr(params[2], &arrayToCopy);
-    auto destArray = reinterpret_cast<float *>(SPExt::PluginMngr::m_callerPlugin->getProxiedParamAsArray(param));
+    auto destArray = reinterpret_cast<float *>(nativeCallback->getParamAsArray(param));
 
     for (std::size_t i = 0; i < static_cast<std::size_t>(params[3]); i++)
     {
@@ -441,7 +460,7 @@ static cell_t GetMapName(SourcePawn::IPluginContext *ctx, const cell_t *params)
 
     std::string_view mapName = gSPEngGlobals->getMapName();
 
-    return static_cast<cell_t>(gSPGlobal->getUtils()->strCopy(plOutput, params[arg_size], mapName));
+    return static_cast<cell_t>(gSPUtils->strCopy(plOutput, params[arg_size], mapName));
 }
 
 sp_nativeinfo_t gCoreNatives[] = {{"PrintToServer", PrintToServer},

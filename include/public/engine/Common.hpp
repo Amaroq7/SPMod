@@ -36,23 +36,6 @@ namespace SPMod::Engine
     };
 
     /**
-     *  Message destination.
-     */
-    enum class MessageDest : std::uint8_t
-    {
-        BROADCAST = 0,      /**< Unreliable to all */
-        ONE = 1,            /**< Reliable to one (msg_entity) */
-        ALL = 2,            /**< Reliable to all */
-        INIT = 3,           /**< Write to the init string */
-        PVS = 4,            /**< Ents in PVS of org */
-        PAS = 5,            /**< Ents in PAS of org */
-        PVS_R = 6,          /**< Reliable to PVS */
-        PAS_R = 7,          /**< Reliable to PAS */
-        ONE_UNRELIABLE = 8, /**< Send to one client, but don't put in reliable stream, put in unreliable datagram */
-        SPEC = 9,           /**< Sends to all spectator proxies */
-    };
-
-    /**
      * Server command callback.
      */
     using ServerCmdCallback = void (*)();

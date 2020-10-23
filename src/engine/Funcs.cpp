@@ -78,7 +78,7 @@ namespace SPMod::Engine
         (m_hook) ? gpEngineFuncs->pfnAddServerCommand(cmd.data(), callback) : REG_SVR_COMMAND(cmd.data(), callback);
     }
 
-    void Funcs::messageBegin(MessageDest msgDest, std::uint32_t msgType, const float *pOrigin, IEdict *pEdict) const
+    void Funcs::messageBegin(MsgDest msgDest, std::uint32_t msgType, const float *pOrigin, IEdict *pEdict) const
     {
         (m_hook) ? gpEngineFuncs->pfnMessageBegin(static_cast<std::int32_t>(msgDest), msgType, pOrigin,
                                                   INDEXENT(pEdict->getIndex()))

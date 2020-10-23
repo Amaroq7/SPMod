@@ -39,6 +39,7 @@ namespace SPMod::Engine
         void freeTraceResult(ITraceResult *tr) override;
 
         // Engine
+        Edict *getEdict(edict_t *edict);
         EntVars *getEntVars(entvars_t *vars);
         TraceResult *createTraceResult(::TraceResult *tr);
         void clear();

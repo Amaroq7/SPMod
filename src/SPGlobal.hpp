@@ -33,7 +33,7 @@ public:
 
     // ISPGlobal
     const fs::path &getPath(DirType type) const override;
-    ModName getModName() const override;
+    ModType getModType() const override;
     bool canPluginsPrecache() const override;
     IPlugin *getPlugin(std::string_view pluginname) const override;
 
@@ -94,7 +94,7 @@ private:
     std::unique_ptr<Utils> m_utils;
     std::unique_ptr<VTableHookManager> m_vTableHookManager;
 
-    ModName m_modName;
+    ModType m_modType;
     std::unordered_map<std::string, IModuleInterface *> m_modulesInterfaces;
     std::unordered_map<std::string, IAdapterInterface *> m_adaptersInterfaces;
     std::vector<std::unique_ptr<Extension>> m_extHandles;

@@ -39,14 +39,14 @@ namespace SPMod::Engine
 
     bool Edict::isValid() const
     {
-        return !FNullEnt(m_edict) && !m_edict->free;
+        return _isValid() && m_serialNumber == static_cast<std::uint32_t>(m_edict->serialnumber);
     }
 
     IBaseEntity *Edict::getBaseEntity()
     {
         switch (gSPGlobal->getModName())
         {
-            case ModName::Valve:
+            case ModType::Valve:
                 return getEntity<Valve::BaseEntity>();
             default:
                 return nullptr;
@@ -57,7 +57,7 @@ namespace SPMod::Engine
     {
         switch (gSPGlobal->getModName())
         {
-            case ModName::Valve:
+            case ModType::Valve:
                 return getEntity<Valve::BasePlayer>();
             default:
                 return nullptr;
@@ -72,5 +72,10 @@ namespace SPMod::Engine
     Edict::operator edict_t *() const
     {
         return m_edict;
+    }
+
+    bool Edict::_isValid() const
+    {
+        return !FNullEnt(m_edict) && !m_edict->free;
     }
 } // namespace SPMod::Engine

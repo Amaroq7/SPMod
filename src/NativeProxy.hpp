@@ -21,27 +21,6 @@
 
 #include "spmod.hpp"
 
-class ProxiedNative final : public IProxiedNative
-{
-public:
-    ProxiedNative() = delete;
-    ProxiedNative(const ProxiedNative &other) = delete;
-    ProxiedNative(ProxiedNative &&other) = default;
-    ~ProxiedNative() = default;
-
-    ProxiedNative(std::string_view name, std::any data, IPlugin *plugin);
-
-    std::string_view getName() const override;
-    std::any getData() const override;
-    IPlugin *getPlugin() const override;
-    std::int32_t exec(IPlugin *plugin) override;
-
-private:
-    IPlugin *m_plugin;
-    std::string m_name;
-    std::any m_data;
-};
-
 class NativeProxy final : public INativeProxy
 {
 public:
@@ -50,14 +29,11 @@ public:
     NativeProxy(NativeProxy &&other) = default;
     ~NativeProxy() = default;
 
-    bool registerNative(std::string_view name, std::any data, IPlugin *plugin) override;
+    bool registerNative(IProxiedNative *native) override;
 
-    const std::unordered_map<std::string, std::unique_ptr<ProxiedNative>> &getProxiedNatives() const;
+    const std::unordered_map<std::string, IProxiedNative *> &getProxiedNatives() const override;
     void clearNatives();
 
-protected:
-    std::vector<IProxiedNative *> getProxiedNativesImpl() const override;
-
 private:
-    std::unordered_map<std::string, std::unique_ptr<ProxiedNative>> m_proxiedNatives;
+    std::unordered_map<std::string, IProxiedNative *> m_proxiedNatives;
 };

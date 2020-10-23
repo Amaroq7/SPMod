@@ -19,37 +19,12 @@
 
 #include "spmod.hpp"
 
-ProxiedNative::ProxiedNative(std::string_view name, std::any data, IPlugin *plugin)
-    : m_plugin(plugin), m_name(name), m_data(data)
+bool NativeProxy::registerNative(IProxiedNative *native)
 {
+    return m_proxiedNatives.try_emplace(std::string(native->getName()), native).second;
 }
 
-std::string_view ProxiedNative::getName() const
-{
-    return m_name;
-}
-
-std::any ProxiedNative::getData() const
-{
-    return m_data;
-}
-
-IPlugin *ProxiedNative::getPlugin() const
-{
-    return m_plugin;
-}
-
-std::int32_t ProxiedNative::exec(IPlugin *plugin)
-{
-    return getPlugin()->getPluginMngr()->proxyNativeCallback(this, plugin);
-}
-
-bool NativeProxy::registerNative(std::string_view name, std::any data, IPlugin *plugin)
-{
-    return m_proxiedNatives.try_emplace(name.data(), std::make_unique<ProxiedNative>(name, data, plugin)).second;
-}
-
-const std::unordered_map<std::string, std::unique_ptr<ProxiedNative>> &NativeProxy::getProxiedNatives() const
+const std::unordered_map<std::string, IProxiedNative *> &NativeProxy::getProxiedNatives() const
 {
     return m_proxiedNatives;
 }
@@ -57,15 +32,4 @@ const std::unordered_map<std::string, std::unique_ptr<ProxiedNative>> &NativePro
 void NativeProxy::clearNatives()
 {
     m_proxiedNatives.clear();
-}
-
-std::vector<IProxiedNative *> NativeProxy::getProxiedNativesImpl() const
-{
-    std::vector<IProxiedNative *> proxiedNatives;
-    for (const auto &[name, native] : getProxiedNatives())
-    {
-        proxiedNatives.emplace_back(native.get());
-    }
-
-    return proxiedNatives;
 }

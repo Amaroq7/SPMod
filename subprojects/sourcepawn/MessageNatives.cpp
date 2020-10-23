@@ -33,7 +33,7 @@ static cell_t GetUserMsgId(SourcePawn::IPluginContext *ctx, const cell_t *params
     char *string;
     ctx->LocalToString(params[arg_msgname], &string);
 
-    return gSPGlobal->getMetaFuncs()->getUsrMsgId(string);
+    return gSPMetamodFuncs->getUsrMsgId(string);
 }
 
 // int GetUserMsgName(int msgid, char[] str, int len) = 3 params
@@ -46,7 +46,7 @@ static cell_t GetUserMsgName(SourcePawn::IPluginContext *ctx, const cell_t *para
         arg_len
     };
 
-    std::string_view string = gSPGlobal->getMetaFuncs()->getUsrMsgName(params[arg_msg]);
+    std::string_view string = gSPMetamodFuncs->getUsrMsgName(params[arg_msg]);
     if (!string.empty())
     {
         ctx->StringToLocal(params[arg_str], params[arg_len], string.data());
@@ -75,8 +75,22 @@ static cell_t HookMessage(SourcePawn::IPluginContext *ctx, const cell_t *params)
     }
 
     // TODO: natives for enable/disable hook
-    SPMod::IMessageHook *hook = gSPGlobal->getMessageManager()->registerHook(
-        params[arg_msg_type], SPExt::Listener::MessageHookCallback, func, params[arg_post]);
+    SPMod::IMessageHook *hook = gSPMsgMngr->registerHook(
+        params[arg_msg_type],
+        [func](SPMod::IMessage *const message) {
+            if (func && func->IsRunnable())
+            {
+                // typedef MessageHandler = function PluginReturn (MessageDest dest, int type, int receiver);
+                cell_t retValue = 0;
+                func->PushCell(static_cast<cell_t>(message->getDest()));
+                func->PushCell(message->getType());
+                func->PushCell(message->getEdict()->getIndex());
+                func->Execute(&retValue);
+
+                return static_cast<SPMod::IForward::ReturnValue>(retValue);
+            }
+            return SPMod::IForward::ReturnValue::Ignored;
+        },params[arg_post] == 1 ? SPMod::HookType::Post : SPMod::HookType::Pre);
 
     return gMessageHooks.create(hook);
 }
@@ -97,7 +111,7 @@ static cell_t UnhookMessage(SourcePawn::IPluginContext *ctx, const cell_t *param
         return 0;
     }
 
-    gSPGlobal->getMessageManager()->unregisterHook(hook);
+    gSPMsgMngr->unregisterHook(hook);
 
     return 1;
 }
@@ -116,7 +130,7 @@ static cell_t GetMsgBlock(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    return static_cast<cell_t>(gSPGlobal->getMessageManager()->getMessageBlock(params[arg_msg_type]));
+    return static_cast<cell_t>(gSPMsgMngr->getMessageBlock(params[arg_msg_type]));
 }
 
 // native void SetMsgBlock(int msgtype, BlockType type);
@@ -134,8 +148,8 @@ static cell_t SetMsgBlock(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    gSPGlobal->getMessageManager()->setMessageBlock(params[arg_msg_type],
-                                                    static_cast<SPMod::BlockType>(params[arg_block_type]));
+    gSPMsgMngr->setMessageBlock(params[arg_msg_type],
+                                                    static_cast<SPMod::MsgBlockType>(params[arg_block_type]));
 
     return 1;
 }
@@ -143,15 +157,13 @@ static cell_t SetMsgBlock(SourcePawn::IPluginContext *ctx, const cell_t *params)
 // native int GetMsgArgs();
 static cell_t GetMsgArgs(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params [[maybe_unused]])
 {
-    SPMod::IMessageMngr *messageMngr = gSPGlobal->getMessageManager();
-
-    if (!messageMngr->inHook())
+    if (!gSPMsgMngr->inHook())
     {
         ctx->ReportError("Invalid function call. Use this native in message hook handler.");
         return 0;
     }
 
-    SPMod::IMessage *message = messageMngr->getMessage();
+    SPMod::IMessage *message = gSPMsgMngr->getMessage();
 
     return message->getParams();
 }
@@ -164,15 +176,13 @@ static cell_t GetMsgArgType(SourcePawn::IPluginContext *ctx [[maybe_unused]], co
         arg_index = 1
     };
 
-    SPMod::IMessageMngr *messageMngr = gSPGlobal->getMessageManager();
-
-    if (!messageMngr->inHook())
+    if (!gSPMsgMngr->inHook())
     {
         ctx->ReportError("Invalid function call. Use this native in message hook handler.");
         return 0;
     }
 
-    SPMod::IMessage *message = messageMngr->getMessage();
+    SPMod::IMessage *message = gSPMsgMngr->getMessage();
 
     if (params[arg_index] < 0 || static_cast<std::size_t>(params[arg_index]) >= message->getParams())
     {
@@ -191,15 +201,13 @@ static cell_t GetMsgArgInt(SourcePawn::IPluginContext *ctx [[maybe_unused]], con
         arg_index = 1
     };
 
-    SPMod::IMessageMngr *messageMngr = gSPGlobal->getMessageManager();
-
-    if (!messageMngr->inHook())
+    if (!gSPMsgMngr->inHook())
     {
         ctx->ReportError("Invalid function call. Use this native in message hook handler.");
         return 0;
     }
 
-    SPMod::IMessage *message = messageMngr->getMessage();
+    SPMod::IMessage *message = gSPMsgMngr->getMessage();
 
     if (params[arg_index] < 0 || static_cast<std::size_t>(params[arg_index]) >= message->getParams())
     {
@@ -218,15 +226,13 @@ static cell_t GetMsgArgFloat(SourcePawn::IPluginContext *ctx [[maybe_unused]], c
         arg_index = 1
     };
 
-    SPMod::IMessageMngr *messageMngr = gSPGlobal->getMessageManager();
-
-    if (!messageMngr->inHook())
+    if (!gSPMsgMngr->inHook())
     {
         ctx->ReportError("Invalid function call. Use this native in message hook handler.");
         return 0;
     }
 
-    SPMod::IMessage *message = messageMngr->getMessage();
+    SPMod::IMessage *message = gSPMsgMngr->getMessage();
 
     if (params[arg_index] < 0 || static_cast<std::size_t>(params[arg_index]) >= message->getParams())
     {
@@ -247,15 +253,13 @@ static cell_t GetMsgArgString(SourcePawn::IPluginContext *ctx, const cell_t *par
         arg_size
     };
 
-    SPMod::IMessageMngr *messageMngr = gSPGlobal->getMessageManager();
-
-    if (!messageMngr->inHook())
+    if (!gSPMsgMngr->inHook())
     {
         ctx->ReportError("Invalid function call. Use this native in message hook handler.");
         return 0;
     }
 
-    SPMod::IMessage *message = messageMngr->getMessage();
+    SPMod::IMessage *message = gSPMsgMngr->getMessage();
 
     if (params[arg_index] < 0 || static_cast<std::size_t>(params[arg_index]) >= message->getParams())
     {
@@ -278,15 +282,13 @@ static cell_t SetMsgArgInt(SourcePawn::IPluginContext *ctx [[maybe_unused]], con
         arg_value
     };
 
-    SPMod::IMessageMngr *messageMngr = gSPGlobal->getMessageManager();
-
-    if (!messageMngr->inHook())
+    if (!gSPMsgMngr->inHook())
     {
         ctx->ReportError("Invalid function call. Use this native in message hook handler.");
         return 0;
     }
 
-    SPMod::IMessage *message = messageMngr->getMessage();
+    SPMod::IMessage *message = gSPMsgMngr->getMessage();
 
     if (params[arg_index] < 0 || static_cast<std::size_t>(params[arg_index]) >= message->getParams())
     {
@@ -308,15 +310,13 @@ static cell_t SetMsgArgFloat(SourcePawn::IPluginContext *ctx [[maybe_unused]], c
         arg_value
     };
 
-    SPMod::IMessageMngr *messageMngr = gSPGlobal->getMessageManager();
-
-    if (!messageMngr->inHook())
+    if (!gSPMsgMngr->inHook())
     {
         ctx->ReportError("Invalid function call. Use this native in message hook handler.");
         return 0;
     }
 
-    SPMod::IMessage *message = messageMngr->getMessage();
+    SPMod::IMessage *message = gSPMsgMngr->getMessage();
 
     if (params[arg_index] < 0 || static_cast<std::size_t>(params[arg_index]) >= message->getParams())
     {
@@ -338,15 +338,13 @@ static cell_t SetMsgArgString(SourcePawn::IPluginContext *ctx [[maybe_unused]], 
         arg_string
     };
 
-    SPMod::IMessageMngr *messageMngr = gSPGlobal->getMessageManager();
-
-    if (!messageMngr->inHook())
+    if (!gSPMsgMngr->inHook())
     {
         ctx->ReportError("Invalid function call. Use this native in message hook handler.");
         return 0;
     }
 
-    SPMod::IMessage *message = messageMngr->getMessage();
+    SPMod::IMessage *message = gSPMsgMngr->getMessage();
 
     if (params[arg_index] < 0 || static_cast<std::size_t>(params[arg_index]) >= message->getParams())
     {
@@ -380,30 +378,30 @@ static cell_t MessageBegin(SourcePawn::IPluginContext *ctx, const cell_t *params
     cell_t *cpOrigin;
 
     if (params[arg_msg_type] < 1 || ((params[arg_msg_type] > 63) // maximal number of engine messages
-                                     && gSPGlobal->getMetaFuncs()->getUsrMsgName(params[2]).empty()))
+                                     && gSPMetamodFuncs->getUsrMsgName(params[2]).empty()))
     {
         ctx->ReportError("Plugin called MessageBegin with an invalid message id (%d).", params[arg_msg_type]);
         return 0;
     }
 
     ignoreHooks = static_cast<bool>(params[arg_ignore_hooks]);
-    auto messageDest = static_cast<SPMod::MessageDest>(params[arg_dest]);
+    auto messageDest = static_cast<SPMod::MsgDest>(params[arg_dest]);
 
     switch (messageDest)
     {
-        case SPMod::MessageDest::BROADCAST:
-        case SPMod::MessageDest::ALL:
-        case SPMod::MessageDest::SPEC:
-        case SPMod::MessageDest::INIT:
+        case SPMod::MsgDest::BROADCAST:
+        case SPMod::MsgDest::ALL:
+        case SPMod::MsgDest::SPEC:
+        case SPMod::MsgDest::INIT:
             if (ignoreHooks)
-                gSPGlobal->getEngineFuncs()->messageBegin(messageDest, params[arg_msg_type], nullptr);
+                gSPEngFuncs->messageBegin(messageDest, params[arg_msg_type], nullptr);
             else
-                gSPGlobal->getEngineHookedFuncs()->messageBegin(messageDest, params[arg_msg_type], nullptr);
+                gSPEngFuncsHooked->messageBegin(messageDest, params[arg_msg_type], nullptr);
             break;
-        case SPMod::MessageDest::PVS:
-        case SPMod::MessageDest::PAS:
-        case SPMod::MessageDest::PVS_R:
-        case SPMod::MessageDest::PAS_R:
+        case SPMod::MsgDest::PVS:
+        case SPMod::MsgDest::PAS:
+        case SPMod::MsgDest::PVS_R:
+        case SPMod::MsgDest::PAS_R:
             if (numparam < 3)
             {
                 ctx->ReportError("Invalid number of parameters passed");
@@ -417,13 +415,13 @@ static cell_t MessageBegin(SourcePawn::IPluginContext *ctx, const cell_t *params
             vecOrigin[2] = sp_ctof(*(cpOrigin + 2));
 
             if (ignoreHooks)
-                gSPGlobal->getEngineFuncs()->messageBegin(messageDest, params[arg_msg_type], vecOrigin);
+                gSPEngFuncs->messageBegin(messageDest, params[arg_msg_type], vecOrigin);
             else
-                gSPGlobal->getEngineHookedFuncs()->messageBegin(messageDest, params[arg_msg_type], vecOrigin);
+                gSPEngFuncsHooked->messageBegin(messageDest, params[arg_msg_type], vecOrigin);
 
             break;
-        case SPMod::MessageDest::ONE_UNRELIABLE:
-        case SPMod::MessageDest::ONE:
+        case SPMod::MsgDest::ONE_UNRELIABLE:
+        case SPMod::MsgDest::ONE:
             if (numparam < 4)
             {
                 ctx->ReportError("Invalid number of parameters passed");
@@ -433,9 +431,9 @@ static cell_t MessageBegin(SourcePawn::IPluginContext *ctx, const cell_t *params
             SPMod::IPlayer *player = gSPGlobal->getPlayerManager()->getPlayer(params[arg_player]);
 
             if (ignoreHooks)
-                gSPGlobal->getEngineFuncs()->messageBegin(messageDest, params[arg_msg_type], nullptr, player);
+                gSPEngFuncs->messageBegin(messageDest, params[arg_msg_type], nullptr, player->edict());
             else
-                gSPGlobal->getEngineHookedFuncs()->messageBegin(messageDest, params[arg_msg_type], nullptr, player);
+                gSPEngFuncsHooked->messageBegin(messageDest, params[arg_msg_type], nullptr, player->edict());
 
             break;
     }
@@ -447,9 +445,9 @@ static cell_t MessageBegin(SourcePawn::IPluginContext *ctx, const cell_t *params
 static cell_t MessageEnd(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params [[maybe_unused]])
 {
     if (ignoreHooks)
-        gSPGlobal->getEngineFuncs()->messageEnd();
+        gSPEngFuncs->messageEnd();
     else
-        gSPGlobal->getEngineHookedFuncs()->messageEnd();
+        gSPEngFuncsHooked->messageEnd();
 
     return 1;
 }
@@ -462,9 +460,9 @@ static cell_t WriteByte(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
         arg_value = 1
     };
     if (ignoreHooks)
-        gSPGlobal->getEngineFuncs()->writeByte(params[arg_value]);
+        gSPEngFuncs->writeByte(params[arg_value]);
     else
-        gSPGlobal->getEngineHookedFuncs()->writeByte(params[arg_value]);
+        gSPEngFuncsHooked->writeByte(params[arg_value]);
 
     return 1;
 }
@@ -476,9 +474,9 @@ static cell_t WriteChar(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
         arg_value = 1
     };
     if (ignoreHooks)
-        gSPGlobal->getEngineFuncs()->writeChar(params[arg_value]);
+        gSPEngFuncs->writeChar(params[arg_value]);
     else
-        gSPGlobal->getEngineHookedFuncs()->writeChar(params[arg_value]);
+        gSPEngFuncsHooked->writeChar(params[arg_value]);
 
     return 1;
 }
@@ -490,9 +488,9 @@ static cell_t WriteShort(SourcePawn::IPluginContext *ctx [[maybe_unused]], const
         arg_value = 1
     };
     if (ignoreHooks)
-        gSPGlobal->getEngineFuncs()->writeShort(params[arg_value]);
+        gSPEngFuncs->writeShort(params[arg_value]);
     else
-        gSPGlobal->getEngineHookedFuncs()->writeShort(params[arg_value]);
+        gSPEngFuncsHooked->writeShort(params[arg_value]);
 
     return 1;
 }
@@ -504,9 +502,9 @@ static cell_t WriteLong(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
         arg_value = 1
     };
     if (ignoreHooks)
-        gSPGlobal->getEngineFuncs()->writeLong(params[arg_value]);
+        gSPEngFuncs->writeLong(params[arg_value]);
     else
-        gSPGlobal->getEngineHookedFuncs()->writeLong(params[arg_value]);
+        gSPEngFuncsHooked->writeLong(params[arg_value]);
 
     return 1;
 }
@@ -518,9 +516,9 @@ static cell_t WriteEntity(SourcePawn::IPluginContext *ctx [[maybe_unused]], cons
         arg_value = 1
     };
     if (ignoreHooks)
-        gSPGlobal->getEngineFuncs()->writeEntity(params[arg_value]);
+        gSPEngFuncs->writeEntity(params[arg_value]);
     else
-        gSPGlobal->getEngineHookedFuncs()->writeEntity(params[arg_value]);
+        gSPEngFuncsHooked->writeEntity(params[arg_value]);
     return 1;
 }
 // native void WriteAngle(float value);
@@ -531,9 +529,9 @@ static cell_t WriteAngle(SourcePawn::IPluginContext *ctx [[maybe_unused]], const
         arg_value = 1
     };
     if (ignoreHooks)
-        gSPGlobal->getEngineFuncs()->writeAngle(sp_ctof(params[arg_value]));
+        gSPEngFuncs->writeAngle(sp_ctof(params[arg_value]));
     else
-        gSPGlobal->getEngineHookedFuncs()->writeAngle(sp_ctof(params[arg_value]));
+        gSPEngFuncsHooked->writeAngle(sp_ctof(params[arg_value]));
     return 1;
 }
 // native void WriteCoord(float value);
@@ -544,9 +542,9 @@ static cell_t WriteCoord(SourcePawn::IPluginContext *ctx [[maybe_unused]], const
         arg_value = 1
     };
     if (ignoreHooks)
-        gSPGlobal->getEngineFuncs()->writeCoord(sp_ctof(params[arg_value]));
+        gSPEngFuncs->writeCoord(sp_ctof(params[arg_value]));
     else
-        gSPGlobal->getEngineHookedFuncs()->writeCoord(sp_ctof(params[arg_value]));
+        gSPEngFuncsHooked->writeCoord(sp_ctof(params[arg_value]));
 
     return 1;
 }
@@ -561,9 +559,9 @@ static cell_t WriteString(SourcePawn::IPluginContext *ctx, const cell_t *params)
     ctx->LocalToString(params[arg_value], &string);
 
     if (ignoreHooks)
-        gSPGlobal->getEngineFuncs()->writeString(string);
+        gSPEngFuncs->writeString(string);
     else
-        gSPGlobal->getEngineHookedFuncs()->writeString(string);
+        gSPEngFuncsHooked->writeString(string);
 
     return 1;
 }

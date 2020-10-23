@@ -30,7 +30,7 @@ namespace SPMod
         Configs
     };
 
-    enum class ModName : std::uint8_t
+    enum class ModType : std::uint8_t
     {
         Valve = 0,
         Cstrike,
@@ -53,6 +53,12 @@ namespace SPMod
         Info,
         Warning,
         Error
+    };
+
+    enum class HookType : std::uint8_t
+    {
+       Pre = 0,
+       Post
     };
 
     /**
