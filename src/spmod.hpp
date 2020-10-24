@@ -25,11 +25,9 @@
 #if defined SP_MSVC
     #pragma warning(push)
     #pragma warning(disable:4100)
+    #pragma warning(disable:4005)
 #endif
 #include <osconfig.h>
-#if defined SP_MSVC
-    #pragma warning(pop)
-#endif
 
 #include <extdll.h>
 #include <meta_api.h>
@@ -39,6 +37,10 @@
 // ReHLDS
 #include <usercmd.h>
 #include <rehlds_api.h>
+
+#if defined SP_MSVC
+    #pragma warning(pop)
+#endif
 
 #undef max
 #undef min

@@ -44,7 +44,7 @@ namespace SPMod::Engine
 
     IBaseEntity *Edict::getBaseEntity()
     {
-        switch (gSPGlobal->getModName())
+        switch (gSPGlobal->getModType())
         {
             case ModType::Valve:
                 return getEntity<Valve::BaseEntity>();
@@ -55,7 +55,7 @@ namespace SPMod::Engine
 
     IBasePlayer *Edict::getBasePlayer()
     {
-        switch (gSPGlobal->getModName())
+        switch (gSPGlobal->getModType())
         {
             case ModType::Valve:
                 return getEntity<Valve::BasePlayer>();

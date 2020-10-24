@@ -15,8 +15,8 @@ environment:
     - LINK_TYPE: dynamic
     - LINK_TYPE: static
 install:
-  - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat"
   - set PATH=C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
+  - python -m pip install --upgrade pip
   - git submodule update --init --recursive
 build_script:
   - pwsh: appveyor\build.ps1

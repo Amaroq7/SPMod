@@ -23,6 +23,7 @@ set(SRC_FILES AdapterInterface.cpp
               VTableNatives.cpp NativeCallback.hpp NativeCallback.cpp)
 
 add_library(${PROJECT_NAME} MODULE ${SRC_FILES})
+add_dependencies(${PROJECT_NAME} spvm-project)
 
 include(${CMAKE_SOURCE_DIR}/cmake/CompilerSetup.cmake)
 
@@ -52,11 +53,11 @@ ExternalProject_Get_Property(spvm-project BINARY_DIR)
 
 # SourcePawn lib
 install(FILES
-        ${BINARY_DIR}/vm/sourcepawn.vm/linux-x86/sourcepawn.vm.$<IF:$<PLATFORM_ID:Linux>,so,dll>
+        ${BINARY_DIR}/vm/sourcepawn.vm/$<IF:$<PLATFORM_ID:Linux>,linux-x86,windows-x86>/sourcepawn.vm.$<IF:$<PLATFORM_ID:Linux>,so,dll>
         DESTINATION exts
 )
 
 install(PROGRAMS
-        ${BINARY_DIR}/compiler/spcomp/linux-x86/spcomp$<$<PLATFORM_ID:Windows>:.exe>
+        ${BINARY_DIR}/compiler/spcomp/$<IF:$<PLATFORM_ID:Linux>,linux-x86,windows-x86>/spcomp$<$<PLATFORM_ID:Windows>:.exe>
         DESTINATION scripting
 )

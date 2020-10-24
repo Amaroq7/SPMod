@@ -3,19 +3,18 @@ branches:
   only:
     - master
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
-sudo: required
 os: linux
-dist: bionic
+dist: focal
 
-matrix:
+jobs:
   include:
     - addons:
         apt:
           sources:
-            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
+            - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
-            - llvm-10
+            - llvm-10-dev
             - clang-10
             - lld-10
             - libc++-10-dev
@@ -30,10 +29,10 @@ matrix:
     - addons:
         apt:
           sources:
-            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
+            - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
-            - llvm-10
+            - llvm-10-dev
             - clang-10
             - lld-10
             - libc++-10-dev
@@ -103,7 +102,7 @@ before_deploy:
   - travis/package.sh
 deploy:
   - provider: releases
-    api_key:
+    token:
       secure: uGexzy3F5r3zVR/8lAOHVnwIhQ2VsV0Dx2sZgztmmK4YGWt1th5FH8iOWRc5LK8liufiz9pmfQov4TsCYTFFsi3j5zBdkWc0J+VoBWmy81Ua/CfKKaDQd/ynzaQ9w1+11/5sBciXEf3mekbTs2PNnoewwBIKLGcHHCrMSy6LexIpKh5IzXarwt1YUpVQsMpoEJ+wi8TNrN7d0hNO0uV/l6yPyEJ5vSmfEiq1mdKr/GlleBwSNncY2bV6hfoSedis+PO39mTDqQF4i3tGXPhtl0Ky6byUTzVXogpvQt05g9DMqM567U+Q1UJJuOdM1EN9cJDgufLifUQojFAdt8OH34thydKL2+WI4DTwpHw3yr4mVzHPyqWX+Pk3u19QTYTOtePKpkDE7OuHIstv9u0IXDKB7aYkuz2sO4ThrKV4TEBEW4GWVs8BuIaW43fh6NROMW1X+6Q8azZG5ab63dN7zvUkbgsuEDlAkIfMtVO0QqdSvEfE9HZSFSJlzenmZ4O/MM48PTbMAJBKdqruRiH5VB8Y5qwri7oUaxZ9cfTIB6rveAFKQcOXfhjTZXxiMOOoTROloZaQQJW7CEb44OurJpdkUr/RO23/+hWNlA3cJ3pyDQLON2JEerFschFxw3X5YLiwBMuNzBYYa5p6zqFdul4jEBRWh4qnFZvf5sU/Rxk=
     file: upload/spmod-$TRAVIS_OS_NAME-$TRAVIS_TAG-$CC$CC_VERSION-$LINK_TYPE.tar.xz
     skip_cleanup: true
@@ -114,7 +113,7 @@ deploy:
       branch: /^v\d+\.\d+(\.\d+)?(-\S*)?$/
       condition: $CLANG_VERSION = 10 || $GCC_VERSION = 10
   - provider: s3
-    local-dir: upload/s3
+    local_dir: upload/s3
     access_key_id: 
       secure: g5eMcCQxblr3kXOtnGeAn/HWVLlRilOjU2+DsO/q0pcnkE6mqRQvXRhWt+fHV1YqBXV1JCdzTlGqv48Mt1X0LQMQYn+Gf1WomutQOcdrT9myWXqLLiXTNqqfoq+yBYLbtHDzwzamYu9iAKD5QY8XwcR2k3r4ThrVq/8wkIkU6HVRwhc4FV/oETtSe0E1SyYsMDmJqLg72TXmZdujmiCp34qjQKxOMFxMykoj9O2FcDmv0CMzOjZap8p9H2ove3U+mI+VUeQ9r1eo72tLtLS6ossH94MI9oBJ8NnONo1nnkskL4/GGqEqGnjcuvH3dSQHhpjqLoDOdJKodWFbPBvsjkpOeSmJmhl3rljMM6Jz0s65gkv8ilNVoGUIahvso+vMV3SMKsqjlCBacIBimar9q6BIouXIioHgnafbKJeqFP/aX7TD1mGJl7j3BFKHKXuBln0etlHfvFy7DR00SRBG8DGjRVKEJTwNc75ma5DQuTbSkf+8Tn12mQA+Ei8GGt68J2/ZERjERlszcphPm+E6X+x8x5wPIwJG58kuxzMGnglaV81LceX8gAkRo4pmM5jkIOjXjPRXw77b0DA9ZSQCzGL2LNi0IDk6kN8Z6VRnaflTFGHcbE0d5vGK0jrFls2IJ/EmCfnt1GRV0+10w9/HP+x642Ud4uXWskzE/QhcuKY=
     secret_access_key:

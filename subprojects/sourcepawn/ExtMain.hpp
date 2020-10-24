@@ -25,6 +25,7 @@
 #include <vector>
 #include <cstdarg>
 #include <cmath>
+#include <stack>
 
 #if defined SP_POSIX
     #include <dlfcn.h>

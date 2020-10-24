@@ -1,5 +1,5 @@
 --- AMBuildScript	2020-09-10 01:36:16.602652000 +0200
-+++ AMBuildScript-libc++	2020-09-10 01:35:20.336178674 +0200
++++ AMBuildScript-custom	2020-10-23 23:44:32.293952775 +0200
 @@ -97,8 +97,10 @@
          '-Wno-overloaded-virtual',
        ]
@@ -13,7 +13,26 @@
  
        cxx.postlink += ['-lm']
  
-@@ -183,6 +185,19 @@
+@@ -115,10 +117,16 @@
+         cxx.defines += ['__linux__']
+     elif cxx.like('msvc'):
+       if builder.options.debug == '1':
+-        cxx.cflags += ['/MTd']
++        if getattr(builder.options, 'dynamic', False):
++          cxx.cflags += ['/MDd']
++        else:
++          cxx.cflags += ['/MTd']
+         cxx.linkflags += ['/NODEFAULTLIB:libcmt']
+       else:
+-        cxx.cflags += ['/MT']
++        if getattr(builder.options, 'dynamic', False):
++          cxx.cflags += ['/MD']
++        else:
++          cxx.cflags += ['/MT']
+       cxx.defines += [
+         '_CRT_SECURE_NO_DEPRECATE',
+         '_CRT_SECURE_NO_WARNINGS',
+@@ -183,6 +191,19 @@
      # Platform-specifics
      if not cxx.like('emscripten'):
        if cxx.target.platform == 'linux':

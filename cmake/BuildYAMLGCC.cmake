@@ -6,6 +6,7 @@ FetchContent_Declare(
         yaml-cpp-project
         GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
         GIT_TAG        yaml-cpp-0.6.3
+        GIT_SHALLOW    ON
 )
 
 set(YAML_CPP_BUILD_TESTS OFF CACHE INTERNAL "")

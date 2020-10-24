@@ -249,6 +249,11 @@ MenuMngr *SPGlobal::getMenuManager() const
     return m_menuManager.get();
 }
 
+MessageMngr *SPGlobal::getMessageManager() const
+{
+    return m_messageManager.get();
+}
+
 LoggerMngr *SPGlobal::getLoggerManager() const
 {
     return m_loggingSystem.get();

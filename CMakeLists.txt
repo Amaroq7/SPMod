@@ -39,7 +39,6 @@ else()
     endif()
 endif()
 
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/third_party)
 if (UNIX)
     if (LLVM_BUILD)
         include(cmake/BuildYAMLClang.cmake)
