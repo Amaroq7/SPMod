@@ -157,6 +157,50 @@ Engine::Edict *Player::edict() const
     return m_edict;
 }
 
+bool Player::sendMsg(TextMsgDest msgDest, std::string_view message) const
+{
+    if (!isInGame() || isFake())
+    {
+        return false;
+    }
+
+    ModType modType = gSPGlobal->getModType();
+    bool isCstrikeOrCzero = (modType == ModType::Cstrike || modType == ModType::CZero);
+    if (!isCstrikeOrCzero && msgDest == TextMsgDest::Radio)
+    {
+        return false;
+    }
+
+    std::string modifiedMessage(message);
+    constexpr auto consoleBytesLimit = 125U;
+
+    if (isCstrikeOrCzero && msgDest == TextMsgDest::Center) // Likely a temporary fix.
+    {
+        for (auto &character : modifiedMessage)
+        {
+            if (character == '\n')
+            {
+                character = '\r';
+            }
+        }
+    }
+
+    if (message.length() > consoleBytesLimit && (msgDest == TextMsgDest::Notify || msgDest == TextMsgDest::Console))
+    {
+        Utils::trimMultiByteChar(modifiedMessage);
+    }
+    modifiedMessage.append("\n");
+
+    if (!isCstrikeOrCzero || msgDest == TextMsgDest::Notify || msgDest == TextMsgDest::Console)
+    {
+        modifiedMessage.append("\n");  // Double newline is required when pre-formatted string in TextMsg is passed as argument.
+    }
+
+    Utils::sendTextMsg(modifiedMessage, msgDest, edict());
+
+    return true;
+}
+
 Player *PlayerMngr::getPlayer(std::uint32_t index) const
 {
     try

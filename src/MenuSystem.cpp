@@ -214,7 +214,7 @@ void Menu::display(IPlayer *player, std::uint32_t page, std::uint32_t time)
     m_time = time;
 
     // show
-    gSPGlobal->getUtils()->ShowMenu(playerImpl->edict(), m_keys, time, m_text);
+    Utils::ShowMenu(playerImpl->edict(), m_keys, time, m_text);
 }
 
 bool Menu::getGlobal() const

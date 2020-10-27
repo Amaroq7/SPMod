@@ -28,6 +28,15 @@ namespace SPMod
 
     class IMenu;
 
+    enum class TextMsgDest : std::uint8_t
+    {
+        Notify = 1,
+        Console,
+        Chat,
+        Center,
+        Radio
+    };
+
     class IPlayer
     {
     public:
@@ -109,6 +118,8 @@ namespace SPMod
 
         virtual IBasePlayer *basePlayer() const = 0;
         virtual Engine::IEdict *edict() const = 0;
+
+        virtual bool sendMsg(TextMsgDest msgDest, std::string_view message) const = 0;
     };
 
     class IPlayerMngr : public ISPModInterface

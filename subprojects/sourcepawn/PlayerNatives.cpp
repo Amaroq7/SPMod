@@ -285,6 +285,36 @@ static cell_t TakeDamage(SourcePawn::IPluginContext *ctx, const cell_t *params)
     return plr->basePlayer()->takeDamage(attacker, inflictor, sp_ctof(params[arg_damage]), params[arg_dmgbits]);
 }
 
+// native void SendMsg(TextMsgDest msgDest, const char[] text, any ...)
+static cell_t SendMsg(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    enum
+    {
+        arg_id = 1,
+        arg_type,
+        arg_msg
+    };
+
+    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    if (!plr)
+    {
+        ctx->ReportError("Non player index (%i)", params[arg_id]);
+        return 0;
+    }
+
+    char *spFormatString;
+    char bufferOutput[192];
+
+    ctx->LocalToString(params[arg_msg], &spFormatString);
+    std::size_t res = formatString(bufferOutput, sizeof(bufferOutput) - 1, spFormatString, ctx, params, 4);
+
+    bufferOutput[res] = '\0';
+
+    plr->sendMsg(static_cast<SPMod::TextMsgDest>(params[arg_type]), bufferOutput);
+
+    return 1;
+}
+
 sp_nativeinfo_t gPlayerNatives[] = {{"Player.GetName", GetName},
                                     {"Player.GetIP", GetIP},
                                     {"Player.GetSteamID", GetSteamID},
@@ -298,4 +328,5 @@ sp_nativeinfo_t gPlayerNatives[] = {{"Player.GetName", GetName},
                                     {"Player.Health.get", HealthGet},
                                     {"Player.Health.set", HealthSet},
                                     {"Player.TakeDamage", TakeDamage},
+                                    {"Player.SendMsg", SendMsg},
                                     {nullptr, nullptr}};

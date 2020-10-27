@@ -120,7 +120,7 @@ class VTableHookManager : public IVTableHookManager
 {
 public:
     VTableHookManager() = delete;
-    VTableHookManager(const fs::path &configsDir);
+    VTableHookManager(const fs::path &configsDir, ModType modType);
 
     VTableHook *registerHook(vFuncType vFunc, std::string_view classname) override;
     VTableHook *getHook(vFuncType funcType) const;

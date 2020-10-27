@@ -37,8 +37,6 @@ SPGlobal::SPGlobal(fs::path &&dllDir)
     setPath(DirType::Exts, "exts");
     setPath(DirType::Configs, "configs");
 
-    m_vTableHookManager = std::make_unique<VTableHookManager>(getPath(DirType::Configs));
-
     std::string_view modName(GET_GAME_INFO(PLID, GINFO_NAME));
     if (modName == "valve")
     {
@@ -60,6 +58,8 @@ SPGlobal::SPGlobal(fs::path &&dllDir)
     {
         m_modType = ModType::TFC;
     }
+
+    m_vTableHookManager = std::make_unique<VTableHookManager>(getPath(DirType::Configs), m_modType);
 }
 
 std::size_t SPGlobal::loadExts()

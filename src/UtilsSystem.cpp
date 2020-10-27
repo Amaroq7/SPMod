@@ -18,6 +18,7 @@
  */
 
 #include "spmod.hpp"
+#include "UtilsSystem.hpp"
 
 std::size_t Utils::strCopy(char *buffer, std::size_t size, std::string_view src) const
 {
@@ -75,4 +76,85 @@ void Utils::ShowMenu(const Engine::Edict *pEdict, std::uint32_t slots, std::uint
         currentPos += buffer.length();
         buffer = menu.substr(currentPos, (menuLength > maxStringToSend) ? maxStringToSend : std::string_view::npos);
     } while (menuLength > 0);
+}
+
+void Utils::trimMultiByteChar(std::string &str)
+{
+    std::size_t strLen = str.length();
+
+    // Last character is not multibyte
+    if (!(static_cast<std::uint8_t>(str[strLen - 1]) & 0x80U))
+    {
+        return;
+    }
+
+    if (strLen < 2)
+    {
+        // If it is 4 bytes or 3 bytes character, clear it since string has only 2 bytes, otherwise return unchanged
+        if (static_cast<std::uint8_t>(str[0]) & 0xF0U || static_cast<std::uint8_t>(str[0]) & 0xE0U)
+        {
+            str.clear();
+            return;
+        }
+        return;
+    }
+
+    std::size_t pos = strLen - 1;
+
+    while ((static_cast<std::uint8_t>(str[pos]) & 0xC0U) == 0x80U)
+    {
+        pos--;
+    }
+
+    switch (static_cast<std::uint8_t>(str[pos]) & 0xF0U)
+    {
+        case 0xC0:
+        case 0xD0:
+        {
+            if (strLen - pos < 2)
+            {
+                str = str.substr(0, pos);
+            }
+            break;
+        }
+        case 0xE0:
+        {
+            if (strLen - pos < 3)
+            {
+                str = str.substr(0, pos);
+            }
+            break;
+        }
+        case 0xF0:
+        {
+            if (strLen - pos < 4)
+            {
+                str = str.substr(0, pos);
+            }
+            break;
+        }
+    }
+}
+
+void Utils::sendTextMsg(std::string_view message, TextMsgDest msgDest, Engine::Edict *edict)
+{
+    static std::uint8_t msgTextMsgId = GET_USER_MSG_ID(PLID, "TextMsg", nullptr);
+    if (!msgTextMsgId)
+        return;				// :TODO: Maybe output a warning log?
+
+    constexpr std::size_t maxLength = 187;
+
+    if (edict)
+    {
+        MESSAGE_BEGIN(MSG_ONE, msgTextMsgId, nullptr, *edict);
+    }
+    else
+    {
+        MESSAGE_BEGIN(MSG_BROADCAST, msgTextMsgId);
+    }
+
+    WRITE_BYTE(static_cast<std::uint8_t>(msgDest));	// 1 byte
+    WRITE_STRING("%s");	// 3 bytes (2 + EOS)
+    WRITE_STRING(message.substr(0, maxLength).data());	// max 188 bytes (187 + EOS)
+    MESSAGE_END();		// max 192 bytes
 }

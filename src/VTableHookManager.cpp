@@ -298,23 +298,37 @@ std::intptr_t VTableHook::getVTable() const
     return m_vtable;
 }
 
-VTableHookManager::VTableHookManager(const fs::path &configsDir)
+VTableHookManager::VTableHookManager(const fs::path &configsDir, ModType modType)
 {
     try
     {
-        fs::path virtualOffsetsPath =
-            configsDir / "gamedata" / "virtual" / GET_GAME_INFO(PLID, GINFO_NAME) / "offsets.yml";
-#if defined SP_POSIX
-        YAML::Node rootNode = YAML::LoadFile(virtualOffsetsPath.c_str());
-        std::string_view osName("linux");
-#else
-        YAML::Node rootNode = YAML::LoadFile(virtualOffsetsPath.string().c_str());
-        std::string_view osName("windows");
-#endif
-        for (auto funcIt = rootNode.begin(); funcIt != rootNode.end(); ++funcIt)
+        try
         {
-            m_vTableOffsets.try_emplace(funcIt->first.as<std::string>(),
-                                        funcIt->second[osName.data()].as<std::uint32_t>());
+            fs::path virtualOffsetsPath =
+                configsDir / "gamedata" / "virtual" / GET_GAME_INFO(PLID, GINFO_NAME) / "offsets.yml";
+#if defined SP_POSIX
+            YAML::Node rootNode = YAML::LoadFile(virtualOffsetsPath.c_str());
+            std::string_view osName("linux");
+#else
+            YAML::Node rootNode = YAML::LoadFile(virtualOffsetsPath.string().c_str());
+            std::string_view osName("windows");
+#endif
+            for (auto funcIt = rootNode.begin(); funcIt != rootNode.end(); ++funcIt)
+            {
+                m_vTableOffsets.try_emplace(funcIt->first.as<std::string>(),
+                                            funcIt->second[osName.data()].as<std::uint32_t>());
+            }
+        }
+        catch (const YAML::BadFile &e [[maybe_unused]])
+        {
+            if (modType == ModType::Cstrike || modType == ModType::CZero) //not required since we have regamedll_cs
+            {
+                return;
+            }
+            else
+            {
+                throw;
+            }
         }
     }
     catch (const std::exception &e)

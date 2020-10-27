@@ -46,6 +46,7 @@ public:
     std::uint32_t getMenuPage() const override;
     IBasePlayer *basePlayer() const override;
     Engine::Edict *edict() const override;
+    bool sendMsg(TextMsgDest msgDest, std::string_view message) const override;
 
     // Player
     void setName(std::string_view newname);
