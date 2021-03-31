@@ -1,12 +1,6 @@
-[submodule "include/rehlds"]
-	path = include/rehlds
-	url = https://github.com/dreamstalker/rehlds
-[submodule "include/metamod-r"]
-	path = include/metamod-r
-	url = https://github.com/theAsmodai/metamod-r
 [submodule "subprojects/sourcepawn/sourcepawn"]
 	path = subprojects/sourcepawn/sourcepawn
 	url = https://github.com/alliedmodders/sourcepawn
-[submodule "include/regamedll_cs"]
-	path = include/regamedll_cs
-	url = https://github.com/s1lentq/ReGameDLL_CS.git
+[submodule "include/metamod_sdk"]
+	path = include/metamod_sdk
+	url = https://github.com/Amaroq7/metamod-cpp.git
