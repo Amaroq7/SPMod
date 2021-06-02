@@ -19,6 +19,10 @@
 
 #pragma once
 
+#include "StandardHeaders.hpp"
+#include "IInterface.hpp"
+#include "IForwardSystem.hpp"
+
 namespace SPMod
 {
     class IPlayer;
@@ -26,7 +30,7 @@ namespace SPMod
     class ICommand
     {
     public:
-        using Callback = std::function<IForward::ReturnValue(IPlayer *const player, ICommand *const cmd)>;
+        using Callback = std::function<bool(IPlayer *const player, ICommand *const cmd)>;
 
         enum class Type : std::uint8_t
         {

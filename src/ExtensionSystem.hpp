@@ -19,7 +19,9 @@
 
 #pragma once
 
-#include "spmod.hpp"
+#include <IInterface.hpp>
+
+using namespace SPMod;
 
 class Extension final
 {

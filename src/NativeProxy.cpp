@@ -17,7 +17,7 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "spmod.hpp"
+#include "NativeProxy.hpp"
 
 bool NativeProxy::registerNative(IProxiedNative *native)
 {

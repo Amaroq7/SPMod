@@ -21,3 +21,9 @@
 
 constexpr const char *APP_COMMIT_SHA = "@COMMIT@";
 constexpr const char *gSPModVersion = "@VERSION@";
+constexpr const char *gSPModAuthor = "SPMod Development Team";
+constexpr const char *APP_COMMIT_URL = "https://github.com/Amaroq7/SPMod/commits/";
+constexpr const char *gSPModLoggerName = "SPMod";
+constexpr const char *gCompilationDate = __DATE__;
+constexpr const char *gCompilationYear = (gCompilationDate + 7);
+constexpr const char *gCompilationTime = __TIME__;

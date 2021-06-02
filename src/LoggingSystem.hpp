@@ -19,7 +19,12 @@
 
 #pragma once
 
-#include "spmod.hpp"
+#include <Common.hpp>
+#include <ILoggerSystem.hpp>
+
+#include "MetaInit.hpp"
+
+using namespace SPMod;
 
 class Logger final : public ILogger
 {
@@ -29,9 +34,9 @@ public:
     Logger &operator=(const Logger &other) = delete;
     Logger &operator=(Logger &&other) = delete;
     Logger(Logger &&other) = delete;
-    ~Logger() = default;
+    ~Logger() override = default;
 
-    Logger(std::string_view prefix);
+    explicit Logger(std::string_view prefix);
 
     // ILogger
     void setFilename(std::string_view filename) override;
@@ -55,7 +60,7 @@ public:
         (messageToLog << ... << args);
         messageToLog << '\n' << CNSL_RESET;
 
-        SERVER_PRINT(messageToLog.str().c_str());
+        gMetaAPI->getEngine()->print(messageToLog.str().c_str(), Metamod::FuncCallType::Direct);
     }
 
     template<typename... Args>
@@ -70,7 +75,7 @@ public:
         (messageToLog << ... << args);
         messageToLog << '\n' << CNSL_RESET;
 
-        SERVER_PRINT(messageToLog.str().c_str());
+        gMetaAPI->getEngine()->print(messageToLog.str().c_str(), Metamod::FuncCallType::Direct);
     }
 
     template<typename... Args>
@@ -105,7 +110,7 @@ public:
 
         std::string message = messageToLog.str();
 
-        SERVER_PRINT(message.c_str());
+        gMetaAPI->getEngine()->print(message.c_str(), Metamod::FuncCallType::Direct);
 
         if (m_filename.empty())
             return;

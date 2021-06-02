@@ -17,18 +17,18 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "spmod.hpp"
+#include "SPGlobal.hpp"
+#include <SPConfig.hpp>
+#include "MetaInit.hpp"
 
 std::unique_ptr<SPGlobal> gSPGlobal;
 
 SPGlobal::SPGlobal(fs::path &&dllDir)
     : m_SPModDir(dllDir.parent_path().parent_path()), m_forwardManager(std::make_unique<ForwardMngr>()),
-      m_cvarManager(std::make_unique<CvarMngr>()), m_loggingSystem(std::make_unique<LoggerMngr>()),
-      m_cmdManager(std::make_unique<CommandMngr>()), m_timerManager(std::make_unique<TimerMngr>()),
-      m_menuManager(std::make_unique<MenuMngr>()), m_messageManager(std::make_unique<MessageMngr>()),
-      m_plrManager(std::make_unique<PlayerMngr>()), m_nativeProxy(std::make_unique<NativeProxy>()),
-      m_engine(std::make_unique<Engine::Engine>()), m_metamod(std::make_unique<Metamod::Metamod>()),
-      m_utils(std::make_unique<Utils>())
+      m_loggingSystem(std::make_unique<LoggerMngr>()), m_cmdManager(std::make_unique<CommandMngr>()),
+      m_timerManager(std::make_unique<TimerMngr>()), m_menuManager(std::make_unique<MenuMngr>()),
+      m_messageManager(std::make_unique<MessageMngr>()), m_plrManager(std::make_unique<PlayerMngr>()),
+      m_nativeProxy(std::make_unique<NativeProxy>()), m_utils(std::make_unique<Utils>())
 {
     // Sets default dirs
     setPath(DirType::Plugins, "plugins");
@@ -36,30 +36,6 @@ SPGlobal::SPGlobal(fs::path &&dllDir)
     setPath(DirType::Dlls, "dlls");
     setPath(DirType::Exts, "exts");
     setPath(DirType::Configs, "configs");
-
-    std::string_view modName(GET_GAME_INFO(PLID, GINFO_NAME));
-    if (modName == "valve")
-    {
-        m_modType = ModType::Valve;
-    }
-    else if (modName == "cstrike")
-    {
-        m_modType = ModType::Cstrike;
-    }
-    else if (modName == "czero")
-    {
-        m_modType = ModType::CZero;
-    }
-    else if (modName == "dod")
-    {
-        m_modType = ModType::DoD;
-    }
-    else if (modName == "tfc")
-    {
-        m_modType = ModType::TFC;
-    }
-
-    m_vTableHookManager = std::make_unique<VTableHookManager>(getPath(DirType::Configs), m_modType);
 }
 
 std::size_t SPGlobal::loadExts()
@@ -224,19 +200,9 @@ void SPGlobal::setPath(DirType type, std::string_view path)
     }
 }
 
-ModType SPGlobal::getModType() const
-{
-    return m_modType;
-}
-
 ForwardMngr *SPGlobal::getForwardManager() const
 {
     return m_forwardManager.get();
-}
-
-CvarMngr *SPGlobal::getCvarManager() const
-{
-    return m_cvarManager.get();
 }
 
 TimerMngr *SPGlobal::getTimerManager() const
@@ -279,21 +245,6 @@ NativeProxy *SPGlobal::getNativeProxy() const
     return m_nativeProxy.get();
 }
 
-Engine::Engine *SPGlobal::getEngine() const
-{
-    return m_engine.get();
-}
-
-Metamod::Metamod *SPGlobal::getMetamod() const
-{
-    return m_metamod.get();
-}
-
-VTableHookManager *SPGlobal::getVTableManager() const
-{
-    return m_vTableHookManager.get();
-}
-
 bool SPGlobal::registerAdapter(IAdapterInterface *interface)
 {
     return m_adaptersInterfaces.try_emplace(interface->getName().data(), interface).second;
@@ -310,4 +261,19 @@ IModuleInterface *SPGlobal::getInterface(std::string_view name) const
         return iter->second;
 
     return nullptr;
+}
+
+void SPGlobal::setUserMsgId(UserMsgId msgid, Metamod::Engine::MsgType userMsgId)
+{
+    m_userMsgs[static_cast<std::underlying_type_t<UserMsgId>>(msgid)] = userMsgId;
+}
+
+Metamod::Engine::MsgType SPGlobal::getUserMsgId(UserMsgId msgid) const
+{
+    return m_userMsgs[static_cast<std::underlying_type_t<UserMsgId>>(msgid)];
+}
+
+Hooks *SPGlobal::getHooks() const
+{
+    return m_hooks.get();
 }

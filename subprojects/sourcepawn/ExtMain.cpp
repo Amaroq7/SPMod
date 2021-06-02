@@ -147,11 +147,12 @@ namespace
         {
             auto paramType = param->getDataType();
 
-            if (paramType & SPMod::IForward::IParam::Type::Int || paramType & SPMod::IForward::IParam::Type::Float)
+            if ((paramType & SPMod::IForward::IParam::Type::Int) == SPMod::IForward::IParam::Type::Int ||
+                (paramType & SPMod::IForward::IParam::Type::Float) == SPMod::IForward::IParam::Type::Float)
             {
-                if (paramType & SPMod::IForward::IParam::Type::Array)
+                if ((paramType & SPMod::IForward::IParam::Type::Array) == SPMod::IForward::IParam::Type::Array)
                 {
-                    if (paramType & SPMod::IForward::IParam::Type::Int)
+                    if ((paramType & SPMod::IForward::IParam::Type::Int) == SPMod::IForward::IParam::Type::Int)
                     {
                         int *paramData = std::get<int *>(std::any_cast<variantArray>(param->getData()));
                         func->PushArray(paramData, param->getDataSize(),
@@ -164,9 +165,9 @@ namespace
                                         (param->shouldCopyback() ? SM_PARAM_COPYBACK : 0));
                     }
                 }
-                else if (paramType & SPMod::IForward::IParam::Type::Pointer)
+                else if ((paramType & SPMod::IForward::IParam::Type::Pointer) == SPMod::IForward::IParam::Type::Pointer)
                 {
-                    if (paramType & SPMod::IForward::IParam::Type::Int)
+                    if ((paramType & SPMod::IForward::IParam::Type::Int) == SPMod::IForward::IParam::Type::Int)
                     {
                         func->PushCellByRef(std::any_cast<int *>(param->getData()),
                                             (param->shouldCopyback() ? SM_PARAM_COPYBACK : 0));
@@ -179,7 +180,7 @@ namespace
                 }
                 else
                 {
-                    if (paramType & SPMod::IForward::IParam::Type::Int)
+                    if ((paramType & SPMod::IForward::IParam::Type::Int) == SPMod::IForward::IParam::Type::Int)
                     {
                         func->PushCell(std::any_cast<int>(param->getData()));
                     }
@@ -189,20 +190,20 @@ namespace
                     }
                 }
             }
-            else if (paramType & SPMod::IForward::IParam::Type::String)
+            else if ((paramType & SPMod::IForward::IParam::Type::String) == SPMod::IForward::IParam::Type::String)
             {
                 if (param->shouldCopyback() || param->getStringFlags() != SPMod::IForward::StringFlags::None)
                 {
                     int spStringFlags = 0;
                     auto stringFlags = SPMod::IForward::StringFlags::None;
 
-                    if (stringFlags & SPMod::IForward::StringFlags::Utf8)
+                    if ((stringFlags & SPMod::IForward::StringFlags::Utf8) == SPMod::IForward::StringFlags::Utf8)
                         spStringFlags |= SM_PARAM_STRING_UTF8;
 
-                    if (stringFlags & SPMod::IForward::StringFlags::Copy)
+                    if ((stringFlags & SPMod::IForward::StringFlags::Copy) == SPMod::IForward::StringFlags::Copy)
                         spStringFlags |= SM_PARAM_STRING_COPY;
 
-                    if (stringFlags & SPMod::IForward::StringFlags::Binary)
+                    if ((stringFlags & SPMod::IForward::StringFlags::Binary) == SPMod::IForward::StringFlags::Binary)
                         spStringFlags |= SM_PARAM_STRING_BINARY;
 
                     func->PushStringEx(std::any_cast<char *>(param->getData()), param->getDataSize(),
@@ -273,16 +274,17 @@ SPMOD_API bool SPMod_Init()
                 cell_t fwdResult = 0;
                 bool succeed = pushParamsToFunc(fwd, func, &fwdResult);
 
-                if (!succeed || execType & SPMod::IForward::ExecType::Ignore)
+                if (!succeed ||
+                    (execType & SPMod::IForward::ExecType::Ignore) == SPMod::IForward::ExecType::Ignore)
                     continue;
 
                 if (result < fwdResult)
                     result = fwdResult;
 
-                if (execType & SPMod::IForward::ExecType::Stop &&
+                if ((execType & SPMod::IForward::ExecType::Stop) == SPMod::IForward::ExecType::Stop &&
                     fwdResult == static_cast<cell_t>(SPMod::IForward::ReturnValue::Stop))
                 {
-                    if (!(execType & SPMod::IForward::ExecType::Highest))
+                    if ((execType & SPMod::IForward::ExecType::Highest) != SPMod::IForward::ExecType::Highest)
                         result = fwdResult;
 
                     stop = true;
@@ -357,7 +359,8 @@ SPMOD_API bool SPMod_Init()
                     gTraceResultHandlers.free(traceResultHandle);
                 }
 
-                if (result == SPMod::IVTableHook::Return::Supercede)
+                if ((static_cast<SPMod::IVTableHook::Return>(result) & SPMod::IVTableHook::Return::Supercede)
+                    == SPMod::IVTableHook::Return::Supercede)
                 {
                     return SPMod::IVTableHook::Return::Supercede;
                 }

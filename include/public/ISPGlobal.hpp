@@ -19,63 +19,11 @@
 
 #pragma once
 
-#include <cinttypes>
-#include <cstddef>
-#include <functional>
-#include <any>
-#include <string>
-#include <variant>
-#include <array>
-#include <type_traits>
-#include <regex>
-#include <charconv>
-#include <optional>
-#include <unordered_map>
-
-#include <IHelpers.hpp>
-
-#if __has_include(<filesystem>)
-    #include <filesystem>
-    // As of GCC 8.1, Clang 7 and MSVC 2019 filesystem is no longer part of experimental
-    #if (defined SP_GCC && __GNUC__ >= 8) || (defined SP_CLANG && __clang_major__ >= 7) ||                             \
-        (defined SP_MSVC && _MSC_VER >= 1920)
-namespace fs = std::filesystem;
-    #else // Some compilers still have filesystem within experimental namespace like MSVC 2017
-namespace fs = std::experimental::filesystem;
-    #endif
-#elif __has_include(<experimental/filesystem>)
-    #include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-    #error Filesystem header missing
-#endif
-
-#include <Common.hpp>
-#include <IInterface.hpp>
-
-// engine api
-#include <engine/Common.hpp>
-#include <engine/ITraceResult.hpp>
-#include <engine/IGlobals.hpp>
-#include <engine/IEntVars.hpp>
-#include <engine/IFuncs.hpp>
-#include <engine/IEdict.hpp>
-#include <engine/IEngine.hpp>
-
-// dlls api
-#include <dlls/IBaseEntity.hpp>
-#include <dlls/IBaseDelay.hpp>
-#include <dlls/IBaseAnimating.hpp>
-#include <dlls/IBaseToggle.hpp>
-#include <dlls/IBaseMonster.hpp>
-#include <dlls/IBasePlayer.hpp>
-
-// metamod api
-#include <metamod/IFuncs.hpp>
-#include <metamod/IMetamod.hpp>
+#include "StandardHeaders.hpp"
+#include "IInterface.hpp"
+#include "Common.hpp"
 
 #include <IForwardSystem.hpp>
-#include <ICvarSystem.hpp>
 #include <ITimerSystem.hpp>
 #include <IMenuSystem.hpp>
 #include <IUtilsSystem.hpp>
@@ -84,8 +32,8 @@ namespace fs = std::experimental::filesystem;
 #include <ICmdSystem.hpp>
 #include <IPluginSystem.hpp>
 #include <INativeProxy.hpp>
-#include <IVTableHookSystem.hpp>
 #include <IMessageSystem.hpp>
+#include <IHooks.hpp>
 
 namespace SPMod
 {
@@ -129,13 +77,6 @@ namespace SPMod
         virtual const fs::path &getPath(DirType type) const = 0;
 
         /**
-         * @brief Returns type of the mod.
-         *
-         * @return              Mod type.
-         */
-        virtual ModType getModType() const = 0;
-
-        /**
          * @brief Checks if plugins can precache resources.
          *
          * @return              True if they are allowed to, false otherwise.
@@ -157,13 +98,6 @@ namespace SPMod
          * @return              Forward manager.
          */
         virtual IForwardMngr *getForwardManager() const = 0;
-
-        /**
-         * @brief Returns SPMod cvar manager.
-         *
-         * @return               Cvar manager.
-         */
-        virtual ICvarMngr *getCvarManager() const = 0;
 
         /**
          * @brief Returns SPMod timer manager.
@@ -221,19 +155,7 @@ namespace SPMod
          */
         virtual ICommandMngr *getCommandManager() const = 0;
 
-        /**
-         * @brief Returns engine instance.
-         *
-         * @return              Engine instance.
-         */
-        virtual Engine::IEngine *getEngine() const = 0;
-
-        /**
-         * @brief Returns metamod instance.
-         *
-         * @return              Metamod instance.
-         */
-        virtual Metamod::IMetamod *getMetamod() const = 0;
+        virtual IHooks *getHooks() const = 0;
 
         /**
          * @brief Registers module's interface.
@@ -261,7 +183,5 @@ namespace SPMod
          * @return              Interface's implementation.
          */
         virtual IModuleInterface *getInterface(std::string_view name) const = 0;
-
-        virtual IVTableHookManager *getVTableManager() const = 0;
     };
 } // namespace SPMod

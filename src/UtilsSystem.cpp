@@ -17,8 +17,11 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "spmod.hpp"
 #include "UtilsSystem.hpp"
+#include "SPGlobal.hpp"
+#include "MetaInit.hpp"
+
+#include <public/engine/IEdict.hpp>
 
 std::size_t Utils::strCopy(char *buffer, std::size_t size, std::string_view src) const
 {
@@ -52,13 +55,10 @@ std::string Utils::strReplaced(std::string_view source, std::string_view from, s
     return temp;
 }
 
-void Utils::ShowMenu(const Engine::Edict *pEdict, std::uint32_t slots, std::uint32_t time, std::string_view menu)
+void Utils::ShowMenu(Metamod::Engine::IEdict *pEdict, std::int16_t slots, std::int8_t time, std::string_view menu)
 {
     static constexpr std::size_t maxStringToSend = 175;
     static constexpr std::size_t maxMenuLength = 512;
-
-    if (!gmsgShowMenu)
-        return; // some games don't support ShowMenu (Firearms)
 
     std::size_t currentPos = 0;
     std::size_t menuLength = (menu.length() > maxMenuLength) ? maxMenuLength : menu.length();
@@ -66,12 +66,12 @@ void Utils::ShowMenu(const Engine::Edict *pEdict, std::uint32_t slots, std::uint
     do
     {
         menuLength -= buffer.length();
-        MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, nullptr, *pEdict);
-        WRITE_SHORT(slots);
-        WRITE_CHAR(time);
-        WRITE_BYTE((menuLength > 0) ? true : false);
-        WRITE_STRING(buffer.data());
-        MESSAGE_END();
+        gEngine->messageBegin(Metamod::Engine::MsgDest::One, gSPGlobal->getUserMsgId(UserMsgId::ShowMenu), nullptr, pEdict, Metamod::FuncCallType::Direct);
+        gEngine->writeShort(slots, Metamod::FuncCallType::Direct);
+        gEngine->writeChar(time, Metamod::FuncCallType::Direct);
+        gEngine->writeByte((menuLength > 0) ? std::byte(1) : std::byte(0), Metamod::FuncCallType::Direct);
+        gEngine->writeString(buffer.data(), Metamod::FuncCallType::Direct);
+        gEngine->messageEnd(Metamod::FuncCallType::Direct);
 
         currentPos += buffer.length();
         buffer = menu.substr(currentPos, (menuLength > maxStringToSend) ? maxStringToSend : std::string_view::npos);
@@ -136,25 +136,23 @@ void Utils::trimMultiByteChar(std::string &str)
     }
 }
 
-void Utils::sendTextMsg(std::string_view message, TextMsgDest msgDest, Engine::Edict *edict)
+void Utils::sendTextMsg(std::string_view message, TextMsgDest msgDest, Metamod::Engine::IEdict *edict)
 {
-    static std::uint8_t msgTextMsgId = GET_USER_MSG_ID(PLID, "TextMsg", nullptr);
-    if (!msgTextMsgId)
-        return;				// :TODO: Maybe output a warning log?
-
     constexpr std::size_t maxLength = 187;
+    static Metamod::Engine::MsgType textMsg = gSPGlobal->getUserMsgId(UserMsgId::TextMsg);
 
     if (edict)
     {
-        MESSAGE_BEGIN(MSG_ONE, msgTextMsgId, nullptr, *edict);
+
+        gEngine->messageBegin(Metamod::Engine::MsgDest::One, textMsg, nullptr, edict, Metamod::FuncCallType::Direct);
     }
     else
     {
-        MESSAGE_BEGIN(MSG_BROADCAST, msgTextMsgId);
+        gEngine->messageBegin(Metamod::Engine::MsgDest::Broadcast, textMsg, nullptr, nullptr, Metamod::FuncCallType::Direct);
     }
 
-    WRITE_BYTE(static_cast<std::uint8_t>(msgDest));	// 1 byte
-    WRITE_STRING("%s");	// 3 bytes (2 + EOS)
-    WRITE_STRING(message.substr(0, maxLength).data());	// max 188 bytes (187 + EOS)
-    MESSAGE_END();		// max 192 bytes
+    gEngine->writeByte(std::byte(msgDest), Metamod::FuncCallType::Direct);	// 1 byte
+    gEngine->writeString("%s", Metamod::FuncCallType::Direct);	// 3 bytes (2 + EOS)
+    gEngine->writeString(message.substr(0, maxLength).data(), Metamod::FuncCallType::Direct);	// max 188 bytes (187 + EOS)
+    gEngine->messageEnd(Metamod::FuncCallType::Direct);		// max 192 bytes
 }

@@ -19,7 +19,11 @@
 
 #pragma once
 
-#include "spmod.hpp"
+#include <ICmdSystem.hpp>
+#include <IForwardSystem.hpp>
+#include "MetaInit.hpp"
+
+using namespace SPMod;
 
 class Player;
 
@@ -36,7 +40,7 @@ public:
 
     const std::variant<std::string, std::regex> &getNameOrRegex() const override;
     std::string_view getInfo() const override;
-    IForward::ReturnValue execCallback(Player *player);
+    bool execCallback(Player *player);
 
 protected:
     /* command's regex or name */
@@ -121,7 +125,7 @@ public:
     std::size_t getCommandsNum(ICommand::Type type);
     void clearCommands();
 
-    META_RES ClientCommandMeta(edict_t *entity, std::string_view cmd);
+    bool ClientCommand(Metamod::Engine::IEdict *entity, std::string_view cmd);
 
     static void PluginSrvCommand();
     static void SPModInfoCommand();

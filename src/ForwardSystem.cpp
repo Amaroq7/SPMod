@@ -17,7 +17,8 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "spmod.hpp"
+#include <public/IHelpers.hpp>
+#include "ForwardSystem.hpp"
 
 Forward::Param::Param(Type type) : m_dataType(type), m_copyback(false), m_stringFlags(Forward::StringFlags::None) {}
 
@@ -371,34 +372,6 @@ bool SingleForward::execFunc(std::int32_t *result)
     return true;
 }
 
-void ForwardMngr::addDefaultsForwards()
-{
-    using et = Forward::ExecType;
-    using param = Forward::Param::Type;
-    std::array<Forward::Param::Type, Forward::MAX_EXEC_PARAMS> paramsList;
-
-    paramsList = {{param::Int, param::String, param::String, param::String}};
-    createForward("OnClientConnect", et::Stop, paramsList);
-    createForward("OnClientConnectPost", et::Stop, paramsList);
-
-    paramsList = {{param::Int, param::Int, param::String}};
-    createForward("OnClientDisconnect", et::Ignore, paramsList);
-    createForward("OnClientDisconnectPost", et::Ignore, paramsList);
-
-    paramsList = {{param::Int}};
-    createForward("OnClientPutInServer", et::Ignore, paramsList);
-    createForward("OnClientPutInServerPost", et::Ignore, paramsList);
-    createForward("OnClientCommand", et::Stop, paramsList);
-
-    paramsList = {{param::String}};
-    createForward("OnMapChange", et::Stop, paramsList);
-
-    createForward("OnPluginsLoaded");
-    createForward("OnPluginInit");
-    createForward("OnPluginEnd");
-    createForward("OnPluginNatives");
-}
-
 Forward *ForwardMngr::createForward(std::string_view name,
                                     Forward::ExecType exec,
                                     std::array<Forward::Param::Type, IForward::MAX_EXEC_PARAMS> params,
@@ -434,16 +407,6 @@ void ForwardMngr::clearForwards()
 {
     m_forwards.clear();
     m_callbacks.clear();
-}
-
-Forward *ForwardMngr::getForward(std::string_view name) const
-{
-    if (auto iter = m_forwards.find(name.data()); iter != m_forwards.end())
-    {
-        return iter->second.get();
-    }
-
-    return nullptr;
 }
 
 bool ForwardMngr::deleteForward(const IForward *forward)

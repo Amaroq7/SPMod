@@ -19,6 +19,9 @@
 
 #pragma once
 
+#include "StandardHeaders.hpp"
+#include "IInterface.hpp"
+
 namespace SPMod
 {
     class IPlugin;

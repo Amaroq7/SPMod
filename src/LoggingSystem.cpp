@@ -17,7 +17,8 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "spmod.hpp"
+#include "LoggingSystem.hpp"
+#include "SPGlobal.hpp"
 
 Logger *LoggerMngr::getLogger(std::string_view prefix)
 {
@@ -101,19 +102,9 @@ void Logger::_writeToFile(std::string_view msg) const
     {
         logFile << logDateTime << "Start of error session.\n";
         logFile << logDateTime << "Info (map ";
-
-        if (STRING(gpGlobals->mapname))
-            logFile << STRING(gpGlobals->mapname);
-        else
-            logFile << "<unknown>";
-
+        logFile << gEngine->getMapName();
         logFile << ") (CRC ";
-
-        if (gRehldsServerData)
-            logFile << gRehldsServerData->GetWorldmapCrc();
-        else
-            logFile << "<unknown>";
-
+        logFile << std::to_string(gEngine->getWorldmapCrc());
         logFile << ")\n";
     }
 

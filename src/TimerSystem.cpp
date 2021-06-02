@@ -17,14 +17,12 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <utility>
-
-
-#include "spmod.hpp"
+#include "TimerSystem.hpp"
+#include "MetaInit.hpp"
 
 Timer::Timer(float interval, Timer::Callback func, bool pause)
     : m_interval(interval), m_callback(std::move(func)), m_paused(pause),
-      m_lastExec(gpGlobals->time)
+      m_lastExec(gEngine->getTime())
 {
     if (m_interval <= 0.0f)
         throw std::runtime_error("Interval lesser than or equal to 0");
@@ -42,7 +40,7 @@ bool Timer::isPaused() const
 void Timer::setInterval(float interval)
 {
     m_interval = interval;
-    m_lastExec = gpGlobals->time;
+    m_lastExec = gEngine->getTime();
 }
 
 void Timer::setPause(bool pause)
@@ -51,12 +49,12 @@ void Timer::setPause(bool pause)
 
     // Delay exec of timer by its interval
     if (!pause)
-        m_lastExec = gpGlobals->time;
+        m_lastExec = gEngine->getTime();
 }
 
 bool Timer::exec()
 {
-    m_lastExec = gpGlobals->time;
+    m_lastExec = gEngine->getTime();
     return m_callback(this);
 }
 

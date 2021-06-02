@@ -17,9 +17,18 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "spmod.hpp"
+#include <IInterface.hpp>
+#include "ExtensionSystem.hpp"
+
+#ifdef SP_WINDOWS
+#define WIN32_LEAN_AND_MEAN
+    #include "windows.h"
+#else
+    #include <dlfcn.h>
+#endif
 
 using namespace std::string_literals;
+using namespace SPMod;
 
 Extension::Extension(const fs::path &path)
 {

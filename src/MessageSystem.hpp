@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2021 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -19,164 +19,93 @@
 
 #pragma once
 
-#include "spmod.hpp"
+#include "HookChains.hpp"
 
-class Message : public IMessage
+#include <IMessageSystem.hpp>
+#include <public/engine/Common.hpp>
+#include <public/engine/IEdict.hpp>
+
+using namespace SPMod;
+
+class Message final : public IMessage
 {
 public:
-    struct Param
-    {
-        MsgParamType type;
-        std::variant<int, float, std::string> data;
-    };
-
     Message() = default;
-    ~Message() = default;
+    ~Message() final = default;
 
     // IMessage
-    std::size_t getParams() const override;
-    MsgParamType getParamType(std::size_t index) const override;
+    std::vector<Param> &getParams() final;
 
-    int getParamInt(std::size_t index) const override;
-    float getParamFloat(std::size_t index) const override;
-    std::string_view getParamString(std::size_t index) const override;
+    Metamod::Engine::MsgDest getDest() const final;
+    Metamod::Engine::MsgType getType() const final;
+    const float *getOrigin() const final;
+    Metamod::Engine::IEdict *getEdict() const final;
 
-    void setParamInt(std::size_t index, int value) override;
-    void setParamFloat(std::size_t index, float value) override;
-    void setParamString(std::size_t index, std::string_view string) override;
+    IHookInfo *registerHook(IMessage::Handler handler, HookPriority hookPriority) final;
+    void unregisterHook(IHookInfo *hook) final;
 
-    MsgDest getDest() const override;
-    int getType() const override;
-    const float *getOrigin() const override;
-    Engine::IEdict *getEdict() const override;
+    MsgBlockType getBlockType() const final;
+    void setBlockType(MsgBlockType blockType) final;
 
     // Message
-    void init(MsgDest dest, int type, const float *origin, Engine::Edict *edict);
-
-    void exec() const;
-
-    void clearParams();
-
-    void addParam(MsgParamType type, std::variant<int, float, std::string> &&data);
-
-    void setParam(std::size_t index, std::variant<int, float, std::string> &&data);
-
-    template<typename T>
-    const T &getParam(std::size_t index) const
-    {
-        try
-        {
-            return std::get<T>(m_params[index].data);
-        }
-        catch (const std::bad_variant_access &e [[maybe_unused]])
-        {
-            static T empty;
-            return empty;
-        }
-    }
+    bool MessageBegin(Metamod::Engine::MsgDest dest, Metamod::Engine::MsgType type, const float *origin, Metamod::Engine::IEdict *edict);
+    bool MessageEnd();
+    bool addParam(Param &&param);
 
 private:
-    MsgDest m_dest;
-    int m_type;
-    Vector m_origin;
-    Engine::Edict *m_edict;
+    enum class HookType : std::uint8_t
+    {
+        None = 0,
+        Normal,
+        Block
+    };
+
+private:
+    Metamod::Engine::MsgDest m_dest;
+    Metamod::Engine::MsgType m_type;
+    float *m_origin;
+    Metamod::Engine::IEdict *m_edict;
 
     std::vector<Param> m_params;
+    MsgBlockType m_blockType = MsgBlockType::Not;
+    HookRegistry<void, IMessage *> m_hooks;
+    HookType m_hookType = HookType::None;
 };
 
-class MessageHook final : public IMessageHook
+class MessageMngr final : public IMessageMngr
 {
 public:
-    MessageHook(int msgType, Message::Handler handler, HookType hookType);
-    ~MessageHook() = default;
-
-    // IMessageHook
-    void enable() override;
-    void disable() override;
-    bool isActive() const override;
-    int getMsgType() const override;
-
-    // MessageHook
-    HookType getHookType() const;
-    Message::Handler getHandler() const;
-    bool getActive() const;
-
-private:
-    int m_msgType;
-    Message::Handler m_handler;
-    HookType m_hookType;
-    bool m_active;
-};
-
-class MessageHooks
-{
-public:
-    MessageHooks() = default;
-    ~MessageHooks() = default;
-
-    MessageHook *addHook(int msgType, Message::Handler handler, HookType hookType);
-
-    void removeHook(IMessageHook *hook);
-
-    IForward::ReturnValue exec(const std::unique_ptr<Message> &message, HookType hookType) const;
-
-    bool hasHooks() const;
-
-    void clearHooks();
-
-private:
-    std::vector<std::unique_ptr<MessageHook>> m_handlers;
-};
-
-class MessageMngr : public IMessageMngr
-{
-public:
-    MessageMngr();
-    ~MessageMngr() = default;
+    MessageMngr() = default;
+    ~MessageMngr() final = default;
 
     // IMessageMngr
-    MessageHook *registerHook(int msgType, Message::Handler handler, HookType hookType) override;
-    void unregisterHook(IMessageHook *) override;
+    IMessage *getMessage(Metamod::Engine::MsgType msgType) const final;
 
-    MsgBlockType getMessageBlock(int msgType) const override;
-    void setMessageBlock(int msgType, MsgBlockType blockType) override;
+    bool MessageBegin(Metamod::Engine::MsgDest msg_dest,
+                      Metamod::Engine::MsgType msg_type,
+                      const float *pOrigin,
+                      Metamod::Engine::IEdict *ed);
 
-    IForward::ReturnValue execHandlers(HookType hookType);
+    bool MessageEnd();
 
-    IMessage *getMessage() const override
+    template<typename T, typename = std::enable_if_t<
+        std::disjunction_v<
+            std::is_same<T, std::byte>,
+            std::is_same<T, char>,
+            std::is_same<T, std::int16_t>,
+            std::is_same<T, std::int32_t>,
+            std::is_same<T, Metamod::Engine::MsgEntity>,
+            std::is_same<T, Metamod::Engine::MsgCoord>,
+            std::is_same<T, Metamod::Engine::MsgAngle>,
+            std::is_same<T, std::string_view>
+        >
+    >>
+    bool WriteParam(T value)
     {
-        return m_message.get();
-    }
-
-    bool inHook() const override;
-
-    void clearMessages();
-
-    META_RES MessageBegin(int msg_dest, int msg_type, const float *pOrigin, edict_t *ed);
-
-    META_RES MessageEnd();
-
-    template<typename T>
-    META_RES WriteParam(MsgParamType type, T value)
-    {
-        if (m_inblock)
-        {
-            return MRES_SUPERCEDE;
-        }
-        else if (m_inhook)
-        {
-            m_message->addParam(type, value);
-            return MRES_SUPERCEDE;
-        }
-        return MRES_IGNORED;
+        return m_messages[m_currentMsgType]->addParam(value);
     }
 
 private:
-    std::unique_ptr<Message> m_message;
-    std::array<MessageHooks, MAX_USER_MESSAGES> m_hooks;
-    std::array<MsgBlockType, MAX_USER_MESSAGES> m_blocks;
-
-    bool m_inhook;
-    bool m_inblock;
-    int m_msgType;
+    std::array<std::unique_ptr<Message>, MAX_USER_MESSAGES> m_messages;
+    Metamod::Engine::MsgType m_currentMsgType = 0;
 };

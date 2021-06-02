@@ -19,13 +19,24 @@
 
 #pragma once
 
-namespace SPMod
+#include "StandardHeaders.hpp"
+#include "IInterface.hpp"
+#include "IHookChains.hpp"
+
+namespace Metamod
 {
     namespace Engine
     {
         class IEdict;
     }
+    namespace Game
+    {
+        class IBasePlayer;
+    }
+}
 
+namespace SPMod
+{
     class IMenu;
 
     enum class TextMsgDest : std::uint8_t
@@ -116,8 +127,8 @@ namespace SPMod
         virtual std::uint32_t getMenuPage() const = 0;
         virtual void closeMenu() = 0;
 
-        virtual IBasePlayer *basePlayer() const = 0;
-        virtual Engine::IEdict *edict() const = 0;
+        virtual Metamod::Game::IBasePlayer *basePlayer() const = 0;
+        virtual Metamod::Engine::IEdict *edict() const = 0;
 
         virtual bool sendMsg(TextMsgDest msgDest, std::string_view message) const = 0;
     };
@@ -171,7 +182,7 @@ namespace SPMod
          *
          * @return          IPlayer object, nullptr if out of range.
          */
-        virtual IPlayer *getPlayer(const Engine::IEdict *edict) const = 0;
+        virtual IPlayer *getPlayer(const Metamod::Engine::IEdict *edict) const = 0;
 
         /**
          * @brief Returns the maximum number of clients.

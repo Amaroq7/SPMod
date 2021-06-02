@@ -19,7 +19,9 @@
 
 #pragma once
 
-#include "spmod.hpp"
+#include <IForwardSystem.hpp>
+
+using namespace SPMod;
 
 /* @brief General forward used in SPMod.
  *        It can be either SingleForward or MutliForward.
@@ -175,19 +177,6 @@ private:
 class ForwardMngr final : public IForwardMngr
 {
 public:
-    static constexpr const char *FWD_PLAYER_CONNECT = "OnClientConnect";
-    static constexpr const char *FWD_PLAYER_CONNECTED = "OnClientConnectPost";
-    static constexpr const char *FWD_PLAYER_DISCONNECT = "OnClientDisconnect";
-    static constexpr const char *FWD_PLAYER_DISCONNECTED = "OnClientDisconnectPost";
-    static constexpr const char *FWD_PLAYER_ENTER = "OnClientPutInServer";
-    static constexpr const char *FWD_PLAYER_ENTERED = "OnClientPutInServerPost";
-    static constexpr const char *FWD_PLAYER_COMMAND = "OnClientCommand";
-    static constexpr const char *FWD_MAP_CHANGE = "OnMapChange";
-    static constexpr const char *FWD_PLUGINS_LOADED = "OnPluginsLoaded";
-    static constexpr const char *FWD_PLUGIN_INIT = "OnPluginInit";
-    static constexpr const char *FWD_PLUGIN_END = "OnPluginEnd";
-    static constexpr const char *FWD_PLUGIN_NATIVES = "OnPluginNatives";
-
     ForwardMngr() = default;
     ForwardMngr(const ForwardMngr &other) = delete;
     ForwardMngr(ForwardMngr &&other) = delete;
@@ -205,9 +194,6 @@ public:
 
     // ForwardMngr
     void clearForwards();
-    Forward *getForward(std::string_view name) const;
-
-    void addDefaultsForwards();
 
 private:
     std::unordered_multimap<std::string, std::unique_ptr<Forward>> m_forwards;

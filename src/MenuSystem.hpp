@@ -19,7 +19,11 @@
 
 #pragma once
 
-#include "spmod.hpp"
+#include <Common.hpp>
+#include <IMenuSystem.hpp>
+#include "MetaInit.hpp"
+
+using namespace SPMod;
 
 constexpr std::uint32_t MAX_STATIC_ITEMS = 10U;
 
@@ -143,7 +147,7 @@ public:
 
     // MenuMngr
     void clearMenus();
-    META_RES ClientCommand(edict_t *pEntity);
+    bool ClientCommand(Metamod::Engine::IEdict *pEntity);
 
 private:
     std::vector<std::unique_ptr<Menu>> m_menus;

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2021 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -19,85 +19,46 @@
 
 #pragma once
 
+#include "StandardHeaders.hpp"
+#include "IInterface.hpp"
+#include "Common.hpp"
+#include "IHookChains.hpp"
+
+#include <public/IMetamod.hpp>
+
 namespace SPMod
 {
     constexpr std::size_t MAX_USER_MESSAGES = 256U;
 
-    enum class MsgParamType : std::uint8_t
-    {
-        Byte,
-        Char,
-        Short,
-        Long,
-        Angle,
-        Coord,
-        String,
-        Entity,
-    };
-
     enum class MsgBlockType : std::uint8_t
     {
-        Not,
+        Not = 0,
         Once,
         Set
     };
 
-    /**
-     *  Message destination.
-     */
-    enum class MsgDest : std::uint8_t
-    {
-        BROADCAST = 0,      /**< Unreliable to all */
-        ONE = 1,            /**< Reliable to one (msg_entity) */
-        ALL = 2,            /**< Reliable to all */
-        INIT = 3,           /**< Write to the init string */
-        PVS = 4,            /**< Ents in PVS of org */
-        PAS = 5,            /**< Ents in PAS of org */
-        PVS_R = 6,          /**< Reliable to PVS */
-        PAS_R = 7,          /**< Reliable to PAS */
-        ONE_UNRELIABLE = 8, /**< Send to one client, but don't put in reliable stream, put in unreliable datagram */
-        SPEC = 9,           /**< Sends to all spectator proxies */
-    };
-
-    namespace Engine
-    {
-        class IEdict;
-    }
-
     class IMessage
     {
     public:
-        using Handler = std::function<IForward::ReturnValue(IMessage *const message)>;
+        using Handler = std::function<void(IHook<void, IMessage *> *chain, IMessage *message)>;
+        using Param = std::variant<std::byte, char, std::int16_t, std::int32_t, std::string_view,
+                                    Metamod::Engine::MsgEntity, Metamod::Engine::MsgAngle, Metamod::Engine::MsgCoord>;
 
+    public:
         virtual ~IMessage() = default;
 
-        virtual std::size_t getParams() const = 0;
-
-        virtual MsgParamType getParamType(std::size_t index) const = 0;
-
-        virtual int getParamInt(std::size_t index) const = 0;
-        virtual float getParamFloat(std::size_t index) const = 0;
-        virtual std::string_view getParamString(std::size_t index) const = 0;
-
-        virtual void setParamInt(std::size_t index, int value) = 0;
-        virtual void setParamFloat(std::size_t index, float value) = 0;
-        virtual void setParamString(std::size_t index, std::string_view string) = 0;
-
-        virtual MsgDest getDest() const = 0;
-        virtual int getType() const = 0;
+        virtual std::vector<Param> &getParams() = 0;
+        virtual Metamod::Engine::MsgDest getDest() const = 0;
+        virtual Metamod::Engine::MsgType getType() const = 0;
         virtual const float *getOrigin() const = 0;
-        virtual Engine::IEdict *getEdict() const = 0;
-    };
+        virtual Metamod::Engine::IEdict *getEdict() const = 0;
 
-    class IMessageHook
-    {
-    public:
-        virtual ~IMessageHook() = default;
+        virtual IHookInfo *registerHook(IMessage::Handler handler,
+                                        HookPriority hookPriority = HookPriority::DEFAULT) = 0;
+        virtual void unregisterHook(IHookInfo *hook) = 0;
 
-        virtual void enable() = 0;
-        virtual void disable() = 0;
-        virtual bool isActive() const = 0;
-        virtual int getMsgType() const = 0;
+        virtual MsgBlockType getBlockType() const = 0;
+        virtual void setBlockType(MsgBlockType blockType) = 0;
     };
 
     class IMessageMngr : public ISPModInterface
@@ -131,13 +92,6 @@ namespace SPMod
             return VERSION;
         }
 
-        virtual IMessageHook *registerHook(int msgType, IMessage::Handler handler, HookType hookType) = 0;
-        virtual void unregisterHook(IMessageHook *hook) = 0;
-
-        virtual MsgBlockType getMessageBlock(int msgType) const = 0;
-        virtual void setMessageBlock(int msgType, MsgBlockType blockType) = 0;
-
-        virtual IMessage *getMessage() const = 0;
-        virtual bool inHook() const = 0;
+        virtual IMessage *getMessage(Metamod::Engine::MsgType msgType) const = 0;
     };
 } // namespace SPMod

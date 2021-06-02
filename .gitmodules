@@ -1,6 +1,3 @@
 [submodule "subprojects/sourcepawn/sourcepawn"]
 	path = subprojects/sourcepawn/sourcepawn
 	url = https://github.com/alliedmodders/sourcepawn
-[submodule "include/metamod_sdk"]
-	path = include/metamod_sdk
-	url = https://github.com/Amaroq7/metamod-cpp.git

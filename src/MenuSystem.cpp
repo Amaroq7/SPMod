@@ -18,10 +18,9 @@
  */
 
 
-#include "spmod.hpp"
-
-std::int32_t gmsgShowMenu = 0;
-std::int32_t gmsgVGUIMenu = 0;
+#include "MenuSystem.hpp"
+#include "UtilsSystem.hpp"
+#include "SPGlobal.hpp"
 
 Menu::Item::Item(Menu *menu,
                  std::string_view name,
@@ -244,7 +243,7 @@ void Menu::setTitle(std::string_view text)
 
 void Menu::setItemsPerPage(std::size_t value)
 {
-    m_itemsPerPage = min(value, static_cast<std::size_t>(10));
+    m_itemsPerPage = std::min(value, static_cast<std::size_t>(10));
 }
 
 std::size_t Menu::getItemsPerPage() const
@@ -433,15 +432,15 @@ void MenuMngr::clearMenus()
     m_menus.clear();
 }
 
-META_RES MenuMngr::ClientCommand(edict_t *pEntity)
+bool MenuMngr::ClientCommand(Metamod::Engine::IEdict *pEntity)
 {
-    std::string_view pressedKeyText(CMD_ARGV(1));
+    std::string_view pressedKeyText(gEngine->cmdArgv(1, Metamod::FuncCallType::Direct));
     std::uint32_t pressedKey;
     if (const auto &[ptr, ec] =
             std::from_chars(pressedKeyText.data(), pressedKeyText.data() + pressedKeyText.length(), pressedKey);
         ec != std::errc())
     {
-        return MRES_IGNORED;
+        return true;
     }
 
     pressedKey -= 1;
@@ -477,8 +476,8 @@ META_RES MenuMngr::ClientCommand(edict_t *pEntity)
             pMenu->execTextHandler(pPlayer, pressedKey);
         }
 
-        return MRES_SUPERCEDE;
+        return false;
     }
 
-    return MRES_IGNORED;
+    return true;
 }

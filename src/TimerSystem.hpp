@@ -19,7 +19,9 @@
 
 #pragma once
 
-#include "spmod.hpp"
+#include <ITimerSystem.hpp>
+
+using namespace SPMod;
 
 class Timer final : public ITimer
 {

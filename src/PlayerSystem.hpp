@@ -19,16 +19,16 @@
 
 #pragma once
 
-#include "spmod.hpp"
-
-class Menu;
+#include <IPlayerSystem.hpp>
+#include <public/IMetamod.hpp>
+#include "MenuSystem.hpp"
 
 class Player : public IPlayer
 {
 public:
     Player() = delete;
     ~Player() = default;
-    Player(Engine::Edict *edict);
+    Player(Metamod::Engine::IEdict *edict);
 
     // IPlayer
     std::string_view getName() const override;
@@ -44,8 +44,8 @@ public:
     void closeMenu() override;
     Menu *getMenu() const override;
     std::uint32_t getMenuPage() const override;
-    IBasePlayer *basePlayer() const override;
-    Engine::Edict *edict() const override;
+    Metamod::Game::IBasePlayer *basePlayer() const override;
+    Metamod::Engine::IEdict *edict() const override;
     bool sendMsg(TextMsgDest msgDest, std::string_view message) const override;
 
     // Player
@@ -70,8 +70,8 @@ private:
 
     Menu *m_menu = nullptr;
     std::uint32_t m_menuPage = 0;
-    IBasePlayer *m_basePlayer;
-    Engine::Edict *m_edict;
+    Metamod::Game::IBasePlayer *m_basePlayer;
+    Metamod::Engine::IEdict *m_edict;
 };
 
 class PlayerMngr : public IPlayerMngr
@@ -82,24 +82,17 @@ public:
 
     // IPlayerManager
     Player *getPlayer(std::uint32_t index) const override;
-    Player *getPlayer(const Engine::IEdict *edict) const override;
+    Player *getPlayer(const Metamod::Engine::IEdict *edict) const override;
     std::uint32_t getMaxClients() const override;
     std::uint32_t getNumPlayers() const override;
 
     // PlayerManager
-    Player *getPlayer(edict_t *edict) const;
-
-    bool ClientConnect(edict_t *pEntity,
-                       std::string_view pszName,
-                       std::string_view pszAddress,
-                       char szRejectReason[128]);
-    void ClientConnectPost(edict_t *pEntity, std::string_view pszName, std::string_view pszAddress);
-    void ClientPutInServer(edict_t *pEntity);
-    void ClientPutInServerPost(edict_t *pEntity);
-    void ClientUserInfoChangedPost(edict_t *pEntity, char *infobuffer);
-    void StartFramePost();
-    void ServerActivatePost(edict_t *pEdictList, std::uint32_t clientMax);
-    void ServerDeactivatePost();
+    bool ClientConnect(Metamod::Engine::IEdict *pEntity, std::string_view pszName, std::string_view pszAddress, std::string &szRejectReason);
+    void ClientPutInServer(Metamod::Engine::IEdict *pEntity);
+    void ClientUserInfoChanged(Metamod::Engine::IEdict *pEntity, Metamod::Engine::InfoBuffer infoBuffer);
+    void StartFrame();
+    void ServerActivate(std::uint32_t clientMax);
+    void ServerDeactivate();
 
     static inline std::uint32_t m_playersNum = 0;
 

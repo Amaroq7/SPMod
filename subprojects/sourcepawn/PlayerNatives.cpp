@@ -315,6 +315,26 @@ static cell_t SendMsg(SourcePawn::IPluginContext *ctx, const cell_t *params)
     return 1;
 }
 
+// native void MakeVIP()
+static cell_t MakeVIP(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    enum
+    {
+        arg_id = 1,
+    };
+
+    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    if (!plr)
+    {
+        ctx->ReportError("Non player index (%i)", params[arg_id]);
+        return 0;
+    }
+
+    plr->basePlayer()->makeVIP();
+
+    return 1;
+}
+
 sp_nativeinfo_t gPlayerNatives[] = {{"Player.GetName", GetName},
                                     {"Player.GetIP", GetIP},
                                     {"Player.GetSteamID", GetSteamID},
@@ -329,4 +349,5 @@ sp_nativeinfo_t gPlayerNatives[] = {{"Player.GetName", GetName},
                                     {"Player.Health.set", HealthSet},
                                     {"Player.TakeDamage", TakeDamage},
                                     {"Player.SendMsg", SendMsg},
+                                    {"Player.MakeVIP", MakeVIP},
                                     {nullptr, nullptr}};

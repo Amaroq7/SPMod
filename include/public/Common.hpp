@@ -18,6 +18,8 @@
  */
 #pragma once
 
+#include "StandardHeaders.hpp"
+
 namespace SPMod
 {
     enum class DirType : std::uint8_t
@@ -28,15 +30,6 @@ namespace SPMod
         Plugins,
         Logs,
         Configs
-    };
-
-    enum class ModType : std::uint8_t
-    {
-        Valve = 0,
-        Cstrike,
-        CZero,
-        DoD,
-        TFC
     };
 
     enum class NavigationType : std::int8_t

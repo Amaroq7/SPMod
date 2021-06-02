@@ -13,7 +13,7 @@ else()
     set(SPVM_DYNAMIC_LINK "")
 endif()
 
-if(UNIX AND LLVM_BUILD)
+if(UNIX AND LLVM_TOOLCHAIN)
     ExternalProject_Add(spvm-project
         GIT_REPOSITORY    https://github.com/alliedmodders/sourcepawn.git
         GIT_TAG           d7d94319a58e7d800a5e095000efe8ba64bd6c86

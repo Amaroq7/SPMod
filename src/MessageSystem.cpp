@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018 SPMod Development Team
+ *  Copyright (C) 2018-2021 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -17,128 +17,116 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "spmod.hpp"
+#include "MessageSystem.hpp"
+#include "MetaInit.hpp"
 
-namespace
+#include <utility>
+
+bool Message::MessageBegin(Metamod::Engine::MsgDest dest, Metamod::Engine::MsgType type, const float *origin, Metamod::Engine::IEdict *edict)
 {
-    inline std::int32_t msgDestToInt(MsgDest destType)
+    if (m_blockType != MsgBlockType::Not)
     {
-        return static_cast<std::int32_t>(destType);
+        m_hookType = HookType::Block;
+        return false;
     }
 
-    inline MsgDest intToMsgDest(std::int32_t destType)
+    if (m_hooks.hasHooks())
     {
-        return static_cast<MsgDest>(destType);
+        m_hookType = HookType::Normal;
+
+        m_dest = dest;
+        m_type = type;
+        m_origin = const_cast<float *>(origin);
+        m_edict = edict;
+
+        return false;
     }
+
+    return true;
 }
 
-void Message::init(MsgDest dest, int type, const float *origin, Engine::Edict *edict)
+bool Message::MessageEnd()
 {
-    m_dest = dest;
-    m_type = type;
-    m_origin = Vector(origin[0], origin[1], origin[2]);
-    m_edict = edict;
-}
-
-void Message::exec() const
-{
-    MESSAGE_BEGIN(msgDestToInt(m_dest), m_type, m_origin, *m_edict);
-
-    for (auto param : m_params)
+    if (m_hookType == HookType::None)
     {
-        switch (param.type)
+        return true;
+    }
+
+    if (m_hookType != HookType::Block)
+    {
+        if (m_blockType == MsgBlockType::Once)
         {
-            case MsgParamType::Byte:
-                WRITE_BYTE(std::get<int>(param.data));
-                break;
-            case MsgParamType::Char:
-                WRITE_CHAR(std::get<int>(param.data));
-                break;
-            case MsgParamType::Short:
-                WRITE_SHORT(std::get<int>(param.data));
-                break;
-            case MsgParamType::Long:
-                WRITE_LONG(std::get<int>(param.data));
-                break;
-            case MsgParamType::Angle:
-                WRITE_ANGLE(std::get<float>(param.data));
-                break;
-            case MsgParamType::Coord:
-                WRITE_COORD(std::get<float>(param.data));
-                break;
-            case MsgParamType::String:
-                WRITE_STRING(std::get<std::string>(param.data).c_str());
-                break;
-            case MsgParamType::Entity:
-                WRITE_ENTITY(std::get<int>(param.data));
-                break;
+            m_blockType = MsgBlockType::Not;
+            m_hookType = HookType::None;
         }
+
+        return false;
     }
 
-    MESSAGE_END();
-}
+    // add contidions for hooks like in amxx events
+    // hooks can change params
+    // then exec message
 
-void Message::clearParams()
-{
+    auto sendMsg = [this](IMessage *) {
+        gEngine->messageBegin(m_dest, m_type, m_origin, m_edict, Metamod::FuncCallType::Direct);
+
+        for (const auto &param : m_params)
+        {
+            std::visit([](auto&& arg) {
+                using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, std::byte>)
+                        gEngine->writeByte(arg, Metamod::FuncCallType::Direct);
+                    else if constexpr (std::is_same_v<T, char>)
+                        gEngine->writeChar(arg, Metamod::FuncCallType::Direct);
+                    else if constexpr (std::is_same_v<T, std::int16_t>)
+                        gEngine->writeShort(arg, Metamod::FuncCallType::Direct);
+                    else if constexpr (std::is_same_v<T, std::int32_t>)
+                        gEngine->writeLong(arg, Metamod::FuncCallType::Direct);
+                    else if constexpr (std::is_same_v<T, Metamod::Engine::MsgCoord>)
+                        gEngine->writeCoord(arg, Metamod::FuncCallType::Direct);
+                    else if constexpr (std::is_same_v<T, Metamod::Engine::MsgEntity>)
+                        gEngine->writeEntity(arg, Metamod::FuncCallType::Direct);
+                    else if constexpr (std::is_same_v<T, Metamod::Engine::MsgAngle>)
+                        gEngine->writeAngle(arg, Metamod::FuncCallType::Direct);
+                    else if constexpr (std::is_same_v<T, std::string_view>)
+                        gEngine->writeString(arg, Metamod::FuncCallType::Direct);
+            }, param);
+        }
+        gEngine->messageEnd(Metamod::FuncCallType::Direct);
+    };
+
+    m_hooks.callChain(sendMsg, this);
     m_params.clear();
+    m_hookType = HookType::None;
+    return false;
 }
 
-int Message::getParamInt(std::size_t index) const
+bool Message::addParam(Param &&param)
 {
-    return getParam<int>(index);
-}
-float Message::getParamFloat(std::size_t index) const
-{
-    return getParam<float>(index);
-}
-std::string_view Message::getParamString(std::size_t index) const
-{
-    return getParam<std::string>(index);
+    if (m_hookType == HookType::None)
+    {
+        return true;
+    }
+
+    if (m_hookType == HookType::Normal)
+    {
+        m_params.emplace_back(param);
+    }
+
+    return false;
 }
 
-void Message::setParamInt(std::size_t index, int value)
+std::vector<Message::Param> &Message::getParams()
 {
-    setParam(index, value);
-}
-void Message::setParamFloat(std::size_t index, float value)
-{
-    setParam(index, value);
-}
-void Message::setParamString(std::size_t index, std::string_view string)
-{
-    setParam(index, string.data());
+    return m_params;
 }
 
-void Message::addParam(MsgParamType type, std::variant<int, float, std::string> &&data)
-{
-    Param param;
-    param.type = type;
-    param.data = data;
-
-    m_params.push_back(param);
-}
-
-void Message::setParam(std::size_t index, std::variant<int, float, std::string> &&data)
-{
-    m_params[index].data = data;
-}
-
-std::size_t Message::getParams() const
-{
-    return m_params.size();
-}
-
-MsgParamType Message::getParamType(std::size_t index) const
-{
-    return m_params[index].type;
-}
-
-MsgDest Message::getDest() const
+Metamod::Engine::MsgDest Message::getDest() const
 {
     return m_dest;
 }
 
-int Message::getType() const
+Metamod::Engine::MsgType Message::getType() const
 {
     return m_type;
 }
@@ -148,210 +136,50 @@ const float *Message::getOrigin() const
     return m_origin;
 }
 
-Engine::IEdict *Message::getEdict() const
+Metamod::Engine::IEdict *Message::getEdict() const
 {
     return m_edict;
 }
 
-MessageHook::MessageHook(int msgType, Message::Handler handler, HookType hookType)
-    : m_msgType(msgType), m_handler(handler), m_hookType(hookType), m_active(true)
+MsgBlockType Message::getBlockType() const
 {
+    return m_blockType;
 }
 
-// IMessageHook
-void MessageHook::enable()
+void Message::setBlockType(MsgBlockType blockType)
 {
-    m_active = true;
-}
-void MessageHook::disable()
-{
-    m_active = false;
-}
-bool MessageHook::isActive() const
-{
-    return m_active;
+    m_blockType = blockType;
 }
 
-int MessageHook::getMsgType() const
+IHookInfo *Message::registerHook(IMessage::Handler handler, HookPriority hookPriority)
 {
-    return m_msgType;
+    return m_hooks.registerHook(handler, hookPriority);
 }
 
-// MessageHook
-HookType MessageHook::getHookType() const
+void Message::unregisterHook(IHookInfo *hook)
 {
-    return m_hookType;
-}
-
-Message::Handler MessageHook::getHandler() const
-{
-    return m_handler;
-}
-
-bool MessageHook::getActive() const
-{
-    return m_active;
-}
-
-MessageHook *MessageHooks::addHook(int msgType, Message::Handler handler, HookType hookType)
-{
-    return m_handlers.emplace_back(std::make_unique<MessageHook>(msgType, handler, hookType)).get();
-}
-void MessageHooks::removeHook(IMessageHook *hook)
-{
-    auto iter = m_handlers.begin();
-    while (iter != m_handlers.end())
+    if (!hook)
     {
-        if ((*iter).get() == hook)
-        {
-            m_handlers.erase(iter);
-            break;
-        }
-        ++iter;
-    }
-}
-IForward::ReturnValue MessageHooks::exec(const std::unique_ptr<Message> &message, HookType hookType) const
-{
-    IForward::ReturnValue result = IForward::ReturnValue::Ignored;
-
-    for (const auto &hook : m_handlers)
-    {
-        if (!hook->getActive() || hook->getHookType() != hookType)
-        {
-            continue;
-        }
-
-        auto func = hook->getHandler();
-
-        IForward::ReturnValue ret = func(message.get());
-
-        if (ret == IForward::ReturnValue::Stop)
-        {
-            return IForward::ReturnValue::Stop;
-        }
-        else if (ret == IForward::ReturnValue::Handled)
-        {
-            result = IForward::ReturnValue::Handled;
-        }
+        return;
     }
 
-    return result;
+    m_hooks.unregisterHook(hook);
 }
 
-bool MessageHooks::hasHooks() const
+bool MessageMngr::MessageBegin(Metamod::Engine::MsgDest msg_dest,
+                               Metamod::Engine::MsgType msg_type,
+                               const float *pOrigin,
+                               Metamod::Engine::IEdict *ed)
 {
-    return !m_handlers.empty();
+    return m_messages[msg_type]->MessageBegin(msg_dest, msg_type, pOrigin, ed);
 }
 
-void MessageHooks::clearHooks()
+IMessage *MessageMngr::getMessage(Metamod::Engine::MsgType msgType) const
 {
-    m_handlers.clear();
+    return m_messages[msgType].get();
 }
 
-MessageMngr::MessageMngr() : m_message(std::make_unique<Message>())
+bool MessageMngr::MessageEnd()
 {
-    m_inblock = false;
-
-    for (std::size_t i = 0; i < MAX_USER_MESSAGES; i++)
-    {
-        m_blocks[i] = MsgBlockType::Not;
-    }
-}
-
-MessageHook *MessageMngr::registerHook(int msgType, Message::Handler handler, HookType hookType)
-{
-    return m_hooks[msgType].addHook(msgType, handler, hookType);
-}
-
-void MessageMngr::unregisterHook(IMessageHook *hook)
-{
-    int msgType = hook->getMsgType();
-    m_hooks[msgType].removeHook(hook);
-}
-
-MsgBlockType MessageMngr::getMessageBlock(int msgType) const
-{
-    return m_blocks[msgType];
-}
-
-void MessageMngr::setMessageBlock(int msgType, MsgBlockType blockType)
-{
-    m_blocks[msgType] = blockType;
-}
-
-IForward::ReturnValue MessageMngr::execHandlers(HookType hookType)
-{
-    return m_hooks[m_message->getType()].exec(m_message, hookType);
-}
-
-bool MessageMngr::inHook() const
-{
-    return m_inhook;
-}
-
-void MessageMngr::clearMessages()
-{
-    for (unsigned int i = 0; i < MAX_USER_MESSAGES; i++)
-    {
-        m_hooks[i].clearHooks();
-    }
-}
-
-META_RES MessageMngr::MessageBegin(int msg_dest, int msg_type, const float *pOrigin, edict_t *ed)
-{
-    if (m_blocks[msg_type] != MsgBlockType::Not)
-    {
-        m_inblock = true;
-        m_msgType = msg_type;
-        return MRES_SUPERCEDE;
-    }
-
-    m_inhook = m_hooks[msg_type].hasHooks();
-
-    if (m_inhook)
-    {
-        m_message->init(intToMsgDest(msg_dest), msg_type, pOrigin, gSPGlobal->getEngine()->getEdict(ed));
-        return MRES_SUPERCEDE;
-    }
-
-    return MRES_IGNORED;
-}
-
-META_RES MessageMngr::MessageEnd()
-{
-    if (m_inblock)
-    {
-        m_inblock = false;
-        if (m_blocks[m_msgType] == MsgBlockType::Once)
-        {
-            m_blocks[m_msgType] = MsgBlockType::Not;
-        }
-        return MRES_SUPERCEDE;
-    }
-
-    if (!m_inhook)
-    {
-        return MRES_IGNORED;
-    }
-
-    // exec pre hooks
-    // add contidions for hooks like in amxx events
-
-    IForward::ReturnValue ret = execHandlers(HookType::Pre);
-
-    // hooks can change params
-    // then exec message
-    if (ret == IForward::ReturnValue::Ignored)
-    {
-        m_message->exec();
-
-        // exec post hooks?
-        execHandlers(HookType::Post);
-    }
-
-    m_inhook = false;
-
-    m_message->clearParams();
-
-    return MRES_SUPERCEDE;
+    return m_messages[m_currentMsgType]->MessageEnd();
 }

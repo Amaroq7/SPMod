@@ -17,8 +17,9 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "spmod.hpp"
-#include "CompilationUtils.hpp"
+#include <SPConfig.hpp>
+#include "CmdSystem.hpp"
+#include "SPGlobal.hpp"
 
 Command::Command(std::string &&cmd, std::string_view info, ICommand::Callback cb)
     : m_nameOrRegex(std::move(cmd)), m_info(info), m_callback(cb)
@@ -40,7 +41,7 @@ std::string_view Command::getInfo() const
     return m_info;
 }
 
-IForward::ReturnValue Command::execCallback(Player *player)
+bool Command::execCallback(Player *player)
 {
     return m_callback(player, this);
 }
@@ -115,7 +116,7 @@ Command *CommandMngr::registerCommand(ICommand::Type type,
             {
                 return nullptr; // Server command can't be a regex expression
             }
-            REG_SVR_COMMAND(cmd.data(), CommandMngr::PluginSrvCommand);
+            gMetaAPI->getEngine()->registerSrvCommand(cmd.data(), CommandMngr::PluginSrvCommand, Metamod::FuncCallType::Direct);
             return registerCommandInternal<ServerCommand>(cmd, info, cb).get();
         }
         default:
@@ -134,17 +135,17 @@ void CommandMngr::clearCommands()
     m_serverCommands.clear();
 }
 
-META_RES CommandMngr::ClientCommandMeta(edict_t *entity, std::string_view clCmd)
+bool CommandMngr::ClientCommand(Metamod::Engine::IEdict *entity, std::string_view clCmd)
 {
     Player *player = gSPGlobal->getPlayerManager()->getPlayer(entity);
-    META_RES metaResult = MRES_IGNORED;
+    bool result = true;
     if (getCommandsNum(ICommand::Type::Client))
     {
         std::string cmdName(clCmd);
         if (clCmd == "say" || clCmd == "say_team")
         {
             cmdName += ' ';
-            cmdName += CMD_ARGV(1);
+            cmdName += gMetaAPI->getEngine()->cmdArgv(1, Metamod::FuncCallType::Direct);
         }
 
         for (const auto &cmd : getCommandList(ICommand::Type::Client))
@@ -162,26 +163,19 @@ META_RES CommandMngr::ClientCommandMeta(edict_t *entity, std::string_view clCmd)
                     }
 
                     return false;
-                },
-                cmd->getNameOrRegex());
+                }, cmd->getNameOrRegex());
             if (commandMatched && cmd->hasAccess(player))
             {
-                IForward::ReturnValue result = cmd->execCallback(player);
-                if (result == IForward::ReturnValue::Stop || result == IForward::ReturnValue::Handled)
-                {
-                    metaResult = MRES_SUPERCEDE;
-                    if (result == IForward::ReturnValue::Stop)
-                        break;
-                }
+                result = cmd->execCallback(player);
             }
         }
     }
-    return metaResult;
+    return result;
 }
 
 void CommandMngr::PluginSrvCommand()
 {
-    std::string_view argv(CMD_ARGV(0));
+    std::string_view argv(gMetaAPI->getEngine()->cmdArgv(0, Metamod::FuncCallType::Direct));
 
     for (const auto &cmd : gSPGlobal->getCommandManager()->getCommandList(Command::Type::Server))
     {
@@ -201,7 +195,7 @@ void CommandMngr::SPModInfoCommand()
 
     auto logger = gSPGlobal->getLoggerManager()->getLogger(gSPModLoggerName);
     // Print out available commands
-    if (CMD_ARGC() == 1)
+    if (gMetaAPI->getEngine()->cmdArgc(Metamod::FuncCallType::Direct) == 1)
     {
         logger->sendMsgToConsoleInternal("\nUsage: spmod [command] [args]\n \
                                       Command:\n \
@@ -212,7 +206,7 @@ void CommandMngr::SPModInfoCommand()
     }
     else
     {
-        std::string_view arg(CMD_ARGV(1));
+        std::string_view arg(gMetaAPI->getEngine()->cmdArgv(1, Metamod::FuncCallType::Direct));
 
         if (arg == "plugins")
         {

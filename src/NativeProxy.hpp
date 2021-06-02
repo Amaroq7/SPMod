@@ -19,7 +19,9 @@
 
 #pragma once
 
-#include "spmod.hpp"
+#include <INativeProxy.hpp>
+
+using namespace SPMod;
 
 class NativeProxy final : public INativeProxy
 {

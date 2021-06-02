@@ -19,7 +19,29 @@
 
 #pragma once
 
-#include "spmod.hpp"
+#include <ISPGlobal.hpp>
+#include <SPConfig.hpp>
+#include <public/IMetamod.hpp>
+#include "MenuSystem.hpp"
+#include "ForwardSystem.hpp"
+#include "TimerSystem.hpp"
+#include "MessageSystem.hpp"
+#include "LoggingSystem.hpp"
+#include "PlayerSystem.hpp"
+#include "NativeProxy.hpp"
+#include "CmdSystem.hpp"
+#include "UtilsSystem.hpp"
+#include "ExtensionSystem.hpp"
+#include "Hooks.hpp"
+
+using namespace SPMod;
+
+enum class UserMsgId : std::uint8_t
+{
+    ShowMenu = 0,
+    VGUIMenu,
+    TextMsg
+};
 
 class SPGlobal final : public ISPGlobal
 {
@@ -33,12 +55,10 @@ public:
 
     // ISPGlobal
     const fs::path &getPath(DirType type) const override;
-    ModType getModType() const override;
     bool canPluginsPrecache() const override;
     IPlugin *getPlugin(std::string_view pluginname) const override;
 
     ForwardMngr *getForwardManager() const override;
-    CvarMngr *getCvarManager() const override;
     TimerMngr *getTimerManager() const override;
     MenuMngr *getMenuManager() const override;
     MessageMngr *getMessageManager() const override;
@@ -46,14 +66,14 @@ public:
     PlayerMngr *getPlayerManager() const override;
     NativeProxy *getNativeProxy() const override;
     CommandMngr *getCommandManager() const override;
-    Engine::Engine *getEngine() const override;
-    Metamod::Metamod *getMetamod() const override;
     Utils *getUtils() const override;
-    VTableHookManager *getVTableManager() const override;
+    Hooks *getHooks() const override;
 
     bool registerModule(IModuleInterface *interface) override;
     bool registerAdapter(IAdapterInterface *interface) override;
     IModuleInterface *getInterface(std::string_view name) const override;
+    void setUserMsgId(UserMsgId msgid, Metamod::Engine::MsgType userMsgId);
+    Metamod::Engine::MsgType getUserMsgId(UserMsgId msgid) const;
 
     // SPGlobal
     const auto &getModulesInterfaces() const
@@ -81,7 +101,6 @@ private:
     fs::path m_SPModConfigsDir;
 
     std::unique_ptr<ForwardMngr> m_forwardManager;
-    std::unique_ptr<CvarMngr> m_cvarManager;
     std::unique_ptr<LoggerMngr> m_loggingSystem;
     std::unique_ptr<CommandMngr> m_cmdManager;
     std::unique_ptr<TimerMngr> m_timerManager;
@@ -89,15 +108,13 @@ private:
     std::unique_ptr<MessageMngr> m_messageManager;
     std::unique_ptr<PlayerMngr> m_plrManager;
     std::unique_ptr<NativeProxy> m_nativeProxy;
-    std::unique_ptr<SPMod::Engine::Engine> m_engine;
-    std::unique_ptr<SPMod::Metamod::Metamod> m_metamod;
     std::unique_ptr<Utils> m_utils;
-    std::unique_ptr<VTableHookManager> m_vTableHookManager;
+    std::unique_ptr<Hooks> m_hooks;
 
-    ModType m_modType;
     std::unordered_map<std::string, IModuleInterface *> m_modulesInterfaces;
     std::unordered_map<std::string, IAdapterInterface *> m_adaptersInterfaces;
     std::vector<std::unique_ptr<Extension>> m_extHandles;
+    std::array<Metamod::Engine::MsgType, MAX_USER_MESSAGES> m_userMsgs;
 
     bool m_canPluginsPrecache;
 };

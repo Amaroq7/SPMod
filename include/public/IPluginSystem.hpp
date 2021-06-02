@@ -19,6 +19,9 @@
 
 #pragma once
 
+#include "StandardHeaders.hpp"
+#include "IInterface.hpp"
+
 namespace SPMod
 {
     class IPluginMngr;
@@ -79,6 +82,21 @@ namespace SPMod
          * @return        Plugin manager.
          */
         virtual IPluginMngr *getPluginMngr() const = 0;
+
+
+        std::size_t getId() const
+        {
+            return m_pluginId;
+        }
+
+#if defined SPMOD_CORE
+        void setId(std::size_t id)
+        {
+            m_pluginId = id;
+        }
+#endif
+    protected:
+        std::size_t m_pluginId;
     };
 
     class IPluginMngr
@@ -106,12 +124,6 @@ namespace SPMod
          *
          */
         virtual void bindPluginsNatives() = 0;
-
-        /**
-         * @brief Unloads plugins.
-         *
-         */
-        virtual void unloadPlugins() = 0;
 
         /**
          * @brief Returns numbers of loaded plugins.
