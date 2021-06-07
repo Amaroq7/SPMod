@@ -1,20 +1,20 @@
 /*
- *  Copyright (C) 2020 Metamod++ Development Team
+ *  Copyright (C) 2021 SPMod Development Team
  *
- *  This file is part of Metamod++.
+ *  This file is part of SPMod.
  *
- *  Metamod++ is free software: you can redistribute it and/or modify
+ *  SPMod is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
 
- *  Metamod++ is distributed in the hope that it will be useful,
+ *  SPMod is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
 
  *  You should have received a copy of the GNU General Public License
- *  along with Metamod++.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -22,14 +22,11 @@
 #include <IHooks.hpp>
 #include "HookChains.hpp"
 
-#include <public/engine/IEdict.hpp>
-#include <public/engine/Common.hpp>
+#include <metamodcpp_sdk/engine/IEdict.hpp>
+#include <metamodcpp_sdk/engine/Common.hpp>
 
 namespace SPMod
 {
-    using ChangeLevelHook = Hook<void, std::string_view, std::string_view>;
-    using ChangeLevelHookRegistry = HookRegistry<void, std::string_view, std::string_view>;
-
     using ClientConnectHook = Hook<bool, Metamod::Engine::IEdict *, std::string_view, std::string_view, std::string &>;
     using ClientConnectHookRegistry = HookRegistry<bool, Metamod::Engine::IEdict *, std::string_view, std::string_view, std::string &>;
 
@@ -57,12 +54,14 @@ namespace SPMod
     using ClientInfoChangedHook = Hook<void, Metamod::Engine::IEdict *, Metamod::Engine::InfoBuffer>;
     using ClientInfoChangedHookRegistry = HookRegistry<void, Metamod::Engine::IEdict *, Metamod::Engine::InfoBuffer>;
 
+    using DropClientHook = Hook<void, Metamod::Engine::IEdict *, bool, std::string_view>;
+    using DropClientHookRegistry = HookRegistry<void, Metamod::Engine::IEdict *, bool, std::string_view>;
+
     class Hooks final : public IHooks
     {
     public:
         ~Hooks() final = default;
 
-        ChangeLevelHookRegistry *changeLevel() final;
         ClientConnectHookRegistry *clientConnect() final;
         ClientCmdHookRegistry *clientCmd() final;
         ClientPutinServerHookRegistry *clientPutinServer() final;
@@ -72,9 +71,9 @@ namespace SPMod
         ServerDeactivateHookRegistry *serverDeactivate() final;
         StartFrameHookRegistry *startFrame() final;
         ClientInfoChangedHookRegistry *clientInfoChanged() final;
+        DropClientHookRegistry *dropClient() final;
 
     private:
-        ChangeLevelHookRegistry m_changeLevel;
         ClientConnectHookRegistry m_clientConnect;
         ClientCmdHookRegistry m_clientCmd;
         ClientPutinServerHookRegistry m_clientPutinServer;
@@ -84,5 +83,6 @@ namespace SPMod
         ServerDeactivateHookRegistry m_serverDeactivate;
         StartFrameHookRegistry m_startFrame;
         ClientInfoChangedHookRegistry m_clientInfoChanged;
+        DropClientHookRegistry m_dropClient;
     };
 }

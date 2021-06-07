@@ -17,9 +17,23 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "ForwardNatives.hpp"
+#include "PluginSystem.hpp"
+#include "SourcePawnAPI.hpp"
+#include "AdapterInterface.hpp"
 #include "ExtMain.hpp"
 
 TypeHandler<SPMod::IForward> gForwardHandlers;
+SPMod::IForwardMngr *gSPFwdMngr;
+
+namespace SPExt
+{
+    bool initForwardNatives()
+    {
+        gSPFwdMngr = gSPGlobal->getForwardManager();
+        return gSPFwdMngr->isVersionCompatible(SPMod::IForwardMngr::VERSION);
+    }
+}
 
 // Forward(const char[] name, ExecType exectype, const char[] plgname, ParamType ...)
 static cell_t ForwardCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)

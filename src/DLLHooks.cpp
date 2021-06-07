@@ -21,8 +21,8 @@
 #include "DLLHooks.hpp"
 #include "MetaInit.hpp"
 
-#include <public/game/IHooks.hpp>
-#include <public/engine/IEdict.hpp>
+#include <metamodcpp_sdk/engine/IEdict.hpp>
+#include <metamodcpp_sdk/game/IHooks.hpp>
 
 namespace SPMod
 {
@@ -75,8 +75,7 @@ namespace SPMod
                     return false;
                 }
 
-                playerMngr->ClientConnect(pEdict, name, address, reason);
-                return true;
+                return playerMngr->ClientConnect(pEdict, name, address, reason);
             }, [hook](Metamod::Engine::IEdict *pEdict,
                       std::string_view name,
                       std::string_view address,
@@ -86,8 +85,7 @@ namespace SPMod
                     return false;
                 }
 
-                playerMngr->ClientConnect(pEdict, name, address, reason);
-                return true;
+                return playerMngr->ClientConnect(pEdict, name, address, reason);
             }, pEdict, name, address, reason);
         });
 

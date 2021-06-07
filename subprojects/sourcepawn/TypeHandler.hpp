@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2020 SPMod Development Team
+ *  Copyright (C) 2018-2021 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -20,6 +20,7 @@
 #pragma once
 
 #include <queue>
+#include <stdexcept>
 
 template<typename T>
 class TypeHandler
@@ -32,35 +33,38 @@ public:
         {
             id = m_freeIds.front();
             m_freeIds.pop();
+            m_handlers[id] = data;
         }
         else
         {
             id = m_handlers.size();
+            m_handlers.push_back(data);
         }
 
-        m_handlers[id] = data;
         return id;
     }
 
-    T *get(std::size_t id)
+    T *get(std::size_t id) const
     {
         try
         {
             return m_handlers.at(id);
         }
-        catch (const std::out_of_range &e)
+        catch (const std::out_of_range &e [[maybe_unused]])
         {
-            (void)e;
             return nullptr;
         }
     }
 
-    std::size_t getKey(T *data)
+    std::size_t getKey(T *data) const
     {
-        for (const auto &[key, content] : m_handlers)
+        std::size_t id = 0;
+        for (const auto content : m_handlers)
         {
             if (content == data)
-                return key;
+                return id;
+
+            id++;
         }
 
         return static_cast<std::size_t>(-1);
@@ -68,7 +72,7 @@ public:
 
     void free(std::size_t id)
     {
-        if (m_handlers.find(id) == m_handlers.end() || !m_handlers[id])
+        if (id >= m_handlers.size() || !m_handlers[id])
             return;
 
         m_handlers[id] = nullptr;
@@ -84,7 +88,22 @@ public:
         }
     }
 
+    auto begin()
+    {
+        return m_handlers.begin();
+    }
+
+    auto end()
+    {
+        return m_handlers.end();
+    }
+
+    bool empty()
+    {
+        return true;
+    }
+
 private:
-    std::unordered_map<std::size_t, T *> m_handlers;
+    std::vector<T *> m_handlers;
     std::queue<std::size_t> m_freeIds;
 };

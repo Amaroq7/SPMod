@@ -83,7 +83,6 @@ namespace SPMod
          */
         virtual IPluginMngr *getPluginMngr() const = 0;
 
-
         std::size_t getId() const
         {
             return m_pluginId;

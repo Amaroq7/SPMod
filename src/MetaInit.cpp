@@ -21,6 +21,7 @@
 #include "MetaInit.hpp"
 #include "EngineHooks.hpp"
 #include "DLLHooks.hpp"
+#include "ReHooks.hpp"
 
 MetaPlugin metaPlugin;
 
@@ -42,7 +43,8 @@ C_DLLEXPORT bool Metamod::MetaInit(Metamod::IMetamod *api)
 
     try
     {
-        gSPGlobal = std::make_unique<SPGlobal>(metamod->getFuncs()->getPluginPath());
+        fs::path pluginPath = metaPlugin.getPath();
+        gSPGlobal = std::make_unique<SPGlobal>(std::move(pluginPath));
     }
     catch (const std::exception &e)
     {
@@ -72,6 +74,7 @@ C_DLLEXPORT bool Metamod::MetaInit(Metamod::IMetamod *api)
 
     installEngineHooks();
     installDLLHooks();
+    installReHooks();
 
     return true;
 }

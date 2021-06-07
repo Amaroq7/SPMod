@@ -22,8 +22,8 @@
 #include "HookChains.hpp"
 
 #include <IMessageSystem.hpp>
-#include <public/engine/Common.hpp>
-#include <public/engine/IEdict.hpp>
+#include <metamodcpp_sdk/engine/Common.hpp>
+#include <metamodcpp_sdk/engine/IEdict.hpp>
 
 using namespace SPMod;
 
@@ -75,7 +75,7 @@ private:
 class MessageMngr final : public IMessageMngr
 {
 public:
-    MessageMngr() = default;
+    MessageMngr();
     ~MessageMngr() final = default;
 
     // IMessageMngr
@@ -97,7 +97,7 @@ public:
             std::is_same<T, Metamod::Engine::MsgEntity>,
             std::is_same<T, Metamod::Engine::MsgCoord>,
             std::is_same<T, Metamod::Engine::MsgAngle>,
-            std::is_same<T, std::string_view>
+            std::is_same<T, std::string>
         >
     >>
     bool WriteParam(T value)

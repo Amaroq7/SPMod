@@ -26,6 +26,7 @@ Logger *LoggerMngr::getLogger(std::string_view prefix)
 }
 
 Logger::Logger(std::string_view prefix) : m_prefix(prefix) {}
+Logger::Logger(std::string_view prefix, LogLevel logLevel) : m_prefix(prefix), m_logLevel(logLevel) {}
 
 void Logger::setFilename(std::string_view filename)
 {

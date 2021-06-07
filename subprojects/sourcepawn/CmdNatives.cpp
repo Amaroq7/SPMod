@@ -17,9 +17,25 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ExtMain.hpp"
+#include "CmdNatives.hpp"
+#include "SourcePawnAPI.hpp"
+#include "StringNatives.hpp"
+
+#include <ISPGlobal.hpp>
+
+#include <metamodcpp_sdk/engine/ILibrary.hpp>
 
 TypeHandler<SPMod::ICommand> gCommandHandlers;
+SPMod::ICommandMngr *gSPCmdMngr;
+
+namespace SPExt
+{
+    bool initCmdNatives()
+    {
+        gSPCmdMngr = gSPGlobal->getCommandManager();
+        return gSPCmdMngr->isVersionCompatible(SPMod::ICommandMngr::VERSION);
+    }
+}
 
 // Command(const char[] cmd, ConCallback func, const char[] info = "", bool regex = false, bool server = false,
 // int flags = 0)
@@ -40,18 +56,18 @@ static cell_t CommandCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
     ctx->LocalToString(params[arg_cmd], &cmd);
     ctx->LocalToString(params[arg_info], &info);
 
-    auto callback = [func](SPMod::IPlayer *const player, SPMod::ICommand *const cmd) {
-      if (func && func->IsRunnable())
-      {
-          cell_t retValue;
-          func->PushCell(static_cast<cell_t>(player->edict()->getIndex()));
-          func->PushCell(static_cast<cell_t>(gCommandHandlers.getKey(cmd)));
-          func->Execute(&retValue);
+    auto callback = [func](SPMod::IPlayer *player, SPMod::ICommand *cmd) {
+        if (func && func->IsRunnable())
+        {
+            cell_t retValue;
+            func->PushCell(static_cast<cell_t>(player ? player->edict()->getIndex() : 0));
+            func->PushCell(static_cast<cell_t>(gCommandHandlers.getKey(cmd)));
+            func->Execute(&retValue);
 
-          return static_cast<SPMod::IForward::ReturnValue>(retValue);
-      }
+            return retValue == 0;
+        }
 
-      return SPMod::IForward::ReturnValue::Ignored;
+        return true;
     };
 
     SPMod::ICommand *pCmd;
@@ -122,7 +138,7 @@ static cell_t CmdGetArgv(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
 
-    std::string_view argv = gSPEngFuncs->getArg(params[arg_arg]);
+    std::string_view argv = gEngine->cmdArgv(params[arg_arg], Metamod::FuncCallType::Direct);
     if (argv.empty())
         return 0;
 
@@ -141,17 +157,17 @@ static cell_t CmdGetArgs(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
 
-    std::string_view args = gSPEngFuncs->getArgs();
+    std::string_view args = gEngine->cmdArgs(Metamod::FuncCallType::Direct);
     if (args.empty())
         return 0;
 
-    return gSPUtils->strCopy(destBuffer, params[arg_size], args);
+    return static_cast<cell_t>(gSPUtils->strCopy(destBuffer, params[arg_size], args));
 }
 
 // int CmdGetArgsNum()
 static cell_t CmdGetArgsNum(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params [[maybe_unused]])
 {
-    return gSPEngFuncs->getArgc();
+    return gEngine->cmdArgc(Metamod::FuncCallType::Direct);
 }
 
 sp_nativeinfo_t gCmdsNatives[] = {{"Command.Command", CommandCtor},

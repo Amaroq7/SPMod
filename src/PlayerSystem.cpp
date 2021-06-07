@@ -19,11 +19,10 @@
 
 #include "PlayerSystem.hpp"
 #include "SPGlobal.hpp"
-#include "MetaInit.hpp"
 
-#include <public/engine/IEdict.hpp>
-#include <public/engine/IEntVars.hpp>
-#include <public/game/IBasePlayer.hpp>
+#include <metamodcpp_sdk/engine/IEdict.hpp>
+#include <metamodcpp_sdk/engine/IEntVars.hpp>
+#include <metamodcpp_sdk/game/IBasePlayer.hpp>
 
 Player::Player(Metamod::Engine::IEdict *edict)
     : m_basePlayer(gGame->getBasePlayer(edict)), m_edict(edict) {}
@@ -137,14 +136,14 @@ bool Player::isConnected() const
 bool Player::isFake() const
 {
     return (
-        (m_edict->getEntVars()->getFlags() & Metamod::Engine::EntFlags::FAKECLIENT) ||
-        m_steamID == "BOT");
+        (m_edict->getEntVars()->getFlags() & Metamod::Engine::EntFlags::FAKECLIENT) == Metamod::Engine::EntFlags::FAKECLIENT
+        || m_steamID == "BOT");
 }
 
 bool Player::isHLTV() const
 {
     return (
-        (m_edict->getEntVars()->getFlags() & Metamod::Engine::EntFlags::PROXY)
+        (m_edict->getEntVars()->getFlags() & Metamod::Engine::EntFlags::PROXY) == Metamod::Engine::EntFlags::PROXY
         || m_steamID == "HLTV");
 }
 
@@ -271,6 +270,8 @@ bool PlayerMngr::ClientConnect(Metamod::Engine::IEdict *pEntity,
         m_playersToAuth.emplace_back(plr);
     else
         plr->authorize(authid);
+
+    return true;
 }
 
 void PlayerMngr::ClientPutInServer(Metamod::Engine::IEdict *pEntity)
@@ -319,4 +320,10 @@ void PlayerMngr::ServerDeactivate()
         m_players.at(i)->setMenu(nullptr);
         m_players.at(i)->setMenuPage(0);
     }
+}
+
+void PlayerMngr::ClientDrop(Metamod::Engine::IEdict *pEntity,
+                            bool crash [[maybe_unused]], std::string_view string [[maybe_unused]])
+{
+    getPlayer(pEntity)->disconnect();
 }

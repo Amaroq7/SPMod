@@ -17,10 +17,12 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include <SPConfig.hpp>
-#include <public/IMetamod.hpp>
-#include <public/game/ILibrary.hpp>
-#include <public/engine/ILibrary.hpp>
+#include <metamodcpp_sdk/IMetamod.hpp>
+#include <metamodcpp_sdk/game/ILibrary.hpp>
+#include <metamodcpp_sdk/engine/ILibrary.hpp>
 
 class MetaPlugin final : public Metamod::IPlugin
 {

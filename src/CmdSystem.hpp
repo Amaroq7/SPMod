@@ -34,7 +34,7 @@ class Command : public ICommand
 {
 public:
     Command() = delete;
-    virtual ~Command() = default;
+    ~Command() override = default;
     Command(std::string &&cmd, std::string_view info, ICommand::Callback cb);
     Command(std::regex &&cmd, std::string_view info, ICommand::Callback cb);
 
@@ -107,7 +107,7 @@ public:
     template<typename T, typename... Args, typename = std::enable_if_t<std::is_base_of_v<Command, T>>>
     const std::unique_ptr<Command> &registerCommandInternal(Args... args)
     {
-        if constexpr (std::is_same_v<ClientCommand, T>)
+        if constexpr (std::is_same_v<::ClientCommand, T>)
         {
             return m_clientCommands.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
         }

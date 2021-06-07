@@ -17,7 +17,22 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "TimerNatives.hpp"
+#include "SourcePawnAPI.hpp"
 #include "ExtMain.hpp"
+
+#include <ISPGlobal.hpp>
+
+SPMod::ITimerMngr *gSPTimerMngr;
+
+namespace SPExt
+{
+    bool initTimerNatives()
+    {
+        gSPTimerMngr = gSPGlobal->getTimerManager();
+        return gSPTimerMngr->isVersionCompatible(SPMod::ICommandMngr::VERSION);
+    }
+}
 
 TypeHandler<SPMod::ITimer> gTimerHandlers;
 static cell_t TimerCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -45,7 +60,7 @@ static cell_t TimerCtor(SourcePawn::IPluginContext *ctx, const cell_t *params)
                     func->PushCell(gTimerHandlers.getKey(timer));
                     func->PushCell(params[arg_data]);
                     func->Execute(&result);
-                    return static_cast<SPMod::IForward::ReturnValue>(result) != SPMod::IForward::ReturnValue::Stop;
+                    return static_cast<bool>(result);
                 }
                 return true;
             }, params[arg_pause]);

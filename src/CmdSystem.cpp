@@ -106,9 +106,9 @@ Command *CommandMngr::registerCommand(ICommand::Type type,
         {
             if (regex)
             {
-                return registerCommandInternal<ClientCommand>(std::regex(cmd.data()), info, flags, cb).get();
+                return registerCommandInternal<::ClientCommand>(std::regex(cmd.data()), info, flags, cb).get();
             }
-            return registerCommandInternal<ClientCommand>(std::string(cmd), info, flags, cb).get();
+            return registerCommandInternal<::ClientCommand>(std::string(cmd), info, flags, cb).get();
         }
         case ICommand::Type::Server:
         {
@@ -116,7 +116,7 @@ Command *CommandMngr::registerCommand(ICommand::Type type,
             {
                 return nullptr; // Server command can't be a regex expression
             }
-            gMetaAPI->getEngine()->registerSrvCommand(cmd.data(), CommandMngr::PluginSrvCommand, Metamod::FuncCallType::Direct);
+            gEngine->registerSrvCommand(cmd.data(), CommandMngr::PluginSrvCommand, Metamod::FuncCallType::Direct);
             return registerCommandInternal<ServerCommand>(cmd, info, cb).get();
         }
         default:

@@ -17,7 +17,6 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <public/IMetamod.hpp>
-#include <public/engine/IHooks.hpp>
+#pragma once
 
 void installEngineHooks();

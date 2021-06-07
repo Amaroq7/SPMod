@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2020 SPMod Development Team
+ *  Copyright (C) 2020-2021 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -17,10 +17,14 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ExtMain.hpp"
+#include <ISPGlobal.hpp>
 
 namespace SPExt
 {
+    class PluginMngr;
+    class SourcePawnAPI;
+    class DebugListener;
+
     class AdapterInterface final : public SPMod::IAdapterInterface
     {
     public:
@@ -31,39 +35,18 @@ namespace SPExt
         AdapterInterface() = delete;
         AdapterInterface(const AdapterInterface &other) = delete;
         AdapterInterface(AdapterInterface &&other) = delete;
-        ~AdapterInterface() = default;
+        ~AdapterInterface() final = default;
 
-        AdapterInterface(const fs::path &path);
+        explicit AdapterInterface(const fs::path &path);
 
-        std::string_view getName() const override
-        {
-            return "ISourcePawnAdapter";
-        }
+        [[nodiscard]] std::string_view getName() const final;
+        [[nodiscard]] std::uint32_t getVersion() const final;
+        [[nodiscard]] std::string_view getAuthor() const final;
+        [[nodiscard]] std::string_view getUrl() const final;
+        [[nodiscard]] std::string_view getExtName() const final;
+        [[nodiscard]] SPMod::IPluginMngr *getPluginMngr() const final;
 
-        std::uint32_t getVersion() const override
-        {
-            return VERSION;
-        }
-
-        std::string_view getAuthor() const override
-        {
-            return "SPMod Development Team";
-        }
-
-        std::string_view getUrl() const override
-        {
-            return "https://github.com/Amaroq7/SPMod";
-        }
-
-        std::string_view getExtName() const override
-        {
-            return "SourcePawn Adapter";
-        }
-
-        PluginMngr *getPluginMngr() const override
-        {
-            return m_pluginMngr.get();
-        }
+        [[nodiscard]] PluginMngr *getPluginMngrImpl() const;
 
     private:
         const std::unique_ptr<SourcePawnAPI> m_sourcePawnAPI;
@@ -71,3 +54,5 @@ namespace SPExt
         const std::unique_ptr<DebugListener> m_debugListener;
     };
 } // namespace SPExt
+
+extern std::unique_ptr<SPExt::AdapterInterface> gAdapterInterface;

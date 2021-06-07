@@ -32,22 +32,6 @@ namespace SPMod
         Configs
     };
 
-    enum class NavigationType : std::int8_t
-    {
-        None = 0,
-        Back = -1,
-        Next = -2,
-        Exit = -3
-    };
-
-    enum class LogLevel : std::uint8_t
-    {
-        Debug,
-        Info,
-        Warning,
-        Error
-    };
-
     enum class HookType : std::uint8_t
     {
        Pre = 0,

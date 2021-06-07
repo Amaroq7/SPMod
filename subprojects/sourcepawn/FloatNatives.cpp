@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2020 SPMod Development Team
+ *  Copyright (C) 2018-2021 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -17,7 +17,9 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ExtMain.hpp"
+#include "SourcePawnAPI.hpp"
+
+#include <cmath>
 
 static cell_t FloatCtor(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {

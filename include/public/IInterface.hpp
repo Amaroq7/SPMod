@@ -22,6 +22,11 @@
 #include "StandardHeaders.hpp"
 #include "IInterface.hpp"
 
+namespace Metamod
+{
+    class IMetamod;
+}
+
 namespace SPMod
 {
     class IPluginMngr;
@@ -194,8 +199,8 @@ namespace SPMod
      *
      * @return
      */
-    SPMOD_API ExtQueryValue SPMod_Query(ISPGlobal *spmodInstance);
-    using fnSPModQuery = ExtQueryValue (*)(ISPGlobal *spmodInstance);
+    SPMOD_API ExtQueryValue SPMod_Query(ISPGlobal *spmodInstance, Metamod::IMetamod *metaAPI);
+    using fnSPModQuery = ExtQueryValue (*)(ISPGlobal *spmodInstance, Metamod::IMetamod *metaAPI);
 
     /**
      * @brief Called after SPMod_Query().

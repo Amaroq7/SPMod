@@ -17,12 +17,31 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "PluginSystem.hpp"
+#include "SourcePawnAPI.hpp"
+#include "NativeCallback.hpp"
+#include "PlayerNatives.hpp"
+#include "CoreNatives.hpp"
+#include "CmdNatives.hpp"
+#include "CvarsNatives.hpp"
+#include "FloatNatives.hpp"
+#include "ForwardNatives.hpp"
+#include "MenuNatives.hpp"
+#include "MessageNatives.hpp"
+#include "StringNatives.hpp"
+#include "TimerNatives.hpp"
+#include "VTableNatives.hpp"
+#include "HooksNatives.hpp"
 #include "ExtMain.hpp"
+
+#include <Common.hpp>
+#include <ILoggerSystem.hpp>
+#include <ISPGlobal.hpp>
 
 namespace SPExt
 {
-    Plugin::Plugin(std::size_t id, std::string_view identity, const fs::path &path, PluginMngr *pluginMngr)
-        : m_id(id), m_identity(identity), m_filename(path.filename().string()), m_pluginMngr(pluginMngr)
+    Plugin::Plugin(std::string_view identity, const fs::path &path, PluginMngr *pluginMngr)
+        : m_identity(identity), m_filename(path.filename().string()), m_pluginMngr(pluginMngr)
     {
         char errorSPMsg[256];
         SourcePawn::ISourcePawnEngine2 *spAPIv2 = gSPAPI->getSPEnvironment()->APIv2();
@@ -51,8 +70,8 @@ namespace SPExt
         m_url = gatherInfo(Plugin::FIELD_URL);
 
         m_runtime = plugin;
-        m_runtime->GetDefaultContext()->SetKey(1, reinterpret_cast<void *>(m_identity.data()));
-        m_runtime->GetDefaultContext()->SetKey(2, this);
+        m_runtime->GetDefaultContext()->SetKey(KEY_IDENTITY, reinterpret_cast<void *>(m_identity.data()));
+        m_runtime->GetDefaultContext()->SetKey(KEY_PLUGIN, this);
 
         std::uint32_t nativesNum = plugin->GetNativesNum();
         for (std::uint32_t index = 0; index < nativesNum; ++index)
@@ -75,7 +94,7 @@ namespace SPExt
         {
             cell_t local_addr, *phys_addr;
             plugin->GetPubvarAddrs(maxClientsVarIndex, &local_addr, &phys_addr);
-            *phys_addr = gSPGlobal->getPlayerManager()->getMaxClients();
+            *phys_addr = static_cast<cell_t>(gSPPlrMngr->getMaxClients());
         }
     }
 
@@ -115,11 +134,6 @@ namespace SPExt
     }
 
     // Plugin
-    std::size_t Plugin::getId() const
-    {
-        return m_id;
-    }
-
     SourcePawn::IPluginRuntime *Plugin::getRuntime() const
     {
         return m_runtime;
@@ -164,8 +178,6 @@ namespace SPExt
 
     Plugin *PluginMngr::_loadPlugin(const fs::path &path, std::string &error)
     {
-        std::size_t pluginId = m_plugins.size();
-
         // Omit any unknown extension
         if (path.extension().string() != PluginMngr::pluginsExtension)
             return nullptr;
@@ -178,7 +190,7 @@ namespace SPExt
 
         try
         {
-            plugin = std::make_unique<Plugin>(pluginId, fileName, path, this);
+            plugin = std::make_unique<Plugin>(fileName, path, this);
         }
         catch (const std::runtime_error &e)
         {
@@ -245,17 +257,19 @@ namespace SPExt
 
                 runtime->UpdateNativeBindingObject(index, nativeCallback, 0, nullptr);
             }
+
+            SourcePawn::IPluginFunction *installHooksFn = runtime->GetFunctionByName("InstallHooks");
+            if (!installHooksFn || !installHooksFn->IsRunnable())
+            {
+                continue;
+            }
+            installHooksFn->Execute(nullptr);
         }
     }
 
     std::size_t PluginMngr::getPluginsNum() const
     {
         return m_plugins.size();
-    }
-
-    void PluginMngr::unloadPlugins()
-    {
-        m_plugins.clear();
     }
 
     std::string_view PluginMngr::getPluginsExt() const
@@ -302,17 +316,12 @@ namespace SPExt
         auto nativeCallback = new NativeCallback(nativeName, pluginFunc);
         if (!gSPNativeProxy->registerNative(nativeCallback))
         {
+            delete nativeCallback;
             return false;
         }
 
         m_pluginNatives.emplace(nativeName, nativeCallback);
         return true;
-    }
-
-    void PluginMngr::clearNatives()
-    {
-        m_natives.clear();
-        m_pluginNatives.clear();
     }
 
     void PluginMngr::addDefaultNatives()
@@ -328,6 +337,7 @@ namespace SPExt
         addNatives(gMenuNatives);
         addNatives(gPlayerNatives);
         addNatives(gVTableNatives);
+        addNatives(gHooksNatives);
     }
 
     const std::vector<SPMod::IPlugin *> &PluginMngr::getPluginsList() const

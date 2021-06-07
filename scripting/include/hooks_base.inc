@@ -22,10 +22,13 @@
 #endif
 #define _hooks_base_included
 
-enum HookType
+enum HookPriority
 {
-    Hook_Pre,
-    Hook_Post
+    HookPrio_UnInterruptable = 255, // Hook will be called before other hooks.
+    HookPrio_High = 192,            // Hook will be called before hooks with default priority.
+    HookPrio_Default = 128,         // Default hook call priority.
+    HookPrio_Medium = 64,           // Hook will be called after hooks with default priority.
+    HookPrio_Low = 0,               // Hook will be called after all other hooks.
 };
 
 enum CallType

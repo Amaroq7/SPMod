@@ -17,6 +17,11 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
+#include <IHelpers.hpp>
+#include <StandardHeaders.hpp>
+
 #ifdef SP_CLANG
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wnon-virtual-dtor"
@@ -27,6 +32,7 @@
     #pragma GCC diagnostic ignored "-Wunused-parameter"
     #pragma GCC diagnostic ignored "-Wpedantic"
 #elif defined SP_MSVC
+    typedef void *HMODULE;
     #pragma warning(push)
     // Unreferenced formal parameter
     #pragma warning(disable : 4100)
@@ -40,44 +46,38 @@
     #pragma warning(pop)
 #endif
 
-class SourcePawnAPI
+namespace SPExt
 {
-public:
+    class SourcePawnAPI
+    {
+    public:
 #if defined SP_LINUX
-    static constexpr auto *sourcepawnLibrary = "sourcepawn.vm.so";
+        static constexpr auto *sourcepawnLibrary = "sourcepawn.vm.so";
 #elif defined SP_WINDOWS
-    static constexpr auto *sourcepawnLibrary = "sourcepawn.vm.dll";
+        static constexpr auto *sourcepawnLibrary = "sourcepawn.vm.dll";
 #endif
 
-    SourcePawnAPI() = delete;
-    SourcePawnAPI(const fs::path &libraryDir);
-    SourcePawnAPI(const SourcePawnAPI &other) = delete;
-    SourcePawnAPI(SourcePawnAPI &&other) = default;
+        SourcePawnAPI() = delete;
+        explicit SourcePawnAPI(const fs::path &libraryDir);
+        SourcePawnAPI(const SourcePawnAPI &other) = delete;
+        SourcePawnAPI(SourcePawnAPI &&other) = default;
 
 #if defined SP_POSIX
-    ~SourcePawnAPI() = default;
+        ~SourcePawnAPI() = default;
 #else
-    ~SourcePawnAPI();
+        ~SourcePawnAPI();
 #endif
 
-    SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const;
+        [[nodiscard]] SourcePawn::ISourcePawnEnvironment *getSPEnvironment() const;
 
-private:
+    private:
 #if defined SP_POSIX
-    std::unique_ptr<void, std::function<void(void *)>> m_SPLibraryHandle;
+        std::unique_ptr<void, std::function<void(void *)>> m_SPLibraryHandle;
 #else
-    HMODULE m_SPLibraryHandle;
+        HMODULE m_SPLibraryHandle;
 #endif
-    SourcePawn::ISourcePawnFactory *m_spFactory;
-};
+        SourcePawn::ISourcePawnFactory *m_spFactory;
+    };
+}
 
-extern sp_nativeinfo_t gCoreNatives[];
-extern sp_nativeinfo_t gCvarsNatives[];
-extern sp_nativeinfo_t gForwardsNatives[];
-extern sp_nativeinfo_t gStringNatives[];
-extern sp_nativeinfo_t gMessageNatives[];
-extern sp_nativeinfo_t gCmdsNatives[];
-extern sp_nativeinfo_t gTimerNatives[];
-extern sp_nativeinfo_t gMenuNatives[];
-extern sp_nativeinfo_t gFloatNatives[];
-extern sp_nativeinfo_t gPlayerNatives[];
+extern std::unique_ptr<SPExt::SourcePawnAPI> gSPAPI;

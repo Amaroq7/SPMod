@@ -17,65 +17,79 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ExtMain.hpp"
-
-std::unique_ptr<SourcePawnAPI> gSPAPI;
-
-SourcePawnAPI::SourcePawnAPI(const fs::path &libraryDir)
-{
-    fs::path libraryName = libraryDir / SourcePawnAPI::sourcepawnLibrary;
+#include "SourcePawnAPI.hpp"
 
 #if defined SP_POSIX
-    auto libraryHandle = std::unique_ptr<void, std::function<void(void *)>>(
-        dlopen(libraryName.c_str(), RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND), [](void *ptr) {
-            dlclose(ptr);
-        });
+    #include <dlfcn.h>
 #else
-    HMODULE libraryHandle = LoadLibrary(libraryName.string().c_str());
+    #if !defined WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
+    #endif
+    #include <windows.h>
 #endif
 
-    if (!libraryHandle)
-        throw std::runtime_error(libraryName.string() + " Failed to open SourcePawn library");
+std::unique_ptr<SPExt::SourcePawnAPI> gSPAPI;
+
+namespace SPExt
+{
+    SourcePawnAPI::SourcePawnAPI(const fs::path &libraryDir)
+    {
+        fs::path libraryName = libraryDir / SourcePawnAPI::sourcepawnLibrary;
 
 #if defined SP_POSIX
-    auto getFactoryFunc =
-        reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>(dlsym(libraryHandle.get(), "GetSourcePawnFactory"));
+        auto libraryHandle = std::unique_ptr<void, std::function<void(void *)>>(
+            dlopen(libraryName.c_str(), RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND),
+            [](void *ptr)
+            {
+                dlclose(ptr);
+            });
 #else
-    auto getFactoryFunc =
-        reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>(GetProcAddress(libraryHandle, "GetSourcePawnFactory"));
+        HMODULE libraryHandle = LoadLibrary(libraryName.string().c_str());
 #endif
 
-    if (!getFactoryFunc)
-    {
-#if defined SP_WINDOWS
-        FreeLibrary(libraryHandle);
+        if (!libraryHandle)
+            throw std::runtime_error(libraryName.string() + " Failed to open SourcePawn library");
+
+#if defined SP_POSIX
+        auto getFactoryFunc =
+            reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>(dlsym(libraryHandle.get(), "GetSourcePawnFactory"));
+#else
+        auto getFactoryFunc =
+            reinterpret_cast<SourcePawn::GetSourcePawnFactoryFn>(GetProcAddress(libraryHandle, "GetSourcePawnFactory"));
 #endif
-        throw std::runtime_error("Cannot find SourcePawn factory function");
+
+        if (!getFactoryFunc)
+        {
+#if defined SP_WINDOWS
+            FreeLibrary(libraryHandle);
+#endif
+            throw std::runtime_error("Cannot find SourcePawn factory function");
+        }
+
+        SourcePawn::ISourcePawnFactory *SPFactory = getFactoryFunc(SOURCEPAWN_API_VERSION);
+        if (!SPFactory)
+        {
+#if defined SP_WINDOWS
+            FreeLibrary(libraryHandle);
+#endif
+            throw std::runtime_error("Wrong SourcePawn library version");
+        }
+
+        m_SPLibraryHandle = std::move(libraryHandle);
+        m_spFactory = SPFactory;
+        m_spFactory->NewEnvironment();
+        getSPEnvironment()->APIv2()->SetJitEnabled(true);
     }
 
-    SourcePawn::ISourcePawnFactory *SPFactory = getFactoryFunc(SOURCEPAWN_API_VERSION);
-    if (!SPFactory)
+#if defined SP_WINDOWS
+    SourcePawnAPI::~SourcePawnAPI()
     {
-#if defined SP_WINDOWS
-        FreeLibrary(libraryHandle);
-#endif
-        throw std::runtime_error("Wrong SourcePawn library version");
+        FreeLibrary(m_SPLibraryHandle);
     }
-
-    m_SPLibraryHandle = std::move(libraryHandle);
-    m_spFactory = SPFactory;
-    m_spFactory->NewEnvironment();
-    getSPEnvironment()->APIv2()->SetJitEnabled(true);
-}
-
-#if defined SP_WINDOWS
-SourcePawnAPI::~SourcePawnAPI()
-{
-    FreeLibrary(m_SPLibraryHandle);
-}
 #endif
 
-SourcePawn::ISourcePawnEnvironment *SourcePawnAPI::getSPEnvironment() const
-{
-    return m_spFactory->CurrentEnvironment();
+    SourcePawn::ISourcePawnEnvironment *SourcePawnAPI::getSPEnvironment() const
+    {
+        return m_spFactory->CurrentEnvironment();
+    }
 }

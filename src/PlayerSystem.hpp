@@ -20,7 +20,7 @@
 #pragma once
 
 #include <IPlayerSystem.hpp>
-#include <public/IMetamod.hpp>
+#include "MetaInit.hpp"
 #include "MenuSystem.hpp"
 
 class Player : public IPlayer
@@ -90,6 +90,7 @@ public:
     bool ClientConnect(Metamod::Engine::IEdict *pEntity, std::string_view pszName, std::string_view pszAddress, std::string &szRejectReason);
     void ClientPutInServer(Metamod::Engine::IEdict *pEntity);
     void ClientUserInfoChanged(Metamod::Engine::IEdict *pEntity, Metamod::Engine::InfoBuffer infoBuffer);
+    void ClientDrop(Metamod::Engine::IEdict *pEntity, bool crash, std::string_view string);
     void StartFrame();
     void ServerActivate(std::uint32_t clientMax);
     void ServerDeactivate();

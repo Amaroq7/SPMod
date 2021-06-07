@@ -26,6 +26,7 @@ set(SRC_FILES SPGlobal.cpp
               MetaInit.cpp
               EngineHooks.cpp
               DLLHooks.cpp
+              ReHooks.cpp
               Hooks.cpp)
 
 add_library(${PROJECT_NAME} MODULE ${SRC_FILES})
@@ -33,8 +34,9 @@ add_library(${PROJECT_NAME} MODULE ${SRC_FILES})
 include(${CMAKE_SOURCE_DIR}/cmake/CompilerSetup.cmake)
 
 if (UNIX)
-    target_link_options(${PROJECT_NAME} PRIVATE -m32 -ldl)
+    target_link_options(${PROJECT_NAME} PRIVATE -m32)
     target_compile_options(${PROJECT_NAME} PRIVATE -m32 -Wall -Wextra -Werror -Wpedantic -pedantic-errors)
+    target_link_libraries(${PROJECT_NAME} PRIVATE dl)
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
     target_compile_definitions(${PROJECT_NAME} PRIVATE _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING)
@@ -47,8 +49,8 @@ target_include_directories(
     ${PROJECT_NAME}
     SYSTEM
     PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/include/public
-    ${CMAKE_SOURCE_DIR}/include/metamodcpp_sdk
     ${CMAKE_CURRENT_BINARY_DIR}
     ${YAML_CPP_INCLUDE_DIR}
 )

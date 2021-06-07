@@ -24,6 +24,14 @@
 
 namespace SPMod
 {
+    enum class LogLevel : std::uint8_t
+    {
+        Debug,
+        Info,
+        Warning,
+        Error
+    };
+
     class ILogger
     {
     public:

@@ -88,7 +88,7 @@ bool Message::MessageEnd()
                         gEngine->writeEntity(arg, Metamod::FuncCallType::Direct);
                     else if constexpr (std::is_same_v<T, Metamod::Engine::MsgAngle>)
                         gEngine->writeAngle(arg, Metamod::FuncCallType::Direct);
-                    else if constexpr (std::is_same_v<T, std::string_view>)
+                    else if constexpr (std::is_same_v<T, std::string>)
                         gEngine->writeString(arg, Metamod::FuncCallType::Direct);
             }, param);
         }
@@ -164,6 +164,14 @@ void Message::unregisterHook(IHookInfo *hook)
     }
 
     m_hooks.unregisterHook(hook);
+}
+
+MessageMngr::MessageMngr()
+{
+    for (auto &msg : m_messages)
+    {
+        msg = std::make_unique<Message>();
+    }
 }
 
 bool MessageMngr::MessageBegin(Metamod::Engine::MsgDest msg_dest,

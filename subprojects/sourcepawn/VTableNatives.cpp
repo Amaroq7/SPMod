@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2020 SPMod Development Team
+ *  Copyright (C) 2020-2021 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -17,75 +17,123 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "VTableNatives.hpp"
+#include "SourcePawnAPI.hpp"
 #include "ExtMain.hpp"
 
-std::unordered_multimap<SPMod::IVTableHook *, SourcePawn::IPluginFunction *> gVTableHook;
-std::unordered_multimap<SPMod::IVTableHook *, SourcePawn::IPluginFunction *> gVTableHookPost;
-TypeHandler<SPMod::IVTableHook> gVTableHandlers;
+#include "PlayerNatives.hpp"
 
-static cell_t VTableHookRegister(SourcePawn::IPluginContext *ctx, const cell_t *params)
+#include <metamodcpp_sdk/game/IBasePlayer.hpp>
+#include <metamodcpp_sdk/engine/IEdict.hpp>
+
+TypeHandler<Metamod::IHookInfo> gVTableHandlers;
+TypeHandler<Metamod::Game::IBasePlayerSpawnHook> gBasePlayerSpawnHooks;
+
+static cell_t VTableBasePlayerSpawnHookRegister(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
+    static Metamod::Game::IBasePlayerHooks *plrHooks = gGame->getCBasePlayerHooks();
+
     enum
     {
-        arg_vfunc = 1,
-        arg_classname,
-        arg_callback,
-        arg_post
+        arg_callback = 1,
+        arg_prio
     };
 
-    auto vFunc = static_cast<SPMod::IVTableHookManager::vFuncType>(params[arg_vfunc]);
+    auto vCbPrio = static_cast<Metamod::HookPriority>(params[arg_prio]);
+    SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_callback]);
+    Metamod::IHookInfo *hookInfo;
 
-    char *className;
-    ctx->LocalToString(params[arg_classname], &className);
-    SPMod::IVTableHookManager *vTableMngr = gSPGlobal->getVTableManager();
-    SPMod::IVTableHook *hook = vTableMngr->registerHook(vFunc, className);
-    if (!hook)
-        return -1;
+    hookInfo = plrHooks->spawn()->registerHook(
+        [func](Metamod::Game::IBasePlayerSpawnHook *hook, Metamod::Game::IBasePlayer *plr) {
 
-    if (!params[arg_post])
-    {
-        gVTableHook.emplace(hook, ctx->GetFunctionById(params[arg_callback]));
-    }
-    else
-    {
-        gVTableHookPost.emplace(hook, ctx->GetFunctionById(params[arg_callback]));
-    }
+            if (!func->IsRunnable())
+            {
+                hook->callNext(plr);
+                return;
+            }
 
-    return gVTableHandlers.create(hook);
+            std::size_t hookId = gBasePlayerSpawnHooks.create(hook);
+
+            func->PushCell(static_cast<cell_t>(hookId));
+            func->PushCell(static_cast<cell_t>(plr->edict()->getIndex()));
+            func->Execute(nullptr);
+
+            gBasePlayerSpawnHooks.free(hookId);
+        },
+        vCbPrio);
+
+    return static_cast<cell_t>(gVTableHandlers.create(hookInfo));
 }
 
-static cell_t VTableHookSetFloat(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
+static cell_t VTableBasePlayerSpawnHookCall(SourcePawn::IPluginContext *ctx, const cell_t *params, bool original)
 {
     enum
     {
         arg_hook = 1,
-        arg_pos,
-        arg_paramf
+        arg_player
     };
 
-    if (!params[arg_pos])
+    auto hookId = static_cast<std::size_t>(params[arg_hook]);
+    Metamod::Game::IBasePlayerSpawnHook *spawnHook = gBasePlayerSpawnHooks.get(hookId);
+    if (!spawnHook)
     {
+        if (original)
+        {
+            ctx->ReportError("Cannot call BasePlayerSpawnHookChain.callOriginal outside hook or called twice");
+        }
+        else
+        {
+            ctx->ReportError("Cannot call BasePlayerSpawnHookChain.callNext outside hook or called twice");
+        }
         return 0;
     }
 
-    SPMod::IVTableHook *hook = gVTableHandlers.get(params[arg_hook]);
-    if (!hook)
-    {
-        return 0;
-    }
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(static_cast<std::uint32_t>(params[arg_player]));
 
-    auto &hookParams = hook->getParams();
-    if (!hookParams.size() || static_cast<std::size_t>(params[arg_pos]) >= hookParams.size() ||
-        !std::holds_alternative<float>(hookParams[params[arg_pos]]))
-    {
-        return 0;
-    }
+    (!original) ? spawnHook->callNext(plr->basePlayer()) :
+                  spawnHook->callOriginal(plr->basePlayer());
 
-    hookParams[params[arg_pos]] = sp_ctof(params[arg_paramf]);
-
+    gBasePlayerSpawnHooks.free(hookId);
     return 1;
 }
 
-sp_nativeinfo_t gVTableNatives[] = {{"VTHook.VTHook", VTableHookRegister},
-                                    {"VTHook.SetFloat", VTableHookSetFloat},
+static cell_t VTableBasePlayerSpawnHookNext(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    return VTableBasePlayerSpawnHookCall(ctx, params, false);
+}
+
+static cell_t VTableBasePlayerSpawnHookOriginal(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    return VTableBasePlayerSpawnHookCall(ctx, params, true);
+}
+
+static cell_t VTableBasePlayerSpawnHookUnregister(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    enum
+    {
+        arg_hook = 1
+    };
+
+    if (!gBasePlayerSpawnHooks.empty())
+    {
+        ctx->ReportError("Cannot unregister hook inside in the callback function");
+        return 0;
+    }
+
+    static Metamod::Game::IBasePlayerHooks *plrHooks = gGame->getCBasePlayerHooks();
+    Metamod::IHookInfo *hookInfo = gVTableHandlers.get(params[arg_hook]);
+
+    if (!hookInfo)
+    {
+        return 0;
+    }
+
+    plrHooks->spawn()->unregisterHook(hookInfo);
+    return 1;
+}
+
+sp_nativeinfo_t gVTableNatives[] = {{"VTBasePlayerHookSpawn", VTableBasePlayerSpawnHookRegister},
+                                    {"BasePlayerSpawnHookChain.CallNext", VTableBasePlayerSpawnHookNext},
+                                    {"BasePlayerSpawnHookChain.CallOriginal", VTableBasePlayerSpawnHookOriginal},
+                                    {"VTBasePlayerUnHookSpawn", VTableBasePlayerSpawnHookUnregister},
                                     {nullptr, nullptr}};

@@ -17,8 +17,8 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ExtMain.hpp"
 #include "NativeCallback.hpp"
+#include "PluginSystem.hpp"
 
 namespace SPExt
 {
@@ -54,17 +54,18 @@ namespace SPExt
         m_params.emplace(params);
         NativeCallback::currentPluginNative.emplace(this);
 
+        SPExt::Plugin *executor;
+        ctx->GetKey(Plugin::KEY_PLUGIN, reinterpret_cast<void **>(&executor));
+
         cell_t result = 0;
         if (m_pluginFunction && m_pluginFunction->IsRunnable())
         {
-            SPExt::Plugin *executor;
-            ctx->GetKey(2, reinterpret_cast<void **>(&executor));
-            m_pluginFunction->PushCell(executor->getId());
+            m_pluginFunction->PushCell(static_cast<cell_t>(executor->getId()));
             m_pluginFunction->Execute(&result);
         }
         else
         {
-            result = m_proxiedNative->InvokeSPModNative();
+            result = m_proxiedNative->InvokeSPModNative(executor);
         }
 
         NativeCallback::currentPluginNative.pop();
@@ -174,7 +175,7 @@ namespace SPExt
         {
             if (m_proxiedNative)
             {
-                m_proxiedNative->getParamAsArray(index);
+                return m_proxiedNative->getParamAsArray(index);
             }
 
             cell_t *result;
@@ -194,13 +195,13 @@ namespace SPExt
         return m_name;
     }
 
-    std::int32_t NativeCallback::InvokeSPModNative()
+    std::int32_t NativeCallback::InvokeSPModNative(SPMod::IPlugin *plugin)
     {
         cell_t result = 0;
         if (m_pluginFunction && m_pluginFunction->IsRunnable())
         {
             NativeCallback::currentPluginNative.emplace(this);
-            m_pluginFunction->PushCell(-1); // TODO: Make valid ids for external adapters plugins
+            m_pluginFunction->PushCell(static_cast<cell_t>(plugin->getId()));
             m_pluginFunction->Execute(&result);
             NativeCallback::currentPluginNative.pop();
         }

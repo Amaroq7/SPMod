@@ -21,7 +21,7 @@
 #include "SPGlobal.hpp"
 #include "MetaInit.hpp"
 
-#include <public/engine/IEdict.hpp>
+#include <metamodcpp_sdk/engine/IEdict.hpp>
 
 std::size_t Utils::strCopy(char *buffer, std::size_t size, std::string_view src) const
 {

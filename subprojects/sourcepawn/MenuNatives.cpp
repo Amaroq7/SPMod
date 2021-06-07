@@ -17,9 +17,38 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "MenuNatives.hpp"
+#include "SourcePawnAPI.hpp"
+#include "PlayerNatives.hpp"
 #include "ExtMain.hpp"
 
+#include <ISPGlobal.hpp>
+
 TypeHandler<SPMod::IMenu> gMenuHandlers;
+SPMod::IMenuMngr *gSPMenuMngr;
+
+namespace SPExt
+{
+    bool initMenuNatives()
+    {
+        gSPMenuMngr = gSPGlobal->getMenuManager();
+        return gSPMenuMngr->isVersionCompatible(SPMod::IMenuMngr::VERSION);
+    }
+}
+
+namespace
+{
+    constexpr std::size_t menuPackItem(std::size_t menuid, std::size_t itemid)
+    {
+        return (menuid << 16 | itemid);
+    }
+
+    constexpr void menuUnpackItem(std::size_t index, cell_t &menuid, cell_t &itemid)
+    {
+        menuid = index >> 16;
+        itemid = index & 0xFFFF;
+    }
+}
 
 // native Menu(MenuHandler handler, MenuStyle style = MenuItemStyle, bool global = false);
 static cell_t MenuCreate(SourcePawn::IPluginContext *ctx, const cell_t *params)

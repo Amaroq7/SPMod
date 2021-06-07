@@ -30,7 +30,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "ExtMain.hpp"
+#include "SourcePawnAPI.hpp"
+#include <cmath>
 
 // ntoa conversion buffer size, this must be big enough to hold
 // one converted numeric number including padded zeros (created on stack)

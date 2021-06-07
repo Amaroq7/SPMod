@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2020 SPMod Development Team
+ *  Copyright (C) 2018-2021 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -19,13 +19,27 @@
 
 #pragma once
 
-#include "ExtMain.hpp"
+#include <IPluginSystem.hpp>
+
+#include "SourcePawnAPI.hpp"
+
+namespace SPMod
+{
+    class IProxiedNative;
+}
+
+namespace SourcePawn
+{
+    class IPluginRuntime;
+    class IPluginContext;
+}
 
 namespace SPExt
 {
     class PluginMngr;
+    class NativeCallback;
 
-    class Plugin final : public SPMod::IPlugin
+    class Plugin final : public ::SPMod::IPlugin
     {
     public:
         static constexpr std::uint32_t FIELD_NAME = 0;
@@ -33,26 +47,27 @@ namespace SPExt
         static constexpr std::uint32_t FIELD_AUTHOR = 2;
         static constexpr std::uint32_t FIELD_URL = 3;
 
-        Plugin(std::size_t id, std::string_view identity, const fs::path &path, PluginMngr *pluginMngr);
+        static constexpr std::uint32_t KEY_IDENTITY = 1;
+        static constexpr std::uint32_t KEY_PLUGIN = 2;
+
+        Plugin(std::string_view identity, const fs::path &path, PluginMngr *pluginMngr);
 
         Plugin() = delete;
-        ~Plugin() = default;
+        ~Plugin() final = default;
 
         // IPlugin
-        std::string_view getName() const override;
-        std::string_view getVersion() const override;
-        std::string_view getAuthor() const override;
-        std::string_view getUrl() const override;
-        std::string_view getIdentity() const override;
-        std::string_view getFilename() const override;
-        SPMod::IPluginMngr *getPluginMngr() const override;
+        std::string_view getName() const final;
+        std::string_view getVersion() const final;
+        std::string_view getAuthor() const final;
+        std::string_view getUrl() const final;
+        std::string_view getIdentity() const final;
+        std::string_view getFilename() const final;
+        SPMod::IPluginMngr *getPluginMngr() const final;
 
         // Plugin
         SourcePawn::IPluginRuntime *getRuntime() const;
-        std::size_t getId() const;
 
     private:
-        std::size_t m_id;
         std::string m_identity;
         std::string m_filename;
         PluginMngr *m_pluginMngr;
@@ -76,12 +91,11 @@ namespace SPExt
         Plugin *getPlugin(std::string_view name) const override;
         void loadPlugins() override;
         void bindPluginsNatives() override;
-        void unloadPlugins() override;
         std::string_view getPluginsExt() const override;
         const std::vector<SPMod::IPlugin *> &getPluginsList() const override;
 
         // PluginMngr
-        const auto &getPluginsListCore() const
+        const auto &getPluginsListImpl() const
         {
             return m_plugins;
         }
@@ -92,7 +106,6 @@ namespace SPExt
         Plugin *getPlugin(SourcePawn::IPluginContext *ctx) const;
         Plugin *getPlugin(SPMod::IPlugin *plugin) const;
 
-        void clearNatives();
         void addDefaultNatives();
         SPVM_NATIVE_FUNC findNative(std::string_view name);
         NativeCallback *findPluginNative(std::string_view name);
@@ -103,8 +116,6 @@ namespace SPExt
 
     private:
         Plugin *_loadPlugin(const fs::path &path, std::string &error);
-
-        bool _addNative(std::string_view name, SPVM_NATIVE_FUNC func);
 
         std::unordered_map<std::string, std::unique_ptr<Plugin>> m_plugins;
         std::vector<SPMod::IPlugin *> m_exportedPlugins;

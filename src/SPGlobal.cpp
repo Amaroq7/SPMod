@@ -28,7 +28,8 @@ SPGlobal::SPGlobal(fs::path &&dllDir)
       m_loggingSystem(std::make_unique<LoggerMngr>()), m_cmdManager(std::make_unique<CommandMngr>()),
       m_timerManager(std::make_unique<TimerMngr>()), m_menuManager(std::make_unique<MenuMngr>()),
       m_messageManager(std::make_unique<MessageMngr>()), m_plrManager(std::make_unique<PlayerMngr>()),
-      m_nativeProxy(std::make_unique<NativeProxy>()), m_utils(std::make_unique<Utils>())
+      m_nativeProxy(std::make_unique<NativeProxy>()), m_utils(std::make_unique<Utils>()),
+      m_hooks(std::make_unique<Hooks>())
 {
     // Sets default dirs
     setPath(DirType::Plugins, "plugins");
@@ -72,7 +73,7 @@ std::size_t SPGlobal::loadExts()
             continue;
         }
 
-        ExtQueryValue result = extHandle->getQueryFunc()(gSPGlobal.get());
+        ExtQueryValue result = extHandle->getQueryFunc()(gSPGlobal.get(), gMetaAPI);
         if (result == ExtQueryValue::DontLoad)
         {
             logger->logToBoth(LogLevel::Error, "Can't be loaded: " + extPath.filename().string());

@@ -17,9 +17,28 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "PlayerNatives.hpp"
+#include "SourcePawnAPI.hpp"
+#include "PrintfImpl.hpp"
+#include "StringNatives.hpp"
 #include "ExtMain.hpp"
 
-// int Player.GetName(char[] buffer, int size)
+#include <ISPGlobal.hpp>
+#include <metamodcpp_sdk/engine/ILibrary.hpp>
+#include <metamodcpp_sdk/game/IBasePlayer.hpp>
+
+SPMod::IPlayerMngr *gSPPlrMngr;
+
+namespace SPExt
+{
+    bool initPlayerNatives()
+    {
+        gSPPlrMngr = gSPGlobal->getPlayerManager();
+        return gSPPlrMngr->isVersionCompatible(SPMod::IPlayerMngr::VERSION);
+    }
+}
+
+// int Client.GetName(char[] buffer, int size)
 static cell_t GetName(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     enum
@@ -29,7 +48,7 @@ static cell_t GetName(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_size
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
@@ -39,10 +58,10 @@ static cell_t GetName(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *buffer;
     ctx->LocalToString(params[arg_buffer], &buffer);
 
-    return gSPGlobal->getUtils()->strCopy(buffer, params[arg_size], plr->getName());
+    return gSPUtils->strCopy(buffer, params[arg_size], plr->getName());
 }
 
-// int Player.GetIP(char[] buffer, int size, bool port = false)
+// int Client.GetIP(char[] buffer, int size, bool port = false)
 static cell_t GetIP(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     enum
@@ -53,7 +72,7 @@ static cell_t GetIP(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_port
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
@@ -71,10 +90,10 @@ static cell_t GetIP(SourcePawn::IPluginContext *ctx, const cell_t *params)
             IPAddress[pos] = '\0';
     }
 
-    return gSPGlobal->getUtils()->strCopy(buffer, params[arg_size], IPAddress.c_str());
+    return gSPUtils->strCopy(buffer, params[arg_size], IPAddress.c_str());
 }
 
-// int Player.GetSteamID(char[] buffer, int size)
+// int Client.GetSteamID(char[] buffer, int size)
 static cell_t GetSteamID(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     enum
@@ -84,7 +103,7 @@ static cell_t GetSteamID(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_size
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
@@ -94,10 +113,10 @@ static cell_t GetSteamID(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *buffer;
     ctx->LocalToString(params[arg_buffer], &buffer);
 
-    return gSPGlobal->getUtils()->strCopy(buffer, params[arg_size], plr->getSteamID());
+    return gSPUtils->strCopy(buffer, params[arg_size], plr->getSteamID());
 }
 
-// int Player.Index.get()
+// int Client.Index.get()
 static cell_t GetIndex(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
     enum
@@ -105,7 +124,7 @@ static cell_t GetIndex(SourcePawn::IPluginContext *ctx [[maybe_unused]], const c
         arg_id = 1
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
@@ -115,7 +134,7 @@ static cell_t GetIndex(SourcePawn::IPluginContext *ctx [[maybe_unused]], const c
     return plr->basePlayer()->edict()->getIndex();
 }
 
-// int Player.UserID.get()
+// int Client.UserID.get()
 static cell_t GetUserID(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
     enum
@@ -123,7 +142,7 @@ static cell_t GetUserID(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
         arg_id = 1
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
@@ -133,7 +152,7 @@ static cell_t GetUserID(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
     return plr->getUserId();
 }
 
-// bool Player.Alive.get()
+// bool Client.Alive.get()
 static cell_t AliveGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
     enum
@@ -141,7 +160,7 @@ static cell_t AliveGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const c
         arg_id = 1
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
@@ -151,7 +170,7 @@ static cell_t AliveGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const c
     return plr->isAlive();
 }
 
-// bool Player.Connected.get()
+// bool Client.Connected.get()
 static cell_t ConnectedGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
     enum
@@ -159,7 +178,7 @@ static cell_t ConnectedGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], con
         arg_id = 1
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
@@ -169,7 +188,7 @@ static cell_t ConnectedGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], con
     return plr->isConnected();
 }
 
-// bool Player.Fake.get()
+// bool Client.Fake.get()
 static cell_t FakeGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
     enum
@@ -177,7 +196,7 @@ static cell_t FakeGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const ce
         arg_id = 1
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
@@ -187,7 +206,7 @@ static cell_t FakeGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const ce
     return plr->isFake();
 }
 
-// bool Player.HLTV.get()
+// bool Client.HLTV.get()
 static cell_t HLTVGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
     enum
@@ -195,7 +214,7 @@ static cell_t HLTVGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const ce
         arg_id = 1
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
@@ -205,7 +224,7 @@ static cell_t HLTVGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const ce
     return plr->isHLTV();
 }
 
-// bool Player.InGame.get()
+// bool Client.InGame.get()
 static cell_t InGame(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
     enum
@@ -213,7 +232,7 @@ static cell_t InGame(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cel
         arg_id = 1
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
@@ -223,7 +242,7 @@ static cell_t InGame(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cel
     return plr->isInGame();
 }
 
-// int Player.Health.get()
+// int Client.Health.get()
 static cell_t HealthGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
     enum
@@ -231,7 +250,7 @@ static cell_t HealthGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
         arg_id = 1
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
@@ -241,7 +260,7 @@ static cell_t HealthGet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
     return 0; // static_cast<cell_t>(plr->getHealth());
 }
 
-// void Player.Health.set(int health)
+// void Client.Health.set(int health)
 static cell_t HealthSet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
 {
     enum
@@ -250,7 +269,7 @@ static cell_t HealthSet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
         arg_health
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
@@ -261,7 +280,7 @@ static cell_t HealthSet(SourcePawn::IPluginContext *ctx [[maybe_unused]], const 
     return 0; // 1;
 }
 
-// void Player.Health.set(int health)
+// void Client.Health.set(int health)
 static cell_t TakeDamage(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
     enum
@@ -273,16 +292,16 @@ static cell_t TakeDamage(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_dmgbits
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
         return 0;
     }
-    auto attacker = gSPEngine->getEdict(params[arg_attacker])->getEntVars();
-    auto inflictor = gSPEngine->getEdict(params[arg_inflictor])->getEntVars();
+    auto attacker = gEngine->getEdict(params[arg_attacker])->getEntVars();
+    auto inflictor = gEngine->getEdict(params[arg_inflictor])->getEntVars();
 
-    return plr->basePlayer()->takeDamage(attacker, inflictor, sp_ctof(params[arg_damage]), params[arg_dmgbits]);
+    return plr->basePlayer()->takeDamage(inflictor, attacker, sp_ctof(params[arg_damage]), params[arg_dmgbits]);
 }
 
 // native void SendMsg(TextMsgDest msgDest, const char[] text, any ...)
@@ -295,7 +314,7 @@ static cell_t SendMsg(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_msg
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
@@ -323,7 +342,7 @@ static cell_t MakeVIP(SourcePawn::IPluginContext *ctx, const cell_t *params)
         arg_id = 1,
     };
 
-    SPMod::IPlayer *plr = gSPGlobal->getPlayerManager()->getPlayer(params[arg_id]);
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_id]);
     if (!plr)
     {
         ctx->ReportError("Non player index (%i)", params[arg_id]);
@@ -335,19 +354,19 @@ static cell_t MakeVIP(SourcePawn::IPluginContext *ctx, const cell_t *params)
     return 1;
 }
 
-sp_nativeinfo_t gPlayerNatives[] = {{"Player.GetName", GetName},
-                                    {"Player.GetIP", GetIP},
-                                    {"Player.GetSteamID", GetSteamID},
-                                    {"Player.Index.get", GetIndex},
-                                    {"Player.UserID.get", GetUserID},
-                                    {"Player.Alive.get", AliveGet},
-                                    {"Player.Connected.get", ConnectedGet},
-                                    {"Player.Fake.get", FakeGet},
-                                    {"Player.HLTV.get", HLTVGet},
-                                    {"Player.InGame.get", InGame},
-                                    {"Player.Health.get", HealthGet},
-                                    {"Player.Health.set", HealthSet},
-                                    {"Player.TakeDamage", TakeDamage},
-                                    {"Player.SendMsg", SendMsg},
-                                    {"Player.MakeVIP", MakeVIP},
+sp_nativeinfo_t gPlayerNatives[] = {{"Client.GetName", GetName},
+                                    {"Client.GetIP", GetIP},
+                                    {"Client.GetSteamID", GetSteamID},
+                                    {"Client.Index.get", GetIndex},
+                                    {"Client.UserID.get", GetUserID},
+                                    {"Client.Alive.get", AliveGet},
+                                    {"Client.Connected.get", ConnectedGet},
+                                    {"Client.Fake.get", FakeGet},
+                                    {"Client.HLTV.get", HLTVGet},
+                                    {"Client.InGame.get", InGame},
+                                    {"Client.Health.get", HealthGet},
+                                    {"Client.Health.set", HealthSet},
+                                    {"Client.TakeDamage", TakeDamage},
+                                    {"Client.SendMsg", SendMsg},
+                                    {"Client.MakeVIP", MakeVIP},
                                     {nullptr, nullptr}};

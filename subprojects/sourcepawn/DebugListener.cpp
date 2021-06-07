@@ -17,77 +17,88 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "DebugListener.hpp"
 #include "ExtMain.hpp"
 
-void DebugListener::OnDebugSpew(const char *msg, ...)
+#include <ILoggerSystem.hpp>
+#include <Common.hpp>
+
+#include <cstdarg>
+
+namespace SPExt
 {
-    char debugMsg[512];
-    va_list paramsList;
-
-    va_start(paramsList, msg);
-    std::vsnprintf(debugMsg, sizeof(debugMsg), msg, paramsList);
-    va_end(paramsList);
-
-    gSPGlobal->getLoggerManager()->getLogger("SP EXT")->logToConsole(SPMod::LogLevel::Debug, debugMsg);
-}
-
-void DebugListener::ReportError(const SourcePawn::IErrorReport &report, SourcePawn::IFrameIterator &iter)
-{
-    using namespace std::string_literals;
-
-    const char *spErrorMsg = gSPAPI->getSPEnvironment()->APIv2()->GetErrorString(report.Code());
-    auto getPluginIdentity = [](SourcePawn::IPluginContext *ctx) {
-        char *pluginIdentity;
-        ctx->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
-        return pluginIdentity;
-    };
-    gSPLogger->logToBoth(SPMod::LogLevel::Error, "Run time error " + std::to_string(report.Code()) + ": " + spErrorMsg);
-    gSPLogger->logToBoth(SPMod::LogLevel::Error, "Error: "s + report.Message());
-
-    if (report.Blame() || report.Context())
+    void DebugListener::OnDebugSpew(const char *msg, ...)
     {
-        gSPLogger->logToBoth(SPMod::LogLevel::Error, "Blaming:");
+        char debugMsg[512];
+        va_list paramsList;
 
-        if (report.Blame())
-            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   Function: "s + report.Blame()->DebugName());
+        va_start(paramsList, msg);
+        std::vsnprintf(debugMsg, sizeof(debugMsg), msg, paramsList);
+        va_end(paramsList);
 
-        if (report.Context())
-            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   Plugin: "s + getPluginIdentity(report.Context()));
+        gSPLogger->logToConsole(SPMod::LogLevel::Debug, debugMsg);
     }
 
-    if (!iter.Done())
-        gSPLogger->logToBoth(SPMod::LogLevel::Error, "Stack trace:");
-
-    std::size_t entryPos = 0;
-    while (!iter.Done())
+    void DebugListener::ReportError(const SourcePawn::IErrorReport &report, SourcePawn::IFrameIterator &iter)
     {
-        if (iter.IsInternalFrame())
+        using namespace std::string_literals;
+
+        const char *spErrorMsg = gSPAPI->getSPEnvironment()->APIv2()->GetErrorString(report.Code());
+        auto getPluginIdentity = [](SourcePawn::IPluginContext *ctx)
         {
+            char *pluginIdentity;
+            ctx->GetKey(1, reinterpret_cast<void **>(&pluginIdentity));
+            return pluginIdentity;
+        };
+        gSPLogger->logToBoth(SPMod::LogLevel::Error,
+                             "Run time error " + std::to_string(report.Code()) + ": " + spErrorMsg);
+        gSPLogger->logToBoth(SPMod::LogLevel::Error, "Error: "s + report.Message());
+
+        if (report.Blame() || report.Context())
+        {
+            gSPLogger->logToBoth(SPMod::LogLevel::Error, "Blaming:");
+
+            if (report.Blame())
+                gSPLogger->logToBoth(SPMod::LogLevel::Error, "   Function: "s + report.Blame()->DebugName());
+
+            if (report.Context())
+                gSPLogger->logToBoth(SPMod::LogLevel::Error, "   Plugin: "s + getPluginIdentity(report.Context()));
+        }
+
+        if (!iter.Done())
+            gSPLogger->logToBoth(SPMod::LogLevel::Error, "Stack trace:");
+
+        std::size_t entryPos = 0;
+        while (!iter.Done())
+        {
+            if (iter.IsInternalFrame())
+            {
+                iter.Next();
+                continue;
+            }
+
+            auto *funcName = iter.FunctionName();
+            if (!funcName)
+                funcName = "???";
+
+            if (iter.IsScriptedFrame())
+            {
+                const char *pluginIdentity;
+
+                if (auto *pluginCtx = iter.Context(); pluginCtx)
+                    pluginIdentity = getPluginIdentity(pluginCtx);
+                else
+                    pluginIdentity = "???";
+
+                gSPLogger->logToBoth(SPMod::LogLevel::Error, "   [" + std::to_string(entryPos) + "] " + pluginIdentity +
+                                                                 "::" + funcName + " (line " +
+                                                                 std::to_string(iter.LineNumber()) + ")");
+            }
+            else if (iter.IsNativeFrame())
+                gSPLogger->logToBoth(SPMod::LogLevel::Error, "   [" + std::to_string(entryPos) + "] " + funcName);
+
+            ++entryPos;
             iter.Next();
-            continue;
         }
-
-        auto *funcName = iter.FunctionName();
-        if (!funcName)
-            funcName = "???";
-
-        if (iter.IsScriptedFrame())
-        {
-            const char *pluginIdentity;
-
-            if (auto *pluginCtx = iter.Context(); pluginCtx)
-                pluginIdentity = getPluginIdentity(pluginCtx);
-            else
-                pluginIdentity = "???";
-
-            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   [" + std::to_string(entryPos) + "] " + pluginIdentity +
-                                                             "::" + funcName + " (line " +
-                                                             std::to_string(iter.LineNumber()) + ")");
-        }
-        else if (iter.IsNativeFrame())
-            gSPLogger->logToBoth(SPMod::LogLevel::Error, "   [" + std::to_string(entryPos) + "] " + funcName);
-
-        ++entryPos;
-        iter.Next();
     }
 }

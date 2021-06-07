@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "ExtMain.hpp"
+#include "SourcePawnAPI.hpp"
 
 #ifdef SP_CLANG
     #pragma clang diagnostic push
@@ -29,20 +29,23 @@
     #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #endif
 
-class DebugListener final : public SourcePawn::IDebugListener
+namespace SPExt
 {
-public:
-    DebugListener() = default;
-    DebugListener(const DebugListener &other) = delete;
-    ~DebugListener() = default;
+    class DebugListener final : public SourcePawn::IDebugListener
+    {
+    public:
+        DebugListener() = default;
+        DebugListener(const DebugListener &other) = delete;
+        ~DebugListener() = default;
 
-    // IDebugListener
-    void OnDebugSpew(const char *msg, ...) override;
-    void ReportError(const SourcePawn::IErrorReport &report, SourcePawn::IFrameIterator &iter) override;
-};
+        // IDebugListener
+        void OnDebugSpew(const char *msg, ...) override;
+        void ReportError(const SourcePawn::IErrorReport &report, SourcePawn::IFrameIterator &iter) override;
+    };
 
 #ifdef SP_CLANG
     #pragma clang diagnostic pop
 #elif defined SP_GCC
     #pragma GCC diagnostic pop
 #endif
+}

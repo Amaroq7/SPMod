@@ -24,7 +24,8 @@
 #include "Common.hpp"
 #include "IHookChains.hpp"
 
-#include <public/IMetamod.hpp>
+#include <metamodcpp_sdk/engine/Common.hpp>
+#include <metamodcpp_sdk/engine/IEdict.hpp>
 
 namespace SPMod
 {
@@ -41,7 +42,7 @@ namespace SPMod
     {
     public:
         using Handler = std::function<void(IHook<void, IMessage *> *chain, IMessage *message)>;
-        using Param = std::variant<std::byte, char, std::int16_t, std::int32_t, std::string_view,
+        using Param = std::variant<std::byte, char, std::int16_t, std::int32_t, std::string,
                                     Metamod::Engine::MsgEntity, Metamod::Engine::MsgAngle, Metamod::Engine::MsgCoord>;
 
     public:

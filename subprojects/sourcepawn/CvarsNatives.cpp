@@ -17,10 +17,28 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "CvarsNatives.hpp"
+#include "SourcePawnAPI.hpp"
 #include "ExtMain.hpp"
+#include "StringNatives.hpp"
 
-TypeHandler<SPMod::ICvar> gCvarsHandlers;
-std::unordered_multimap<SPMod::ICvar *, SourcePawn::IPluginFunction *> gCvarPluginsCallbacks;
+#include <metamodcpp_sdk/engine/ICvar.hpp>
+#include <metamodcpp_sdk/engine/IHooks.hpp>
+#include <metamodcpp_sdk/engine/ILibrary.hpp>
+
+TypeHandler<Metamod::Engine::ICvar> gCvarsHandlers;
+std::unordered_multimap<Metamod::Engine::ICvar *, Metamod::IHookInfo *> gCvarPluginsCallbacks;
+TypeHandler<Metamod::IHookInfo> gCvarsCallbackHandlers;
+
+TypeHandler<Metamod::Engine::ICvarDirectSetHook> gCvarHookChains;
+
+namespace SPExt
+{
+    bool initCvarsNatives()
+    {
+        return true;
+    }
+}
 
 static cell_t CvarRegister(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
@@ -35,17 +53,21 @@ static cell_t CvarRegister(SourcePawn::IPluginContext *ctx, const cell_t *params
     ctx->LocalToString(params[arg_name], &cvarName);
     ctx->LocalToString(params[arg_value], &cvarValue);
 
-    SPMod::ICvar *plCvar =
-        gSPCvarMngr->registerCvar(cvarName, cvarValue, static_cast<SPMod::ICvar::Flags>(params[arg_flags]));
+    gEngine->registerCvar(cvarName, cvarValue, Metamod::FuncCallType::Direct);
+
+    Metamod::Engine::ICvar *plCvar = gEngine->getCvar(cvarName, Metamod::FuncCallType::Direct);
+
     if (!plCvar)
         return -1;
+
+    plCvar->setFlags(static_cast<Metamod::Engine::ICvar::Flags>(params[arg_flags]));
 
     std::size_t id = gCvarsHandlers.getKey(plCvar);
 
     if (id != static_cast<std::size_t>(-1))
         return id;
 
-    return gCvarsHandlers.create(plCvar);
+    return static_cast<cell_t>(gCvarsHandlers.create(plCvar));
 }
 
 static cell_t CvarGetName(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -64,7 +86,7 @@ static cell_t CvarGetName(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    SPMod::ICvar *cvar = gCvarsHandlers.get(cvarId);
+    Metamod::Engine::ICvar *cvar = gCvarsHandlers.get(cvarId);
     if (!cvar)
     {
         ctx->ReportError("Cvar not found");
@@ -74,7 +96,7 @@ static cell_t CvarGetName(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
 
-    return gSPUtils->strCopy(destBuffer, params[arg_size], cvar->getName());
+    return static_cast<cell_t>(gSPUtils->strCopy(destBuffer, params[arg_size], cvar->getName()));
 }
 
 static cell_t CvarGetFloat(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -91,14 +113,14 @@ static cell_t CvarGetFloat(SourcePawn::IPluginContext *ctx, const cell_t *params
         return 0;
     }
 
-    SPMod::ICvar *cvar = gCvarsHandlers.get(cvarId);
+    Metamod::Engine::ICvar *cvar = gCvarsHandlers.get(cvarId);
     if (!cvar)
     {
         ctx->ReportError("Cvar not found");
         return 0;
     }
 
-    return sp_ftoc(cvar->asFloat());
+    return sp_ftoc(cvar->getValue());
 }
 
 static cell_t CvarGetString(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -117,7 +139,7 @@ static cell_t CvarGetString(SourcePawn::IPluginContext *ctx, const cell_t *param
         return 0;
     }
 
-    SPMod::ICvar *cvar = gCvarsHandlers.get(cvarId);
+    Metamod::Engine::ICvar *cvar = gCvarsHandlers.get(cvarId);
     if (!cvar)
     {
         ctx->ReportError("Cvar not found");
@@ -127,7 +149,7 @@ static cell_t CvarGetString(SourcePawn::IPluginContext *ctx, const cell_t *param
     char *destBuffer;
     ctx->LocalToString(params[arg_buffer], &destBuffer);
 
-    return gSPUtils->strCopy(destBuffer, params[arg_size], cvar->asString());
+    return static_cast<cell_t>(gSPUtils->strCopy(destBuffer, params[arg_size], cvar->getString()));
 }
 
 static cell_t CvarGetInt(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -144,14 +166,14 @@ static cell_t CvarGetInt(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    SPMod::ICvar *cvar = gCvarsHandlers.get(cvarId);
+    Metamod::Engine::ICvar *cvar = gCvarsHandlers.get(cvarId);
     if (!cvar)
     {
         ctx->ReportError("Cvar not found");
         return 0;
     }
 
-    return cvar->asInt();
+    return static_cast<cell_t>(cvar->getValue());
 }
 
 static cell_t CvarGetFlags(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -168,7 +190,7 @@ static cell_t CvarGetFlags(SourcePawn::IPluginContext *ctx, const cell_t *params
         return 0;
     }
 
-    SPMod::ICvar *cvar = gCvarsHandlers.get(cvarId);
+    Metamod::Engine::ICvar *cvar = gCvarsHandlers.get(cvarId);
     if (!cvar)
     {
         ctx->ReportError("Cvar not found");
@@ -193,7 +215,7 @@ static cell_t CvarSetFloat(SourcePawn::IPluginContext *ctx, const cell_t *params
         return 0;
     }
 
-    SPMod::ICvar *cvar = gCvarsHandlers.get(cvarId);
+    Metamod::Engine::ICvar *cvar = gCvarsHandlers.get(cvarId);
     if (!cvar)
     {
         ctx->ReportError("Cvar not found");
@@ -222,13 +244,13 @@ static cell_t CvarSetString(SourcePawn::IPluginContext *ctx, const cell_t *param
         return 0;
     }
 
-    SPMod::ICvar *cvar = gCvarsHandlers.get(cvarId);
+    Metamod::Engine::ICvar *cvar = gCvarsHandlers.get(cvarId);
     if (!cvar)
     {
         ctx->ReportError("Cvar not found");
         return 0;
     }
-    cvar->setValue(cvarValue);
+    cvar->setString(cvarValue);
 
     return 1;
 }
@@ -248,13 +270,13 @@ static cell_t CvarSetInt(SourcePawn::IPluginContext *ctx, const cell_t *params)
         return 0;
     }
 
-    SPMod::ICvar *cvar = gCvarsHandlers.get(cvarId);
+    Metamod::Engine::ICvar *cvar = gCvarsHandlers.get(cvarId);
     if (!cvar)
     {
         ctx->ReportError("Cvar not found");
         return 0;
     }
-    cvar->setValue(params[arg_value]);
+    cvar->setValue(sp_ctof(params[arg_value]));
 
     return 1;
 }
@@ -267,6 +289,63 @@ static cell_t CvarAddCallback(SourcePawn::IPluginContext *ctx, const cell_t *par
         cvar_callback
     };
 
+    static Metamod::Engine::ICvarDirectSetHookRegistry *cvarDirectSetRegistry = gEngine->getHooks()->cvarDirectSet();
+
+    cell_t cvarId = params[arg_index];
+    if (cvarId < 0)
+    {
+        ctx->ReportError("Invalid cvar pointer");
+        return -1;
+    }
+
+    Metamod::Engine::ICvar *plCvar = gCvarsHandlers.get(cvarId);
+    if (!plCvar)
+    {
+        ctx->ReportError("Cvar not found");
+        return -1;
+    }
+
+    SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[cvar_callback]);
+    if (!func || !func->IsRunnable())
+    {
+        return -1;
+    }
+
+    Metamod::IHookInfo *cvarHook = cvarDirectSetRegistry->registerHook(
+        [func, plCvar](Metamod::Engine::ICvarDirectSetHook *hook, Metamod::Engine::ICvar *cvar, std::string_view value) {
+
+            if (!func->IsRunnable() || plCvar != cvar)
+            {
+                hook->callNext(cvar, value);
+                return;
+            }
+
+            std::size_t hookId = gCvarHookChains.create(hook);
+
+            func->PushCell(static_cast<cell_t>(hookId));
+            func->PushCell(static_cast<cell_t>(gCvarsHandlers.getKey(cvar)));
+            func->PushString(value.data());
+            func->Execute(nullptr);
+
+            gCvarHookChains.free(hookId); // call in case callNext or callOriginal were not called
+        }
+    );
+
+    gCvarPluginsCallbacks.emplace(plCvar, cvarHook);
+
+    return static_cast<cell_t>(gCvarsCallbackHandlers.create(cvarHook));
+}
+
+static cell_t CvarRemoveCallback(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    enum
+    {
+        arg_index = 1,
+        arg_hookInfo = 2,
+    };
+
+    static Metamod::Engine::ICvarDirectSetHookRegistry *cvarDirectSetRegistry = gEngine->getHooks()->cvarDirectSet();
+
     cell_t cvarId = params[arg_index];
     if (cvarId < 0)
     {
@@ -274,39 +353,31 @@ static cell_t CvarAddCallback(SourcePawn::IPluginContext *ctx, const cell_t *par
         return 0;
     }
 
-    SPMod::ICvar *cvar = gCvarsHandlers.get(cvarId);
+    Metamod::Engine::ICvar *cvar = gCvarsHandlers.get(cvarId);
     if (!cvar)
     {
         ctx->ReportError("Cvar not found");
         return 0;
     }
 
-    SourcePawn::IPluginFunction *ptr = ctx->GetFunctionById(params[cvar_callback]);
-    if (ptr)
+    Metamod::IHookInfo *cvarHook = gCvarsCallbackHandlers.get(static_cast<std::size_t>(params[arg_hookInfo]));
+    if (!cvarHook)
     {
-        // Add callback for plugins
-        cvar->addCallback([](const SPMod::ICvar *const cvar,
-                             std::string_view old_value,
-                             std::string_view new_value) {
-            auto range = gCvarPluginsCallbacks.equal_range(const_cast<SPMod::ICvar *>(cvar));
-            for (auto it = range.first; it != range.second; it++)
-            {
-                SourcePawn::IPluginFunction *func = it->second;
-
-                if (!func || !func->IsRunnable())
-                    continue;
-
-                func->PushCell(gCvarsHandlers.getKey(const_cast<SPMod::ICvar *>(cvar)));
-                func->PushString(old_value.data());
-                func->PushString(new_value.data());
-                func->Execute(nullptr);
-            }
-        });
-
-        gCvarPluginsCallbacks.emplace(cvar, ptr);
+        ctx->ReportError("Invalid hook");
+        return 0;
     }
 
-    return 1;
+    const auto& [beginIt, endIt] = gCvarPluginsCallbacks.equal_range(cvar);
+    for (auto iter = beginIt; iter != endIt; ++iter)
+    {
+        if (iter->second == cvarHook)
+        {
+            cvarDirectSetRegistry->unregisterHook(cvarHook);
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
 static cell_t CvarSetFlags(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -324,14 +395,14 @@ static cell_t CvarSetFlags(SourcePawn::IPluginContext *ctx, const cell_t *params
         return 0;
     }
 
-    SPMod::ICvar *cvar = gCvarsHandlers.get(cvarId);
+    Metamod::Engine::ICvar *cvar = gCvarsHandlers.get(cvarId);
     if (!cvar)
     {
         ctx->ReportError("Cvar not found");
         return 0;
     }
-    cvar->setFlags(static_cast<SPMod::ICvar::Flags>(params[arg_flags]));
 
+    cvar->setFlags(static_cast<Metamod::Engine::ICvar::Flags>(params[arg_flags]));
     return 1;
 }
 
@@ -345,7 +416,7 @@ static cell_t CvarFind(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *cvarName;
     ctx->LocalToString(params[arg_name], &cvarName);
 
-    SPMod::ICvar *plCvar = gSPCvarMngr->findCvar(cvarName);
+    Metamod::Engine::ICvar *plCvar = gEngine->getCvar(cvarName, Metamod::FuncCallType::Direct);
 
     if (!plCvar)
         return -1;
@@ -353,9 +424,55 @@ static cell_t CvarFind(SourcePawn::IPluginContext *ctx, const cell_t *params)
     std::size_t id = gCvarsHandlers.getKey(plCvar);
 
     if (id != static_cast<std::size_t>(-1))
-        return id;
+        return static_cast<cell_t>(id);
 
-    return gCvarsHandlers.create(plCvar);
+    return static_cast<cell_t>(gCvarsHandlers.create(plCvar));
+}
+
+static cell_t CvarHookChainCall(SourcePawn::IPluginContext *ctx, const cell_t *params, bool original)
+{
+    enum
+    {
+        arg_hook = 1,
+        arg_cvar,
+        arg_value
+    };
+
+    std::size_t hookId = static_cast<std::size_t>(params[arg_hook]);
+    Metamod::Engine::ICvarDirectSetHook *cvarDirectSetHook = gCvarHookChains.get(hookId);
+    if (!cvarDirectSetHook)
+    {
+        if (original)
+        {
+            ctx->ReportError("CvarHookChain.callOriginal outside hook or called twice");
+        }
+        else
+        {
+            ctx->ReportError("CvarHookChain.callNext outside hook or called twice");
+        }
+        return 0;
+    }
+
+    Metamod::Engine::ICvar *cvar = gCvarsHandlers.get(static_cast<std::size_t>(params[arg_cvar]));
+
+    char *value;
+    ctx->LocalToString(params[arg_value], &value);
+
+    (!original) ? cvarDirectSetHook->callNext(cvar, value) :
+                  cvarDirectSetHook->callOriginal(cvar, value);
+
+    gCvarHookChains.free(hookId);
+    return 1;
+}
+
+static cell_t CvarHookChainNext(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    return CvarHookChainCall(ctx, params, false);
+}
+
+static cell_t CvarHookChainOriginal(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    return CvarHookChainCall(ctx, params, true);
 }
 
 sp_nativeinfo_t gCvarsNatives[] = {{"Cvar.Cvar", CvarRegister},
@@ -377,6 +494,10 @@ sp_nativeinfo_t gCvarsNatives[] = {{"Cvar.Cvar", CvarRegister},
                                    {"Cvar.Flags.set", CvarSetFlags},
 
                                    {"Cvar.AddHookOnChange", CvarAddCallback},
+                                   {"Cvar.RemoveHookOnChange", CvarRemoveCallback},
+
+                                   {"CvarHookChain.callNext", CvarHookChainNext},
+                                   {"CvarHookChain.callOriginal", CvarHookChainOriginal},
 
                                    {"FindCvar", CvarFind},
                                    {nullptr, nullptr}};

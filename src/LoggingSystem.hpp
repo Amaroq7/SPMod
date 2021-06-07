@@ -24,6 +24,8 @@
 
 #include "MetaInit.hpp"
 
+#include <sstream>
+
 using namespace SPMod;
 
 class Logger final : public ILogger
@@ -37,6 +39,7 @@ public:
     ~Logger() override = default;
 
     explicit Logger(std::string_view prefix);
+    Logger(std::string_view prefix, LogLevel logLevel);
 
     // ILogger
     void setFilename(std::string_view filename) override;
@@ -119,10 +122,12 @@ public:
     }
 
 private:
-    std::string m_prefix;
-    std::string m_filename;
-    LogLevel m_logLevel;
     void _writeToFile(std::string_view msg) const;
+
+private:
+    std::string m_prefix;
+    LogLevel m_logLevel;
+    std::string m_filename;
 };
 
 class LoggerMngr final : public ILoggerMngr

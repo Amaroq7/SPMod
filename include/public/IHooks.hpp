@@ -20,14 +20,13 @@
 #pragma once
 
 #include <IHookChains.hpp>
-
 #include <string_view>
+
+#include <metamodcpp_sdk/engine/IEdict.hpp>
+#include <metamodcpp_sdk/engine/Common.hpp>
 
 namespace SPMod
 {
-    using IChangeLevelHook = IHook<void, std::string_view, std::string_view>;
-    using IChangeLevelHookRegistry = IHookRegistry<void, std::string_view, std::string_view>;
-
     using IClientConnectHook = IHook<bool, Metamod::Engine::IEdict *, std::string_view, std::string_view, std::string &>;
     using IClientConnectHookRegistry = IHookRegistry<bool, Metamod::Engine::IEdict *, std::string_view, std::string_view, std::string &>;
 
@@ -55,12 +54,14 @@ namespace SPMod
     using IClientInfoChangedHook = IHook<void, Metamod::Engine::IEdict *, Metamod::Engine::InfoBuffer>;
     using IClientInfoChangedHookRegistry = IHookRegistry<void, Metamod::Engine::IEdict *, Metamod::Engine::InfoBuffer>;
 
+    using IDropClientHook = IHook<void, Metamod::Engine::IEdict *, bool, std::string_view>;
+    using IDropClientHookRegistry = IHookRegistry<void, Metamod::Engine::IEdict *, bool, std::string_view>;
+
     class IHooks
     {
     public:
         virtual ~IHooks() = default;
 
-        virtual IChangeLevelHookRegistry *changeLevel() = 0;
         virtual IClientConnectHookRegistry *clientConnect() = 0;
         virtual IClientCmdHookRegistry *clientCmd() = 0;
         virtual IClientPutinServerHookRegistry *clientPutinServer() = 0;
@@ -70,5 +71,6 @@ namespace SPMod
         virtual IServerDeactivateHookRegistry *serverDeactivate() = 0;
         virtual IStartFrameHookRegistry *startFrame() = 0;
         virtual IClientInfoChangedHookRegistry *clientInfoChanged() = 0;
+        virtual IDropClientHookRegistry *dropClient() = 0;
     };
 }

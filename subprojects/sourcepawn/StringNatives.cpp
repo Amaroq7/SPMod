@@ -17,7 +17,22 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "StringNatives.hpp"
+#include "SourcePawnAPI.hpp"
 #include "ExtMain.hpp"
+
+#include <ISPGlobal.hpp>
+
+SPMod::IUtils *gSPUtils;
+
+namespace SPExt
+{
+    bool initStringNatives()
+    {
+        gSPUtils = gSPGlobal->getUtils();
+        return gSPUtils->isVersionCompatible(SPMod::IUtils::VERSION);
+    }
+}
 
 // int NumToString(int num, char[] buffer, int size)
 static cell_t NumToString(SourcePawn::IPluginContext *ctx, const cell_t *params)

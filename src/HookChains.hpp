@@ -100,7 +100,7 @@ namespace SPMod
                     ++m_iter;
                 } while (m_iter != m_hooks.end() && !(*m_iter)->isEnabled());
 
-                Hook nextChain(++m_iter, m_hooks, m_origFunc, m_lastFn);
+                Hook nextChain(m_iter, m_hooks, m_origFunc, m_lastFn);
                 return std::invoke(currentHook->getHookFn(), &nextChain, std::forward<t_args>(args)...);
             }
 

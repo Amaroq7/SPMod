@@ -17,7 +17,14 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ExtMain.hpp"
+#include "AdapterInterface.hpp"
+#include "SourcePawnAPI.hpp"
+#include "PluginSystem.hpp"
+#include "DebugListener.hpp"
+
+#include <memory>
+
+std::unique_ptr<SPExt::AdapterInterface> gAdapterInterface;
 
 namespace SPExt
 {
@@ -26,5 +33,40 @@ namespace SPExt
           m_debugListener(std::make_unique<DebugListener>())
     {
         m_sourcePawnAPI->getSPEnvironment()->APIv2()->SetDebugListener(m_debugListener.get());
+    }
+
+    std::string_view AdapterInterface::getName() const
+    {
+        return "ISourcePawnAdapter";
+    }
+
+    std::uint32_t AdapterInterface::getVersion() const
+    {
+        return VERSION;
+    }
+
+    std::string_view AdapterInterface::getAuthor() const
+    {
+        return "SPMod Development Team";
+    }
+
+    std::string_view AdapterInterface::getUrl() const
+    {
+        return "https://github.com/Amaroq7/SPMod";
+    }
+
+    std::string_view AdapterInterface::getExtName() const
+    {
+        return "SourcePawn Adapter";
+    }
+
+    SPMod::IPluginMngr *AdapterInterface::getPluginMngr() const
+    {
+        return m_pluginMngr.get();
+    }
+
+    PluginMngr *AdapterInterface::getPluginMngrImpl() const
+    {
+        return m_pluginMngr.get();
     }
 } // namespace SPExt

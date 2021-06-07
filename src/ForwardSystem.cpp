@@ -17,7 +17,7 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <public/IHelpers.hpp>
+#include <metamodcpp_sdk/IHelpers.hpp>
 #include "ForwardSystem.hpp"
 
 Forward::Param::Param(Type type) : m_dataType(type), m_copyback(false), m_stringFlags(Forward::StringFlags::None) {}

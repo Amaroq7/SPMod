@@ -97,7 +97,7 @@ namespace SPMod
          *
          * @return        Param as pointer to float.
          */
-        virtual std::int32_t InvokeSPModNative() = 0;
+        virtual std::int32_t InvokeSPModNative(IPlugin *plugin) = 0;
     };
 
     class INativeProxy : public ISPModInterface

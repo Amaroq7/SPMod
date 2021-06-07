@@ -21,7 +21,7 @@
 #include "EngineHooks.hpp"
 #include "MetaInit.hpp"
 
-#include <public/engine/IHooks.hpp>
+#include <metamodcpp_sdk/engine/IHooks.hpp>
 
 void installEngineHooks()
 {
@@ -29,19 +29,6 @@ void installEngineHooks()
     static Metamod::Engine::IHooks *hooks = gMetaAPI->getEngine()->getHooks();
     static PlayerMngr *playerMngr = gSPGlobal->getPlayerManager();
     static MessageMngr *msgMngr = gSPGlobal->getMessageManager();
-
-    hooks->changeLevel()->registerHook(
-        [](Metamod::Engine::IChangeLevelHook *hook, std::string_view level1, std::string_view level2) {
-
-            static ChangeLevelHookRegistry *spHook = gSPGlobal->getHooks()->changeLevel();
-
-            spHook->callChain([hook](std::string_view level1, std::string_view level2) {
-                hook->callNext(level1, level2);
-            }, [hook](std::string_view level1, std::string_view level2) {
-                hook->callOriginal(level1, level2);
-            }, level1, level2);
-        }
-    );
 
     hooks->messageBegin()->registerHook(
         [](Metamod::Engine::IMessageBeginHook *hook,
@@ -145,7 +132,7 @@ void installEngineHooks()
     hooks->writeString()->registerHook(
         [](Metamod::Engine::IWriteStringHook *hook, std::string_view strArg)
         {
-            bool shouldPass = msgMngr->WriteParam(strArg);
+            bool shouldPass = msgMngr->WriteParam(std::string(strArg));
             if (shouldPass)
             {
                 hook->callNext(strArg);

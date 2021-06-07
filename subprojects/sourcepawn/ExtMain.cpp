@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2020 SPMod Development Team
+ *  Copyright (C) 2018-2021 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -19,53 +19,46 @@
 
 #include "ExtMain.hpp"
 
+#include "SourcePawnAPI.hpp"
+#include "AdapterInterface.hpp"
+#include "CmdNatives.hpp"
+#include "TimerNatives.hpp"
+#include "StringNatives.hpp"
+#include "CoreNatives.hpp"
+#include "PlayerNatives.hpp"
+#include "ForwardNatives.hpp"
+#include "MenuNatives.hpp"
+#include "MessageNatives.hpp"
+#include "PluginSystem.hpp"
+#include "DebugListener.hpp"
+#include "HooksNatives.hpp"
+
+#include <ISPGlobal.hpp>
+#include <metamodcpp_sdk/IMetamod.hpp>
+#include <metamodcpp_sdk/engine/ITraceResult.hpp>
+#include <metamodcpp_sdk/IHelpers.hpp>
+
 using namespace SPExt;
 
 SPMod::ISPGlobal *gSPGlobal;
-std::unique_ptr<AdapterInterface> gAdapterInterface;
 SPMod::ILogger *gSPLogger;
-
-SPMod::ICommandMngr *gSPCmdMngr;
-SPMod::ICvarMngr *gSPCvarMngr;
-SPMod::IForwardMngr *gSPFwdMngr;
 SPMod::ILoggerMngr *gSPLoggerMngr;
-SPMod::IMenuMngr *gSPMenuMngr;
-SPMod::IMessageMngr *gSPMsgMngr;
-SPMod::IPlayerMngr *gSPPlrMngr;
-SPMod::ITimerMngr *gSPTimerMngr;
-SPMod::IUtils *gSPUtils;
-SPMod::INativeProxy *gSPNativeProxy;
-SPMod::IVTableHookManager *gSPVTHookMngr;
-SPMod::Engine::IEngine *gSPEngine;
-SPMod::Engine::IFuncs *gSPEngFuncs;
-SPMod::Engine::IFuncs *gSPEngFuncsHooked;
-SPMod::Engine::IGlobals *gSPEngGlobals;
-SPMod::Metamod::IMetamod *gSPMetamod;
-SPMod::Metamod::IFuncs *gSPMetamodFuncs;
-
-TypeHandler<SPMod::Engine::ITraceResult> gTraceResultHandlers;
+Metamod::IMetamod *gMetaAPI;
+Metamod::Engine::ILibrary *gEngine;
+Metamod::Game::ILibrary *gGame;
 
 namespace
 {
     bool checkInterfacesVersion()
     {
-        gSPCmdMngr = gSPGlobal->getCommandManager();
-        if (!gSPCmdMngr->isVersionCompatible(SPMod::ICommandMngr::VERSION))
-        {
-            return false;
-        }
-
-        gSPCvarMngr = gSPGlobal->getCvarManager();
-        if (!gSPCvarMngr->isVersionCompatible(SPMod::ICvarMngr::VERSION))
-        {
-            return false;
-        }
-
-        gSPFwdMngr = gSPGlobal->getForwardManager();
-        if (!gSPFwdMngr->isVersionCompatible(SPMod::IForwardMngr::VERSION))
-        {
-            return false;
-        }
+        bool cmdNativesInit = SPExt::initCmdNatives();
+        bool timerNativesInit = SPExt::initTimerNatives();
+        bool stringNativesInit = SPExt::initStringNatives();
+        bool coreNativesInit = SPExt::initCoreNatives();
+        bool playerNativesInit = SPExt::initPlayerNatives();
+        bool forwardNativesInit = SPExt::initForwardNatives();
+        bool menuNativesInit = SPExt::initMenuNatives();
+        bool msgNativesInit = SPExt::initMsgNatives();
 
         gSPLoggerMngr = gSPGlobal->getLoggerManager();
         if (!gSPLoggerMngr->isVersionCompatible(SPMod::ILoggerMngr::VERSION))
@@ -73,67 +66,8 @@ namespace
             return false;
         }
 
-        gSPMenuMngr = gSPGlobal->getMenuManager();
-        if (!gSPMenuMngr->isVersionCompatible(SPMod::IMenuMngr::VERSION))
-        {
-            return false;
-        }
-
-        gSPMsgMngr = gSPGlobal->getMessageManager();
-        if (!gSPMsgMngr->isVersionCompatible(SPMod::IMessageMngr::VERSION))
-        {
-            return false;
-        }
-
-        gSPPlrMngr = gSPGlobal->getPlayerManager();
-        if (!gSPPlrMngr->isVersionCompatible(SPMod::IPlayerMngr::VERSION))
-        {
-            return false;
-        }
-
-        gSPTimerMngr = gSPGlobal->getTimerManager();
-        if (!gSPTimerMngr->isVersionCompatible(SPMod::ITimerMngr::VERSION))
-        {
-            return false;
-        }
-
-        gSPUtils = gSPGlobal->getUtils();
-        if (!gSPUtils->isVersionCompatible(SPMod::IUtils::VERSION))
-        {
-            return false;
-        }
-
-        gSPNativeProxy = gSPGlobal->getNativeProxy();
-        if (!gSPNativeProxy->isVersionCompatible(SPMod::INativeProxy::VERSION))
-        {
-            return false;
-        }
-
-        gSPVTHookMngr = gSPGlobal->getVTableManager();
-        if (!gSPVTHookMngr->isVersionCompatible(SPMod::IVTableHookManager::VERSION))
-        {
-            return false;
-        }
-
-        gSPEngine = gSPGlobal->getEngine();
-        if (!gSPEngine->isVersionCompatible(SPMod::Engine::IEngine::VERSION))
-        {
-            return false;
-        }
-
-        gSPEngFuncs = gSPEngine->getFuncs();
-        gSPEngFuncsHooked = gSPEngine->getFuncs(true);
-        gSPEngGlobals = gSPEngine->getGlobals();
-
-        gSPMetamod = gSPGlobal->getMetamod();
-        if (!gSPMetamod->isVersionCompatible(SPMod::Metamod::IMetamod::VERSION))
-        {
-            return false;
-        }
-
-        gSPMetamodFuncs = gSPMetamod->getFuncs();
-
-        return true;
+        return cmdNativesInit && timerNativesInit && stringNativesInit && coreNativesInit
+               && playerNativesInit && forwardNativesInit && menuNativesInit && msgNativesInit;
     }
 
     bool pushParamsToFunc(SPMod::IForward *fwd, SourcePawn::IPluginFunction *func, cell_t *result)
@@ -220,10 +154,13 @@ namespace
     }
 } // namespace
 
-SPMOD_API SPMod::ExtQueryValue SPMod_Query(SPMod::ISPGlobal *spmodInstance)
+SPMOD_API SPMod::ExtQueryValue SPMod_Query(SPMod::ISPGlobal *spmodInstance, Metamod::IMetamod *metaAPI)
 {
     gSPGlobal = spmodInstance;
     gAdapterInterface = std::make_unique<AdapterInterface>(gSPGlobal->getPath(SPMod::DirType::Exts));
+    gMetaAPI = metaAPI;
+    gEngine = metaAPI->getEngine();
+    gGame = metaAPI->getGame();
 
     if (!checkInterfacesVersion())
     {
@@ -243,7 +180,7 @@ SPMOD_API bool SPMod_Init()
 
     gSPFwdMngr->addForwardListener([](SPMod::IForward *const fwd, int &result, bool &stop) {
         // One plugin forward
-        Plugin *fwdPlugin = gAdapterInterface->getPluginMngr()->getPlugin(fwd->getPlugin());
+        Plugin *fwdPlugin = gAdapterInterface->getPluginMngrImpl()->getPlugin(fwd->getPlugin());
         if (fwdPlugin)
         {
             SourcePawn::IPluginFunction *func = fwdPlugin->getRuntime()->GetFunctionByName(fwd->getName().data());
@@ -263,7 +200,7 @@ SPMOD_API bool SPMod_Init()
         {
             SPMod::IForward::ExecType execType = fwd->getExecType();
 
-            for (const auto &pair : gAdapterInterface->getPluginMngr()->getPluginsListCore())
+            for (const auto &pair : gAdapterInterface->getPluginMngrImpl()->getPluginsListImpl())
             {
                 Plugin *plugin = pair.second.get();
                 SourcePawn::IPluginFunction *func = plugin->getRuntime()->GetFunctionByName(fwd->getName().data());
@@ -294,85 +231,10 @@ SPMOD_API bool SPMod_Init()
         }
     });
 
-    gSPVTHookMngr->addCallback([](SPMod::IVTableHook *const hook, bool post) {
-        std::pair<std::unordered_multimap<SPMod::IVTableHook *, SourcePawn::IPluginFunction *>::iterator,
-            std::unordered_multimap<SPMod::IVTableHook *, SourcePawn::IPluginFunction *>::iterator>
-            range;
-        if (!post)
-        {
-            range = gVTableHook.equal_range(hook);
-        }
-        else
-        {
-            range = gVTableHookPost.equal_range(hook);
-        }
-
-        cell_t finalResult = 0;
-        for (auto it = range.first; it != range.second; it++)
-        {
-            SourcePawn::IPluginFunction *func = it->second;
-            if (func && func->IsRunnable())
-            {
-                cell_t result = 0;
-                func->PushCell(gVTableHandlers.getKey(hook));
-                std::vector<std::size_t> traceResultHandlersIds;
-                for (const auto &param : hook->getParams())
-                {
-                    std::visit(
-                        [=, &traceResultHandlersIds](auto &&arg) {
-                          using T = std::decay_t<decltype(arg)>;
-
-                          if constexpr (std::is_same_v<T, std::int32_t> || std::is_same_v<T, std::int16_t> ||
-                                        std::is_same_v<T, std::uint32_t>)
-                          {
-                              func->PushCell(arg);
-                          }
-                          else if constexpr (std::is_same_v<T, float>)
-                          {
-                              func->PushFloat(arg);
-                          }
-                          else if constexpr (std::is_same_v<T, float *>)
-                          {
-                              func->PushArray(reinterpret_cast<cell_t *>(arg), 3);
-                          }
-                          else if constexpr (std::is_same_v<T, SPMod::Engine::IEntVars *> ||
-                                             std::is_same_v<T, SPMod::Engine::IEdict *>)
-                          {
-                              func->PushCell(arg->getIndex());
-                          }
-                          else if constexpr (std::is_same_v<T, SPMod::Engine::ITraceResult *>)
-                          {
-                              func->PushCell(traceResultHandlersIds.emplace_back(gTraceResultHandlers.create(arg)));
-                          }
-                          else if constexpr (std::is_same_v<T, const char *>)
-                          {
-                              func->PushString(arg);
-                          }
-                        },
-                        param);
-                }
-
-                func->Execute(&result);
-
-                for (auto traceResultHandle : traceResultHandlersIds)
-                {
-                    gTraceResultHandlers.free(traceResultHandle);
-                }
-
-                if ((static_cast<SPMod::IVTableHook::Return>(result) & SPMod::IVTableHook::Return::Supercede)
-                    == SPMod::IVTableHook::Return::Supercede)
-                {
-                    return SPMod::IVTableHook::Return::Supercede;
-                }
-                else if (result > finalResult)
-                {
-                    finalResult = result;
-                }
-            }
-        }
-        return static_cast<SPMod::IVTableHook::Return>(finalResult);
-    });
     return true;
 }
 
-SPMOD_API void SPMod_End() {}
+SPMOD_API void SPMod_End()
+{
+    uninstallHooks();
+}

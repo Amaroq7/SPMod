@@ -11,7 +11,7 @@ set(SRC_FILES AdapterInterface.cpp
               DebugListener.cpp
               ExtMain.cpp
               FloatNatives.cpp
-              ForwardsNatives.cpp
+              ForwardNatives.cpp
               MenuNatives.cpp
               MessageNatives.cpp
               PlayerNatives.cpp
@@ -20,7 +20,10 @@ set(SRC_FILES AdapterInterface.cpp
               SourcePawnAPI.cpp
               StringNatives.cpp
               TimerNatives.cpp
-              VTableNatives.cpp NativeCallback.hpp NativeCallback.cpp)
+              VTableNatives.cpp
+              HooksNatives.cpp
+              TraceResultNatives.cpp
+              NativeCallback.cpp)
 
 add_library(${PROJECT_NAME} MODULE ${SRC_FILES})
 add_dependencies(${PROJECT_NAME} spvm-project)
@@ -28,14 +31,16 @@ add_dependencies(${PROJECT_NAME} spvm-project)
 include(${CMAKE_SOURCE_DIR}/cmake/CompilerSetup.cmake)
 
 if (UNIX)
-    target_link_options(${PROJECT_NAME} PRIVATE -m32 -ldl)
+    target_link_options(${PROJECT_NAME} PRIVATE -m32)
     target_compile_options(${PROJECT_NAME} PRIVATE -m32)
+    target_link_libraries(${PROJECT_NAME} PRIVATE dl)
 else()
     target_link_options(${PROJECT_NAME} PRIVATE /MACHINE:X86)
 endif()
 
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE sourcepawn/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include/public)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include/public
+                                                   ${CMAKE_SOURCE_DIR}/include)
 
 set_target_properties(
     ${PROJECT_NAME}

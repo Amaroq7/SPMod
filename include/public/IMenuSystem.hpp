@@ -26,6 +26,14 @@ namespace SPMod
 {
     class IPlayer;
 
+    enum class NavigationType : std::int8_t
+    {
+        None = 0,
+        Back = -1,
+        Next = -2,
+        Exit = -3
+    };
+
     class IMenu
     {
     public:

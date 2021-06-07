@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2020 SPMod Development Team
+ *  Copyright (C) 2018-2021 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -19,99 +19,32 @@
 
 #pragma once
 
-#include <ISPGlobal.hpp>
-#include <unordered_map>
-#include <array>
-#include <vector>
-#include <cstdarg>
-#include <cmath>
-#include <stack>
+namespace SPMod
+{
+    class ISPGlobal;
+    class ILoggerMngr;
+    class ILogger;
+}
 
-#if defined SP_POSIX
-    #include <dlfcn.h>
-#else
-    #if !defined WIN32_LEAN_AND_MEAN
-        #define WIN32_LEAN_AND_MEAN
-    #endif
-    #include <windows.h>
-#endif
+namespace Metamod
+{
+    class IMetamod;
 
-#include "SourcePawnAPI.hpp"
-#include "NativeCallback.hpp"
-#include "DebugListener.hpp"
-#include "PluginSystem.hpp"
-#include "AdapterInterface.hpp"
-#include "TypeHandler.hpp"
-#include "PrintfImpl.hpp"
+    namespace Engine
+    {
+        class ILibrary;
+    }
+    namespace Game
+    {
+        class ILibrary;
+    }
+}
 
-extern std::unique_ptr<SPExt::AdapterInterface> gAdapterInterface;
 extern SPMod::ISPGlobal *gSPGlobal;
-extern SPMod::ICommandMngr *gSPCmdMngr;
-extern SPMod::ICvarMngr *gSPCvarMngr;
-extern SPMod::IForwardMngr *gSPFwdMngr;
 extern SPMod::ILoggerMngr *gSPLoggerMngr;
-extern SPMod::IMenuMngr *gSPMenuMngr;
-extern SPMod::IMessageMngr *gSPMsgMngr;
-extern SPMod::IPlayerMngr *gSPPlrMngr;
-extern SPMod::ITimerMngr *gSPTimerMngr;
-extern SPMod::IUtils *gSPUtils;
-extern SPMod::INativeProxy *gSPNativeProxy;
-extern SPMod::IVTableHookManager *gSPVTHookMngr;
-extern SPMod::Engine::IEngine *gSPEngine;
-extern SPMod::Engine::IFuncs *gSPEngFuncs;
-extern SPMod::Engine::IFuncs *gSPEngFuncsHooked;
-extern SPMod::Engine::IGlobals *gSPEngGlobals;
-extern SPMod::Metamod::IMetamod *gSPMetamod;
-extern SPMod::Metamod::IFuncs *gSPMetamodFuncs;
-
-extern std::unique_ptr<SourcePawnAPI> gSPAPI;
-
-// ForwardNatives.cpp
-extern TypeHandler<SPMod::IForward> gForwardHandlers;
-
-// CmdNatives.cpp
-extern TypeHandler<SPMod::ICommand> gCommandHandlers;
-
-// CvarNatives.cpp
-extern TypeHandler<SPMod::ICvar> gCvarsHandlers;
-extern std::unordered_multimap<SPMod::ICvar *, SourcePawn::IPluginFunction *> gCvarPluginsCallbacks;
-
-// MenuNatives.cpp
-extern TypeHandler<SPMod::IMenu> gMenuHandlers;
-
-// TimerNatives.cpp
-extern TypeHandler<SPMod::ITimer> gTimerHandlers;
-
-extern std::unordered_multimap<SPMod::IVTableHook *, SourcePawn::IPluginFunction *> gVTableHook;
-extern std::unordered_multimap<SPMod::IVTableHook *, SourcePawn::IPluginFunction *> gVTableHookPost;
-extern TypeHandler<SPMod::IVTableHook> gVTableHandlers;
-
 extern SPMod::ILogger *gSPLogger;
 
-constexpr std::size_t menuPackItem(std::size_t menuid, std::size_t itemid)
-{
-    return (menuid << 16 | itemid);
-}
-
-constexpr void menuUnpackItem(std::size_t index, cell_t &menuid, cell_t &itemid)
-{
-    menuid = index >> 16;
-    itemid = index & 0xFFFF;
-}
-
-extern TypeHandler<SPMod::Engine::ITraceResult> gTraceResultHandlers;
-
 constexpr const char *gSPExtLoggerName = "SPExt";
-
-// Natives
-extern sp_nativeinfo_t gCmdsNatives[];
-extern sp_nativeinfo_t gCoreNatives[];
-extern sp_nativeinfo_t gCvarsNatives[];
-extern sp_nativeinfo_t gFloatNatives[];
-extern sp_nativeinfo_t gForwardsNatives[];
-extern sp_nativeinfo_t gMenuNatives[];
-extern sp_nativeinfo_t gMessageNatives[];
-extern sp_nativeinfo_t gPlayerNatives[];
-extern sp_nativeinfo_t gStringNatives[];
-extern sp_nativeinfo_t gTimerNatives[];
-extern sp_nativeinfo_t gVTableNatives[];
+extern Metamod::IMetamod *gMetaAPI;
+extern Metamod::Engine::ILibrary *gEngine;
+extern Metamod::Game::ILibrary *gGame;

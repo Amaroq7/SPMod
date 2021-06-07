@@ -19,27 +19,29 @@
 
 #pragma once
 
-#include "ExtMain.hpp"
+#include <INativeProxy.hpp>
+
+#include "SourcePawnAPI.hpp"
 
 namespace SPExt
 {
-    class NativeCallback : public SourcePawn::INativeCallback, public SPMod::IProxiedNative
+    class NativeCallback final : public SourcePawn::INativeCallback, public SPMod::IProxiedNative
     {
     public:
-        explicit NativeCallback(std::string_view name, SourcePawn::IPluginFunction *pluginFunction);
+        NativeCallback(std::string_view name, SourcePawn::IPluginFunction *pluginFunction);
         explicit NativeCallback(SPMod::IProxiedNative *native);
-        void AddRef() override;
-        void Release() override;
-        cell_t Invoke(SourcePawn::IPluginContext *ctx, const cell_t *params) override;
-        std::int32_t InvokeSPModNative() override;
+        void AddRef() final;
+        void Release() final;
+        cell_t Invoke(SourcePawn::IPluginContext *ctx, const cell_t *params) final;
+        std::int32_t InvokeSPModNative(SPMod::IPlugin *plugin) final;
 
-        std::string_view getName() const override;
-        std::int32_t getParamAsInt(std::size_t index) const override;
-        std::int32_t *getParamAsIntAddr(std::size_t index) const override;
-        float getParamAsFloat(std::size_t index) const override;
-        float *getParamAsFloatAddr(std::size_t index) const override;
-        char *getParamAsString(std::size_t index) const override;
-        void *getParamAsArray(std::size_t index) const override;
+        std::string_view getName() const final;
+        std::int32_t getParamAsInt(std::size_t index) const final;
+        std::int32_t *getParamAsIntAddr(std::size_t index) const final;
+        float getParamAsFloat(std::size_t index) const final;
+        float *getParamAsFloatAddr(std::size_t index) const final;
+        char *getParamAsString(std::size_t index) const final;
+        void *getParamAsArray(std::size_t index) const final;
 
         static inline std::stack<SPExt::NativeCallback *> currentPluginNative = {};
 

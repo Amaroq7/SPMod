@@ -1,6 +1,6 @@
 --- AMBuildScript	2020-09-10 01:36:16.602652000 +0200
 +++ AMBuildScript-custom	2020-10-23 23:44:32.293952775 +0200
-@@ -97,8 +97,10 @@
+@@ -97,8 +97,11 @@
          '-Wno-overloaded-virtual',
        ]
  
@@ -9,7 +9,8 @@
 +      if have_gcc:
 +        if cxx.target.arch in ['x86', 'x86_64']:
 +          cxx.cflags += ['-mfpmath=sse']
-+        cxx.cxxflags += ['-Wformat-truncation=0']
++        cxx.cxxflags += ['-Wno-format-truncation']
++        cxx.cxxflags += ['-Wno-array-bounds']
  
        cxx.postlink += ['-lm']
  
@@ -40,12 +41,12 @@
 +          cxx.linkflags.remove('-lstdc++')
 +          cxx.cxxflags += ['-stdlib=libc++']
 +          cxx.linkflags += ['-fuse-ld=<LLD>', '--rtlib=compiler-rt', '-Wl,--as-needed']
-+          cxx.postlink += ['-L<LLVM_LIBS_DIR>', '-lc++', '-lc++abi', '-lunwind']
++          cxx.postlink += ['-lc++', '-lc++abi', '-lunwind']
 +        elif have_clang:
 +          cxx.linkflags.remove('-lstdc++')
 +          cxx.cxxflags += ['-stdlib=libc++']
 +          cxx.linkflags += ['-fuse-ld=<LLD>', '--rtlib=compiler-rt', '-Wl,--as-needed']
-+          cxx.postlink += ['-L<LLVM_LIBS_DIR>', '-l:libc++.a', '-l:libc++abi.a', '-l:libunwind.a']
++          cxx.postlink += ['-l:libc++.a', '-l:libc++abi.a', '-l:libunwind.a']
 +        elif have_gcc and not getattr(builder.options, 'dynamic', False):
 +          cxx.linkflags.remove('-lstdc++')
 +          cxx.linkflags += ['-static-libgcc', '-static-libstdc++']

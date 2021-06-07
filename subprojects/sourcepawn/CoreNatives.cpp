@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2020 SPMod Development Team
+ *  Copyright (C) 2018-2021 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -17,9 +17,27 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "CoreNatives.hpp"
+#include "NativeCallback.hpp"
+#include "PrintfImpl.hpp"
+#include "StringNatives.hpp"
+#include "AdapterInterface.hpp"
+#include "PluginSystem.hpp"
 #include "ExtMain.hpp"
 
+#include <metamodcpp_sdk/engine/ILibrary.hpp>
+
 std::vector<std::unique_ptr<SPExt::NativeCallback>> gSourcePawnPluginsNatives;
+SPMod::INativeProxy *gSPNativeProxy;
+
+namespace SPExt
+{
+    bool initCoreNatives()
+    {
+        gSPNativeProxy = gSPGlobal->getNativeProxy();
+        return gSPNativeProxy->isVersionCompatible(SPMod::INativeProxy::VERSION);
+    }
+}
 
 // native void PrintToServer(const char[] text, any ...)
 static cell_t PrintToServer(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -33,7 +51,7 @@ static cell_t PrintToServer(SourcePawn::IPluginContext *ctx, const cell_t *param
     bufferOutput[res++] = '\n';
     bufferOutput[res] = '\0';
 
-    gSPEngFuncs->serverPrint(bufferOutput);
+    gEngine->print(bufferOutput, Metamod::FuncCallType::Direct);
 
     return 1;
 }
@@ -50,7 +68,7 @@ static cell_t PrecacheModel(SourcePawn::IPluginContext *ctx, const cell_t *param
     char *modelToPrecache;
     ctx->LocalToString(params[1], &modelToPrecache);
 
-    return gSPEngFuncs->precacheModel(modelToPrecache);
+    return gEngine->precacheModel(modelToPrecache, Metamod::FuncCallType::Direct);
 }
 
 // native int PrecacheSound(const char[] sound)
@@ -65,7 +83,7 @@ static cell_t PrecacheSound(SourcePawn::IPluginContext *ctx, const cell_t *param
     char *soundToPrecache;
     ctx->LocalToString(params[1], &soundToPrecache);
 
-    return gSPEngFuncs->precacheSound(soundToPrecache);
+    return gEngine->precacheSound(soundToPrecache, Metamod::FuncCallType::Direct);
 }
 
 // native int PrecacheGeneric(const char[] generic)
@@ -80,7 +98,7 @@ static cell_t PrecacheGeneric(SourcePawn::IPluginContext *ctx, const cell_t *par
     char *genericToPrecache;
     ctx->LocalToString(params[1], &genericToPrecache);
 
-    return gSPEngFuncs->precacheGeneric(genericToPrecache);
+    return gEngine->precacheGeneric(genericToPrecache, Metamod::FuncCallType::Direct);
 }
 
 // native bool NativeRegister(const char[] name, PluginNative func)
@@ -89,7 +107,7 @@ static cell_t NativeRegister(SourcePawn::IPluginContext *ctx, const cell_t *para
     char *nativeName;
     ctx->LocalToString(params[1], &nativeName);
 
-    if (!gAdapterInterface->getPluginMngr()->registerNative(nativeName, ctx->GetFunctionById(params[2])))
+    if (!gAdapterInterface->getPluginMngrImpl()->registerNative(nativeName, ctx->GetFunctionById(params[2])))
     {
         ctx->ReportError("Native with the same name already registered");
         return 0;
@@ -405,7 +423,7 @@ static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx, const cell_t *params)
 
     char *newMap;
     ctx->LocalToString(params[arg_map], &newMap);
-    gSPEngFuncsHooked->changeLevel(newMap);
+    gEngine->changeLevel(newMap, "", Metamod::FuncCallType::Hooks);
 
     return 1;
 }
@@ -413,7 +431,7 @@ static cell_t ChangeLevel(SourcePawn::IPluginContext *ctx, const cell_t *params)
 // float GetGameTime()
 static cell_t GetGameTime(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params [[maybe_unused]])
 {
-    return sp_ftoc(gSPEngGlobals->getTime());
+    return sp_ftoc(gEngine->getTime());
 }
 
 // native void ServerCmd(const char[] command, any ...)
@@ -434,7 +452,7 @@ static cell_t ServerCmd(SourcePawn::IPluginContext *ctx, const cell_t *params)
     bufferOutput[res++] = '\n';
     bufferOutput[res] = '\0';
 
-    gSPEngFuncs->serverCommand(bufferOutput);
+    gEngine->serverCommand(bufferOutput, Metamod::FuncCallType::Direct);
 
     return 1;
 }
@@ -442,7 +460,7 @@ static cell_t ServerCmd(SourcePawn::IPluginContext *ctx, const cell_t *params)
 // native void ServerExec()
 static cell_t ServerExec(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params [[maybe_unused]])
 {
-    gSPEngFuncs->serverExecute();
+    gEngine->serverExecute(Metamod::FuncCallType::Direct);
     return 1;
 }
 
@@ -458,7 +476,7 @@ static cell_t GetMapName(SourcePawn::IPluginContext *ctx, const cell_t *params)
     char *plOutput;
     ctx->LocalToString(params[arg_buffer], &plOutput);
 
-    std::string_view mapName = gSPEngGlobals->getMapName();
+    std::string_view mapName = gEngine->getMapName();
 
     return static_cast<cell_t>(gSPUtils->strCopy(plOutput, params[arg_size], mapName));
 }

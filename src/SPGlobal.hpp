@@ -21,7 +21,7 @@
 
 #include <ISPGlobal.hpp>
 #include <SPConfig.hpp>
-#include <public/IMetamod.hpp>
+#include <metamodcpp_sdk/IMetamod.hpp>
 #include "MenuSystem.hpp"
 #include "ForwardSystem.hpp"
 #include "TimerSystem.hpp"
