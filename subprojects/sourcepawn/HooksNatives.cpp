@@ -25,9 +25,14 @@
 #include "StringNatives.hpp"
 
 #include <metamodcpp_sdk/engine/ILibrary.hpp>
+#include <metamodcpp_sdk/engine/IHooks.hpp>
 
 static TypeHandler<SPMod::IHookInfo> gSPGameInitHooks;
 static TypeHandler<SPMod::IHookInfo> gSPClientConnectHooks;
+static TypeHandler<SPMod::IHookInfo> gSPClientDropHooks;
+static TypeHandler<SPMod::IHookInfo> gSPClientPutinServerHooks;
+static TypeHandler<Metamod::IHookInfo> gMetaChangeLevelHooks;
+static TypeHandler<SPMod::IHookInfo> gSPClientInfoChangedHooks;
 
 static std::string gRejectReason;
 constexpr const std::size_t REASON_REJECT_MAX_LEN = 128;
@@ -45,7 +50,7 @@ namespace SPExt
 
             if (!func || !func->IsRunnable())
             {
-                return;
+                continue;
             }
 
             func->Execute(nullptr);
@@ -66,6 +71,39 @@ namespace SPExt
                 hooks->clientConnect()->unregisterHook(hook);
             }
         }
+
+        for (auto hook : gSPClientDropHooks)
+        {
+            if (hook)
+            {
+                hooks->dropClient()->unregisterHook(hook);
+            }
+        }
+
+        for (auto hook : gSPClientPutinServerHooks)
+        {
+            if (hook)
+            {
+                hooks->clientPutinServer()->unregisterHook(hook);
+            }
+        }
+
+        Metamod::Engine::IHooks *eHooks = gEngine->getHooks();
+        for (auto hook : gMetaChangeLevelHooks)
+        {
+            if (hook)
+            {
+                eHooks->changeLevel()->unregisterHook(hook);
+            }
+        }
+
+        for (auto hook : gSPClientInfoChangedHooks)
+        {
+            if (hook)
+            {
+                hooks->clientInfoChanged()->unregisterHook(hook);
+            }
+        }
     }
 }
 
@@ -81,6 +119,11 @@ static cell_t GameInitHook(SourcePawn::IPluginContext *ctx, const cell_t *params
 
     auto vCbPrio = static_cast<SPMod::HookPriority>(params[arg_prio]);
     SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_callback]);
+
+    if (func)
+    {
+        return -1;
+    }
 
     SPMod::IHookInfo *hookInfo = hooks->gameInit()->registerHook(
         [func](SPMod::IGameInitHook *hook) {
@@ -116,7 +159,7 @@ static cell_t GameInitHookUnhook(SourcePawn::IPluginContext *ctx [[maybe_unused]
     return 1;
 }
 
-static cell_t GameInitHookChainCall(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params, bool original)
+static void GameInitHookCall(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params, bool original)
 {
     enum
     {
@@ -125,18 +168,18 @@ static cell_t GameInitHookChainCall(SourcePawn::IPluginContext *ctx [[maybe_unus
 
     auto initHook = reinterpret_cast<SPMod::IGameInitHook *>(params[arg_hook]);
     (!original) ? initHook->callNext() : initHook->callOriginal();
-
-    return 1;
 }
 
 static cell_t GameInitHookChainNext(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    return GameInitHookChainCall(ctx, params, false);
+    GameInitHookCall(ctx, params, false);
+    return 1;
 }
 
 static cell_t GameInitHookChainOriginal(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    return GameInitHookChainCall(ctx, params, true);
+    GameInitHookCall(ctx, params, true);
+    return 1;
 }
 
 static cell_t ClientConnectHook(SourcePawn::IPluginContext *ctx, const cell_t *params)
@@ -151,6 +194,11 @@ static cell_t ClientConnectHook(SourcePawn::IPluginContext *ctx, const cell_t *p
 
     auto vCbPrio = static_cast<SPMod::HookPriority>(params[arg_prio]);
     SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_callback]);
+
+    if (!func)
+    {
+        return -1;
+    }
 
     SPMod::IHookInfo *hookInfo = hooks->clientConnect()->registerHook(
         [func](SPMod::IClientConnectHook *hook, Metamod::Engine::IEdict *pEntity,
@@ -194,7 +242,7 @@ static cell_t ClientConnectUnhook(SourcePawn::IPluginContext *ctx [[maybe_unused
     return 1;
 }
 
-static cell_t ClientConnectHookChainCall(SourcePawn::IPluginContext *ctx, const cell_t *params, bool original)
+static cell_t ClientConnectHookCall(SourcePawn::IPluginContext *ctx, const cell_t *params, bool original)
 {
     enum
     {
@@ -238,12 +286,357 @@ static cell_t ClientConnectHookChainCall(SourcePawn::IPluginContext *ctx, const 
 
 static cell_t ClientConnectHookChainNext(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    return ClientConnectHookChainCall(ctx, params, false);
+    return ClientConnectHookCall(ctx, params, false);
 }
 
 static cell_t ClientConnectHookChainOriginal(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    return ClientConnectHookChainCall(ctx, params, true);
+    return ClientConnectHookCall(ctx, params, true);
+}
+
+static cell_t ClientDropHook(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    enum
+    {
+        arg_callback = 1,
+        arg_prio
+    };
+
+    static SPMod::IHooks *hooks = gSPGlobal->getHooks();
+
+    auto vCbPrio = static_cast<SPMod::HookPriority>(params[arg_prio]);
+    SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_callback]);
+
+    if (!func)
+    {
+        return -1;
+    }
+
+    SPMod::IHookInfo *hookInfo = hooks->dropClient()->registerHook(
+        [func](SPMod::IDropClientHook *hook, Metamod::Engine::IEdict *pEntity,
+               bool crash, std::string_view string) {
+
+            if (!func->IsRunnable())
+            {
+                hook->callNext(pEntity, crash, string);
+                return;
+            }
+
+            func->PushCell(reinterpret_cast<std::intptr_t>(hook));
+            func->PushCell(static_cast<cell_t>(pEntity->getIndex()));
+            func->PushCell(crash);
+            func->PushString(string.data());
+            func->Execute(nullptr);
+        }, vCbPrio);
+
+    return static_cast<cell_t>(gSPClientDropHooks.create(hookInfo));
+}
+
+static cell_t ClientDropHookUnhook(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
+{
+    enum
+    {
+        arg_hook = 1
+    };
+
+    static SPMod::IHooks *hooks = gSPGlobal->getHooks();
+    SPMod::IHookInfo *hookInfo = gSPClientDropHooks.get(params[arg_hook]);
+
+    if (!hookInfo)
+    {
+        return 0;
+    }
+
+    hooks->dropClient()->unregisterHook(hookInfo);
+    return 1;
+}
+
+static void ClientDropHookChainCall(SourcePawn::IPluginContext *ctx, const cell_t *params, bool original)
+{
+    enum
+    {
+        arg_hook = 1,
+        arg_client,
+        arg_crash,
+        arg_string
+    };
+
+    auto dropHook = reinterpret_cast<SPMod::IDropClientHook *>(params[arg_hook]);
+
+    Metamod::Engine::IEdict *pEdict = gEngine->getEdict(static_cast<std::uint32_t>(params[arg_client]));
+    bool crash = params[arg_crash] == 1;
+
+    char *string;
+    ctx->LocalToString(params[arg_string], &string);
+
+    (!original) ? dropHook->callNext(pEdict, crash, string)
+                : dropHook->callOriginal(pEdict, crash, string);
+}
+
+static cell_t ClientDropHookChainNext(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    ClientDropHookChainCall(ctx, params, false);
+    return 1;
+}
+
+static cell_t ClientDropHookChainOriginal(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    ClientDropHookChainCall(ctx, params, true);
+    return 1;
+}
+
+static cell_t ClientPutinServerHook(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    enum
+    {
+        arg_callback = 1,
+        arg_prio
+    };
+
+    static SPMod::IHooks *hooks = gSPGlobal->getHooks();
+
+    auto vCbPrio = static_cast<SPMod::HookPriority>(params[arg_prio]);
+    SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_callback]);
+
+    if (!func)
+    {
+        return -1;
+    }
+
+    SPMod::IHookInfo *hookInfo = hooks->clientPutinServer()->registerHook(
+        [func](SPMod::IClientPutinServerHook *hook, Metamod::Engine::IEdict *pEntity) {
+
+            if (!func->IsRunnable())
+            {
+                hook->callNext(pEntity);
+                return;
+            }
+
+            func->PushCell(reinterpret_cast<std::intptr_t>(hook));
+            func->PushCell(static_cast<cell_t>(pEntity->getIndex()));
+            func->Execute(nullptr);
+        }, vCbPrio);
+
+    return static_cast<cell_t>(gSPClientPutinServerHooks.create(hookInfo));
+}
+
+static cell_t ClientPutinServerHookUnhook(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
+{
+    enum
+    {
+        arg_hook = 1
+    };
+
+    static SPMod::IHooks *hooks = gSPGlobal->getHooks();
+    SPMod::IHookInfo *hookInfo = gSPClientPutinServerHooks.get(params[arg_hook]);
+
+    if (!hookInfo)
+    {
+        return 0;
+    }
+
+    hooks->clientPutinServer()->unregisterHook(hookInfo);
+    return 1;
+}
+
+static void ClientPutinServerHookCall(SourcePawn::IPluginContext *ctx, const cell_t *params, bool original)
+{
+    enum
+    {
+        arg_hook = 1,
+        arg_client
+    };
+
+    auto dropHook = reinterpret_cast<SPMod::IClientPutinServerHook *>(params[arg_hook]);
+
+    Metamod::Engine::IEdict *pEdict = gEngine->getEdict(static_cast<std::uint32_t>(params[arg_client]));
+
+    (!original) ? dropHook->callNext(pEdict)
+                : dropHook->callOriginal(pEdict);
+}
+
+static cell_t ClientPutinServerHookChainNext(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    ClientPutinServerHookCall(ctx, params, false);
+    return 1;
+}
+
+static cell_t ClientPutinServerHookChainOriginal(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    ClientPutinServerHookCall(ctx, params, true);
+    return 1;
+}
+
+static cell_t ChangeLevelHook(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    enum
+    {
+        arg_callback = 1,
+        arg_prio
+    };
+
+    static Metamod::Engine::IHooks *hooks = gEngine->getHooks();
+
+    auto vCbPrio = static_cast<Metamod::HookPriority>(params[arg_prio]);
+    SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_callback]);
+
+    if (!func)
+    {
+        return -1;
+    }
+
+    Metamod::IHookInfo *hookInfo = hooks->changeLevel()->registerHook(
+        [func](Metamod::Engine::IChangeLevelHook *hook, std::string_view map1, std::string_view map2) {
+
+          if (!func->IsRunnable())
+          {
+              hook->callNext(map1, map2);
+              return;
+          }
+
+          func->PushCell(reinterpret_cast<std::intptr_t>(hook));
+          func->PushString(map1.data());
+          func->PushString(map2.data());
+          func->Execute(nullptr);
+        }, vCbPrio);
+
+    return static_cast<cell_t>(gMetaChangeLevelHooks.create(hookInfo));
+}
+
+static cell_t ChangeLevelHookUnhook(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
+{
+    enum
+    {
+        arg_hook = 1
+    };
+
+    static Metamod::Engine::IHooks *hooks = gEngine->getHooks();
+    Metamod::IHookInfo *hookInfo = gMetaChangeLevelHooks.get(params[arg_hook]);
+
+    if (!hookInfo)
+    {
+        return 0;
+    }
+
+    hooks->changeLevel()->unregisterHook(hookInfo);
+    return 1;
+}
+
+static void ChangeLevelHookCall(SourcePawn::IPluginContext *ctx, const cell_t *params, bool original)
+{
+    enum
+    {
+        arg_hook = 1,
+        arg_map1,
+        arg_map2
+    };
+
+    auto changeLevelHook = reinterpret_cast<Metamod::Engine::IChangeLevelHook *>(params[arg_hook]);
+
+    char *mapName1;
+    ctx->LocalToString(params[arg_map1], &mapName1);
+
+    char *mapName2;
+    ctx->LocalToString(params[arg_map2], &mapName2);
+
+    (!original) ? changeLevelHook->callNext(mapName1, mapName2)
+                : changeLevelHook->callOriginal(mapName1, mapName2);
+}
+
+static cell_t ChangeLevelHookChainNext(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    ChangeLevelHookCall(ctx, params, false);
+    return 1;
+}
+
+static cell_t ChangeLevelHookChainOriginal(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    ChangeLevelHookCall(ctx, params, true);
+    return 1;
+}
+
+static cell_t ClientInfoChangedHook(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    enum
+    {
+        arg_callback = 1,
+        arg_prio
+    };
+
+    static SPMod::IHooks *hooks = gSPGlobal->getHooks();
+
+    auto vCbPrio = static_cast<SPMod::HookPriority>(params[arg_prio]);
+    SourcePawn::IPluginFunction *func = ctx->GetFunctionById(params[arg_callback]);
+
+    if (!func)
+    {
+        return -1;
+    }
+
+    SPMod::IHookInfo *hookInfo = hooks->clientInfoChanged()->registerHook(
+        [func](SPMod::IClientInfoChangedHook *hook, Metamod::Engine::IEdict *pEntity, Metamod::Engine::InfoBuffer infoBuffer) {
+
+          if (!func->IsRunnable())
+          {
+              hook->callNext(pEntity, infoBuffer);
+              return;
+          }
+
+          func->PushCell(reinterpret_cast<std::intptr_t>(hook));
+          func->PushCell(static_cast<cell_t>(pEntity->getIndex()));
+          func->PushCell(reinterpret_cast<std::intptr_t>(&infoBuffer));
+          func->Execute(nullptr);
+        }, vCbPrio);
+
+    return static_cast<cell_t>(gSPClientInfoChangedHooks.create(hookInfo));
+}
+
+static cell_t ClientInfoChangedHookUnhook(SourcePawn::IPluginContext *ctx [[maybe_unused]], const cell_t *params)
+{
+    enum
+    {
+        arg_hook = 1
+    };
+
+    static SPMod::IHooks *hooks = gSPGlobal->getHooks();
+    SPMod::IHookInfo *hookInfo = gSPClientInfoChangedHooks.get(params[arg_hook]);
+
+    if (!hookInfo)
+    {
+        return 0;
+    }
+
+    hooks->clientInfoChanged()->unregisterHook(hookInfo);
+    return 1;
+}
+
+static void ClientInfoChangedHook(SourcePawn::IPluginContext *ctx, const cell_t *params, bool original)
+{
+    enum
+    {
+        arg_hook = 1,
+        arg_client,
+        arg_infoBuffer,
+    };
+
+    auto clientInfoChangedHook = reinterpret_cast<SPMod::IClientInfoChangedHook *>(params[arg_hook]);
+    auto &infoBuffer = *reinterpret_cast<Metamod::Engine::InfoBuffer *>(params[arg_hook]);
+    Metamod::Engine::IEdict *pEdict = gEngine->getEdict(static_cast<std::uint32_t>(params[arg_client]));
+
+    (!original) ? clientInfoChangedHook->callNext(pEdict, infoBuffer)
+                : clientInfoChangedHook->callOriginal(pEdict, infoBuffer);
+}
+
+static cell_t ClientInfoChangedHookChainNext(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    ClientInfoChangedHook(ctx, params, false);
+    return 1;
+}
+
+static cell_t ClientInfoChangedHookChainOriginal(SourcePawn::IPluginContext *ctx, const cell_t *params)
+{
+    ClientInfoChangedHook(ctx, params, true);
+    return 1;
 }
 
 sp_nativeinfo_t gHooksNatives[] = {
@@ -259,6 +652,29 @@ sp_nativeinfo_t gHooksNatives[] = {
     {"ClientConnectHookChain.CallNext", ClientConnectHookChainNext},
     {"ClientConnectHookChain.CallOriginal", ClientConnectHookChainOriginal},
 
+    // Client Drop
+    {"ClientDropHook.ClientDropHook", ClientDropHook},
+    {"ClientDropHook.Unhook", ClientDropHookUnhook},
+    {"ClientDropHookChain.CallNext", ClientDropHookChainNext},
+    {"ClientDropHookChain.CallOriginal", ClientDropHookChainOriginal},
+
+    // Client PutinServer
+    {"ClientPutinServerHook.ClientPutinServerHook", ClientPutinServerHook},
+    {"ClientPutinServerHook.Unhook", ClientPutinServerHookUnhook},
+    {"ClientPutinServerHookChain.CallNext", ClientPutinServerHookChainNext},
+    {"ClientPutinServerHookChain.CallOriginal", ClientPutinServerHookChainOriginal},
+
+    // Change Level
+    {"ChangeLevelHook.ChangeLevelHook", ChangeLevelHook},
+    {"ChangeLevelHook.Unhook", ChangeLevelHookUnhook},
+    {"ChangeLevelHookChain.CallNext", ChangeLevelHookChainNext},
+    {"ChangeLevelHookChain.CallOriginal", ChangeLevelHookChainOriginal},
+
+    // Client Info Changed
+    {"ClientInfoChangedHook.ClientInfoChangedHook", ClientInfoChangedHook},
+    {"ClientInfoChangedHook.Unhook", ClientInfoChangedHookUnhook},
+    {"ClientInfoChangedHookChain.CallNext", ClientInfoChangedHookChainNext},
+    {"ClientInfoChangedHookChain.CallOriginal", ClientInfoChangedHookChainOriginal},
 
     {nullptr, nullptr}
 };

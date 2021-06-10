@@ -64,30 +64,16 @@ struct PluginInfo
 public const int maxClients;
 
 /*
- * @brief Called before OnPluginInit, plugin is supposed to add any of its natives here.
+ * @brief The very first routine called in the plugin. The plugin is supposed to add any of its natives here.
  *        Only registering natives should take place here.
  */
-forward void OnPluginNatives();
+forward void PluginNatives();
 
 /*
- * @brief Called when plugin has been loaded. Paired with OnPluginEnd().
+ * @brief Called after PluginNatives(). The plugin should install any hooks it needs here.
+ *        Only registering hooks should take place here.
  */
-forward void OnPluginInit();
-
-/*
- * @brief Called when all plugins has been loaded.
- */
-forward void OnPluginsLoaded();
-
-/*
- * @brief Called when plugin is about to be unloaded.
- */
-forward void OnPluginEnd();
-
-/*
- * @brief Called when map is going to change.
- */
-forward PluginReturn OnMapChange(const char[] map);
+forward void InstallHooks();
 
 /*
  * @brief Prints text to the server's console.

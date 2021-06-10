@@ -23,7 +23,7 @@
 #define _hooks_included
 
 #include <hooks_base>
-#include <clients>
+#include <clients_hooks>
 
 methodmap GameInitHookChain
 {
@@ -39,17 +39,24 @@ methodmap GameInitHook
     public native void Unhook();
 }
 
-
-methodmap ClientConnectHookChain
+methodmap ChangeLevelHookChain
 {
-    public native void CallNext(Client client, const char[] name, const char[] address, char rejectReason[128]);
-    public native void CallOriginal(Client client, const char[] name, const char[] address, char rejectReason[128]);
+    public native void CallNext(const char[] map, const char[] map2);
+    public native void CallOriginal(const char[] map, const char[] map2);
 }
 
-typedef ClientConnectHookCallback = function bool (const ClientConnectHookChain chain, Client client, const char[] name, const char[] address, char rejectReason[128]);
+/*
+ * @brief Called when map is going to change.
+ *
+ * @param map        Map name.
+ * @param map2       Map name.
+ *
+ * @noreturn
+ */
+typedef ChangeLevelHookCallback = function void (const ChangeLevelHookChain chain, const char[] map, const char[] map2);
 
-methodmap ClientConnectHook
+methodmap ChangeLevelHook
 {
-    public native ClientConnectHook(ClientConnectHookCallback callback, HookPriority priority = HookPrio_Default);
+    public native ChangeLevelHook(ChangeLevelHookCallback callback, HookPriority priority = HookPrio_Default);
     public native void Unhook();
 }

@@ -63,7 +63,7 @@ namespace SPExt
             m_pluginFunction->PushCell(static_cast<cell_t>(executor->getId()));
             m_pluginFunction->Execute(&result);
         }
-        else
+        else if (m_proxiedNative)
         {
             result = m_proxiedNative->InvokeSPModNative(executor);
         }

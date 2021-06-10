@@ -96,6 +96,12 @@ namespace SPExt
             plugin->GetPubvarAddrs(maxClientsVarIndex, &local_addr, &phys_addr);
             *phys_addr = static_cast<cell_t>(gSPPlrMngr->getMaxClients());
         }
+
+        SourcePawn::IPluginFunction *pluginNativesFn = m_runtime->GetFunctionByName("PluginNatives");
+        if (pluginNativesFn && pluginNativesFn->IsRunnable())
+        {
+            pluginNativesFn->Execute(nullptr);
+        }
     }
 
     std::string_view Plugin::getName() const
@@ -236,9 +242,9 @@ namespace SPExt
             addNative(proxiedNative);
         }
 
-        for (const auto &entry : m_plugins)
+        for (const auto &[identity, plugin] : m_plugins)
         {
-            SourcePawn::IPluginRuntime *runtime = entry.second->getRuntime();
+            SourcePawn::IPluginRuntime *runtime = plugin->getRuntime();
             std::uint32_t nativesNum = runtime->GetNativesNum();
 
             for (std::uint32_t index = 0; index < nativesNum; ++index)
