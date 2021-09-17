@@ -28,20 +28,14 @@ typeset CmdCallback
     function void (Command cid);
 
     // Client command
-    function PluginReturn (int client, Command cid);
+    function PluginReturn (Client client, Command cid);
 };
 
 methodmap Command
 {
-    public native Command(const char[] cmd, CmdCallback func, const char[] info = "", bool regex = false, bool server = false, int flags = 0);
+    public native Command(const char[] cmd, CmdCallback func, const char[] info = "", bool regex = false, bool server = false, const char[] permission = "");
     public native int GetInfo(char[] buffer, int size);
-
-    property int Access {
-		public native get();
-    }
 };
-
-forward PluginReturn OnClientCommand(int client);
 
 native int CmdGetArgv(int arg, char[] buffer, int size);
 native int CmdGetArgs(char[] buffer, int size);

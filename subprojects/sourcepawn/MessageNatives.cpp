@@ -24,8 +24,8 @@
 #include "PlayerNatives.hpp"
 
 #include <ISPGlobal.hpp>
-#include <metamodcpp_sdk/IMetamod.hpp>
-#include <metamodcpp_sdk/engine/ILibrary.hpp>
+#include <metamod/IMetamod.hpp>
+#include <metamod/engine/ILibrary.hpp>
 
 static bool gIgnoreHooks;
 static TypeHandler<SPMod::IHookInfo> gMessageHooks;

@@ -19,9 +19,9 @@
 
 #include "UtilsSystem.hpp"
 #include "SPGlobal.hpp"
-#include "MetaInit.hpp"
+#include "AnubisInit.hpp"
 
-#include <metamodcpp_sdk/engine/IEdict.hpp>
+#include <anubis/engine/IEdict.hpp>
 
 std::size_t Utils::strCopy(char *buffer, std::size_t size, std::string_view src) const
 {
@@ -55,7 +55,7 @@ std::string Utils::strReplaced(std::string_view source, std::string_view from, s
     return temp;
 }
 
-void Utils::ShowMenu(Metamod::Engine::IEdict *pEdict, std::int16_t slots, std::int8_t time, std::string_view menu)
+void Utils::ShowMenu(nstd::observer_ptr<Anubis::Engine::IEdict> pEdict, std::int16_t slots, std::int8_t time, std::string_view menu)
 {
     static constexpr std::size_t maxStringToSend = 175;
     static constexpr std::size_t maxMenuLength = 512;
@@ -66,12 +66,12 @@ void Utils::ShowMenu(Metamod::Engine::IEdict *pEdict, std::int16_t slots, std::i
     do
     {
         menuLength -= buffer.length();
-        gEngine->messageBegin(Metamod::Engine::MsgDest::One, gSPGlobal->getUserMsgId(UserMsgId::ShowMenu), nullptr, pEdict, Metamod::FuncCallType::Direct);
-        gEngine->writeShort(slots, Metamod::FuncCallType::Direct);
-        gEngine->writeChar(time, Metamod::FuncCallType::Direct);
-        gEngine->writeByte((menuLength > 0) ? std::byte(1) : std::byte(0), Metamod::FuncCallType::Direct);
-        gEngine->writeString(buffer.data(), Metamod::FuncCallType::Direct);
-        gEngine->messageEnd(Metamod::FuncCallType::Direct);
+        gEngine->messageBegin(Anubis::Engine::MsgDest::One, gSPGlobal->getUserMsgId(UserMsgId::ShowMenu), std::nullopt, pEdict, Anubis::FuncCallType::Direct);
+        gEngine->writeShort(slots, Anubis::FuncCallType::Direct);
+        gEngine->writeChar(time, Anubis::FuncCallType::Direct);
+        gEngine->writeByte((menuLength > 0) ? std::byte(1) : std::byte(0), Anubis::FuncCallType::Direct);
+        gEngine->writeString(buffer.data(), Anubis::FuncCallType::Direct);
+        gEngine->messageEnd(Anubis::FuncCallType::Direct);
 
         currentPos += buffer.length();
         buffer = menu.substr(currentPos, (menuLength > maxStringToSend) ? maxStringToSend : std::string_view::npos);
@@ -136,23 +136,22 @@ void Utils::trimMultiByteChar(std::string &str)
     }
 }
 
-void Utils::sendTextMsg(std::string_view message, TextMsgDest msgDest, Metamod::Engine::IEdict *edict)
+void Utils::sendTextMsg(std::string_view message, TextMsgDest msgDest, nstd::observer_ptr<Anubis::Engine::IEdict> edict)
 {
     constexpr std::size_t maxLength = 187;
-    static Metamod::Engine::MsgType textMsg = gSPGlobal->getUserMsgId(UserMsgId::TextMsg);
+    static Anubis::Engine::MsgType textMsg = gSPGlobal->getUserMsgId(UserMsgId::TextMsg);
 
     if (edict)
     {
-
-        gEngine->messageBegin(Metamod::Engine::MsgDest::One, textMsg, nullptr, edict, Metamod::FuncCallType::Direct);
+        gEngine->messageBegin(Anubis::Engine::MsgDest::One, textMsg, std::nullopt, edict, Anubis::FuncCallType::Direct);
     }
     else
     {
-        gEngine->messageBegin(Metamod::Engine::MsgDest::Broadcast, textMsg, nullptr, nullptr, Metamod::FuncCallType::Direct);
+        gEngine->messageBegin(Anubis::Engine::MsgDest::Broadcast, textMsg, std::nullopt, nullptr, Anubis::FuncCallType::Direct);
     }
 
-    gEngine->writeByte(std::byte(msgDest), Metamod::FuncCallType::Direct);	// 1 byte
-    gEngine->writeString("%s", Metamod::FuncCallType::Direct);	// 3 bytes (2 + EOS)
-    gEngine->writeString(message.substr(0, maxLength).data(), Metamod::FuncCallType::Direct);	// max 188 bytes (187 + EOS)
-    gEngine->messageEnd(Metamod::FuncCallType::Direct);		// max 192 bytes
+    gEngine->writeByte(std::byte(msgDest), Anubis::FuncCallType::Direct);	// 1 byte
+    gEngine->writeString("%s", Anubis::FuncCallType::Direct);	// 3 bytes (2 + EOS)
+    gEngine->writeString(message.substr(0, maxLength).data(), Anubis::FuncCallType::Direct);	// max 188 bytes (187 + EOS)
+    gEngine->messageEnd(Anubis::FuncCallType::Direct);		// max 192 bytes
 }

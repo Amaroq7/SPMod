@@ -22,8 +22,8 @@
 #include "HookChains.hpp"
 
 #include <IMessageSystem.hpp>
-#include <metamodcpp_sdk/engine/Common.hpp>
-#include <metamodcpp_sdk/engine/IEdict.hpp>
+#include <metamod/engine/Common.hpp>
+#include <metamod/engine/IEdict.hpp>
 
 using namespace SPMod;
 
@@ -41,8 +41,8 @@ public:
     const float *getOrigin() const final;
     Metamod::Engine::IEdict *getEdict() const final;
 
-    IHookInfo *registerHook(IMessage::Handler handler, HookPriority hookPriority) final;
-    void unregisterHook(IHookInfo *hook) final;
+    std::weak_ptr<IHookInfo> registerHook(IMessage::Handler handler, HookPriority hookPriority) final;
+    void unregisterHook(std::weak_ptr<IHookInfo> hook) final;
 
     MsgBlockType getBlockType() const final;
     void setBlockType(MsgBlockType blockType) final;
@@ -79,7 +79,7 @@ public:
     ~MessageMngr() final = default;
 
     // IMessageMngr
-    IMessage *getMessage(Metamod::Engine::MsgType msgType) const final;
+    std::weak_ptr<IMessage> getMessage(Metamod::Engine::MsgType msgType) const final;
 
     bool MessageBegin(Metamod::Engine::MsgDest msg_dest,
                       Metamod::Engine::MsgType msg_type,
@@ -106,6 +106,6 @@ public:
     }
 
 private:
-    std::array<std::unique_ptr<Message>, MAX_USER_MESSAGES> m_messages;
+    std::array<std::shared_ptr<Message>, MAX_USER_MESSAGES> m_messages;
     Metamod::Engine::MsgType m_currentMsgType = 0;
 };

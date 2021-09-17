@@ -33,7 +33,7 @@
 #if defined SP_POSIX
     #if defined __clang__
         #define SP_CLANG
-    #elif defined __GNUC__
+    #else
         #define SP_GCC
     #endif
 #elif defined SP_WINDOWS
@@ -44,51 +44,8 @@
 
 #if !defined SPMOD_API
     #if defined SP_POSIX
-        #define SPMOD_API extern "C" __attribute__((visibility("default")))
+        #define SPMOD_API __attribute__((visibility("default")))
     #else
-        #define SPMOD_API extern "C" __declspec(dllexport)
+        #define SPMOD_API __declspec(dllexport)
     #endif
-#endif
-
-// Console colors
-#if defined SP_POSIX
-constexpr const char *CNSL_DEFAULT = "\033[39m";
-constexpr const char *CNSL_BLACK = "\033[30m";
-constexpr const char *CNSL_RED = "\033[31m";
-constexpr const char *CNSL_GREEN = "\033[32m";
-constexpr const char *CNSL_YELLOW = "\033[33m";
-constexpr const char *CNSL_BLUE = "\033[34m";
-constexpr const char *CNSL_MAGENTA = "\033[35m";
-constexpr const char *CNSL_CYAN = "\033[36m";
-constexpr const char *CNSL_LGRAY = "\033[37m";
-constexpr const char *CNSL_DGRAY = "\033[90m";
-constexpr const char *CNSL_LRED = "\033[91m";
-constexpr const char *CNSL_LGREEN = "\033[92m";
-constexpr const char *CNSL_LYELLOW = "\033[93m";
-constexpr const char *CNSL_LBLUE = "\033[94m";
-constexpr const char *CNSL_LMAGENTA = "\033[95m";
-constexpr const char *CNSL_LCYAN = "\033[96m";
-constexpr const char *CNSL_WHITE = "\033[97m";
-constexpr const char *CNSL_BOLD = "\033[1m";
-constexpr const char *CNSL_RESET = "\033[0m";
-#else
-constexpr const char *CNSL_DEFAULT = "";
-constexpr const char *CNSL_BLACK = "";
-constexpr const char *CNSL_RED = "";
-constexpr const char *CNSL_GREEN = "";
-constexpr const char *CNSL_YELLOW = "";
-constexpr const char *CNSL_BLUE = "";
-constexpr const char *CNSL_MAGENTA = "";
-constexpr const char *CNSL_CYAN = "";
-constexpr const char *CNSL_LGRAY = "";
-constexpr const char *CNSL_DGRAY = "";
-constexpr const char *CNSL_LRED = "";
-constexpr const char *CNSL_LGREEN = "";
-constexpr const char *CNSL_LYELLOW = "";
-constexpr const char *CNSL_LBLUE = "";
-constexpr const char *CNSL_LMAGENTA = "";
-constexpr const char *CNSL_LCYAN = "";
-constexpr const char *CNSL_WHITE = "";
-constexpr const char *CNSL_BOLD = "";
-constexpr const char *CNSL_RESET = "";
 #endif

@@ -17,17 +17,19 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <SPConfig.hpp>
 #include "CmdSystem.hpp"
 #include "SPGlobal.hpp"
 
+#include <SPConfig.hpp>
+#include <utility>
+
 Command::Command(std::string &&cmd, std::string_view info, ICommand::Callback cb)
-    : m_nameOrRegex(std::move(cmd)), m_info(info), m_callback(cb)
+    : m_nameOrRegex(std::move(cmd)), m_info(info), m_callback(std::move(cb))
 {
 }
 
 Command::Command(std::regex &&cmd, std::string_view info, ICommand::Callback cb)
-    : m_nameOrRegex(std::move(cmd)), m_info(info), m_callback(cb)
+    : m_nameOrRegex(std::move(cmd)), m_info(info), m_callback(std::move(cb))
 {
 }
 
@@ -48,57 +50,51 @@ bool Command::execCallback(Player *player)
 
 ClientCommand::ClientCommand(std::string &&cmd,
                              std::string_view info,
-                             std::uint32_t flags,
+                             std::string_view permission,
                              ICommand::Callback cb)
-    : Command(std::move(cmd), info, cb), m_flags(flags)
+    : Command(std::move(cmd), info, std::move(cb)), m_permission(permission)
 {
 }
 
 ClientCommand::ClientCommand(std::regex &&cmd,
                              std::string_view info,
-                             std::uint32_t flags,
+                             std::string_view permission,
                              ICommand::Callback cb)
-    : Command(std::move(cmd), info, cb), m_flags(flags)
+    : Command(std::move(cmd), info, std::move(cb)), m_permission(permission)
 {
 }
 
-bool ClientCommand::hasAccess(const IPlayer *player [[maybe_unused]]) const
+bool ClientCommand::hasAccess(nstd::observer_ptr<IPlayer> player) const
 {
-    return _hasAccess(/*player->getFlags()*/ 0);
+    return player->hasAccess(m_permission);
 }
 
-uint32_t ClientCommand::getAccess() const
+std::string_view ClientCommand::getPermission() const
 {
-    return m_flags;
-}
-
-bool ClientCommand::_hasAccess(uint32_t flags [[maybe_unused]]) const
-{
-    // TODO: Check access
-    return true;
+    return m_permission;
 }
 
 ServerCommand::ServerCommand(std::string_view cmd, std::string_view info, ICommand::Callback cb)
-    : Command(std::string(cmd), info, cb)
+    : Command(std::string(cmd), info, std::move(cb))
 {
 }
 
-bool ServerCommand::hasAccess(const IPlayer *player [[maybe_unused]]) const
+bool ServerCommand::hasAccess(nstd::observer_ptr<IPlayer> player [[maybe_unused]]) const
 {
     return true;
 }
 
-std::uint32_t ServerCommand::getAccess() const
+std::string_view ServerCommand::getPermission() const
 {
-    return 0;
+    return {};
 }
 
-Command *CommandMngr::registerCommand(ICommand::Type type,
-                                      std::string_view cmd,
-                                      std::string_view info,
-                                      bool regex,
-                                      std::uint32_t flags,
-                                      ICommand::Callback cb)
+nstd::observer_ptr<ICommand> CommandMngr::registerCommand(ICommand::Type type,
+                                                     std::string_view cmd,
+                                                     std::string_view info,
+                                                     bool regex,
+                                                     std::string_view permission,
+                                                     ICommand::Callback cb)
 {
     switch (type)
     {
@@ -106,21 +102,19 @@ Command *CommandMngr::registerCommand(ICommand::Type type,
         {
             if (regex)
             {
-                return registerCommandInternal<::ClientCommand>(std::regex(cmd.data()), info, flags, cb).get();
+                return registerCommandInternal<::ClientCommand>(std::regex(cmd.data()), info, permission, cb);
             }
-            return registerCommandInternal<::ClientCommand>(std::string(cmd), info, flags, cb).get();
+            return registerCommandInternal<::ClientCommand>(std::string(cmd), info, permission, cb);
         }
         case ICommand::Type::Server:
         {
             if (regex)
             {
-                return nullptr; // Server command can't be a regex expression
+                return {}; // Server command can't be a regex expression
             }
-            gEngine->registerSrvCommand(cmd.data(), CommandMngr::PluginSrvCommand, Metamod::FuncCallType::Direct);
-            return registerCommandInternal<ServerCommand>(cmd, info, cb).get();
+            gEngine->registerSrvCommand(cmd.data(), CommandMngr::PluginSrvCommand, Anubis::FuncCallType::Direct);
+            return registerCommandInternal<ServerCommand>(cmd, info, cb);
         }
-        default:
-            return nullptr;
     }
 }
 
@@ -135,7 +129,7 @@ void CommandMngr::clearCommands()
     m_serverCommands.clear();
 }
 
-bool CommandMngr::ClientCommand(Metamod::Engine::IEdict *entity, std::string_view clCmd)
+bool CommandMngr::ClientCommand(nstd::observer_ptr<Anubis::Engine::IEdict> entity, std::string_view clCmd)
 {
     Player *player = gSPGlobal->getPlayerManager()->getPlayer(entity);
     bool result = true;
@@ -145,7 +139,7 @@ bool CommandMngr::ClientCommand(Metamod::Engine::IEdict *entity, std::string_vie
         if (clCmd == "say" || clCmd == "say_team")
         {
             cmdName += ' ';
-            cmdName += gMetaAPI->getEngine()->cmdArgv(1, Metamod::FuncCallType::Direct);
+            cmdName += gEngine->cmdArgv(1, Anubis::FuncCallType::Direct);
         }
 
         for (const auto &cmd : getCommandList(ICommand::Type::Client))
@@ -175,7 +169,7 @@ bool CommandMngr::ClientCommand(Metamod::Engine::IEdict *entity, std::string_vie
 
 void CommandMngr::PluginSrvCommand()
 {
-    std::string_view argv(gMetaAPI->getEngine()->cmdArgv(0, Metamod::FuncCallType::Direct));
+    std::string_view argv(gEngine->cmdArgv(0, Anubis::FuncCallType::Direct));
 
     for (const auto &cmd : gSPGlobal->getCommandManager()->getCommandList(Command::Type::Server))
     {
@@ -195,7 +189,7 @@ void CommandMngr::SPModInfoCommand()
 
     auto logger = gSPGlobal->getLoggerManager()->getLogger(gSPModLoggerName);
     // Print out available commands
-    if (gMetaAPI->getEngine()->cmdArgc(Metamod::FuncCallType::Direct) == 1)
+    if (gEngine->cmdArgc(Anubis::FuncCallType::Direct) == 1)
     {
         logger->sendMsgToConsoleInternal("\nUsage: spmod [command] [args]\n \
                                       Command:\n \
@@ -206,7 +200,7 @@ void CommandMngr::SPModInfoCommand()
     }
     else
     {
-        std::string_view arg(gMetaAPI->getEngine()->cmdArgv(1, Metamod::FuncCallType::Direct));
+        std::string_view arg(gEngine->cmdArgv(1, Anubis::FuncCallType::Direct));
 
         if (arg == "plugins")
         {

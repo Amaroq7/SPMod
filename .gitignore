@@ -34,10 +34,6 @@
 # Build folder
 build/
 
-# LLVM header files
-include/llvm/*
-!include/llvm/.gitkeep
-
 # Temp files
 *~
 
@@ -55,9 +51,11 @@ include/llvm/*
 *.vcxproj.user
 *.pdb
 
-# SourcePawn deps
-subprojects/sourcepawn/sourcepawn_deps/
-
 # CLion
 .idea/
 cmake-*/
+
+# Third Party (downloaded by CMake)
+third_party/anubis
+third_party/yaml-cpp
+third_party/lib

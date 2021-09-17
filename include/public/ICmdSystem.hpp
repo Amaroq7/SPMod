@@ -30,7 +30,7 @@ namespace SPMod
     class ICommand
     {
     public:
-        using Callback = std::function<bool(IPlayer *player, ICommand *cmd)>;
+        using Callback = std::function<bool(nstd::observer_ptr<IPlayer> player, nstd::observer_ptr<ICommand> cmd)>;
 
         enum class Type : std::uint8_t
         {
@@ -47,14 +47,14 @@ namespace SPMod
          *
          * @return Command's regex or name.
          */
-        virtual const std::variant<std::string, std::regex> &getNameOrRegex() const = 0;
+        [[nodiscard]] virtual const std::variant<std::string, std::regex> &getNameOrRegex() const = 0;
 
         /**
          * @brief Returns command's info.
          *
          * @return Command's info.
          */
-        virtual std::string_view getInfo() const = 0;
+        [[nodiscard]] virtual std::string_view getInfo() const = 0;
 
         /**
          * @brief Checks if player can execute the command.
@@ -63,14 +63,14 @@ namespace SPMod
          *
          * @return True if player has access, false otherwise.
          */
-        virtual bool hasAccess(const IPlayer *player) const = 0;
+        [[nodiscard]] virtual bool hasAccess(nstd::observer_ptr<IPlayer> player) const = 0;
 
         /**
-         * @brief Returns command's access flags.
+         * @brief Returns permission to execute command.
          *
-         * @return Command's flags (bitwise).
+         * @return Permission name.
          */
-        virtual std::uint32_t getAccess() const = 0;
+        [[nodiscard]] virtual std::string_view getPermission() const = 0;
     };
 
     class ICommandMngr : public ISPModInterface
@@ -86,7 +86,7 @@ namespace SPMod
          *
          * @return        Interface's name.
          */
-        std::string_view getName() const override
+        [[nodiscard]] std::string_view getName() const override
         {
             return "ICommandMngr";
         }
@@ -98,12 +98,12 @@ namespace SPMod
          *
          * @return        Interface's version.
          */
-        std::uint32_t getVersion() const override
+        [[nodiscard]] std::uint32_t getVersion() const override
         {
             return VERSION;
         }
 
-        virtual ~ICommandMngr() = default;
+        ~ICommandMngr() override = default;
 
         /**
          * @brief Registers a command.
@@ -114,16 +114,16 @@ namespace SPMod
          * @param cmd           Command name.
          * @param info          Command info.
          * @param regex         Register command name as regex.
-         * @param flags         Access flags.
+         * @param permission    Permission to execute command.
          * @param cb            Callback.
          *
          * @return        Registered command.
          */
-        virtual ICommand *registerCommand(ICommand::Type type,
-                                          std::string_view cmd,
-                                          std::string_view info,
-                                          bool regex,
-                                          std::uint32_t flags,
-                                          ICommand::Callback cb) = 0;
+        virtual nstd::observer_ptr<ICommand> registerCommand(ICommand::Type type,
+                                                        std::string_view cmd,
+                                                        std::string_view info,
+                                                        bool regex,
+                                                        std::string_view permission,
+                                                        ICommand::Callback cb) = 0;
     };
 } // namespace SPMod

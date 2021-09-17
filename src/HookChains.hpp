@@ -169,43 +169,43 @@ namespace SPMod
             return !m_hooks.empty();
         }
 
-        HookInfo<t_ret, t_args...> *registerHook(HookFunc<t_ret, t_args...> hook, HookPriority priority) override
+        std::weak_ptr<IHookInfo> registerHook(HookFunc<t_ret, t_args...> hook, HookPriority priority) override
         {
             if (!hook)
             {
                 // TODO: Error message
-                return nullptr;
+                return {};
             }
 
-            auto hookInfo = std::make_unique<HookInfo<t_ret, t_args...>>(hook, priority);
+            auto hookInfo = std::shared_ptr<HookInfo<t_ret, t_args...>>(hook, priority);
 
             if (!hasHooks())
             {
-                return m_hooks.emplace_front(std::move(hookInfo)).get();
+                return m_hooks.emplace_front(std::move(hookInfo));
             }
 
-            typename std::forward_list<std::unique_ptr<HookInfo<t_ret, t_args...>>>::iterator prevIter = m_hooks.before_begin();
+            typename std::forward_list<std::shared_ptr<HookInfo<t_ret, t_args...>>>::iterator prevIter = m_hooks.before_begin();
             for (auto it = m_hooks.begin(); it != m_hooks.end(); ++it)
             {
                 if ((*it)->getPriority() < priority)
                 {
-                    return (*m_hooks.emplace_after(prevIter, std::move(hookInfo))).get();
+                    return *m_hooks.emplace_after(prevIter, std::move(hookInfo));
                 }
 
                 prevIter = it;
             }
 
-            return (*m_hooks.emplace_after(prevIter, std::move(hookInfo))).get();
+            return *m_hooks.emplace_after(prevIter, std::move(hookInfo));
         }
 
-        void unregisterHook(IHookInfo *hookInfo) override
+        void unregisterHook(std::weak_ptr<IHookInfo> hookInfo) override
         {
-            m_hooks.remove_if([hookInfo](const std::unique_ptr<HookInfo<t_ret, t_args...>> &hook) {
-              return hookInfo == hook.get();
+            m_hooks.remove_if([hookInfo](const std::shared_ptr<HookInfo<t_ret, t_args...>> &hook) {
+              return hookInfo.lock() == hook;
             });
         }
 
     private:
-        std::forward_list<std::unique_ptr<HookInfo<t_ret, t_args...>>> m_hooks;
+        std::forward_list<std::shared_ptr<HookInfo<t_ret, t_args...>>> m_hooks;
     };
 }

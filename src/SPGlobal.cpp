@@ -19,17 +19,18 @@
 
 #include "SPGlobal.hpp"
 #include <SPConfig.hpp>
-#include "MetaInit.hpp"
+#include "AnubisInit.hpp"
 
 std::unique_ptr<SPGlobal> gSPGlobal;
 
-SPGlobal::SPGlobal(fs::path &&dllDir)
+SPGlobal::SPGlobal(std::filesystem::path &&dllDir)
     : m_SPModDir(dllDir.parent_path().parent_path()), m_forwardManager(std::make_unique<ForwardMngr>()),
       m_loggingSystem(std::make_unique<LoggerMngr>()), m_cmdManager(std::make_unique<CommandMngr>()),
       m_timerManager(std::make_unique<TimerMngr>()), m_menuManager(std::make_unique<MenuMngr>()),
       m_messageManager(std::make_unique<MessageMngr>()), m_plrManager(std::make_unique<PlayerMngr>()),
       m_nativeProxy(std::make_unique<NativeProxy>()), m_utils(std::make_unique<Utils>()),
-      m_hooks(std::make_unique<Hooks>())
+      m_hooks(std::make_unique<Hooks>()), m_accessGroupMngr(std::make_shared<GroupMngr>()),
+      m_userMsgs()
 {
     // Sets default dirs
     setPath(DirType::Plugins, "plugins");
@@ -43,7 +44,7 @@ std::size_t SPGlobal::loadExts()
 {
     using namespace std::string_literals;
     std::error_code errCode;
-    auto directoryIter = fs::directory_iterator(m_SPModExtsDir, errCode);
+    auto directoryIter = std::filesystem::directory_iterator(m_SPModExtsDir, errCode);
     auto logger = m_loggingSystem->getLogger(gSPModLoggerName);
 
     if (errCode)
@@ -55,7 +56,7 @@ std::size_t SPGlobal::loadExts()
     /* Querying extensions */
     for (const auto &entry : directoryIter)
     {
-        const fs::path &extPath = entry.path();
+        const std::filesystem::path &extPath = entry.path();
         std::unique_ptr<Extension> extHandle;
         try
         {
@@ -112,12 +113,7 @@ void SPGlobal::unloadExts()
     m_extHandles.clear();
 }
 
-bool SPGlobal::canPluginsPrecache() const
-{
-    return m_canPluginsPrecache;
-}
-
-IPlugin *SPGlobal::getPlugin(std::string_view pluginname) const
+nstd::observer_ptr<IPlugin> SPGlobal::getPlugin(std::string_view pluginname) const
 {
     if (pluginname.length() < 4)
     {
@@ -139,14 +135,9 @@ IPlugin *SPGlobal::getPlugin(std::string_view pluginname) const
     return nullptr;
 }
 
-void SPGlobal::allowPrecacheForPlugins(bool allow)
+const std::filesystem::path &SPGlobal::getPath(DirType type) const
 {
-    m_canPluginsPrecache = allow;
-}
-
-const fs::path &SPGlobal::getPath(DirType type) const
-{
-    static fs::path empty;
+    static std::filesystem::path empty;
     switch (type)
     {
         case DirType::Home:
@@ -201,62 +192,62 @@ void SPGlobal::setPath(DirType type, std::string_view path)
     }
 }
 
-ForwardMngr *SPGlobal::getForwardManager() const
+nstd::observer_ptr<IForwardMngr> SPGlobal::getForwardManager() const
 {
-    return m_forwardManager.get();
+    return m_forwardManager;
 }
 
-TimerMngr *SPGlobal::getTimerManager() const
+nstd::observer_ptr<ITimerMngr> SPGlobal::getTimerManager() const
 {
-    return m_timerManager.get();
+    return m_timerManager;
 }
 
-MenuMngr *SPGlobal::getMenuManager() const
+nstd::observer_ptr<IMenuMngr> SPGlobal::getMenuManager() const
 {
-    return m_menuManager.get();
+    return m_menuManager;
 }
 
-MessageMngr *SPGlobal::getMessageManager() const
+nstd::observer_ptr<IMessageMngr> SPGlobal::getMessageManager() const
 {
-    return m_messageManager.get();
+    return m_messageManager;
 }
 
-LoggerMngr *SPGlobal::getLoggerManager() const
+nstd::observer_ptr<ILoggerMngr> SPGlobal::getLoggerManager() const
 {
-    return m_loggingSystem.get();
+    return m_loggingSystem;
 }
 
-PlayerMngr *SPGlobal::getPlayerManager() const
+nstd::observer_ptr<IPlayerMngr> SPGlobal::getPlayerManager() const
 {
-    return m_plrManager.get();
+    return m_plrManager;
 }
 
-CommandMngr *SPGlobal::getCommandManager() const
+nstd::observer_ptr<ICommandMngr> SPGlobal::getCommandManager() const
 {
-    return m_cmdManager.get();
+    return m_cmdManager;
 }
 
-Utils *SPGlobal::getUtils() const
+nstd::observer_ptr<IUtils> SPGlobal::getUtils() const
 {
-    return m_utils.get();
+    return m_utils;
 }
 
-NativeProxy *SPGlobal::getNativeProxy() const
+nstd::observer_ptr<INativeProxy> SPGlobal::getNativeProxy() const
 {
-    return m_nativeProxy.get();
+    return m_nativeProxy;
 }
 
-bool SPGlobal::registerAdapter(IAdapterInterface *interface)
+bool SPGlobal::registerAdapter(nstd::observer_ptr<IAdapterInterface> interface)
 {
     return m_adaptersInterfaces.try_emplace(interface->getName().data(), interface).second;
 }
 
-bool SPGlobal::registerModule(IModuleInterface *interface)
+bool SPGlobal::registerModule(nstd::observer_ptr<IModuleInterface> interface)
 {
     return m_modulesInterfaces.try_emplace(interface->getName().data(), interface).second;
 }
 
-IModuleInterface *SPGlobal::getInterface(std::string_view name) const
+nstd::observer_ptr<IModuleInterface> SPGlobal::getInterface(std::string_view name) const
 {
     if (auto iter = m_modulesInterfaces.find(name.data()); iter != m_modulesInterfaces.end())
         return iter->second;
@@ -264,17 +255,22 @@ IModuleInterface *SPGlobal::getInterface(std::string_view name) const
     return nullptr;
 }
 
-void SPGlobal::setUserMsgId(UserMsgId msgid, Metamod::Engine::MsgType userMsgId)
+void SPGlobal::setUserMsgId(UserMsgId msgId, Anubis::Engine::MsgType userMsgId)
 {
-    m_userMsgs[static_cast<std::underlying_type_t<UserMsgId>>(msgid)] = userMsgId;
+    m_userMsgs[static_cast<std::underlying_type_t<UserMsgId>>(msgId)] = userMsgId;
 }
 
-Metamod::Engine::MsgType SPGlobal::getUserMsgId(UserMsgId msgid) const
+Anubis::Engine::MsgType SPGlobal::getUserMsgId(UserMsgId msgId) const
 {
-    return m_userMsgs[static_cast<std::underlying_type_t<UserMsgId>>(msgid)];
+    return m_userMsgs[static_cast<std::underlying_type_t<UserMsgId>>(msgId)];
 }
 
-Hooks *SPGlobal::getHooks() const
+nstd::observer_ptr<IHooks> SPGlobal::getHooks() const
 {
-    return m_hooks.get();
+    return m_hooks;
+}
+
+nstd::observer_ptr<IGroupMngr> SPGlobal::getGroupAccessManager() const
+{
+    return m_accessGroupMngr;
 }

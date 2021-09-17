@@ -1,4 +1,4 @@
-project(spmod_mm)
+project(spmod)
 
 # Generate SPConfig.hpp
 find_program(GIT git)
@@ -23,11 +23,12 @@ set(SRC_FILES SPGlobal.cpp
               UtilsSystem.cpp
               NativeProxy.cpp
               MessageSystem.cpp
-              MetaInit.cpp
+              AnubisInit.cpp
               EngineHooks.cpp
               DLLHooks.cpp
               ReHooks.cpp
-              Hooks.cpp)
+              Hooks.cpp
+              AccessSystem.cpp)
 
 add_library(${PROJECT_NAME} MODULE ${SRC_FILES})
 
@@ -36,12 +37,14 @@ include(${CMAKE_SOURCE_DIR}/cmake/CompilerSetup.cmake)
 if (UNIX)
     target_link_options(${PROJECT_NAME} PRIVATE -m32)
     target_compile_options(${PROJECT_NAME} PRIVATE -m32 -Wall -Wextra -Werror -Wpedantic -pedantic-errors)
-    target_link_libraries(${PROJECT_NAME} PRIVATE dl)
+    target_link_libraries(${PROJECT_NAME} PRIVATE dl ${FMT_LIBRARIES})
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
     target_compile_definitions(${PROJECT_NAME} PRIVATE _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING)
     target_link_options(${PROJECT_NAME} PRIVATE /MACHINE:X86)
 endif()
+
+target_link_libraries(${PROJECT_NAME} PRIVATE ${YAML_CPP_LIBRARIES} ${FMT_LIBRARIES})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE SPMOD_CORE)
 
@@ -49,23 +52,17 @@ target_include_directories(
     ${PROJECT_NAME}
     SYSTEM
     PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
+    ${FMT_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/include/public
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${YAML_CPP_INCLUDE_DIR}
+    ${THIRD_PARTY_INCLUDE_DIR}
 )
-
-target_link_libraries(${PROJECT_NAME} PUBLIC ${YAML_CPP_LIBRARIES})
 
 set_target_properties(
     ${PROJECT_NAME}
     PROPERTIES
     CXX_VISIBILITY_PRESET hidden
     VISIBILITY_INLINES_HIDDEN 1
-)
-
-add_dependencies(${PROJECT_NAME}
-                 ${YAML_CPP_LIBRARIES}
 )
 
 install(TARGETS ${PROJECT_NAME}

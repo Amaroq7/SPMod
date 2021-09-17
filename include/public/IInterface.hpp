@@ -22,9 +22,11 @@
 #include "StandardHeaders.hpp"
 #include "IInterface.hpp"
 
-namespace Metamod
+#include <anubis/observer_ptr.hpp>
+
+namespace Anubis
 {
-    class IMetamod;
+    class IAnubis;
 }
 
 namespace SPMod
@@ -42,35 +44,35 @@ namespace SPMod
          *
          * @return              Interface's name.
          */
-        virtual std::string_view getName() const = 0;
+        [[nodiscard]] virtual std::string_view getName() const = 0;
 
         /**
          * @brief Gets interface's version.
          *
          * @return              Interface's version.
          */
-        virtual std::uint32_t getVersion() const = 0;
+        [[nodiscard]] virtual std::uint32_t getVersion() const = 0;
 
         /**
          * @brief Gets interface's author.
          *
          * @return              Interface's author.
          */
-        virtual std::string_view getAuthor() const = 0;
+        [[nodiscard]] virtual std::string_view getAuthor() const = 0;
 
         /**
          * @brief Gets interface's url.
          *
          * @return              Interface's url.
          */
-        virtual std::string_view getUrl() const = 0;
+        [[nodiscard]] virtual std::string_view getUrl() const = 0;
 
         /**
          * @brief Gets name of the extension that implements the interface.
          *
          * @return              Extension's name.
          */
-        virtual std::string_view getExtName() const = 0;
+        [[nodiscard]] virtual std::string_view getExtName() const = 0;
 
         /**
          * @brief Check if requested version is compatible.
@@ -79,9 +81,9 @@ namespace SPMod
          *
          * @return              True if is compatible, false otherwise.
          */
-        virtual bool isVersionCompatible(std::uint32_t reqversion) const
+        [[nodiscard]] virtual bool isVersionCompatible(std::uint32_t reqversion) const
         {
-            return (reqversion > getVersion() ? false : true);
+            return reqversion <= getVersion();
         }
 
         /**
@@ -89,7 +91,7 @@ namespace SPMod
          *
          * @return              Interface's implementation.
          */
-        virtual void *getImplementation() const = 0;
+        [[nodiscard]] virtual std::any getImplementation() const = 0;
     };
 
     class IAdapterInterface
@@ -102,35 +104,35 @@ namespace SPMod
          *
          * @return              Interface's name.
          */
-        virtual std::string_view getName() const = 0;
+        [[nodiscard]] virtual std::string_view getName() const = 0;
 
         /**
          * @brief Gets interface's version.
          *
          * @return              Interface's version.
          */
-        virtual std::uint32_t getVersion() const = 0;
+        [[nodiscard]] virtual std::uint32_t getVersion() const = 0;
 
         /**
          * @brief Gets interface's author.
          *
          * @return              Interface's author.
          */
-        virtual std::string_view getAuthor() const = 0;
+        [[nodiscard]] virtual std::string_view getAuthor() const = 0;
 
         /**
          * @brief Gets interface's url.
          *
          * @return              Interface's url.
          */
-        virtual std::string_view getUrl() const = 0;
+        [[nodiscard]] virtual std::string_view getUrl() const = 0;
 
         /**
          * @brief Gets name of the extension that implements the interface.
          *
          * @return              Extension's name.
          */
-        virtual std::string_view getExtName() const = 0;
+        [[nodiscard]] virtual std::string_view getExtName() const = 0;
 
         /**
          * @brief Check if requested version is compatible.
@@ -139,9 +141,9 @@ namespace SPMod
          *
          * @return              True if is compatible, false otherwise.
          */
-        virtual bool isVersionCompatible(std::uint32_t reqversion) const
+        [[nodiscard]] virtual bool isVersionCompatible(std::uint32_t reqversion) const
         {
-            return (reqversion > getVersion() ? false : true);
+            return reqversion <= getVersion();
         }
 
         /**
@@ -149,7 +151,7 @@ namespace SPMod
          *
          * @return              Plugin manager.
          */
-        virtual IPluginMngr *getPluginMngr() const = 0;
+        [[nodiscard]] virtual nstd::observer_ptr<IPluginMngr> getPluginMngr() const = 0;
     };
 
     class ISPModInterface
@@ -157,25 +159,25 @@ namespace SPMod
     public:
         virtual ~ISPModInterface() = default;
 
-        virtual std::string_view getName() const = 0;
-        virtual std::uint32_t getVersion() const = 0;
+        [[nodiscard]] virtual std::string_view getName() const = 0;
+        [[nodiscard]] virtual std::uint32_t getVersion() const = 0;
 
-        virtual std::string_view getAuthor() const final
+        [[nodiscard]] virtual std::string_view getAuthor() const final
         {
             return "SPMod Development Team";
         }
 
-        virtual std::string_view getUrl() const final
+        [[nodiscard]] virtual std::string_view getUrl() const final
         {
             return "https://github.com/Amaroq7/SPMod";
         }
 
-        virtual std::string_view getExtName() const final
+        [[nodiscard]] virtual std::string_view getExtName() const final
         {
             return "SPMod";
         }
 
-        virtual bool isVersionCompatible(std::uint32_t reqversion) const final
+        [[nodiscard]] virtual bool isVersionCompatible(std::uint32_t reqversion) const final
         {
             if (std::uint16_t majorReqVer = reqversion >> 16; majorReqVer != (getVersion() >> 16))
                 return false;
@@ -199,7 +201,7 @@ namespace SPMod
      *
      * @return
      */
-    SPMOD_API ExtQueryValue SPMod_Query(ISPGlobal *spmodInstance, Metamod::IMetamod *metaAPI);
+    SPMOD_API ExtQueryValue Query(nstd::observer_ptr<ISPGlobal> spmodInstance, Anubis::IAnubis *anubisAPI);
     using fnSPModQuery = ExtQueryValue (*)(ISPGlobal *spmodInstance, Metamod::IMetamod *metaAPI);
 
     /**
@@ -209,12 +211,12 @@ namespace SPMod
      *
      * @return True if extension should be loaded, false otherwise.
      */
-    SPMOD_API bool SPMod_Init();
+    SPMOD_API bool Init();
     using fnSPModInit = bool (*)();
 
     /**
-     * @brief Called on extension unloading. (mapchange, server shutdown)
+     * @brief Called on extension unloading. (server shutdown)
      */
-    SPMOD_API void SPMod_End();
+    SPMOD_API void Shutdown();
     using fnSPModEnd = void (*)();
 } // namespace SPMod

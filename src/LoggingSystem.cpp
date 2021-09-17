@@ -20,12 +20,12 @@
 #include "LoggingSystem.hpp"
 #include "SPGlobal.hpp"
 
-Logger *LoggerMngr::getLogger(std::string_view prefix)
+nstd::observer_ptr<ILogger> LoggerMngr::getLogger(std::string_view prefix)
 {
-    return m_loggers.try_emplace(prefix.data(), std::make_unique<Logger>(prefix)).first->second.get();
+    return m_loggers.try_emplace(prefix.data(), std::make_unique<Logger>(prefix)).first->second;
 }
 
-Logger::Logger(std::string_view prefix) : m_prefix(prefix) {}
+Logger::Logger(std::string_view prefix) : m_prefix(prefix), m_logLevel(LogLevel::Info) {}
 Logger::Logger(std::string_view prefix, LogLevel logLevel) : m_prefix(prefix), m_logLevel(logLevel) {}
 
 void Logger::setFilename(std::string_view filename)
@@ -38,7 +38,7 @@ void Logger::logToConsole(LogLevel level, std::string_view msg) const
     if (level < m_logLevel)
         return;
 
-    logToConsoleInternal(level, msg);
+    logToConsole(level, msg, "");
 }
 
 void Logger::logToFile(LogLevel level, std::string_view msg) const
@@ -49,7 +49,7 @@ void Logger::logToFile(LogLevel level, std::string_view msg) const
     if (m_filename.empty())
         return;
 
-    logToFileInternal(level, msg);
+    logToFile(level, msg, "");
 }
 
 void Logger::logToBoth(LogLevel level, std::string_view msg) const
@@ -57,12 +57,12 @@ void Logger::logToBoth(LogLevel level, std::string_view msg) const
     if (level < m_logLevel)
         return;
 
-    logToBothInternal(level, msg);
+    logToBoth(level, msg, "");
 }
 
 void Logger::sendMsgToConsole(std::string_view msg) const
 {
-    sendMsgToConsoleInternal(msg);
+    sendMsgToConsole(msg, "");
 }
 
 void Logger::setLogLevel(LogLevel level)
@@ -75,13 +75,13 @@ LogLevel Logger::getLogLevel() const
     return m_logLevel;
 }
 
-void Logger::_writeToFile(std::string_view msg) const
+void Logger::_writeToFile(std::string_view msg)
 {
     using fFlags = std::ios_base;
 
     time_t currentTime;
     time(&currentTime);
-    tm convertedTime;
+    tm convertedTime{};
 
 #if defined __STDC_LIB_EXT1__ || defined SP_MSVC
     #if defined SP_MSVC
@@ -101,13 +101,10 @@ void Logger::_writeToFile(std::string_view msg) const
 
     if (!logFile.tellg())
     {
-        logFile << logDateTime << "Start of error session.\n";
-        logFile << logDateTime << "Info (map ";
-        logFile << gEngine->getMapName();
-        logFile << ") (CRC ";
-        logFile << std::to_string(gEngine->getWorldmapCrc());
-        logFile << ")\n";
+        fmt::print(logFile, "{} Start of logging session.\n", std::string_view{logDateTime});
+        fmt::print(logFile, "{} Info (map {}) (CRC {})\n", std::string_view{logDateTime}, gEngine->getMapName(), gEngine->getWorldmapCrc());
     }
 
-    logFile << logDateTime << msg;
+    fmt::print(logFile, "{} {}\n", std::string_view{logDateTime}, msg);
+    logFile.flush();
 }

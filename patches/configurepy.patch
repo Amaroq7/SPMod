@@ -1,9 +1,0 @@
---- configure.py	2020-09-07 17:47:40.777347973 +0200
-+++ configure-libc++.py	2020-09-07 23:16:01.605884406 +0200
-@@ -49,4 +49,6 @@
-                             dest='enable_coverage', help='Enable code coverage support.')
- parser.options.add_argument("--targets", type=str, default=None,
-                             help='Specify target architecture (use commas to include more than one)')
-+parser.options.add_argument("--dynamic", action='store_true', default=False, dest='dynamic',
-+                            help='Link libraries dynamically')
- parser.Configure()

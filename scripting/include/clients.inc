@@ -28,6 +28,12 @@ methodmap Client
     public native int GetIP(char[] buffer, int size, bool port = false);
     public native int GetSteamID(char[] buffer, int size);
 
+    public native bool HasAccess(const char[] permission);
+    public native void AttachGroup(Group group);
+    public native void RemoveGroup(Group group);
+    public native void AttachPermission(const char[] permission);
+    public native void RemovePermission(const char[] permission);
+
     property int Index {
         public native get();
     }

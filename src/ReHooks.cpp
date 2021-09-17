@@ -22,8 +22,8 @@
 #include "SPGlobal.hpp"
 #include "MetaInit.hpp"
 
-#include <metamodcpp_sdk/engine/IHooks.hpp>
-#include <metamodcpp_sdk/engine/IGameClient.hpp>
+#include <metamod/engine/IHooks.hpp>
+#include <metamod/engine/IGameClient.hpp>
 
 void installReHooks()
 {

@@ -22,9 +22,11 @@
 #include <Common.hpp>
 #include <ILoggerSystem.hpp>
 
-#include "MetaInit.hpp"
+#include "AnubisInit.hpp"
 
-#include <sstream>
+#include <fmt/format.h>
+#include <fmt/color.h>
+#include <fmt/ostream.h>
 
 using namespace SPMod;
 
@@ -42,47 +44,34 @@ public:
     Logger(std::string_view prefix, LogLevel logLevel);
 
     // ILogger
-    void setFilename(std::string_view filename) override;
-    void logToConsole(LogLevel level, std::string_view msg) const override;
-
-    void logToFile(LogLevel level, std::string_view msg) const override;
-
-    void logToBoth(LogLevel level, std::string_view msg) const override;
-
-    void sendMsgToConsole(std::string_view msg) const override;
-
-    void setLogLevel(LogLevel logType) override;
-    LogLevel getLogLevel() const override;
+    void setFilename(std::string_view filename) final;
+    void logToConsole(LogLevel level, std::string_view msg) const final;
+    void logToFile(LogLevel level, std::string_view msg) const final;
+    void logToBoth(LogLevel level, std::string_view msg) const final;
+    void sendMsgToConsole(std::string_view msg) const final;
+    void setLogLevel(LogLevel logType) final;
+    LogLevel getLogLevel() const final;
 
     // Logger
-    template<typename... Args>
-    void sendMsgToConsoleInternal(Args... args) const
+    template<typename... t_args>
+    void sendMsgToConsole(std::string_view format, t_args... args) const
     {
-        std::stringstream messageToLog;
-
-        (messageToLog << ... << args);
-        messageToLog << '\n' << CNSL_RESET;
-
-        gMetaAPI->getEngine()->print(messageToLog.str().c_str(), Metamod::FuncCallType::Direct);
+        gEngine->print(fmt::vformat(format, fmt::make_args_checked<t_args...>(format, args...)).c_str(),
+                                     Anubis::FuncCallType::Direct);
     }
 
-    template<typename... Args>
-    void logToConsoleInternal(LogLevel level, Args... args) const
+    template<typename... t_args>
+    void logToConsole(LogLevel level, std::string_view format, t_args... args) const
     {
         if (level < m_logLevel)
             return;
 
-        std::stringstream messageToLog;
-
-        messageToLog << '[' << m_prefix << "] ";
-        (messageToLog << ... << args);
-        messageToLog << '\n' << CNSL_RESET;
-
-        gMetaAPI->getEngine()->print(messageToLog.str().c_str(), Metamod::FuncCallType::Direct);
+        gEngine->print(fmt::format("[{}] {}", m_prefix, fmt::vformat(format, fmt::make_args_checked<t_args...>(format, args...))).c_str(),
+                       Anubis::FuncCallType::Direct);
     }
 
-    template<typename... Args>
-    void logToFileInternal(LogLevel level, Args... args) const
+    template<typename... t_args>
+    void logToFile(LogLevel level, std::string_view format, t_args... args) const
     {
         if (level < m_logLevel)
             return;
@@ -90,30 +79,17 @@ public:
         if (m_filename.empty())
             return;
 
-        std::stringstream messageToLog;
-
-        messageToLog << '[' << m_prefix << "] ";
-        (messageToLog << ... << args);
-        messageToLog << '\n';
-
-        _writeToFile(messageToLog.str());
+        _writeToFile(fmt::format("[{}] {}", m_prefix, fmt::vformat(format, fmt::make_args_checked<t_args...>(format, args...))));
     }
 
-    template<typename... Args>
-    void logToBothInternal(LogLevel level, Args... args) const
+    template<typename... t_args>
+    void logToBoth(LogLevel level, std::string_view format, t_args... args) const
     {
         if (level < m_logLevel)
             return;
 
-        std::stringstream messageToLog;
-
-        messageToLog << '[' << m_prefix << "] ";
-        (messageToLog << ... << args);
-        messageToLog << '\n';
-
-        std::string message = messageToLog.str();
-
-        gMetaAPI->getEngine()->print(message.c_str(), Metamod::FuncCallType::Direct);
+        std::string message = fmt::format("[{}] {}", m_prefix, fmt::vformat(format, fmt::make_args_checked<t_args...>(format, args...)));
+        gEngine->print(message.c_str(), Anubis::FuncCallType::Direct);
 
         if (m_filename.empty())
             return;
@@ -122,7 +98,7 @@ public:
     }
 
 private:
-    void _writeToFile(std::string_view msg) const;
+    static void _writeToFile(std::string_view msg);
 
 private:
     std::string m_prefix;
@@ -139,7 +115,7 @@ public:
     ~LoggerMngr() = default;
 
     // ILoggerMngr
-    Logger *getLogger(std::string_view prefix) override;
+    nstd::observer_ptr<ILogger> getLogger(std::string_view prefix) final;
 
 private:
     std::unordered_map<std::string, std::unique_ptr<Logger>> m_loggers;

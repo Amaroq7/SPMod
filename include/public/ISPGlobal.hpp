@@ -33,7 +33,10 @@
 #include <IPluginSystem.hpp>
 #include <INativeProxy.hpp>
 #include <IMessageSystem.hpp>
+#include <IAccessSystem.hpp>
 #include <IHooks.hpp>
+
+#include <anubis/observer_ptr.hpp>
 
 namespace SPMod
 {
@@ -50,7 +53,7 @@ namespace SPMod
          *
          * @return      Interface's name.
          */
-        std::string_view getName() const override
+        [[nodiscard]] std::string_view getName() const override
         {
             return "ISPGlobal";
         }
@@ -62,26 +65,19 @@ namespace SPMod
          *
          * @return      Interface's version.
          */
-        std::uint32_t getVersion() const override
+        [[nodiscard]] std::uint32_t getVersion() const override
         {
             return VERSION;
         }
 
-        virtual ~ISPGlobal() = default;
+        ~ISPGlobal() override = default;
 
         /**
          * @brief Returns home dir of SPMod.
          *
          * @return              Home dir.
          */
-        virtual const fs::path &getPath(DirType type) const = 0;
-
-        /**
-         * @brief Checks if plugins can precache resources.
-         *
-         * @return              True if they are allowed to, false otherwise.
-         */
-        virtual bool canPluginsPrecache() const = 0;
+        [[nodiscard]] virtual const std::filesystem::path &getPath(DirType type) const = 0;
 
         /**
          * @brief Finds plugin.
@@ -90,72 +86,79 @@ namespace SPMod
          *
          * @return              Plugin pointer or nullptr if not found.
          */
-        virtual IPlugin *getPlugin(std::string_view pluginname) const = 0;
+        [[nodiscard]] virtual nstd::observer_ptr<IPlugin> getPlugin(std::string_view pluginname) const = 0;
 
         /**
          * @brief Returns SPMod forward manager.
          *
          * @return              Forward manager.
          */
-        virtual IForwardMngr *getForwardManager() const = 0;
+        [[nodiscard]] virtual nstd::observer_ptr<IForwardMngr> getForwardManager() const = 0;
 
         /**
          * @brief Returns SPMod timer manager.
          *
          * @return              Timer manager.
          */
-        virtual ITimerMngr *getTimerManager() const = 0;
+        [[nodiscard]] virtual nstd::observer_ptr<ITimerMngr> getTimerManager() const = 0;
 
         /**
          * @brief Returns SPMod menu manager.
          *
          * @return              Menu manager.
          */
-        virtual IMenuMngr *getMenuManager() const = 0;
+        [[nodiscard]] virtual nstd::observer_ptr<IMenuMngr> getMenuManager() const = 0;
 
         /**
          * @brief Returns SPMod message manager.
          *
          * @return              Message manager.
          */
-        virtual IMessageMngr *getMessageManager() const = 0;
+        [[nodiscard]] virtual nstd::observer_ptr<IMessageMngr> getMessageManager() const = 0;
 
         /**
          * @brief Returns SPMod logger manager.
          *
          * @return              Logger manager.
          */
-        virtual ILoggerMngr *getLoggerManager() const = 0;
+        [[nodiscard]] virtual nstd::observer_ptr<ILoggerMngr> getLoggerManager() const = 0;
 
         /**
          * @brief Return SPMod player manager.
          *
          * @return              Player manager.
          */
-        virtual IPlayerMngr *getPlayerManager() const = 0;
+        [[nodiscard]] virtual nstd::observer_ptr<IPlayerMngr> getPlayerManager() const = 0;
 
         /**
          * @brief Return SPMod utils funcs.
          *
          * @return              Utils funcs.
          */
-        virtual IUtils *getUtils() const = 0;
+        [[nodiscard]] virtual nstd::observer_ptr<IUtils> getUtils() const = 0;
 
         /**
          * @brief Return native proxy.
          *
          * @return              Native proxy.
          */
-        virtual INativeProxy *getNativeProxy() const = 0;
+        [[nodiscard]] virtual nstd::observer_ptr<INativeProxy> getNativeProxy() const = 0;
 
         /**
          * @brief Returns SPMod command manager.
-         *
+         *+
          * @return              Command manager.
          */
-        virtual ICommandMngr *getCommandManager() const = 0;
+        [[nodiscard]] virtual nstd::observer_ptr<ICommandMngr> getCommandManager() const = 0;
 
-        virtual IHooks *getHooks() const = 0;
+        /**
+         * @brief Returns SPMod group access manager.
+         *
+         * @return              Group access manager.
+         */
+        [[nodiscard]] virtual nstd::observer_ptr<IGroupMngr> getGroupAccessManager() const = 0;
+
+        [[nodiscard]] virtual nstd::observer_ptr<IHooks> getHooks() const = 0;
 
         /**
          * @brief Registers module's interface.
@@ -164,7 +167,7 @@ namespace SPMod
          *
          * @return              True if registered successfully, false otherwise.
          */
-        virtual bool registerModule(IModuleInterface *interface) = 0;
+        virtual bool registerModule(nstd::observer_ptr<IModuleInterface> interface) = 0;
 
         /**
          * @brief Registers adapter's interface.
@@ -173,7 +176,7 @@ namespace SPMod
          *
          * @return              True if registered successfully, false otherwise.
          */
-        virtual bool registerAdapter(IAdapterInterface *interface) = 0;
+        virtual bool registerAdapter(nstd::observer_ptr<IAdapterInterface> interface) = 0;
 
         /**
          * @brief Gets a module's interface.
@@ -182,6 +185,6 @@ namespace SPMod
          *
          * @return              Interface's implementation.
          */
-        virtual IModuleInterface *getInterface(std::string_view name) const = 0;
+        [[nodiscard]] virtual nstd::observer_ptr<IModuleInterface> getInterface(std::string_view name) const = 0;
     };
 } // namespace SPMod

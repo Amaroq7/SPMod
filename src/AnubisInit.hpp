@@ -20,18 +20,18 @@
 #pragma once
 
 #include <SPConfig.hpp>
-#include <metamodcpp_sdk/IMetamod.hpp>
-#include <metamodcpp_sdk/game/ILibrary.hpp>
-#include <metamodcpp_sdk/engine/ILibrary.hpp>
+#include <anubis/IAnubis.hpp>
+#include <anubis/game/ILibrary.hpp>
+#include <anubis/engine/ILibrary.hpp>
 
-class MetaPlugin final : public Metamod::IPlugin
+class AnubisPlugin final : public Anubis::IPlugin
 {
 public:
-    ~MetaPlugin() final = default;
+    ~AnubisPlugin() final = default;
 
-    std::uint32_t getInterfaceVersion() const final
+    Anubis::InterfaceVersion getInterfaceVersion() const final
     {
-        return Metamod::IMetamod::VERSION;
+        return Anubis::IAnubis::VERSION;
     }
 
     std::string_view getName() const final
@@ -59,13 +59,13 @@ public:
         return "https://github.com/Amaroq7/SPMod";
     }
 
-    std::string_view getLogTag() const final
+    Anubis::IPlugin::Type getType() const final
     {
-        return gSPModLoggerName;
+        return Anubis::IPlugin::Type::Extension;
     }
 };
 
-extern MetaPlugin metaPlugin;
-extern Metamod::IMetamod *gMetaAPI;
-extern Metamod::Engine::ILibrary *gEngine;
-extern Metamod::Game::ILibrary *gGame;
+extern nstd::observer_ptr<Anubis::IAnubis> gAnubisAPI;
+extern nstd::observer_ptr<Anubis::Engine::ILibrary> gEngine;
+extern nstd::observer_ptr<Anubis::Game::ILibrary> gGame;
+extern nstd::observer_ptr<Anubis::ILogger> gLogger;

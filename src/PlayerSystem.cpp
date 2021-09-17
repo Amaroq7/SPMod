@@ -20,9 +20,9 @@
 #include "PlayerSystem.hpp"
 #include "SPGlobal.hpp"
 
-#include <metamodcpp_sdk/engine/IEdict.hpp>
-#include <metamodcpp_sdk/engine/IEntVars.hpp>
-#include <metamodcpp_sdk/game/IBasePlayer.hpp>
+#include <metamod/engine/IEdict.hpp>
+#include <metamod/engine/IEntVars.hpp>
+#include <metamod/game/IBasePlayer.hpp>
 
 Player::Player(Metamod::Engine::IEdict *edict)
     : m_basePlayer(gGame->getBasePlayer(edict)), m_edict(edict) {}
@@ -98,7 +98,7 @@ void Player::connect(std::string_view name, std::string_view ip)
     m_name = name;
     m_ip = ip;
     m_connected = true;
-    m_userID = gMetaAPI->getEngine()->getPlayerUserID(m_edict, Metamod::FuncCallType::Direct);
+    m_userID = gEngine->getPlayerUserID(m_edict, Metamod::FuncCallType::Direct);
 }
 
 void Player::disconnect()
@@ -206,6 +206,95 @@ bool Player::sendMsg(TextMsgDest msgDest, std::string_view message) const
     return true;
 }
 
+bool Player::hasAccess(std::string_view permission) const
+{
+    std::string_view groupName;
+    std::string_view permissionName;
+
+    if (auto separatorPos = permission.find('@'); separatorPos != std::string_view::npos)
+    {
+        if (auto iter = m_excludedGroupPermissions.find(permission.data()); iter != m_excludedGroupPermissions.end())
+        {
+            return false;
+        }
+
+        groupName = permission.substr(0, separatorPos);
+        permissionName = permission.substr(separatorPos + 1);
+    }
+    else
+    {
+        permissionName = permission;
+    }
+
+    if (!groupName.empty())
+    {
+        if (auto iter = m_groups.find(groupName.data()); iter != m_groups.end())
+        {
+            return iter->second.lock()->hasPermission(permissionName);
+        }
+
+        return false;
+    }
+
+    auto iter = m_permissions.find(permission.data());
+    return iter != m_permissions.end();
+}
+
+bool Player::attachGroup(std::weak_ptr<IAccessGroup> group)
+{
+    if (group.expired())
+    {
+        return false;
+    }
+
+    return m_groups.emplace(group.lock()->getName().data(), group).second;
+}
+
+void Player::removeGroup(std::weak_ptr<IAccessGroup> group)
+{
+    if (group.expired())
+    {
+        return;
+    }
+
+    if (auto iter = m_groups.find(group.lock()->getName().data()); iter != m_groups.end())
+    {
+        m_groups.erase(iter);
+    }
+}
+
+bool Player::attachPermission(std::string_view permission)
+{
+    // Check if permission is a group one, if so check if it's among excluded ones if not, then do nothing
+    if (auto groupSepPos = permission.find('@'); groupSepPos != std::string_view::npos)
+    {
+        if (auto iter = m_excludedGroupPermissions.find(permission.data()); iter != m_excludedGroupPermissions.end())
+        {
+            m_excludedGroupPermissions.erase(permission.data());
+        }
+        return true;
+    }
+    return m_permissions.emplace(permission.data()).second;
+}
+
+void Player::removePermission(std::string_view permission)
+{
+    // Check if permission is a group one, if so check if it's among excluded ones if not, then add it
+    if (auto groupSepPos = permission.find('@'); groupSepPos != std::string_view::npos)
+    {
+        if (auto iter = m_excludedGroupPermissions.find(permission.data()); iter == m_excludedGroupPermissions.end())
+        {
+            m_excludedGroupPermissions.emplace(permission.data());
+        }
+        return;
+    }
+
+    if (auto iter = m_permissions.find(permission.data()); iter != m_permissions.end())
+    {
+        m_permissions.erase(iter);
+    }
+}
+
 Player *PlayerMngr::getPlayer(std::uint32_t index) const
 {
     try
@@ -244,14 +333,40 @@ void PlayerMngr::_initPlayers()
 {
     for (std::size_t i = 1; i <= m_maxClients; i++)
     {
-        Metamod::Engine::IEdict *spEdict = gMetaAPI->getEngine()->getEdict(i);
+        Metamod::Engine::IEdict *spEdict = gEngine->getEdict(i);
         m_players.at(i) = std::make_unique<Player>(spEdict);
     }
 }
 
-void PlayerMngr::_setMaxClients(std::uint32_t maxClients)
+void PlayerMngr::_setMaxClients()
 {
-    m_maxClients = maxClients;
+    m_maxClients = 1;
+    const auto [pos, value] = gEngine->checkEngParm("-maxplayers", Metamod::FuncCallType::Direct);
+
+    if (pos)
+    {
+        std::uint32_t maxPlayers;
+        const auto [_, ec] = std::from_chars(value.data(), value.data() + value.size(), maxPlayers);
+
+        if (ec == std::errc())
+        {
+            m_maxClients = maxPlayers;
+        }
+    }
+    else
+    {
+        if (gEngine->isDedicatedServer(Metamod::FuncCallType::Direct))
+            m_maxClients = 6;
+    }
+
+    if (m_maxClients > 32)
+    {
+        m_maxClients = 32;
+    }
+    else if (m_maxClients < 1)
+    {
+        m_maxClients = 6;
+    }
 }
 
 bool PlayerMngr::ClientConnect(Metamod::Engine::IEdict *pEntity,
@@ -306,9 +421,8 @@ void PlayerMngr::StartFrame()
     }
 }
 
-void PlayerMngr::ServerActivate(std::uint32_t clientMax)
+void PlayerMngr::ServerActivate()
 {
-    _setMaxClients(clientMax);
     _initPlayers();
 }
 
@@ -326,4 +440,9 @@ void PlayerMngr::ClientDrop(Metamod::Engine::IEdict *pEntity,
                             bool crash [[maybe_unused]], std::string_view string [[maybe_unused]])
 {
     getPlayer(pEntity)->disconnect();
+}
+
+PlayerMngr::PlayerMngr()
+{
+    _setMaxClients();
 }

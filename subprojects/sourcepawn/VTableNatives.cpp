@@ -23,8 +23,8 @@
 
 #include "PlayerNatives.hpp"
 
-#include <metamodcpp_sdk/game/IBasePlayer.hpp>
-#include <metamodcpp_sdk/engine/IEdict.hpp>
+#include <metamod/game/IBasePlayer.hpp>
+#include <metamod/engine/IEdict.hpp>
 
 TypeHandler<Metamod::IHookInfo> gVTableHandlers;
 TypeHandler<Metamod::Game::IBasePlayerSpawnHook> gBasePlayerSpawnHooks;

@@ -21,7 +21,7 @@
 
 #include <ISPGlobal.hpp>
 
-namespace Metamod::Engine
+namespace Anubis::Engine
 {
     class IEdict;
 }
@@ -32,10 +32,10 @@ class Utils final : public IUtils
 {
 public:
     // IUtils
-    std::size_t strCopy(char *buffer, std::size_t size, std::string_view src) const override;
-    std::string strReplaced(std::string_view source, std::string_view from, std::string_view to) const override;
+    std::size_t strCopy(char *buffer, std::size_t size, std::string_view src) const final;
+    [[nodiscard]] std::string strReplaced(std::string_view source, std::string_view from, std::string_view to) const final;
 
-    static void ShowMenu(Metamod::Engine::IEdict *pEdict, std::int16_t slots, std::int8_t time, std::string_view menu);
+    static void ShowMenu(nstd::observer_ptr<Anubis::Engine::IEdict> pEdict, std::int16_t slots, std::int8_t time, std::string_view menu);
     static void trimMultiByteChar(std::string &str);
-    static void sendTextMsg(std::string_view message, TextMsgDest msgDest, Metamod::Engine::IEdict *edict = nullptr);
+    static void sendTextMsg(std::string_view message, TextMsgDest msgDest, nstd::observer_ptr<Anubis::Engine::IEdict> edict = nullptr);
 };

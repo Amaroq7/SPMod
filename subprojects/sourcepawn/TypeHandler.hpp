@@ -21,14 +21,18 @@
 
 #include <queue>
 #include <stdexcept>
+#include <memory>
 
 template<typename T>
 class TypeHandler
 {
 public:
-    std::size_t create(T *data)
+    using HandleId = std::size_t;
+
+public:
+    HandleId create(std::weak_ptr<T> data)
     {
-        std::size_t id = 0;
+        HandleId id = 0;
         if (!m_freeIds.empty())
         {
             id = m_freeIds.front();
@@ -44,7 +48,7 @@ public:
         return id;
     }
 
-    T *get(std::size_t id) const
+    std::weak_ptr<T> get(HandleId id) const
     {
         try
         {
@@ -56,26 +60,26 @@ public:
         }
     }
 
-    std::size_t getKey(T *data) const
+    HandleId getKey(std::weak_ptr<T> data) const
     {
-        std::size_t id = 0;
+        HandleId id = 0;
         for (const auto content : m_handlers)
         {
-            if (content == data)
+            if (content.lock() == data.lock())
                 return id;
 
             id++;
         }
 
-        return static_cast<std::size_t>(-1);
+        return static_cast<HandleId>(-1);
     }
 
-    void free(std::size_t id)
+    void free(HandleId id)
     {
         if (id >= m_handlers.size() || !m_handlers[id])
             return;
 
-        m_handlers[id] = nullptr;
+        m_handlers[id].reset();
         m_freeIds.push(id);
     }
 
@@ -104,6 +108,6 @@ public:
     }
 
 private:
-    std::vector<T *> m_handlers;
+    std::vector<std::weak_ptr<T>> m_handlers;
     std::queue<std::size_t> m_freeIds;
 };

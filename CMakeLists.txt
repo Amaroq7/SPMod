@@ -13,11 +13,12 @@ project(SPMod
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-option(BUILD_DYNAMIC "Build SPMod as dynamically linked library" ON)
 option(BUILD_SPADAPTER "Build SourcePawn adapter" ON)
 option(BUILD_EXAMPLE "Build example adapter" OFF)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(IS_CLANG_COMPILER ON)
+
     string(FIND ${CMAKE_CXX_COMPILER_VERSION} "." FIRST_DOT)
     string(SUBSTRING ${CMAKE_CXX_COMPILER_VERSION} 0 ${FIRST_DOT} CLANG_MAJOR_VER)
     find_program(LLD NAMES lld-${CLANG_MAJOR_VER} lld REQUIRED)
@@ -25,14 +26,13 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 
 if (WIN32)
-    if (NOT BUILD_DYNAMIC)
-        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    else()
-        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-    endif()
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
 
-include(cmake/BuildYAML.cmake)
+file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/third_party)
+
+include(cmake/DownloadAnubisSDK.cmake)
+include(cmake/BuildFMT.cmake)
 
 add_subdirectory(src spmod)
 add_subdirectory(subprojects)

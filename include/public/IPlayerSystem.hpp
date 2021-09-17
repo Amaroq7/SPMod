@@ -23,11 +23,12 @@
 #include "IInterface.hpp"
 #include "IHookChains.hpp"
 
-namespace Metamod
+namespace Anubis
 {
     namespace Engine
     {
         class IEdict;
+        struct UserID;
     }
     namespace Game
     {
@@ -38,6 +39,7 @@ namespace Metamod
 namespace SPMod
 {
     class IMenu;
+    class IAccessGroup;
 
     enum class TextMsgDest : std::uint8_t
     {
@@ -58,79 +60,84 @@ namespace SPMod
          *
          * @return      Player's name.
          */
-        virtual std::string_view getName() const = 0;
+        [[nodiscard]] virtual std::string_view getName() const = 0;
 
         /**
          * @brief Returns the player's IP address.
          *
          * @return      Player's IP address.
          */
-        virtual std::string_view getIPAddress() const = 0;
+        [[nodiscard]] virtual std::string_view getIPAddress() const = 0;
 
         /**
          * @brief Returns the players's Steam ID.
          *
          * @return      Player's SteamID.
          */
-        virtual std::string_view getSteamID() const = 0;
+        [[nodiscard]] virtual std::string_view getSteamID() const = 0;
 
         /**
          * @brief Returns the player's userid.
          *
          * @return      Player's userid.
          */
-        virtual std::uint32_t getUserId() const = 0;
+        [[nodiscard]] virtual Anubis::Engine::UserID getUserId() const = 0;
 
         /**
          * @brief Returns the player's index.
          *
          * @return      Player's index.
          */
-        virtual std::uint32_t getIndex() const = 0;
+        [[nodiscard]] virtual std::uint32_t getIndex() const = 0;
 
         /**
          * @brief Returns if the player is alive.
          *
          * @return      True if connected, false otherwise.
          */
-        virtual bool isAlive() const = 0;
+        [[nodiscard]] virtual bool isAlive() const = 0;
 
         /**
          * @brief Returns if the player is connected.
          *
          * @return      True if connected, false otherwise.
          */
-        virtual bool isConnected() const = 0;
+        [[nodiscard]] virtual bool isConnected() const = 0;
 
         /**
          * @brief Returns if the player is a fake player.
          *
          * @return      True if a fake player, false otherwise.
          */
-        virtual bool isFake() const = 0;
+        [[nodiscard]] virtual bool isFake() const = 0;
 
         /**
          * @brief Returns if the player is the HLTV.
          *
          * @return      True if the HLTV, false otherwise.
          */
-        virtual bool isHLTV() const = 0;
+        [[nodiscard]] virtual bool isHLTV() const = 0;
 
         /**
          * @brief Returns if the player is in game.
          *
          * @return      True if in game, false otherwise.
          */
-        virtual bool isInGame() const = 0;
+        [[nodiscard]] virtual bool isInGame() const = 0;
 
-        virtual IMenu *getMenu() const = 0;
-        virtual std::uint32_t getMenuPage() const = 0;
+        virtual nstd::observer_ptr<IMenu> getMenu() const = 0;
+        [[nodiscard]] virtual std::uint32_t getMenuPage() const = 0;
         virtual void closeMenu() = 0;
 
-        virtual Metamod::Game::IBasePlayer *basePlayer() const = 0;
-        virtual Metamod::Engine::IEdict *edict() const = 0;
+        [[nodiscard]] virtual Anubis::Game::IBasePlayer *basePlayer() const = 0;
+        [[nodiscard]] virtual Anubis::Engine::IEdict *edict() const = 0;
 
-        virtual bool sendMsg(TextMsgDest msgDest, std::string_view message) const = 0;
+        [[nodiscard]] virtual bool sendMsg(TextMsgDest msgDest, std::string_view message) const = 0;
+        [[nodiscard]] virtual bool hasAccess(std::string_view permission) const = 0;
+        virtual bool attachGroup(std::weak_ptr<IAccessGroup> group) = 0;
+        virtual void removeGroup(std::weak_ptr<IAccessGroup> group) = 0;
+        virtual bool attachPermission(std::string_view permission) = 0;
+        virtual void removePermission(std::string_view permission) = 0;
     };
 
     class IPlayerMngr : public ISPModInterface
@@ -145,7 +152,7 @@ namespace SPMod
          *
          * @return        Interface's name.
          */
-        std::string_view getName() const override
+        [[nodiscard]] std::string_view getName() const override
         {
             return "IPlayerMngr";
         }
@@ -157,12 +164,12 @@ namespace SPMod
          *
          * @return        Interface's version.
          */
-        std::uint32_t getVersion() const override
+        [[nodiscard]] std::uint32_t getVersion() const override
         {
             return VERSION;
         }
 
-        virtual ~IPlayerMngr() = default;
+        ~IPlayerMngr() override = default;
 
         /**
          * @brief Returns IPlayer object by its client index.
@@ -173,7 +180,7 @@ namespace SPMod
          *
          * @return          IPlayer object, nullptr if out of range.
          */
-        virtual IPlayer *getPlayer(std::uint32_t index) const = 0;
+        [[nodiscard]] virtual std::weak_ptr<IPlayer> getPlayer(std::uint32_t index) const = 0;
 
         /**
          * @brief Returns IPlayer object by its edict_t pointer.
@@ -182,20 +189,20 @@ namespace SPMod
          *
          * @return          IPlayer object, nullptr if out of range.
          */
-        virtual IPlayer *getPlayer(const Metamod::Engine::IEdict *edict) const = 0;
+        virtual nstd::observer_ptr<IPlayer> getPlayer(nstd::observer_ptr<Anubis::Engine::IEdict> edict) const = 0;
 
         /**
          * @brief Returns the maximum number of clients.
          *
          * @return          Maximum number of clients.
          */
-        virtual std::uint32_t getMaxClients() const = 0;
+        [[nodiscard]] virtual std::uint32_t getMaxClients() const = 0;
 
         /**
          * @brief Returns the number of players currently connected.
          *
          * @return          Number of connected clients.
          */
-        virtual std::uint32_t getNumPlayers() const = 0;
+        [[nodiscard]] virtual std::uint32_t getNumPlayers() const = 0;
     };
 } // namespace SPMod

@@ -141,9 +141,9 @@ public:
     ~MenuMngr() = default;
 
     // IMenuMngr
-    Menu *registerMenu(const std::variant<Menu::ItemHandler, Menu::TextHandler> &handler,
+    std::weak_ptr<IMenu> registerMenu(const std::variant<Menu::ItemHandler, Menu::TextHandler> &handler,
                        bool global) override;
-    void destroyMenu(const IMenu *menu) override;
+    void destroyMenu(std::weak_ptr<IMenu> menu) override;
 
     // MenuMngr
     void clearMenus();

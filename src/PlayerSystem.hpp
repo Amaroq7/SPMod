@@ -20,21 +20,24 @@
 #pragma once
 
 #include <IPlayerSystem.hpp>
-#include "MetaInit.hpp"
+#include "AnubisInit.hpp"
 #include "MenuSystem.hpp"
+#include "AccessSystem.hpp"
+
+#include <anubis/observer_ptr.hpp>
 
 class Player : public IPlayer
 {
 public:
     Player() = delete;
-    ~Player() = default;
-    Player(Metamod::Engine::IEdict *edict);
+    ~Player() override = default;
+    Player(nstd::observer_ptr<Anubis::Engine::IEdict> edict);
 
     // IPlayer
     std::string_view getName() const override;
     std::string_view getIPAddress() const override;
     std::string_view getSteamID() const override;
-    std::uint32_t getUserId() const override;
+    Anubis::Engine::UserID getUserId() const override;
     std::uint32_t getIndex() const override;
     bool isAlive() const override;
     bool isConnected() const override;
@@ -42,11 +45,16 @@ public:
     bool isHLTV() const override;
     bool isInGame() const override;
     void closeMenu() override;
-    Menu *getMenu() const override;
+    nstd::observer_ptr<IMenu> getMenu() const override;
     std::uint32_t getMenuPage() const override;
-    Metamod::Game::IBasePlayer *basePlayer() const override;
-    Metamod::Engine::IEdict *edict() const override;
+    Anubis::Game::IBasePlayer *basePlayer() const override;
+    Anubis::Engine::IEdict *edict() const override;
     bool sendMsg(TextMsgDest msgDest, std::string_view message) const override;
+    bool hasAccess(std::string_view permission) const override;
+    bool attachGroup(std::weak_ptr<IAccessGroup> group) override;
+    void removeGroup(std::weak_ptr<IAccessGroup> group) override;
+    bool attachPermission(std::string_view permission) override;
+    void removePermission(std::string_view permission) override;
 
     // Player
     void setName(std::string_view newname);
@@ -68,16 +76,20 @@ private:
     std::string m_ip;
     std::string m_steamID;
 
-    Menu *m_menu = nullptr;
+    nstd::observer_ptr<Menu> m_menu;
     std::uint32_t m_menuPage = 0;
     Metamod::Game::IBasePlayer *m_basePlayer;
-    Metamod::Engine::IEdict *m_edict;
+    nstd::observer_ptr<Anubis::Engine::IEdict> m_edict;
+
+    std::unordered_map<std::string, std::weak_ptr<IAccessGroup>> m_groups;
+    std::unordered_set<std::string> m_permissions;
+    std::unordered_set<std::string> m_excludedGroupPermissions;
 };
 
 class PlayerMngr : public IPlayerMngr
 {
 public:
-    PlayerMngr() = default;
+    PlayerMngr();
     ~PlayerMngr() = default;
 
     // IPlayerManager
@@ -92,13 +104,13 @@ public:
     void ClientUserInfoChanged(Metamod::Engine::IEdict *pEntity, Metamod::Engine::InfoBuffer infoBuffer);
     void ClientDrop(Metamod::Engine::IEdict *pEntity, bool crash, std::string_view string);
     void StartFrame();
-    void ServerActivate(std::uint32_t clientMax);
+    void ServerActivate();
     void ServerDeactivate();
 
     static inline std::uint32_t m_playersNum = 0;
 
 private:
-    void _setMaxClients(std::uint32_t maxClients);
+    void _setMaxClients();
     void _initPlayers();
 
     std::vector<Player *> m_playersToAuth;

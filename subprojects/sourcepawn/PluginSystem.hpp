@@ -63,6 +63,7 @@ namespace SPExt
         std::string_view getIdentity() const final;
         std::string_view getFilename() const final;
         SPMod::IPluginMngr *getPluginMngr() const final;
+        bool functionExist(std::string_view funcName) const final;
 
         // Plugin
         SourcePawn::IPluginRuntime *getRuntime() const;

@@ -32,6 +32,7 @@
 #include "TimerNatives.hpp"
 #include "VTableNatives.hpp"
 #include "HooksNatives.hpp"
+#include "AccessNatives.hpp"
 #include "ExtMain.hpp"
 
 #include <Common.hpp>
@@ -137,6 +138,12 @@ namespace SPExt
     SPMod::IPluginMngr *Plugin::getPluginMngr() const
     {
         return m_pluginMngr;
+    }
+
+    bool Plugin::functionExist(std::string_view funcName) const
+    {
+        SourcePawn::IPluginFunction *func = m_runtime->GetFunctionByName(funcName.data());
+        return func && func->IsRunnable();
     }
 
     // Plugin
@@ -344,6 +351,7 @@ namespace SPExt
         addNatives(gPlayerNatives);
         addNatives(gVTableNatives);
         addNatives(gHooksNatives);
+        addNatives(gAccessNatives);
     }
 
     const std::vector<SPMod::IPlugin *> &PluginMngr::getPluginsList() const

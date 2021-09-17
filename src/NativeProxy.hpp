@@ -29,13 +29,11 @@ public:
     NativeProxy() = default;
     NativeProxy(const NativeProxy &other) = delete;
     NativeProxy(NativeProxy &&other) = default;
-    ~NativeProxy() = default;
+    ~NativeProxy() final = default;
 
-    bool registerNative(IProxiedNative *native) override;
-
-    const std::unordered_map<std::string, IProxiedNative *> &getProxiedNatives() const override;
-    void clearNatives();
+    bool registerNative(std::weak_ptr<IProxiedNative> native) final;
+    const std::unordered_map<std::string, std::weak_ptr<IProxiedNative>> &getProxiedNatives() const final;
 
 private:
-    std::unordered_map<std::string, IProxiedNative *> m_proxiedNatives;
+    std::unordered_map<std::string, std::weak_ptr<IProxiedNative>> m_proxiedNatives;
 };

@@ -22,8 +22,8 @@
 #include <IHooks.hpp>
 #include "HookChains.hpp"
 
-#include <metamodcpp_sdk/engine/IEdict.hpp>
-#include <metamodcpp_sdk/engine/Common.hpp>
+#include <anubis/engine/IEdict.hpp>
+#include <anubis/engine/Common.hpp>
 
 namespace SPMod
 {

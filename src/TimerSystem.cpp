@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2020 SPMod Development Team
+ *  Copyright (C) 2018-2021 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -18,7 +18,7 @@
  */
 
 #include "TimerSystem.hpp"
-#include "MetaInit.hpp"
+#include "AnubisInit.hpp"
 
 Timer::Timer(float interval, Timer::Callback func, bool pause)
     : m_interval(interval), m_callback(std::move(func)), m_paused(pause),
@@ -26,6 +26,9 @@ Timer::Timer(float interval, Timer::Callback func, bool pause)
 {
     if (m_interval <= 0.0f)
         throw std::runtime_error("Interval lesser than or equal to 0");
+
+    if (!func)
+        throw std::runtime_error("Invalid function passed");
 }
 
 float Timer::getInterval() const
@@ -52,26 +55,30 @@ void Timer::setPause(bool pause)
         m_lastExec = gEngine->getTime();
 }
 
-bool Timer::exec()
-{
-    m_lastExec = gEngine->getTime();
-    return m_callback(this);
-}
-
 float Timer::getLastExecTime() const
 {
     return m_lastExec;
 }
 
-Timer *TimerMngr::createTimer(float interval, Timer::Callback func, bool pause)
+ITimer::Callback Timer::getCallback() const
+{
+    return m_callback;
+}
+
+void Timer::setLastExecTime(float lastExec)
+{
+    m_lastExec = lastExec;
+}
+
+nstd::observer_ptr<ITimer> TimerMngr::createTimer(float interval, Timer::Callback func, bool pause)
 {
     try
     {
-        return m_timers.emplace_back(std::make_unique<Timer>(interval, func, pause)).get();
+        return m_timers.emplace_back(std::make_unique<Timer>(interval, func, pause));
     }
     catch (const std::runtime_error &e [[maybe_unused]])
     {
-        return nullptr;
+        return {};
     }
 }
 
@@ -80,7 +87,7 @@ void TimerMngr::execTimers(float execTime)
     auto iter = m_timers.begin();
     while (iter != m_timers.end())
     {
-        Timer *task = (*iter).get();
+        const auto &task = *iter;
 
         if (task->isPaused() || task->getLastExecTime() + task->getInterval() > execTime)
         {
@@ -88,8 +95,10 @@ void TimerMngr::execTimers(float execTime)
             continue;
         }
 
-        if (!task->exec())
+        if (!execTimer(task))
+        {
             iter = m_timers.erase(iter);
+        }
         else
             ++iter;
     }
@@ -100,16 +109,41 @@ void TimerMngr::clearTimers()
     m_timers.clear();
 }
 
-void TimerMngr::removeTimer(const ITimer *timer)
+void TimerMngr::removeTimer(nstd::observer_ptr<ITimer> timer)
 {
     auto iter = m_timers.begin();
     while (iter != m_timers.end())
     {
-        if ((*iter).get() == timer)
+        if (*iter == timer)
         {
             m_timers.erase(iter);
             break;
         }
         ++iter;
     }
+}
+
+void TimerMngr::execTimer(nstd::observer_ptr<ITimer> timer)
+{
+    if (timer)
+    {
+        return;
+    }
+
+    for (const auto &timerInternal : m_timers)
+    {
+        if (timerInternal == timer)
+        {
+            execTimer(timerInternal);
+            break;
+        }
+    }
+}
+
+bool TimerMngr::execTimer(const std::unique_ptr<Timer> &timer)
+{
+    ITimer::Return result = timer->getCallback()(nstd::observer_ptr<ITimer>(timer));
+    timer->setLastExecTime(gEngine->getTime());
+
+    return result == ITimer::Return::Continue;
 }

@@ -27,16 +27,16 @@ namespace SPMod
     class IUtils : public ISPModInterface
     {
     public:
-        static constexpr uint16_t MAJOR_VERSION = 0;
-        static constexpr uint16_t MINOR_VERSION = 0;
+        static constexpr std::uint16_t MAJOR_VERSION = 0;
+        static constexpr std::uint16_t MINOR_VERSION = 0;
 
-        static constexpr uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
+        static constexpr std::uint32_t VERSION = (MAJOR_VERSION << 16 | MINOR_VERSION);
         /**
          * @brief Gets interface's name.
          *
          * @return        Interface's name.
          */
-        std::string_view getName() const override
+        [[nodiscard]] std::string_view getName() const override
         {
             return "IUtils";
         }
@@ -48,12 +48,12 @@ namespace SPMod
          *
          * @return        Interface's version.
          */
-        uint32_t getVersion() const override
+        [[nodiscard]] std::uint32_t getVersion() const override
         {
             return VERSION;
         }
 
-        virtual ~IUtils() = default;
+        ~IUtils() override = default;
 
         /**
          * @brief Copies string to buffer.
@@ -71,12 +71,12 @@ namespace SPMod
         /**
          * @brief Creates new string with replaced part.
          *
-         * @param source    Pointer to string where part will be replaced.
-         * @param from      Pointer to string to search for.
-         * @param to        Pointer to string to replace the search string from.
+         * @param source    String where part will be replaced.
+         * @param from      String to search for.
+         * @param to        String to replace the search string from.
          *
-         * @return          Written chars to buffer.
+         * @return          Modified string.
          */
-        virtual std::string strReplaced(std::string_view source, std::string_view from, std::string_view to) const = 0;
+        [[nodiscard]] virtual std::string strReplaced(std::string_view source, std::string_view from, std::string_view to) const = 0;
     };
 } // namespace SPMod

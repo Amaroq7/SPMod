@@ -21,7 +21,7 @@
 #include "EngineHooks.hpp"
 #include "MetaInit.hpp"
 
-#include <metamodcpp_sdk/engine/IHooks.hpp>
+#include <metamod/engine/IHooks.hpp>
 
 void installEngineHooks()
 {

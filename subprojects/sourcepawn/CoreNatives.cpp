@@ -25,7 +25,7 @@
 #include "PluginSystem.hpp"
 #include "ExtMain.hpp"
 
-#include <metamodcpp_sdk/engine/ILibrary.hpp>
+#include <metamod/engine/ILibrary.hpp>
 
 std::vector<std::unique_ptr<SPExt::NativeCallback>> gSourcePawnPluginsNatives;
 SPMod::INativeProxy *gSPNativeProxy;
@@ -59,7 +59,7 @@ static cell_t PrintToServer(SourcePawn::IPluginContext *ctx, const cell_t *param
 // native int PrecacheModel(const char[] model)
 static cell_t PrecacheModel(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!gSPGlobal->canPluginsPrecache())
+    if (gEngine->getState() != Metamod::Engine::ServerState::Loading)
     {
         ctx->ReportError("Precaching is not allowed");
         return 0;
@@ -74,7 +74,7 @@ static cell_t PrecacheModel(SourcePawn::IPluginContext *ctx, const cell_t *param
 // native int PrecacheSound(const char[] sound)
 static cell_t PrecacheSound(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!gSPGlobal->canPluginsPrecache())
+    if (gEngine->getState() != Metamod::Engine::ServerState::Loading)
     {
         ctx->ReportError("Precaching is not allowed");
         return 0;
@@ -89,7 +89,7 @@ static cell_t PrecacheSound(SourcePawn::IPluginContext *ctx, const cell_t *param
 // native int PrecacheGeneric(const char[] generic)
 static cell_t PrecacheGeneric(SourcePawn::IPluginContext *ctx, const cell_t *params)
 {
-    if (!gSPGlobal->canPluginsPrecache())
+    if (gEngine->getState() != Metamod::Engine::ServerState::Loading)
     {
         ctx->ReportError("Precaching is not allowed");
         return 0;

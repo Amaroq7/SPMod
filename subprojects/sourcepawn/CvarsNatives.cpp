@@ -22,9 +22,9 @@
 #include "ExtMain.hpp"
 #include "StringNatives.hpp"
 
-#include <metamodcpp_sdk/engine/ICvar.hpp>
-#include <metamodcpp_sdk/engine/IHooks.hpp>
-#include <metamodcpp_sdk/engine/ILibrary.hpp>
+#include <metamod/engine/ICvar.hpp>
+#include <metamod/engine/IHooks.hpp>
+#include <metamod/engine/ILibrary.hpp>
 
 TypeHandler<Metamod::Engine::ICvar> gCvarsHandlers;
 std::unordered_multimap<Metamod::Engine::ICvar *, Metamod::IHookInfo *> gCvarPluginsCallbacks;

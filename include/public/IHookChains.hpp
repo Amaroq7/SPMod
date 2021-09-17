@@ -29,6 +29,7 @@
 
 #include <functional>
 #include <cinttypes>
+#include <memory>
 
 namespace SPMod
 {
@@ -55,7 +56,7 @@ namespace SPMod
     public:
         virtual ~IHookInfo() = default;
         virtual void setState(State state) = 0;
-        virtual HookPriority getPriority() const = 0;
+        [[nodiscard]] virtual HookPriority getPriority() const = 0;
     };
 
     template<typename t_ret, typename... t_args>
@@ -69,7 +70,7 @@ namespace SPMod
     };
 
     template<typename t_ret, typename... t_args>
-    using HookFunc = std::function<t_ret(IHook<t_ret, t_args...> *, t_args...)>;
+    using HookFunc = std::function<t_ret(std::weak_ptr<IHook<t_ret, t_args...>>, t_args...)>;
 
     template<typename t_ret, typename... t_args>
     using OriginalFunc = std::function<t_ret(t_args...)>;
@@ -81,7 +82,7 @@ namespace SPMod
     public:
         virtual ~IHookRegistry() = default;
 
-        virtual IHookInfo *registerHook(HookFunc<t_ret, t_args...> hook, HookPriority priority = HookPriority::DEFAULT) = 0;
-        virtual void unregisterHook(IHookInfo *hookInfo) = 0;
+        virtual std::weak_ptr<IHookInfo> registerHook(HookFunc<t_ret, t_args...> hook, HookPriority priority) = 0;
+        virtual void unregisterHook(std::weak_ptr<IHookInfo> hookInfo) = 0;
     };
 }

@@ -100,7 +100,7 @@ namespace SPMod
          *
          * @return              Currently set log level.
          */
-        virtual LogLevel getLogLevel() const = 0;
+        [[nodiscard]] virtual LogLevel getLogLevel() const = 0;
     };
 
     class ILoggerMngr : public ISPModInterface
@@ -116,7 +116,7 @@ namespace SPMod
          *
          * @return              Interface's name.
          */
-        std::string_view getName() const override
+        [[nodiscard]] std::string_view getName() const override
         {
             return "ILoggerMngr";
         }
@@ -128,12 +128,12 @@ namespace SPMod
          *
          * @return      Interface's version.
          */
-        uint32_t getVersion() const override
+        [[nodiscard]] std::uint32_t getVersion() const override
         {
             return VERSION;
         }
 
-        virtual ~ILoggerMngr() = default;
+        ~ILoggerMngr() override = default;
 
         /**
          * @brief Creates a new logger.
@@ -144,6 +144,6 @@ namespace SPMod
          *
          * @return      Logger's instance.
          */
-        virtual ILogger *getLogger(std::string_view prefix) = 0;
+        virtual nstd::observer_ptr<ILogger> getLogger(std::string_view prefix) = 0;
     };
 } // namespace SPMod

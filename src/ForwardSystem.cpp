@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2020 SPMod Development Team
+ *  Copyright (C) 2018-2021 SPMod Development Team
  *
  *  This file is part of SPMod.
  *
@@ -17,12 +17,13 @@
  *  along with SPMod.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <metamodcpp_sdk/IHelpers.hpp>
+#include <anubis/IHelpers.hpp>
 #include "ForwardSystem.hpp"
+#include "SPGlobal.hpp"
 
-Forward::Param::Param(Type type) : m_dataType(type), m_copyback(false), m_stringFlags(Forward::StringFlags::None) {}
+Forward::Param::Param(Type type) : m_dataType(type) {}
 
-std::any Forward::Param::getData() const
+IForward::IParam::Variants Forward::Param::getData() const
 {
     return m_data;
 }
@@ -42,19 +43,9 @@ Forward::Param::Type Forward::Param::getDataType() const
     return m_dataType;
 }
 
-std::size_t Forward::Param::getDataSize() const
-{
-    return m_size;
-}
-
-void Forward::Param::setData(std::any data)
+void Forward::Param::setData(Param::Variants data)
 {
     m_data = data;
-}
-
-void Forward::Param::setSize(std::size_t size)
-{
-    m_size = size;
 }
 
 void Forward::Param::setCopyback(bool copyback)
@@ -67,13 +58,11 @@ void Forward::Param::setStringFlags(Forward::StringFlags stringFlags)
     m_stringFlags = stringFlags;
 }
 
-Forward::Forward(std::string_view name,
-                 std::array<Forward::Param::Type, IForward::MAX_EXEC_PARAMS> paramstypes,
-                 const std::vector<Forward::Callback> &callbacks)
-    : m_name(name), m_paramsNum(0), m_callbacks(callbacks), m_currentPos(0)
+Forward::Forward(std::array<Forward::Param::Type, IForward::MAX_EXEC_PARAMS> paramsTypes, ExecType execType)
+    : m_paramsNum(0), m_currentPos(0), m_execType(execType)
 {
     std::size_t i = 0;
-    for (auto type : paramstypes)
+    for (auto type : paramsTypes)
     {
         m_params.at(i++) = std::make_unique<Param>(type);
 
@@ -86,17 +75,17 @@ Forward::Forward(std::string_view name,
 
 std::string_view Forward::getName() const
 {
-    return m_name;
+    return {};
 }
 
-const std::array<std::unique_ptr<Forward::Param>, IForward::MAX_EXEC_PARAMS> &Forward::getParams() const
+bool Forward::isBeingExecuted() const
 {
-    return m_params;
+    return m_beingExecuted;
 }
 
-bool Forward::isExecuted() const
+void Forward::setBeingExecuted(bool beingExecuted)
 {
-    return m_exec;
+    m_beingExecuted = beingExecuted;
 }
 
 bool Forward::pushInt(std::int32_t integer)
@@ -104,41 +93,27 @@ bool Forward::pushInt(std::int32_t integer)
     if (m_currentPos >= m_paramsNum)
         return false;
 
-    try
-    {
-        const std::unique_ptr<Param> &param = m_params.at(m_currentPos);
-        if (param->getDataType() != Forward::Param::Type::Int)
-            return false;
-
-        param->setData(integer);
-    }
-    catch (const std::out_of_range &e [[maybe_unused]])
-    {
+    const auto &param = m_params[m_currentPos];
+    if (param->getDataType() != Forward::Param::Type::Int)
         return false;
-    }
+
+    param->setData(integer);
 
     m_currentPos++;
     return true;
 }
 
-bool Forward::pushInt(std::int32_t *integer, bool copyback)
+bool Forward::pushInt(std::int32_t *integer)
 {
     if (m_currentPos >= m_paramsNum)
         return false;
 
-    try
-    {
-        const std::unique_ptr<Param> &param = m_params.at(m_currentPos);
-        if (param->getDataType() != (Forward::Param::Type::Int | Forward::Param::Type::Pointer))
-            return false;
-
-        param->setData(integer);
-        param->setCopyback(copyback);
-    }
-    catch (const std::out_of_range &e [[maybe_unused]])
-    {
+    const auto &param = m_params[m_currentPos];
+    if (param->getDataType() != (Forward::Param::Type::Int | Forward::Param::Type::Pointer))
         return false;
-    }
+
+    param->setData(integer);
+    param->setCopyback(true);
 
     m_currentPos++;
     return true;
@@ -149,65 +124,43 @@ bool Forward::pushFloat(float real)
     if (m_currentPos >= m_paramsNum)
         return false;
 
-    try
-    {
-        const std::unique_ptr<Param> &param = m_params.at(m_currentPos);
-        if (param->getDataType() != Forward::Param::Type::Float)
-            return false;
-
-        param->setData(real);
-    }
-    catch (const std::out_of_range &e [[maybe_unused]])
-    {
+    const auto &param = m_params[m_currentPos];
+    if (param->getDataType() != Forward::Param::Type::Float)
         return false;
-    }
+
+    param->setData(real);
 
     m_currentPos++;
     return true;
 }
 
-bool Forward::pushFloat(float *real, bool copyback)
+bool Forward::pushFloat(float *real)
 {
     if (m_currentPos >= m_paramsNum)
         return false;
 
-    try
-    {
-        const std::unique_ptr<Param> &param = m_params.at(m_currentPos);
-        if (param->getDataType() != (Forward::Param::Type::Float | Forward::Param::Type::Pointer))
-            return false;
-
-        param->setData(real);
-        param->setCopyback(copyback);
-    }
-    catch (const std::out_of_range &e [[maybe_unused]])
-    {
+    const auto &param = m_params[m_currentPos];
+    if (param->getDataType() != (Forward::Param::Type::Float | Forward::Param::Type::Pointer))
         return false;
-    }
+
+    param->setData(real);
+    param->setCopyback(true);
 
     m_currentPos++;
     return true;
 }
 
-bool Forward::pushArray(std::variant<std::int32_t *, float *> array, std::size_t size, bool copyback)
+bool Forward::pushArray(std::vector<std::variant<std::int32_t, float>> &array)
 {
     if (m_currentPos >= m_paramsNum)
         return false;
 
-    try
-    {
-        const std::unique_ptr<Param> &param = m_params.at(m_currentPos);
-        if (param->getDataType() != Forward::Param::Type::Array)
-            return false;
-
-        param->setSize(size);
-        param->setData(array);
-        param->setCopyback(copyback);
-    }
-    catch (const std::out_of_range &e [[maybe_unused]])
-    {
+    const auto &param = m_params[m_currentPos];
+    if (param->getDataType() != Forward::Param::Type::Array)
         return false;
-    }
+
+    param->setData(std::ref(array));
+    param->setCopyback(true);
 
     m_currentPos++;
     return true;
@@ -218,222 +171,259 @@ bool Forward::pushString(std::string_view string)
     if (m_currentPos >= m_paramsNum)
         return false;
 
-    try
-    {
-        const std::unique_ptr<Param> &param = m_params.at(m_currentPos);
-        if (param->getDataType() != Forward::Param::Type::String)
-            return false;
-
-        param->setData(std::string(string));
-    }
-    catch (const std::out_of_range &e [[maybe_unused]])
-    {
+    const auto &param = m_params[m_currentPos];
+    if (param->getDataType() != Forward::Param::Type::String)
         return false;
-    }
+
+    param->setData(string);
 
     m_currentPos++;
     return true;
 }
 
-bool Forward::pushString(char *buffer, std::size_t size, IForward::StringFlags sflags, bool copyback)
+bool Forward::pushString(std::string &string, StringFlags sflags, bool copyback)
 {
     if (m_currentPos >= m_paramsNum)
         return false;
 
-    try
-    {
-        const std::unique_ptr<Param> &param = m_params.at(m_currentPos);
-        if (param->getDataType() != Forward::Param::Type::String)
-            return false;
-
-        param->setData(buffer);
-        param->setSize(size);
-        param->setCopyback(copyback);
-        param->setStringFlags(sflags);
-    }
-    catch (const std::out_of_range &e [[maybe_unused]])
-    {
+    const auto &param = m_params[m_currentPos];
+    if (param->getDataType() != Forward::Param::Type::String)
         return false;
-    }
+
+    param->setData(std::ref(string));
+    param->setCopyback(copyback);
+    param->setStringFlags(sflags);
 
     m_currentPos++;
     return true;
 }
 
-std::array<IForward::IParam *, IForward::MAX_EXEC_PARAMS> Forward::getParamsImpl() const
+Forward::ExecType Forward::getExecType() const
 {
-    std::array<IForward::IParam *, IForward::MAX_EXEC_PARAMS> params = {};
-
-    std::size_t idx = 0;
-    for (const auto &param : m_params)
-    {
-        /* No more params */
-        if (!param)
-        {
-            break;
-        }
-
-        params.at(idx++) = param.get();
-    }
-
-    return params;
+    return m_execType;
 }
 
-bool MultiForward::execFunc(std::int32_t *result)
-{
-    // If passed number of passed arguments is lower then required one fail now
-    if (m_paramsNum > m_currentPos)
-        return false;
-
-    m_exec = true;
-
-    std::int32_t returnValue = 0;
-    bool stop = false;
-    for (const auto &callback : m_callbacks)
-    {
-        callback(this, returnValue, stop);
-
-        if (stop)
-            break;
-    }
-
-    if (result)
-        *result = returnValue;
-
-    m_exec = false;
-    m_currentPos = 0;
-
-    return true;
-}
+void Forward::addFunction(IForward::Callback func [[maybe_unused]]) {}
+void Forward::removeFunction(IForward::Callback func [[maybe_unused]]) {}
 
 void Forward::resetParams()
 {
     m_currentPos = 0;
 }
 
-MultiForward::MultiForward(std::string_view name,
-                           std::array<Forward::Param::Type, MAX_EXEC_PARAMS> paramstypes,
-                           ExecType type,
-                           const std::vector<Forward::Callback> &callbacks)
-    : Forward(name, paramstypes, callbacks), m_execType(type)
+std::size_t Forward::getPushedParamsCount() const
 {
+    return m_currentPos;
 }
 
-IPlugin *MultiForward::getPlugin() const
+std::size_t Forward::getParamsCount() const
 {
-    return nullptr;
+    return m_paramsNum;
 }
 
-Forward::ExecType MultiForward::getExecType() const
+GlobalForward::GlobalForward(std::string_view name,
+                             std::array<Forward::Param::Type, MAX_EXEC_PARAMS> paramsTypes,
+                             ExecType type) : Forward(paramsTypes, type), m_name(name) {}
+
+std::string_view GlobalForward::getName() const
 {
-    return m_execType;
+    return m_name;
 }
 
-SingleForward::SingleForward(std::string_view name,
-                             std::array<Forward::Param::Type, MAX_EXEC_PARAMS> paramstypes,
-                             IPlugin *plugin,
-                             const std::vector<Forward::Callback> &callbacks)
-    : Forward(name, paramstypes, callbacks), m_plugin(plugin)
+IForward::Type GlobalForward::getType() const
 {
+    return IForward::Type::Global;
 }
 
-IPlugin *SingleForward::getPlugin() const
+void GlobalForward::addPlugin(nstd::observer_ptr<IPlugin> plugin)
 {
-    return m_plugin;
+    m_plugins.emplace_back(plugin);
 }
 
-Forward::ExecType SingleForward::getExecType() const
+const std::vector<nstd::observer_ptr<IPlugin>> &GlobalForward::getPlugins() const
 {
-    return IForward::ExecType::Ignore;
+    return m_plugins;
 }
 
-bool SingleForward::execFunc(std::int32_t *result)
+PrivateForward::PrivateForward(std::array<Forward::Param::Type, MAX_EXEC_PARAMS> paramsTypes, ExecType execType)
+    : Forward(paramsTypes, execType) {}
+
+const std::vector<IForward::Callback> &PrivateForward::getFunctions() const
 {
-    // If passed number of passed arguments is lower then required one fail now
-    if (m_paramsNum > m_currentPos)
+    return m_functions;
+}
+
+IForward::Type PrivateForward::getType() const
+{
+    return IForward::Type::Private;
+}
+
+void PrivateForward::addFunction(IForward::Callback func)
+{
+    m_functions.emplace_back(func);
+}
+
+void PrivateForward::removeFunction(IForward::Callback func)
+{
+    auto iter = std::remove_if(m_functions.begin(), m_functions.end(), [&func](const IForward::Callback &fn) {
+        return func.target<Status(*)(nstd::observer_ptr<IForward>)>() == fn.target<Status(*)(nstd::observer_ptr<IForward>)>();
+    });
+    m_functions.erase(iter, m_functions.end());
+}
+
+nstd::observer_ptr<IForward> ForwardMngr::createForward(std::string_view name,
+                                    Forward::ExecType exec,
+                                    std::array<Forward::Param::Type, IForward::MAX_EXEC_PARAMS> params)
+{
+    const auto [iter, inserted] = m_globalForwards.try_emplace(name.data(), std::make_unique<GlobalForward>(name, params, exec));
+    if (!inserted)
+    {
+        return nullptr;
+    }
+
+    for (const auto &adapter : gSPGlobal->getAdaptersInterfaces())
+    {
+        for (const auto &plugin : adapter.second->getPluginMngr()->getPluginsList())
+        {
+            if (plugin && plugin->functionExist(name))
+            {
+                dynamic_cast<GlobalForward *>((iter->second.get()))->addPlugin(plugin);
+            }
+        }
+    }
+
+    return iter->second;
+}
+
+nstd::observer_ptr<IForward> ForwardMngr::createForward(IForward::ExecType exec,
+                                                        std::array<IForward::IParam::Type, IForward::MAX_EXEC_PARAMS> params)
+{
+    return m_privateForwards.emplace_back(std::make_unique<PrivateForward>(params, exec));
+}
+
+bool ForwardMngr::deleteForward(nstd::observer_ptr<IForward> forward)
+{
+    if (forward)
+    {
         return false;
+    }
 
-    m_exec = true;
+    auto forwardImpl = nstd::dynamic_observer_cast<Forward>(forward);
+    if (forwardImpl && forwardImpl->isBeingExecuted())
+    {
+        return false;
+    }
 
-    // TODO: Execute the right callback except all of them
-    std::int32_t returnValue = 0;
-    static bool dummy;
-    for (const auto &callback : m_callbacks)
-        callback(this, returnValue, dummy);
+    if (forwardImpl->getType() == IForward::Type::Global)
+    {
+        m_globalForwards.erase(forwardImpl->getName().data());
+    }
+    else
+    {
+        auto iter = std::remove_if(m_privateForwards.begin(), m_privateForwards.end(), [&forwardImpl](const auto &fwd) {
+             return fwd == forwardImpl;
+        });
 
-    (void)dummy;
-
-    if (result)
-        *result = returnValue;
-
-    m_exec = false;
-    m_currentPos = 0;
+        m_privateForwards.erase(iter, m_privateForwards.end());
+    }
 
     return true;
 }
 
-Forward *ForwardMngr::createForward(std::string_view name,
-                                    Forward::ExecType exec,
-                                    std::array<Forward::Param::Type, IForward::MAX_EXEC_PARAMS> params,
-                                    IPlugin *plugin)
+bool ForwardMngr::execForward(nstd::observer_ptr<IForward> forward, IForward::Status *result)
 {
-    if (!plugin) // Global forward
+    if (forward)
     {
-        // Global forward with the same name already found
-        if (size_t count = m_forwards.count(name.data()); count)
-            return nullptr;
-
-        return m_forwards.emplace(name.data(), std::make_unique<MultiForward>(name, params, exec, m_callbacks))
-            ->second.get();
+        return false;
     }
 
-    // Check if forward with the same name and for the same plugin is already registered
-    for (auto iter = m_forwards.find(name.data()); iter != m_forwards.end(); iter++)
+    auto forwardImpl{nstd::dynamic_observer_cast<Forward>(forward)};
+    if (!forwardImpl)
     {
-        if (iter->second->getPlugin() == plugin)
-            return nullptr;
+        return false;
     }
 
-    return m_forwards.emplace(name.data(), std::make_unique<SingleForward>(name, params, plugin, m_callbacks))
-        ->second.get();
-}
-
-void ForwardMngr::addForwardListener(Forward::Callback func)
-{
-    m_callbacks.emplace_back(func);
-}
-
-void ForwardMngr::clearForwards()
-{
-    m_forwards.clear();
-    m_callbacks.clear();
-}
-
-bool ForwardMngr::deleteForward(const IForward *forward)
-{
-    const IPlugin *plugin = forward->getPlugin();
-
-    auto iter = m_forwards.find(forward->getName().data());
-    while (iter != m_forwards.end())
+    // If passed number of passed arguments is lower then required one fail now
+    if (forwardImpl->getParamsCount() > forwardImpl->getPushedParamsCount())
     {
-        if (iter->second->isExecuted())
-        {
-            iter++;
-            continue;
-        }
-
-        if (!plugin)
-        {
-            m_forwards.erase(iter);
-            return true;
-        }
-        else if (plugin == iter->second->getPlugin())
-        {
-            m_forwards.erase(iter);
-            return true;
-        }
-        iter++;
+        return false;
     }
 
-    return false;
+    forwardImpl->setBeingExecuted(true);
+
+    if (result)
+    {
+        *result = IForward::Status::Continue;
+    }
+
+    auto setupResult = [result](nstd::observer_ptr<Forward> fwd, IForward::Status returnValue) {
+        switch (fwd->getExecType())
+        {
+            case IForward::ExecType::Single:
+            {
+                if (result)
+                {
+                    *result = returnValue;
+                }
+                return true;
+            }
+            case IForward::ExecType::Event:
+            {
+                if (result && *result < returnValue)
+                {
+                    *result = returnValue;
+                }
+                return true;
+            }
+            case IForward::ExecType::Hook:
+            {
+                if (result && *result < returnValue)
+                {
+                    *result = returnValue;
+                }
+                if (result && (*result == IForward::Status::Handled || *result == IForward::Status::Stop))
+                {
+                    return false;
+                }
+                return true;
+            }
+            default:
+                return true;
+        }
+    };
+
+    if (forwardImpl->getType() == Forward::Type::Private)
+    {
+        auto privateForward = nstd::dynamic_observer_cast<PrivateForward>(forwardImpl);
+        for (const auto &function : privateForward->getFunctions())
+        {
+            IForward::Status returnValueTemp = function(privateForward);
+            if (!setupResult(forwardImpl, returnValueTemp))
+            {
+                break;
+            }
+        }
+    }
+    else
+    {
+        auto globalForward = nstd::dynamic_observer_cast<GlobalForward>(forwardImpl);
+        for (const auto &plugin : globalForward->getPlugins())
+        {
+            if (plugin)
+            {
+                continue;
+            }
+
+            IForward::Status returnValueTemp = plugin->functionCall(globalForward);
+            if (!setupResult(forwardImpl, returnValueTemp))
+            {
+                break;
+            }
+        }
+    }
+
+    forwardImpl->setBeingExecuted(false);
+    forwardImpl->resetParams();
+
+    return true;
 }

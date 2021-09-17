@@ -22,6 +22,8 @@
 #include "StandardHeaders.hpp"
 #include "IInterface.hpp"
 
+#include <anubis/observer_ptr.hpp>
+
 namespace SPMod
 {
     class IPluginMngr;
@@ -37,28 +39,28 @@ namespace SPMod
          *
          * @return        Plugin name.
          */
-        virtual std::string_view getName() const = 0;
+        [[nodiscard]] virtual std::string_view getName() const = 0;
 
         /**
          * @brief Returns version of plugin.
          *
          * @return        Plugin version.
          */
-        virtual std::string_view getVersion() const = 0;
+        [[nodiscard]] virtual std::string_view getVersion() const = 0;
 
         /**
          * @brief Returns author of plugin.
          *
          * @return        Plugin author.
          */
-        virtual std::string_view getAuthor() const = 0;
+        [[nodiscard]] virtual std::string_view getAuthor() const = 0;
 
         /**
          * @brief Returns url address of plugin.
          *
          * @return        Plugin url address.
          */
-        virtual std::string_view getUrl() const = 0;
+        [[nodiscard]] virtual std::string_view getUrl() const = 0;
 
         /**
          * @brief Returns identity of plugin.
@@ -67,23 +69,26 @@ namespace SPMod
          *
          * @return        Plugin identity.
          */
-        virtual std::string_view getIdentity() const = 0;
+        [[nodiscard]] virtual std::string_view getIdentity() const = 0;
 
         /**
          * @brief Returns filename of plugin.
          *
          * @return        Plugin filename.
          */
-        virtual std::string_view getFilename() const = 0;
+        [[nodiscard]] virtual std::string_view getFilename() const = 0;
 
         /**
          * @brief Gets plugin's plugin manager.
          *
          * @return        Plugin manager.
          */
-        virtual IPluginMngr *getPluginMngr() const = 0;
+        [[nodiscard]] virtual nstd::observer_ptr<IPluginMngr> getPluginMngr() const = 0;
 
-        std::size_t getId() const
+        [[nodiscard]] virtual bool functionExist(std::string_view funcName) const = 0;
+        [[nodiscard]] virtual IForward::Status functionCall(nstd::observer_ptr<IForward> fwd) const = 0;
+
+        [[nodiscard]] std::size_t getId() const
         {
             return m_pluginId;
         }
@@ -110,7 +115,7 @@ namespace SPMod
          *
          * @return        Plugin pointer, nullptr if not found.
          */
-        virtual IPlugin *getPlugin(std::string_view name) const = 0;
+        [[nodiscard]] virtual nstd::observer_ptr<IPlugin> getPlugin(std::string_view name) const = 0;
 
         /**
          * @brief Loads plugins.
@@ -129,20 +134,20 @@ namespace SPMod
          *
          * @return        Number of loaded plugins.
          */
-        virtual std::size_t getPluginsNum() const = 0;
+        [[nodiscard]] virtual std::size_t getPluginsNum() const = 0;
 
         /**
          * @brief Returns plugins extension.
          *
          * @return        Plugins extension.
          */
-        virtual std::string_view getPluginsExt() const = 0;
+        [[nodiscard]] virtual std::string_view getPluginsExt() const = 0;
 
         /**
          * @brief Returns list of the plugins.
          *
          * @return        Plugins list.
          */
-        virtual const std::vector<IPlugin *> &getPluginsList() const = 0;
+        [[nodiscard]] virtual const std::vector<nstd::observer_ptr<IPlugin>> &getPluginsList() const = 0;
     };
 } // namespace SPMod

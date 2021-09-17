@@ -21,7 +21,9 @@
 
 #include <ICmdSystem.hpp>
 #include <IForwardSystem.hpp>
-#include "MetaInit.hpp"
+#include "AnubisInit.hpp"
+
+#include <anubis/observer_ptr.hpp>
 
 using namespace SPMod;
 
@@ -38,8 +40,8 @@ public:
     Command(std::string &&cmd, std::string_view info, ICommand::Callback cb);
     Command(std::regex &&cmd, std::string_view info, ICommand::Callback cb);
 
-    const std::variant<std::string, std::regex> &getNameOrRegex() const override;
-    std::string_view getInfo() const override;
+    [[nodiscard]] const std::variant<std::string, std::regex> &getNameOrRegex() const override;
+    [[nodiscard]] std::string_view getInfo() const override;
     bool execCallback(Player *player);
 
 protected:
@@ -62,18 +64,15 @@ public:
     ClientCommand(ClientCommand &&other) = default;
     ~ClientCommand() = default;
 
-    ClientCommand(std::string &&cmd, std::string_view info, std::uint32_t flags, ICommand::Callback cb);
-    ClientCommand(std::regex &&cmd, std::string_view info, std::uint32_t flags, ICommand::Callback cb);
+    ClientCommand(std::string &&cmd, std::string_view info, std::string_view permission, ICommand::Callback cb);
+    ClientCommand(std::regex &&cmd, std::string_view info, std::string_view permission, ICommand::Callback cb);
 
-    bool hasAccess(const IPlayer *player) const override;
-    uint32_t getAccess() const override;
-
-private:
-    bool _hasAccess(uint32_t flags) const;
+    bool hasAccess(nstd::observer_ptr<IPlayer> player) const override;
+    std::string_view getPermission() const override;
 
 private:
     /* permissions for command */
-    uint32_t m_flags;
+    std::string m_permission;
 };
 
 /* @brief Represents server command */
@@ -87,8 +86,8 @@ public:
 
     ServerCommand(std::string_view cmd, std::string_view info, ICommand::Callback cb);
 
-    bool hasAccess(const IPlayer *player) const override;
-    std::uint32_t getAccess() const override;
+    bool hasAccess(nstd::observer_ptr<IPlayer> player) const final;
+    std::string_view getPermission() const final;
 };
 
 class CommandMngr final : public ICommandMngr
@@ -97,15 +96,15 @@ public:
     CommandMngr() = default;
     ~CommandMngr() = default;
 
-    Command *registerCommand(ICommand::Type type,
-                             std::string_view cmd,
-                             std::string_view info,
-                             bool regex,
-                             std::uint32_t flags,
-                             ICommand::Callback cb) override;
+    nstd::observer_ptr<ICommand> registerCommand(ICommand::Type type,
+                                            std::string_view cmd,
+                                            std::string_view info,
+                                            bool regex,
+                                            std::string_view permission,
+                                            ICommand::Callback cb) override;
 
     template<typename T, typename... Args, typename = std::enable_if_t<std::is_base_of_v<Command, T>>>
-    const std::unique_ptr<Command> &registerCommandInternal(Args... args)
+    nstd::observer_ptr<Command> registerCommandInternal(Args... args)
     {
         if constexpr (std::is_same_v<::ClientCommand, T>)
         {
@@ -125,7 +124,7 @@ public:
     std::size_t getCommandsNum(ICommand::Type type);
     void clearCommands();
 
-    bool ClientCommand(Metamod::Engine::IEdict *entity, std::string_view cmd);
+    bool ClientCommand(nstd::observer_ptr<Anubis::Engine::IEdict> entity, std::string_view cmd);
 
     static void PluginSrvCommand();
     static void SPModInfoCommand();

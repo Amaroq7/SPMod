@@ -24,8 +24,8 @@
 
 #include "StringNatives.hpp"
 
-#include <metamodcpp_sdk/engine/ILibrary.hpp>
-#include <metamodcpp_sdk/engine/IHooks.hpp>
+#include <metamod/engine/ILibrary.hpp>
+#include <metamod/engine/IHooks.hpp>
 
 static TypeHandler<SPMod::IHookInfo> gSPGameInitHooks;
 static TypeHandler<SPMod::IHookInfo> gSPClientConnectHooks;

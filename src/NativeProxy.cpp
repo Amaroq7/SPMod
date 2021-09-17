@@ -19,17 +19,17 @@
 
 #include "NativeProxy.hpp"
 
-bool NativeProxy::registerNative(IProxiedNative *native)
+bool NativeProxy::registerNative(std::weak_ptr<IProxiedNative> native)
 {
-    return m_proxiedNatives.try_emplace(std::string(native->getName()), native).second;
+    if (native.expired())
+    {
+        return false;
+    }
+
+    return m_proxiedNatives.try_emplace(native.lock()->getName().data(), native).second;
 }
 
-const std::unordered_map<std::string, IProxiedNative *> &NativeProxy::getProxiedNatives() const
+const std::unordered_map<std::string, std::weak_ptr<IProxiedNative>> &NativeProxy::getProxiedNatives() const
 {
     return m_proxiedNatives;
-}
-
-void NativeProxy::clearNatives()
-{
-    m_proxiedNatives.clear();
 }

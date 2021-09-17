@@ -29,19 +29,20 @@ public:
     Timer() = delete;
     Timer(const Timer &other) = delete;
     Timer(Timer &&other) = default;
-    ~Timer() = default;
+    ~Timer() final = default;
 
     Timer(float interval, Callback func, bool pause);
 
     // ITimer
-    float getInterval() const override;
-    bool isPaused() const override;
-    void setInterval(float interval) override;
-    void setPause(bool pause) override;
-    bool exec() override;
+    [[nodiscard]] float getInterval() const final;
+    [[nodiscard]] bool isPaused() const final;
+    void setInterval(float interval) final;
+    void setPause(bool pause) final;
 
     // Timer
-    float getLastExecTime() const;
+    [[nodiscard]] float getLastExecTime() const;
+    [[nodiscard]] Callback getCallback() const;
+    void setLastExecTime(float lastExec);
 
 private:
     /* interval */
@@ -61,18 +62,20 @@ class TimerMngr final : public ITimerMngr
 {
 public:
     TimerMngr() = default;
-    ~TimerMngr() = default;
+    ~TimerMngr() final = default;
 
-    Timer *createTimer(float interval,
-                       Timer::Callback callback,
-                       bool pause = false) override;
-    void removeTimer(const ITimer *timer) override;
+    nstd::observer_ptr<ITimer> createTimer(float interval, Timer::Callback callback, bool pause) final;
+    void removeTimer(nstd::observer_ptr<ITimer> timer) final;
+    void execTimer(nstd::observer_ptr<ITimer> timer) final;
 
     void execTimers(float execTime);
     void clearTimers();
 
     /* next execution of timers */
     static inline float m_nextExecution;
+
+private:
+    static bool execTimer(const std::unique_ptr<Timer>& timer);
 
 private:
     std::vector<std::unique_ptr<Timer>> m_timers;

@@ -23,7 +23,7 @@
 
 #include <IHooks.hpp>
 
-#include <metamodcpp_sdk/game/IEntitiesHooks.hpp>
+#include <metamod/game/IEntitiesHooks.hpp>
 
 typedef struct sp_nativeinfo_s sp_nativeinfo_t;
 

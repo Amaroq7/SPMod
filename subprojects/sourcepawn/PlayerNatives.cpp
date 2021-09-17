@@ -21,11 +21,12 @@
 #include "SourcePawnAPI.hpp"
 #include "PrintfImpl.hpp"
 #include "StringNatives.hpp"
+#include "AccessNatives.hpp"
 #include "ExtMain.hpp"
 
 #include <ISPGlobal.hpp>
-#include <metamodcpp_sdk/engine/ILibrary.hpp>
-#include <metamodcpp_sdk/game/IBasePlayer.hpp>
+#include <metamod/engine/ILibrary.hpp>
+#include <metamod/game/IBasePlayer.hpp>
 
 SPMod::IPlayerMngr *gSPPlrMngr;
 
@@ -354,19 +355,119 @@ static cell_t MakeVIP(SourcePawn::IPluginContext *ctx, const cell_t *params)
     return 1;
 }
 
-sp_nativeinfo_t gPlayerNatives[] = {{"Client.GetName", GetName},
-                                    {"Client.GetIP", GetIP},
-                                    {"Client.GetSteamID", GetSteamID},
-                                    {"Client.Index.get", GetIndex},
-                                    {"Client.UserID.get", GetUserID},
-                                    {"Client.Alive.get", AliveGet},
-                                    {"Client.Connected.get", ConnectedGet},
-                                    {"Client.Fake.get", FakeGet},
-                                    {"Client.HLTV.get", HLTVGet},
-                                    {"Client.InGame.get", InGame},
-                                    {"Client.Health.get", HealthGet},
-                                    {"Client.Health.set", HealthSet},
-                                    {"Client.TakeDamage", TakeDamage},
-                                    {"Client.SendMsg", SendMsg},
-                                    {"Client.MakeVIP", MakeVIP},
-                                    {nullptr, nullptr}};
+// native bool Client.HasAccess(const char[] permission);
+static cell_t HasAccess(SourcePawn::IPluginContext *ctx,
+                        const cell_t *params)
+{
+    enum
+    {
+        arg_player = 1,
+        arg_perm
+    };
+
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_player]);
+
+    char *perm;
+    ctx->LocalToString(params[arg_perm], &perm);
+
+    return plr->hasAccess(perm);
+}
+
+// native bool Player.AttachGroup(Group group);
+static cell_t AttachGroup(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                          const cell_t *params)
+{
+    enum
+    {
+        arg_player = 1,
+        arg_group
+    };
+
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_player]);
+    std::weak_ptr<SPMod::IAccessGroup> group = gAccessGroupHandlers.get(params[arg_group]);
+
+    if (group.expired())
+    {
+        return 0;
+    }
+
+    return plr->attachGroup(group);
+}
+
+// native void Player.RemoveGroup(Group group);
+static cell_t RemoveGroup(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                          const cell_t *params)
+{
+    enum
+    {
+        arg_player = 1,
+        arg_group
+    };
+
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_player]);
+
+    std::weak_ptr<SPMod::IAccessGroup> group = gAccessGroupHandlers.get(params[arg_group]);
+    plr->removeGroup(group);
+
+    return 1;
+}
+
+// native bool Player.AttachPermission(const char[] permission);
+static cell_t AttachPermission(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                               const cell_t *params)
+{
+    enum
+    {
+        arg_player = 1,
+        arg_perm
+    };
+
+    char *perm;
+    ctx->LocalToString(params[arg_perm], &perm);
+
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_player]);
+    return plr->attachPermission(perm);
+}
+
+// native void Player.RemovePermission(const char[] permission);
+static cell_t RemovePermission(SourcePawn::IPluginContext *ctx [[maybe_unused]],
+                               const cell_t *params)
+{
+    enum
+    {
+        arg_player = 1,
+        arg_perm
+    };
+
+    SPMod::IPlayer *plr = gSPPlrMngr->getPlayer(params[arg_player]);
+
+    char *perm;
+    ctx->LocalToString(params[arg_perm], &perm);
+
+    plr->removePermission(perm);
+    return 1;
+}
+
+sp_nativeinfo_t gPlayerNatives[] = {
+    {"Client.GetName", GetName},
+    {"Client.GetIP", GetIP},
+    {"Client.GetSteamID", GetSteamID},
+    {"Client.Index.get", GetIndex},
+    {"Client.UserID.get", GetUserID},
+    {"Client.Alive.get", AliveGet},
+    {"Client.Connected.get", ConnectedGet},
+    {"Client.Fake.get", FakeGet},
+    {"Client.HLTV.get", HLTVGet},
+    {"Client.InGame.get", InGame},
+    {"Client.Health.get", HealthGet},
+    {"Client.Health.set", HealthSet},
+    {"Client.TakeDamage", TakeDamage},
+    {"Client.SendMsg", SendMsg},
+    {"Client.MakeVIP", MakeVIP},
+    {"Client.HasAccess", HasAccess},
+    {"Client.AttachGroup", AttachGroup},
+    {"Client.RemoveGroup", RemoveGroup},
+    {"Client.AttachPermission", AttachPermission},
+    {"Client.RemovePermission", RemovePermission},
+    {nullptr, nullptr}
+};

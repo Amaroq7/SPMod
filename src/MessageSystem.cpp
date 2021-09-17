@@ -52,7 +52,7 @@ bool Message::MessageEnd()
         return true;
     }
 
-    if (m_hookType != HookType::Block)
+    if (m_hookType == HookType::Block)
     {
         if (m_blockType == MsgBlockType::Once)
         {
@@ -151,14 +151,14 @@ void Message::setBlockType(MsgBlockType blockType)
     m_blockType = blockType;
 }
 
-IHookInfo *Message::registerHook(IMessage::Handler handler, HookPriority hookPriority)
+std::weak_ptr<IHookInfo> Message::registerHook(IMessage::Handler handler, HookPriority hookPriority)
 {
     return m_hooks.registerHook(handler, hookPriority);
 }
 
-void Message::unregisterHook(IHookInfo *hook)
+void Message::unregisterHook(std::weak_ptr<IHookInfo> hook)
 {
-    if (!hook)
+    if (hook.expired())
     {
         return;
     }
@@ -170,7 +170,7 @@ MessageMngr::MessageMngr()
 {
     for (auto &msg : m_messages)
     {
-        msg = std::make_unique<Message>();
+        msg = std::make_shared<Message>();
     }
 }
 
@@ -182,9 +182,9 @@ bool MessageMngr::MessageBegin(Metamod::Engine::MsgDest msg_dest,
     return m_messages[msg_type]->MessageBegin(msg_dest, msg_type, pOrigin, ed);
 }
 
-IMessage *MessageMngr::getMessage(Metamod::Engine::MsgType msgType) const
+std::weak_ptr<IMessage> MessageMngr::getMessage(Metamod::Engine::MsgType msgType) const
 {
-    return m_messages[msgType].get();
+    return m_messages[msgType];
 }
 
 bool MessageMngr::MessageEnd()

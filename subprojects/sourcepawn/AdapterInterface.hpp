@@ -55,4 +55,4 @@ namespace SPExt
     };
 } // namespace SPExt
 
-extern std::unique_ptr<SPExt::AdapterInterface> gAdapterInterface;
+extern std::shared_ptr<SPExt::AdapterInterface> gAdapterInterface;

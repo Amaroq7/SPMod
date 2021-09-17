@@ -57,13 +57,13 @@ namespace SPMod
 
             virtual ~IItem() = default;
 
-            virtual std::string_view getName() const = 0;
+            [[nodiscard]] virtual std::string_view getName() const = 0;
             virtual void setName(std::string_view name) = 0;
 
-            virtual std::any getData() const = 0;
+            [[nodiscard]] virtual std::any getData() const = 0;
             virtual void setData(std::any data) = 0;
 
-            virtual NavigationType getNavType() const = 0;
+            [[nodiscard]] virtual NavigationType getNavType() const = 0;
         };
 
         using ItemHandler = std::function<void(IMenu *const menu, IItem *const item, IPlayer *const player)>;
@@ -72,8 +72,8 @@ namespace SPMod
         virtual ~IMenu() = default;
 
         virtual void display(IPlayer *player, std::uint32_t page, std::uint32_t time) = 0;
-        virtual bool getGlobal() const = 0;
-        virtual Style getStyle() const = 0;
+        [[nodiscard]] virtual bool getGlobal() const = 0;
+        [[nodiscard]] virtual Style getStyle() const = 0;
 
         virtual void setText(std::string_view text) = 0;
         virtual void setKeys(std::uint32_t keys) = 0;
@@ -81,10 +81,10 @@ namespace SPMod
         virtual void setTitle(std::string_view text) = 0;
 
         virtual void setItemsPerPage(std::size_t value) = 0;
-        virtual std::size_t getItemsPerPage() const = 0;
+        [[nodiscard]] virtual std::size_t getItemsPerPage() const = 0;
 
-        virtual std::uint32_t getTime() const = 0;
-        virtual std::uint32_t getKeys() const = 0;
+        [[nodiscard]] virtual std::uint32_t getTime() const = 0;
+        [[nodiscard]] virtual std::uint32_t getKeys() const = 0;
 
         virtual IItem *appendItem(std::string_view name, IItem::Callback callback, std::any data) = 0;
 
@@ -101,12 +101,12 @@ namespace SPMod
         virtual bool removeItem(std::size_t position) = 0;
         virtual void removeAllItems() = 0;
 
-        virtual IItem *getItem(std::size_t position) const = 0;
+        [[nodiscard]] virtual IItem *getItem(std::size_t position) const = 0;
 
         virtual std::uint32_t getItemIndex(const IItem *item) const = 0;
         virtual void setNumberFormat(std::string_view format) = 0;
 
-        virtual std::size_t getItems() const = 0;
+        [[nodiscard]] virtual std::size_t getItems() const = 0;
     };
 
     class IMenuMngr : public ISPModInterface
@@ -121,7 +121,7 @@ namespace SPMod
          *
          * @return        Interface's name.
          */
-        std::string_view getName() const override
+        [[nodiscard]] std::string_view getName() const override
         {
             return "IMenuMngr";
         }
@@ -133,15 +133,15 @@ namespace SPMod
          *
          * @return        Interface's version.
          */
-        std::uint32_t getVersion() const override
+        [[nodiscard]] std::uint32_t getVersion() const override
         {
             return VERSION;
         }
 
-        virtual ~IMenuMngr() = default;
+        ~IMenuMngr() override = default;
 
-        virtual IMenu *registerMenu(const std::variant<IMenu::ItemHandler, IMenu::TextHandler> &handler,
-                                    bool global) = 0;
-        virtual void destroyMenu(const IMenu *menu) = 0;
+        virtual std::weak_ptr<IMenu> registerMenu(const std::variant<IMenu::ItemHandler, IMenu::TextHandler> &handler,
+                                                  bool global) = 0;
+        virtual void destroyMenu(std::weak_ptr<IMenu> menu) = 0;
     };
 } // namespace SPMod

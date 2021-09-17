@@ -27,10 +27,16 @@ enum Timer
     INVALID_TIMER = -1
 }
 
+enum TimerReturn
+{
+    Timer_Continue = 0,
+    Timer_Stop
+}
+
 typeset TimerCallback
 {
-    function PluginReturn (Timer timer);
-    function PluginReturn (Timer timer, any data);
+    function TimerReturn (Timer timer);
+    function TimerReturn (Timer timer, any data);
 };
 
 methodmap Timer

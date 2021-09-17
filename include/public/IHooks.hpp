@@ -22,19 +22,20 @@
 #include <IHookChains.hpp>
 #include <string_view>
 
-#include <metamodcpp_sdk/engine/IEdict.hpp>
-#include <metamodcpp_sdk/engine/Common.hpp>
+#include <anubis/engine/IEdict.hpp>
+#include <anubis/engine/Common.hpp>
+#include <anubis/observer_ptr.hpp>
 
 namespace SPMod
 {
-    using IClientConnectHook = IHook<bool, Metamod::Engine::IEdict *, std::string_view, std::string_view, std::string &>;
-    using IClientConnectHookRegistry = IHookRegistry<bool, Metamod::Engine::IEdict *, std::string_view, std::string_view, std::string &>;
+    using IClientConnectHook = IHook<bool, Anubis::Engine::IEdict *, std::string_view, std::string_view, std::string &>;
+    using IClientConnectHookRegistry = IHookRegistry<bool, Anubis::Engine::IEdict *, std::string_view, std::string_view, std::string &>;
 
-    using IClientCmdHook = IHook<void, Metamod::Engine::IEdict *>;
-    using IClientCmdHookRegistry = IHookRegistry<void, Metamod::Engine::IEdict *>;
+    using IClientCmdHook = IHook<void, Anubis::Engine::IEdict *>;
+    using IClientCmdHookRegistry = IHookRegistry<void, Anubis::Engine::IEdict *>;
 
-    using IClientPutinServerHook = IHook<void, Metamod::Engine::IEdict *>;
-    using IClientPutinServerHookRegistry = IHookRegistry<void, Metamod::Engine::IEdict *>;
+    using IClientPutinServerHook = IHook<void, Anubis::Engine::IEdict *>;
+    using IClientPutinServerHookRegistry = IHookRegistry<void, Anubis::Engine::IEdict *>;
 
     using IGameInitHook = IHook<void>;
     using IGameInitHookRegistry = IHookRegistry<void>;
@@ -51,26 +52,26 @@ namespace SPMod
     using IStartFrameHook = IHook<void>;
     using IStartFrameHookRegistry = IHookRegistry<void>;
 
-    using IClientInfoChangedHook = IHook<void, Metamod::Engine::IEdict *, Metamod::Engine::InfoBuffer>;
-    using IClientInfoChangedHookRegistry = IHookRegistry<void, Metamod::Engine::IEdict *, Metamod::Engine::InfoBuffer>;
+    using IClientInfoChangedHook = IHook<void, Anubis::Engine::IEdict *, Anubis::Engine::InfoBuffer>;
+    using IClientInfoChangedHookRegistry = IHookRegistry<void, Anubis::Engine::IEdict *, Anubis::Engine::InfoBuffer>;
 
-    using IDropClientHook = IHook<void, Metamod::Engine::IEdict *, bool, std::string_view>;
-    using IDropClientHookRegistry = IHookRegistry<void, Metamod::Engine::IEdict *, bool, std::string_view>;
+    using IDropClientHook = IHook<void, Anubis::Engine::IEdict *, bool, std::string_view>;
+    using IDropClientHookRegistry = IHookRegistry<void, Anubis::Engine::IEdict *, bool, std::string_view>;
 
     class IHooks
     {
     public:
         virtual ~IHooks() = default;
 
-        virtual IClientConnectHookRegistry *clientConnect() = 0;
-        virtual IClientCmdHookRegistry *clientCmd() = 0;
-        virtual IClientPutinServerHookRegistry *clientPutinServer() = 0;
-        virtual IGameInitHookRegistry *gameInit() = 0;
-        virtual IGameShutdownHookRegistry *gameShutdown() = 0;
-        virtual IServerActivateHookRegistry *serverActivate() = 0;
-        virtual IServerDeactivateHookRegistry *serverDeactivate() = 0;
-        virtual IStartFrameHookRegistry *startFrame() = 0;
-        virtual IClientInfoChangedHookRegistry *clientInfoChanged() = 0;
-        virtual IDropClientHookRegistry *dropClient() = 0;
+        virtual nstd::observer_ptr<IClientConnectHookRegistry> clientConnect() = 0;
+        virtual nstd::observer_ptr<IClientCmdHookRegistry> clientCmd() = 0;
+        virtual nstd::observer_ptr<IClientPutinServerHookRegistry> clientPutinServer() = 0;
+        virtual nstd::observer_ptr<IGameInitHookRegistry> gameInit() = 0;
+        virtual nstd::observer_ptr<IGameShutdownHookRegistry> gameShutdown() = 0;
+        virtual nstd::observer_ptr<IServerActivateHookRegistry> serverActivate() = 0;
+        virtual nstd::observer_ptr<IServerDeactivateHookRegistry> serverDeactivate() = 0;
+        virtual nstd::observer_ptr<IStartFrameHookRegistry> startFrame() = 0;
+        virtual nstd::observer_ptr<IClientInfoChangedHookRegistry> clientInfoChanged() = 0;
+        virtual nstd::observer_ptr<IDropClientHookRegistry> dropClient() = 0;
     };
 }

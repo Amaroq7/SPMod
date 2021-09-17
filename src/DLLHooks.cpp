@@ -19,19 +19,19 @@
 
 #include "SPGlobal.hpp"
 #include "DLLHooks.hpp"
-#include "MetaInit.hpp"
+#include "AnubisInit.hpp"
 
-#include <metamodcpp_sdk/engine/IEdict.hpp>
-#include <metamodcpp_sdk/game/IHooks.hpp>
+#include <anubis/engine/IEdict.hpp>
+#include <anubis/game/IHooks.hpp>
 
 namespace SPMod
 {
     void installDLLHooks()
     {
-        Metamod::Game::IHooks *hooks = gGame->getHooks();
-        static PlayerMngr *playerMngr = gSPGlobal->getPlayerManager();
+        nstd::observer_ptr<Anubis::Game::IHooks> hooks = gGame->getHooks();
+        static nstd::observer_ptr<PlayerMngr> playerMngr = gSPGlobal->getPlayerManager();
 
-        hooks->gameInit()->registerHook([](Metamod::Game::IGameInitHook *hook) {
+        hooks->gameInit()->registerHook([](nstd::observer_ptr<Anubis::Game::IGameInitHook> hook) {
 
             gSPGlobal->loadExts();
 
@@ -46,7 +46,7 @@ namespace SPMod
                 interface.second->getPluginMngr()->bindPluginsNatives();
             }
 
-            GameInitHookRegistry *hookchain = gSPGlobal->getHooks()->gameInit();
+            nstd::observer_ptr<GameInitHookRegistry> hookchain = gSPGlobal->getHooks()->gameInit();
 
             hookchain->callChain([hook]() {
                 hook->callNext();
@@ -54,19 +54,17 @@ namespace SPMod
                 hook->callOriginal();
             });
 
-            gMetaAPI->getEngine()->registerSrvCommand("spmod", CommandMngr::SPModInfoCommand, Metamod::FuncCallType::Direct);
+            gEngine->registerSrvCommand("spmod", CommandMngr::SPModInfoCommand, Anubis::FuncCallType::Direct);
+        }, Anubis::HookPriority::Default);
 
-            gSPGlobal->allowPrecacheForPlugins(true);
-        });
-
-        hooks->clientConnect()->registerHook([](Metamod::Game::IClientConnectHook *hook,
-                                                Metamod::Engine::IEdict *pEdict,
+        hooks->clientConnect()->registerHook([](Anubis::Game::IClientConnectHook *hook,
+                                                Anubis::Engine::IEdict *pEdict,
                                                 std::string_view name,
                                                 std::string_view address,
                                                 std::string &reason) {
-            static ClientConnectHookRegistry *hookchain = gSPGlobal->getHooks()->clientConnect();
+            static nstd::observer_ptr<ClientConnectHookRegistry> hookchain = gSPGlobal->getHooks()->clientConnect();
 
-            return hookchain->callChain([hook](Metamod::Engine::IEdict *pEdict,
+            return hookchain->callChain([hook](nstd::observer_ptr<Anubis::Engine::IEdict> pEdict,
                                     std::string_view name,
                                     std::string_view address,
                                     std::string &reason) {
@@ -76,7 +74,7 @@ namespace SPMod
                 }
 
                 return playerMngr->ClientConnect(pEdict, name, address, reason);
-            }, [hook](Metamod::Engine::IEdict *pEdict,
+            }, [hook](nstd::observer_ptr<Anubis::Engine::IEdict> pEdict,
                       std::string_view name,
                       std::string_view address,
                       std::string &reason) {
@@ -87,7 +85,7 @@ namespace SPMod
 
                 return playerMngr->ClientConnect(pEdict, name, address, reason);
             }, pEdict, name, address, reason);
-        });
+        }, Anubis::HookPriority::Default);
 
         hooks->clientCmd()->registerHook([](Metamod::Game::IClientCmdHook *hook,
                                             Metamod::Engine::IEdict *pEdict) {
@@ -139,15 +137,13 @@ namespace SPMod
         hooks->serverActivate()->registerHook([](Metamod::Game::IServerActivateHook *hook,
                                               std::uint32_t edictCount, std::uint32_t clientMax) {
 
-            gSPGlobal->allowPrecacheForPlugins(false);
-
             static ServerActivateHookRegistry *hookchain = gSPGlobal->getHooks()->serverActivate();
             hookchain->callChain([hook](std::uint32_t edictCount, std::uint32_t clientMax) {
                 hook->callNext(edictCount, clientMax);
-                playerMngr->ServerActivate(clientMax);
+                playerMngr->ServerActivate();
             }, [hook](std::uint32_t edictCount, std::uint32_t clientMax) {
                 hook->callOriginal(edictCount, clientMax);
-                playerMngr->ServerActivate(clientMax);
+                playerMngr->ServerActivate();
             }, edictCount, clientMax);
         });
 
@@ -190,11 +186,9 @@ namespace SPMod
                 hook->callOriginal();
             });
 
-            gSPGlobal->getForwardManager()->clearForwards();
             gSPGlobal->getTimerManager()->clearTimers();
             gSPGlobal->getCommandManager()->clearCommands();
             gSPGlobal->getMenuManager()->clearMenus();
-            gSPGlobal->getNativeProxy()->clearNatives();
 
             gEngine->removeCmd("spmod");
         });

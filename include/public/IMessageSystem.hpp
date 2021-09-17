@@ -24,8 +24,9 @@
 #include "Common.hpp"
 #include "IHookChains.hpp"
 
-#include <metamodcpp_sdk/engine/Common.hpp>
-#include <metamodcpp_sdk/engine/IEdict.hpp>
+#include <anubis/engine/Common.hpp>
+#include <anubis/engine/IEdict.hpp>
+#include <anubis/observer_ptr.hpp>
 
 namespace SPMod
 {
@@ -41,32 +42,29 @@ namespace SPMod
     class IMessage
     {
     public:
-        using Handler = std::function<void(IHook<void, IMessage *> *chain, IMessage *message)>;
+        using Handler = std::function<void(nstd::observer_ptr<IHook<void, nstd::observer_ptr<IMessage>>> chain, nstd::observer_ptr<IMessage> message)>;
         using Param = std::variant<std::byte, char, std::int16_t, std::int32_t, std::string,
-                                    Metamod::Engine::MsgEntity, Metamod::Engine::MsgAngle, Metamod::Engine::MsgCoord>;
+                                    Anubis::Engine::MsgEntity, Anubis::Engine::MsgAngle, Anubis::Engine::MsgCoord>;
 
     public:
         virtual ~IMessage() = default;
 
         virtual std::vector<Param> &getParams() = 0;
-        virtual Metamod::Engine::MsgDest getDest() const = 0;
-        virtual Metamod::Engine::MsgType getType() const = 0;
-        virtual const float *getOrigin() const = 0;
-        virtual Metamod::Engine::IEdict *getEdict() const = 0;
+        [[nodiscard]] virtual Anubis::Engine::MsgDest getDest() const = 0;
+        [[nodiscard]] virtual Anubis::Engine::MsgType getType() const = 0;
+        [[nodiscard]] virtual const float *getOrigin() const = 0;
+        [[nodiscard]] virtual Anubis::Engine::IEdict *getEdict() const = 0;
 
-        virtual IHookInfo *registerHook(IMessage::Handler handler,
-                                        HookPriority hookPriority = HookPriority::DEFAULT) = 0;
-        virtual void unregisterHook(IHookInfo *hook) = 0;
+        virtual nstd::observer_ptr<IHookInfo> registerHook(IMessage::Handler handler, HookPriority hookPriority) = 0;
+        virtual void unregisterHook(nstd::observer_ptr<IHookInfo> hook) = 0;
 
-        virtual MsgBlockType getBlockType() const = 0;
+        [[nodiscard]] virtual MsgBlockType getBlockType() const = 0;
         virtual void setBlockType(MsgBlockType blockType) = 0;
     };
 
     class IMessageMngr : public ISPModInterface
     {
     public:
-        virtual ~IMessageMngr() = default;
-
         static constexpr std::uint16_t MAJOR_VERSION = 0;
         static constexpr std::uint16_t MINOR_VERSION = 0;
 
@@ -76,7 +74,7 @@ namespace SPMod
          *
          * @return        Interface's name.
          */
-        std::string_view getName() const override
+        [[nodiscard]] std::string_view getName() const override
         {
             return "IMessageMngr";
         }
@@ -88,11 +86,13 @@ namespace SPMod
          *
          * @return        Interface's version.
          */
-        std::uint32_t getVersion() const override
+        [[nodiscard]] std::uint32_t getVersion() const override
         {
             return VERSION;
         }
 
-        virtual IMessage *getMessage(Metamod::Engine::MsgType msgType) const = 0;
+        ~IMessageMngr() override = default;
+
+        [[nodiscard]] virtual nstd::observer_ptr<IMessage> getMessage(Anubis::Engine::MsgType msgType) const = 0;
     };
 } // namespace SPMod
